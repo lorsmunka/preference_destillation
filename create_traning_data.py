@@ -5,6 +5,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import re
 import glob
+from datetime import datetime, timedelta
 
 
 def create_evaluation_prompt(sentence):
@@ -34,6 +35,79 @@ def log_inf_file(data, name=None):
     with open(file_name, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print("Logged to", file_name)
+
+
+def create_telemetry_file():
+    os.makedirs("./telemetry", exist_ok=True)
+    timestamp = int(time.time() * 1000)
+    filename = f"./telemetry/run_{timestamp}.txt"
+
+    with open(filename, 'w') as f:
+        f.write("=" * 60 + "\n")
+        f.write("TRAINING DATA GENERATION TELEMETRY\n")
+        f.write("=" * 60 + "\n")
+        f.write(
+            f"Run Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Epoch Timestamp: {timestamp}\n")
+        f.write("-" * 60 + "\n\n")
+
+    return filename
+
+
+def update_telemetry(telemetry_file, generated_count, total_examples, generation_time, start_time):
+    elapsed_time = time.time() - start_time
+    avg_time_per_example = elapsed_time / \
+        generated_count if generated_count > 0 else 0
+    remaining_examples = total_examples - generated_count
+    estimated_remaining_time = avg_time_per_example * remaining_examples
+    total_estimated_time = avg_time_per_example * total_examples
+
+    progress_percent = (generated_count / total_examples) * 100
+
+    with open(telemetry_file, 'a') as f:
+        f.write(
+            f"Example #{generated_count:,} | Generation Time: {format_duration(generation_time)}\n")
+        f.write(
+            f"Progress: {generated_count:,}/{total_examples:,} ({progress_percent:.1f}%)\n")
+        f.write(
+            f"Average Time/Example: {format_duration(avg_time_per_example)}\n")
+        f.write(f"Elapsed Time: {format_duration(elapsed_time)}\n")
+        f.write(
+            f"Estimated Total Runtime: {format_duration(total_estimated_time)}\n")
+        f.write(
+            f"Estimated Time Remaining: {format_duration(estimated_remaining_time)}\n")
+        f.write("-" * 60 + "\n")
+
+
+def finalize_telemetry(telemetry_file, generated_count, total_examples, start_time, interrupted=False):
+    elapsed_time = time.time() - start_time
+    status = "INTERRUPTED" if interrupted else "COMPLETED"
+
+    with open(telemetry_file, 'a') as f:
+        f.write("\n" + "=" * 60 + "\n")
+        f.write(f"RUN {status}\n")
+        f.write("=" * 60 + "\n")
+        f.write(f"End Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(
+            f"Total Examples Generated: {generated_count:,}/{total_examples:,}\n")
+        f.write(f"Total Runtime: {format_duration(elapsed_time)}\n")
+        if generated_count > 0:
+            avg_time = elapsed_time / generated_count
+            f.write(f"Average Time per Example: {format_duration(avg_time)}\n")
+        f.write("=" * 60 + "\n")
+
+
+def format_duration(seconds):
+    if seconds < 60:
+        return f"{seconds:.1f}s"
+    elif seconds < 3600:
+        minutes = seconds // 60
+        secs = seconds % 60
+        return f"{int(minutes)}m {secs:.0f}s"
+    else:
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        return f"{int(hours)}h {int(minutes)}m"
 
 
 def get_output_vocabulary():
@@ -289,17 +363,24 @@ def generate_training_data(num_examples, batch_size):
     batch_number, current_batch = load_resume_state()
 
     generated_count = batch_number * batch_size + len(current_batch)
+    start_time = time.time()
+    telemetry_file = create_telemetry_file()
 
     try:
         while generated_count < num_examples:
             sentence = sentences[generated_count % len(sentences)]
 
+            example_start_time = time.time()
             example = generate_training_example(sentence, model, tokenizer)
+            generation_time = time.time() - example_start_time
 
             if is_valid_json_response(example["generated_response"]):
                 current_batch.append(example)
                 generated_count += 1
                 print(f"Generated {generated_count}/{num_examples}")
+
+                update_telemetry(telemetry_file, generated_count,
+                                 num_examples, generation_time, start_time)
 
                 save_training_batch(current_batch, batch_number)
 
@@ -313,9 +394,14 @@ def generate_training_data(num_examples, batch_size):
         print("Interrupted! Saving current batch...")
         if current_batch:
             save_training_batch(current_batch, batch_number)
+        finalize_telemetry(telemetry_file, generated_count,
+                           num_examples, start_time, interrupted=True)
 
     if current_batch:
         save_training_batch(current_batch, batch_number)
+
+    finalize_telemetry(telemetry_file, generated_count,
+                       num_examples, start_time, interrupted=False)
 
 
 generate_training_data(num_examples=400_000, batch_size=32)
