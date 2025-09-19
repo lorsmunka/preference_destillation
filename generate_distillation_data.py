@@ -333,6 +333,7 @@ def generate_training_data(num_examples, batch_size):
     generated_count = batch_number * batch_size + len(current_batch)
     start_time = time.time()
     telemetry_file = create_telemetry_file()
+    batch_generation_times = []
 
     try:
         while generated_count < num_examples:
@@ -345,16 +346,19 @@ def generate_training_data(num_examples, batch_size):
             if is_valid_json_response(example["generated_response"]):
                 current_batch.append(example)
                 generated_count += 1
+                batch_generation_times.append(generation_time)
                 print(f"Generated {generated_count}/{num_examples}")
-
-                update_telemetry(telemetry_file, generated_count,
-                                 num_examples, generation_time, start_time)
 
                 save_training_batch(current_batch, batch_number)
 
                 if len(current_batch) >= batch_size:
+                    batch_total_time = sum(batch_generation_times)
+                    update_telemetry(telemetry_file, generated_count,
+                                     num_examples, batch_total_time, start_time)
+
                     current_batch = []
                     batch_number += 1
+                    batch_generation_times = []
             else:
                 print("Invalid JSON, retrying...")
 
@@ -362,11 +366,19 @@ def generate_training_data(num_examples, batch_size):
         print("Interrupted! Saving current batch...")
         if current_batch:
             save_training_batch(current_batch, batch_number)
+            if batch_generation_times:
+                batch_total_time = sum(batch_generation_times)
+                update_telemetry(telemetry_file, generated_count,
+                                 num_examples, batch_total_time, start_time)
         finalize_telemetry(telemetry_file, generated_count,
                            num_examples, start_time, interrupted=True)
 
     if current_batch:
         save_training_batch(current_batch, batch_number)
+        if batch_generation_times:
+            batch_total_time = sum(batch_generation_times)
+            update_telemetry(telemetry_file, generated_count,
+                             num_examples, batch_total_time, start_time)
 
     finalize_telemetry(telemetry_file, generated_count,
                        num_examples, start_time, interrupted=False)
