@@ -26,17 +26,6 @@ def create_evaluation_prompt(sentence):
     return prompt
 
 
-def log_inf_file(data, name=None):
-    os.makedirs("./logs", exist_ok=True)
-
-    time_stamp = str(int(time.time()))
-
-    file_name = f"./logs/{name + '_' if name else ''}{time_stamp}.json"
-    with open(file_name, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print("Logged to", file_name)
-
-
 def create_telemetry_file():
     os.makedirs("./telemetry", exist_ok=True)
     timestamp = int(time.time() * 1000)
@@ -156,13 +145,6 @@ def prepare_inputs_for_gpu(tokenizer, text):
     return inputs
 
 
-def get_next_token_probabilities(model, inputs):
-    with torch.no_grad():
-        logits = model(**inputs).logits
-    last_token_logits = logits[0, -1, :]
-    return last_token_logits.softmax(dim=-1)
-
-
 def extract_logits_with_other_token(tokenizer, logits):
     token_names = []
     token_logits = []
@@ -192,27 +174,6 @@ def sort_by_logits(token_names, token_logits):
     token_logit_pairs = list(zip(token_names, token_logits))
     token_logit_pairs.sort(key=lambda x: x[1], reverse=True)
     return {token: logit for token, logit in token_logit_pairs}
-
-
-def get_top_k_probabilities(tokenizer, probabilities, top_k):
-    top_probs, top_indices = probabilities.topk(top_k)
-    result = {}
-    for prob, idx in zip(top_probs.tolist(), top_indices.tolist()):
-        token = tokenizer.decode([idx])
-        result[token] = prob
-    return result
-
-
-def get_probability(prompt):
-    tokenizer, model = load_model_and_tokenizer()
-    inputs = prepare_inputs_for_gpu(tokenizer, prompt)
-
-    with torch.no_grad():
-        logits = model(**inputs).logits[0, -1, :]
-
-    token_names, token_logits = extract_logits_with_other_token(
-        tokenizer, logits)
-    return sort_by_logits(token_names, token_logits)
 
 
 def load_sentences():
