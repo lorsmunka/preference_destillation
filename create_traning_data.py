@@ -194,32 +194,33 @@ def save_training_batch(batch_data, batch_num):
 def is_valid_json_response(text):
     try:
         parsed = json.loads(text.strip())
+    except json.JSONDecodeError as e:
+        return False, f"JSON parsing failed: {e}. Input text: '{text}'"
 
-        if not isinstance(parsed, dict):
-            return False
+    if not isinstance(parsed, dict):
+        return False, f"Expected dict, got {type(parsed).__name__}. Parsed content: {parsed}"
 
-        required_keys = {"tone", "sentiment", "safety", "toxicity"}
-        if not required_keys.issubset(parsed.keys()):
-            return False
+    required_keys = {"tone", "sentiment", "safety", "toxicity"}
+    missing_keys = required_keys - set(parsed.keys())
+    if missing_keys:
+        return False, f"Missing required keys: {missing_keys}. Found keys: {set(parsed.keys())}"
 
-        valid_values = {
-            "tone": {"aggressive", "rude", "neutral", "polite", "friendly"},
-            "sentiment": {"negative", "neutral", "positive"},
-            "safety": {"harmful", "safe"},
-            "toxicity": {"toxic", "respectful"}
-        }
+    valid_values = {
+        "tone": {"aggressive", "rude", "neutral", "polite", "friendly"},
+        "sentiment": {"negative", "neutral", "positive"},
+        "safety": {"harmful", "safe"},
+        "toxicity": {"toxic", "respectful"}
+    }
 
-        for key, expected_values in valid_values.items():
-            if parsed[key] not in expected_values:
-                return False
+    for key, expected_values in valid_values.items():
+        if parsed[key] not in expected_values:
+            return False, f"Invalid value for '{key}': '{parsed[key]}'. Expected one of: {expected_values}"
 
-        if len(parsed) != len(required_keys):
-            return False
+    extra_keys = set(parsed.keys()) - required_keys
+    if extra_keys:
+        return False, f"Unexpected extra keys found: {extra_keys}. Only expected: {required_keys}"
 
-        return True
-
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return False
+    return True, "Valid JSON response"
 
 
 def should_stop_generation(token, accumulated_text):
