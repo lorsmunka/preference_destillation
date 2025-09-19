@@ -133,8 +133,15 @@ output_vocabulary = get_output_vocabulary()
 
 def load_model_and_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
+    # model = AutoModelForCausalLM.from_pretrained(
+    #     "google/gemma-3-4b-it", device_map="auto")
+
     model = AutoModelForCausalLM.from_pretrained(
-        "google/gemma-3-4b-it", device_map="auto")
+        "google/gemma-3-4b-it",
+        device_map="auto",
+        dtype=torch.bfloat16
+    )
+
     return tokenizer, model
 
 
