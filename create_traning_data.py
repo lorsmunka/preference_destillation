@@ -129,18 +129,16 @@ def get_top_k_probabilities(tokenizer, probabilities, top_k):
     return result
 
 
-def get_probability(data):
+def get_probability(prompt):
     tokenizer, model = load_model_and_tokenizer()
-    inputs = prepare_inputs_for_gpu(tokenizer, data)
+    inputs = prepare_inputs_for_gpu(tokenizer, prompt)
 
     with torch.no_grad():
         logits = model(**inputs).logits[0, -1, :]
 
     token_names, token_logits = extract_logits_with_other_token(
         tokenizer, logits)
-    result = sort_by_logits(token_names, token_logits)
-
-    return result
+    return sort_by_logits(token_names, token_logits)
 
 
 def load_sentences():
