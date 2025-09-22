@@ -1,3 +1,6 @@
 sentences/*
 probabilities/*
+training_data/*
+telemetry/*
 logs/*
+checkpoints/*
