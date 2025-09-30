@@ -41,7 +41,7 @@ def create_telemetry_file():
     return filename
 
 
-def update_telemetry(telemetry_file, generated_count, total_examples, generation_time, start_time):
+def update_telemetry(telemetry_file, generated_count, total_examples, last_generation_time, start_time):
     elapsed_time = time.time() - start_time
     avg_time_per_example = elapsed_time / \
         generated_count if generated_count > 0 else 0
@@ -53,7 +53,7 @@ def update_telemetry(telemetry_file, generated_count, total_examples, generation
 
     with open(telemetry_file, 'a') as f:
         f.write(
-            f"Example #{generated_count:,} | Generation Time: {format_duration(generation_time)}\n")
+            f"Example #{generated_count:,} | Last Generation Time: {format_duration(last_generation_time)}\n")
         f.write(
             f"Progress: {generated_count:,}/{total_examples:,} ({progress_percent:.1f}%)\n")
         f.write(
@@ -341,7 +341,7 @@ def generate_training_data(num_examples, batch_size):
     generated_count = batch_number * batch_size + len(current_batch)
     start_time = time.time()
     telemetry_file = create_telemetry_file()
-    batch_generation_times = []
+    last_generation_time = 0
 
     try:
         while generated_count < num_examples:
@@ -354,19 +354,16 @@ def generate_training_data(num_examples, batch_size):
             if is_valid_json_response(example["generated_response"]):
                 current_batch.append(example)
                 generated_count += 1
-                batch_generation_times.append(generation_time)
+                last_generation_time = generation_time
                 print(f"Generated {generated_count}/{num_examples}")
 
-                save_training_batch(current_batch, batch_number)
-
                 if len(current_batch) >= batch_size:
-                    batch_total_time = sum(batch_generation_times)
+                    save_training_batch(current_batch, batch_number)
                     update_telemetry(telemetry_file, generated_count,
-                                     num_examples, batch_total_time, start_time)
+                                     num_examples, last_generation_time, start_time)
 
                     current_batch = []
                     batch_number += 1
-                    batch_generation_times = []
             else:
                 print("Invalid JSON, retrying...")
 
@@ -374,19 +371,15 @@ def generate_training_data(num_examples, batch_size):
         print("Interrupted! Saving current batch...")
         if current_batch:
             save_training_batch(current_batch, batch_number)
-            if batch_generation_times:
-                batch_total_time = sum(batch_generation_times)
-                update_telemetry(telemetry_file, generated_count,
-                                 num_examples, batch_total_time, start_time)
+            update_telemetry(telemetry_file, generated_count,
+                             num_examples, last_generation_time, start_time)
         finalize_telemetry(telemetry_file, generated_count,
                            num_examples, start_time, interrupted=True)
 
     if current_batch:
         save_training_batch(current_batch, batch_number)
-        if batch_generation_times:
-            batch_total_time = sum(batch_generation_times)
-            update_telemetry(telemetry_file, generated_count,
-                             num_examples, batch_total_time, start_time)
+        update_telemetry(telemetry_file, generated_count,
+                         num_examples, last_generation_time, start_time)
 
     finalize_telemetry(telemetry_file, generated_count,
                        num_examples, start_time, interrupted=False)
