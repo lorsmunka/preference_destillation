@@ -41,13 +41,19 @@ def create_telemetry_file():
     return filename
 
 
-def update_telemetry(telemetry_file, generated_count, total_examples, last_generation_time, start_time):
+def update_telemetry(telemetry_file, generated_count, total_examples, last_generation_time, start_time, batch_start_time, batch_examples_count):
     elapsed_time = time.time() - start_time
     avg_time_per_example = elapsed_time / \
         generated_count if generated_count > 0 else 0
+
+    # Calculate batch-based time estimate
+    batch_elapsed_time = time.time() - batch_start_time
+    batch_avg_time = batch_elapsed_time / \
+        batch_examples_count if batch_examples_count > 0 else 0
+
     remaining_examples = total_examples - generated_count
-    estimated_remaining_time = avg_time_per_example * remaining_examples
-    total_estimated_time = avg_time_per_example * total_examples
+    estimated_remaining_time = batch_avg_time * remaining_examples
+    total_estimated_time = elapsed_time + estimated_remaining_time
 
     progress_percent = (generated_count / total_examples) * 100
 
@@ -57,7 +63,9 @@ def update_telemetry(telemetry_file, generated_count, total_examples, last_gener
         f.write(
             f"Progress: {generated_count:,}/{total_examples:,} ({progress_percent:.1f}%)\n")
         f.write(
-            f"Average Time/Example: {format_duration(avg_time_per_example)}\n")
+            f"Current Batch Avg Time/Example: {format_duration(batch_avg_time)}\n")
+        f.write(
+            f"Overall Avg Time/Example: {format_duration(avg_time_per_example)}\n")
         f.write(f"Elapsed Time: {format_duration(elapsed_time)}\n")
         f.write(
             f"Estimated Total Runtime: {format_duration(total_estimated_time)}\n")
@@ -253,6 +261,8 @@ def extract_json_from_text(text):
 
 
 def is_valid_json_response(text):
+    print(f"Validating \n{text}\n")
+
     REQUIRED_KEYS = {"tone", "sentiment", "safety", "toxicity"}
     VALID_VALUES = {
         "tone": {"aggressive", "rude", "neutral", "polite", "friendly"},
@@ -347,6 +357,7 @@ def generate_training_data(num_examples, batch_size):
 
     generated_count = batch_number * batch_size + len(current_batch)
     start_time = time.time()
+    batch_start_time = time.time()
     telemetry_file = create_telemetry_file()
     last_generation_time = 0
 
@@ -362,15 +373,18 @@ def generate_training_data(num_examples, batch_size):
                 current_batch.append(example)
                 generated_count += 1
                 last_generation_time = generation_time
-                print(f"Generated {generated_count}/{num_examples}")
+                print(
+                    f"Generated {generated_count}/{num_examples}, time: {generation_time:.2f}s")
 
                 if len(current_batch) >= batch_size:
                     save_training_batch(current_batch, batch_number)
                     update_telemetry(telemetry_file, generated_count,
-                                     num_examples, last_generation_time, start_time)
+                                     num_examples, last_generation_time, start_time,
+                                     batch_start_time, len(current_batch))
 
                     current_batch = []
                     batch_number += 1
+                    batch_start_time = time.time()
             else:
                 print("Invalid JSON, retrying...")
 
@@ -379,14 +393,16 @@ def generate_training_data(num_examples, batch_size):
         if current_batch:
             save_training_batch(current_batch, batch_number)
             update_telemetry(telemetry_file, generated_count,
-                             num_examples, last_generation_time, start_time)
+                             num_examples, last_generation_time, start_time,
+                             batch_start_time, len(current_batch))
         finalize_telemetry(telemetry_file, generated_count,
                            num_examples, start_time, interrupted=True)
 
     if current_batch:
         save_training_batch(current_batch, batch_number)
         update_telemetry(telemetry_file, generated_count,
-                         num_examples, last_generation_time, start_time)
+                         num_examples, last_generation_time, start_time,
+                         batch_start_time, len(current_batch))
 
     finalize_telemetry(telemetry_file, generated_count,
                        num_examples, start_time, interrupted=False)
