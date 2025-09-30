@@ -9,17 +9,15 @@ from datetime import datetime, timedelta
 
 
 def create_evaluation_prompt(sentence):
-    prompt = f"""Analyze the following sentence and return a JSON object with these evaluations:
+    prompt = f"""Analyze this sentence and return your evaluation as JSON:
 
     Sentence: "{sentence}"
 
-    Return JSON format:
-    {{
-        "tone": "aggressive | rude | neutral | polite | friendly",
-        "sentiment": "negative | neutral | positive",
-        "safety": "harmful | safe",
-        "toxicity": "toxic | respectful"
-    }}
+    Provide exactly one value for each field based on the sentence content:
+    - tone: aggressive, rude, neutral, polite, friendly
+    - sentiment: negative, neutral, positive
+    - safety: harmful, safe
+    - toxicity: toxic, respectful
 
     JSON:
     """
@@ -103,6 +101,7 @@ def get_output_vocabulary():
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
 
     example_result = """
+    ```json
     {
         "tone": "aggressive",
         "tone": "rude",
@@ -231,36 +230,47 @@ def save_training_batch(batch_data, batch_num):
     print(f"Saved batch {batch_num} with {len(batch_data)} examples")
 
 
+def extract_json_from_text(text):
+    text = text.strip()
+
+    json_match = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', text, re.DOTALL)
+    if json_match:
+        return json_match.group(1).strip()
+
+    brace_match = re.search(r'\{.*\}', text, re.DOTALL)
+    if brace_match:
+        return brace_match.group(0)
+
+    return text
+
+
 def is_valid_json_response(text):
-    try:
-        parsed = json.loads(text.strip())
-    except json.JSONDecodeError as e:
-        return False, f"JSON parsing failed: {e}. Input text: '{text}'"
-
-    if not isinstance(parsed, dict):
-        return False, f"Expected dict, got {type(parsed).__name__}. Parsed content: {parsed}"
-
-    required_keys = {"tone", "sentiment", "safety", "toxicity"}
-    missing_keys = required_keys - set(parsed.keys())
-    if missing_keys:
-        return False, f"Missing required keys: {missing_keys}. Found keys: {set(parsed.keys())}"
-
-    valid_values = {
+    REQUIRED_KEYS = {"tone", "sentiment", "safety", "toxicity"}
+    VALID_VALUES = {
         "tone": {"aggressive", "rude", "neutral", "polite", "friendly"},
         "sentiment": {"negative", "neutral", "positive"},
         "safety": {"harmful", "safe"},
         "toxicity": {"toxic", "respectful"}
     }
 
-    for key, expected_values in valid_values.items():
-        if parsed[key] not in expected_values:
-            return False, f"Invalid value for '{key}': '{parsed[key]}'. Expected one of: {expected_values}"
+    cleaned_text = extract_json_from_text(text)
 
-    extra_keys = set(parsed.keys()) - required_keys
-    if extra_keys:
-        return False, f"Unexpected extra keys found: {extra_keys}. Only expected: {required_keys}"
+    try:
+        parsed = json.loads(cleaned_text)
+    except json.JSONDecodeError:
+        return False
 
-    return True, "Valid JSON response"
+    if not isinstance(parsed, dict):
+        return False
+
+    if parsed.keys() != REQUIRED_KEYS:
+        return False
+
+    for key, valid_set in VALID_VALUES.items():
+        if parsed.get(key) not in valid_set:
+            return False
+
+    return True
 
 
 def should_stop_generation(token, accumulated_text):
