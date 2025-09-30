@@ -97,9 +97,7 @@ def format_duration(seconds):
         return f"{int(hours)}h {int(minutes)}m"
 
 
-def get_output_vocabulary():
-    tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
-
+def get_output_vocabulary_and_ids(tokenizer):
     example_result = """
     ```json
     {
@@ -124,13 +122,23 @@ def get_output_vocabulary():
     all_text = example_result + " " + " ".join(auxiliary_tokens)
 
     tokens = tokenizer.tokenize(all_text)
-    return sorted(set(tokens))
+    unique_tokens = sorted(set(tokens))
+
+    token_to_id = {}
+    for token_text in unique_tokens:
+        token_ids = tokenizer.convert_tokens_to_ids([token_text])
+        if token_ids[0] != tokenizer.unk_token_id:
+            token_to_id[token_text] = token_ids[0]
+
+    return token_to_id
 
 
-output_vocabulary = get_output_vocabulary()
+token_to_id_map = None
 
 
 def load_model_and_tokenizer():
+    global token_to_id_map
+
     tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
 
     model = AutoModelForCausalLM.from_pretrained(
@@ -138,6 +146,9 @@ def load_model_and_tokenizer():
         device_map="auto",
         dtype=torch.bfloat16
     )
+
+    token_to_id_map = get_output_vocabulary_and_ids(tokenizer)
+    print(f"Pre-computed {len(token_to_id_map)} token IDs for vocabulary")
 
     return tokenizer, model
 
@@ -149,18 +160,15 @@ def prepare_inputs_for_gpu(tokenizer, text):
     return inputs
 
 
-def extract_logits_with_other_token(tokenizer, logits):
+def extract_logits_with_other_token(logits):
     token_names = []
     token_logits = []
     used_indices = set()
 
-    for token_text in output_vocabulary:
-        token_ids = tokenizer.convert_tokens_to_ids([token_text])
-        if token_ids[0] != tokenizer.unk_token_id:
-            token_id = token_ids[0]
-            token_logits.append(logits[token_id].item())
-            token_names.append(token_text)
-            used_indices.add(token_id)
+    for token_text, token_id in token_to_id_map.items():
+        token_logits.append(logits[token_id].item())
+        token_names.append(token_text)
+        used_indices.add(token_id)
 
     other_indices = [i for i in range(len(logits)) if i not in used_indices]
     if other_indices:
@@ -290,8 +298,7 @@ def generate_single_step(model, tokenizer, current_sequence):
     with torch.no_grad():
         logits = model(**current_inputs).logits[0, -1, :]
 
-    token_names, token_logits = extract_logits_with_other_token(
-        tokenizer, logits)
+    token_names, token_logits = extract_logits_with_other_token(logits)
     step_probs = sort_by_logits(token_names, token_logits)
 
     next_token_id = torch.argmax(logits).item()
