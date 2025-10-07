@@ -2,3 +2,5 @@ sentences/*
 probabilities/*
 logs/*
 checkpoints/*
+__pycache__/*
+distillation/__pycache__/*
