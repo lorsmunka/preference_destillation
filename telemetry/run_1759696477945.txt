@@ -1,0 +1,32 @@
+============================================================
+TRAINING DATA GENERATION TELEMETRY
+============================================================
+Run Started: 2025-10-05 22:34:37
+Epoch Timestamp: 1759696477945
+------------------------------------------------------------
+
+Example #353 | Last Generation Time: 3.4s
+Progress: 353/400,000 (0.1%)
+Current Batch Avg Time/Example: 0.1s
+Overall Avg Time/Example: 0.0s
+Elapsed Time: 3.4s
+Estimated Total Runtime: 11h 33m
+Estimated Time Remaining: 11h 33m
+------------------------------------------------------------
+Example #354 | Last Generation Time: 3.1s
+Progress: 354/400,000 (0.1%)
+Current Batch Avg Time/Example: 49m 43s
+Overall Avg Time/Example: 8.4s
+Elapsed Time: 49m 46s
+Estimated Total Runtime: 331127h 21m
+Estimated Time Remaining: 331126h 32m
+------------------------------------------------------------
+
+============================================================
+RUN INTERRUPTED
+============================================================
+End Time: 2025-10-05 23:24:30
+Total Examples Generated: 354/400,000
+Total Runtime: 49m 46s
+Average Time per Example: 8.4s
+============================================================

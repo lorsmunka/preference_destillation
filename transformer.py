@@ -1,805 +1,512 @@
 """
-Gemma-3-4B Distillation Model (~100M parameters)
-A clean, resumable training pipeline for knowledge distillation.
+transformer.py
 
-Install dependencies:
-pip install torch transformers tqdm
+Complete, self-contained transformer training script tailored for distilling a small
+decoder-only model (~100M params excluding Gemma embeddings). Key features:
+ - Config object (no CLI required) with sensible defaults (20 epochs)
+ - Streaming sharded dataset (never load all files into memory)
+ - Deterministic 10% test split + deterministic 10% train-check split via stable hashing
+ - Reduced output vocabulary mapping (watched tokens + __OTHER__ bucket)
+ - Tiny decoder-only Transformer (combined QKV linear, pre-LN blocks)
+ - Resumable checkpoints and mixed-precision (AMP) training
+ - After each epoch: evaluate on (a) reserved test set and (b) 10% held-out training subset
 
-For CUDA 11.8:
-pip install torch --index-url https://download.pytorch.org/whl/cu118
+Usage: python transformer.py
 
-For CUDA 12.1:
-pip install torch --index-url https://download.pytorch.org/whl/cu121
+Edit Config below for paths, tokenizer name, device, or training hyperparams.
 """
 
 import os
-import json
-import glob
 import math
+import json
+import time
+import hashlib
+from pathlib import Path
+from typing import List, Dict, Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import IterableDataset, DataLoader
 from transformers import AutoTokenizer
-from dataclasses import dataclass
-from typing import List, Dict, Tuple, Optional
-from tqdm import tqdm
-import time
+
+# ----------------------------- CONFIG -----------------------------
 
 
-# ============================================================================
-# CONFIGURATION
-# ============================================================================
+class Config:
+    # Tokenizer (Gemma tokenizer recommended)
+    TOKENIZER_NAME = "google/gemma-3-4b-it"
 
-@dataclass
-class ModelConfig:
-    """All hyperparameters in one place"""
-    # Architecture
-    d_model: int = 768              # Hidden dimension
-    num_layers: int = 12            # Transformer layers
-    num_heads: int = 12             # Attention heads
-    d_ff: int = 3072                # FFN inner dimension (4x d_model)
-    dropout: float = 0.1            # Dropout rate
-    max_seq_len: int = 512          # Maximum sequence length
-    teacher_embedding_dim: int = 2304  # Gemma-3-4b embedding dimension
+    # Device: 'cuda' or 'cpu'
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # Vocabulary
-    vocab_size: int = 100           # Output vocabulary size (will be computed)
+    # Training schedule
+    EPOCHS = 20
+    GRADIENT_ACCUMULATION_STEPS = 16
+    BATCH_SIZE_GPU = 1  # per-GPU micro-batch
+    MAX_SEQ_LEN = 512
 
-    # Training
-    batch_size: int = 16            # Batch size
-    learning_rate: float = 3e-4     # Learning rate
-    weight_decay: float = 0.01      # Weight decay
-    num_epochs: int = 10            # Number of epochs
-    gradient_clip: float = 1.0      # Gradient clipping
+    # Model size (these follow the ~100M param plan)
+    N_LAYERS = 12
+    D_MODEL = 832
+    N_HEADS = 13
+    D_FF = 3328  # 4 * D_MODEL
+    VOCAB_OUT = 256  # reduced output head size (includes __OTHER__)
+    DROPOUT = 0.1
 
-    # Distillation
-    temperature: float = 2.0        # Temperature for soft targets
+    # Data
+    TRAINING_GLOB = "./training_data/training_data_batch_*.jsonl"
+    TEST_PERCENT = 10  # deterministic test partition (10%)
+    # deterministic held-out from train for overfit checks (10%)
+    TRAIN_CHECK_PERCENT = 10
 
-    # Paths
-    teacher_model: str = "google/gemma-3-4b-it"
-    training_data_dir: str = "./training_data"
-    checkpoint_dir: str = "./checkpoints"
+    # Checkpoint
+    CKPT_DIR = Path("./checkpoints")
+    SAVE_EVERY_EPOCHS = 1
 
-    # Data split
-    test_split: float = 0.1         # Reserve 10% for testing
+    # Eval
+    MAX_EVAL_BATCHES = 200  # limit per-eval to keep runtime reasonable
 
-    # Device
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+# ------------------------- Utilities -------------------------
 
 
-# ============================================================================
-# VOCABULARY BUILDER
-# ============================================================================
-
-class VocabularyBuilder:
-    """Extract unique tokens from training data to build restricted vocabulary"""
-
-    def __init__(self, tokenizer, training_data_dir: str):
-        self.tokenizer = tokenizer
-        self.training_data_dir = training_data_dir
-
-    def build(self) -> Tuple[List[int], Dict[int, int]]:
-        """
-        Returns:
-            vocab_token_ids: List of token IDs in our vocabulary
-            token_id_to_vocab_idx: Mapping from full vocab ID to our restricted vocab index
-        """
-        print("Building vocabulary from training data...")
-
-        # Collect all unique tokens from training data
-        unique_tokens = set()
-
-        files = glob.glob(
-            f"{self.training_data_dir}/training_data_batch_*.jsonl")
-        for filepath in tqdm(files, desc="Scanning files"):
-            with open(filepath, 'r') as f:
-                for line in f:
-                    example = json.loads(line)
-                    # Extract tokens from step probabilities
-                    for step in example['steps']:
-                        for token_name in step['probabilities'].keys():
-                            if token_name != "__OTHER__":
-                                unique_tokens.add(token_name)
-
-        print(f"Found {len(unique_tokens)} unique tokens")
-
-        # Convert token strings to token IDs
-        vocab_token_ids = []
-        for token_str in unique_tokens:
-            token_ids = self.tokenizer.convert_tokens_to_ids([token_str])
-            if token_ids[0] != self.tokenizer.unk_token_id:
-                vocab_token_ids.append(token_ids[0])
-
-        # Add special tokens (EOS, BOS, PAD if they exist)
-        special_token_ids = [
-            self.tokenizer.eos_token_id,
-            self.tokenizer.bos_token_id,
-            self.tokenizer.pad_token_id
-        ]
-        for tid in special_token_ids:
-            if tid is not None and tid not in vocab_token_ids:
-                vocab_token_ids.append(tid)
-
-        vocab_token_ids = sorted(vocab_token_ids)
-
-        # Create mapping: full_vocab_id -> restricted_vocab_index
-        token_id_to_vocab_idx = {tid: idx for idx,
-                                 tid in enumerate(vocab_token_ids)}
-
-        print(f"Final vocabulary size: {len(vocab_token_ids)}")
-        return vocab_token_ids, token_id_to_vocab_idx
+def now():
+    return time.strftime('%Y-%m-%d %H:%M:%S')
 
 
-# ============================================================================
-# EMBEDDING CACHE - Load Gemma embeddings once and cache them
-# ============================================================================
+def stable_hash_to_percent(s: str) -> int:
+    # stable hashing using md5; returns 0..99
+    h = hashlib.md5(s.encode('utf-8')).hexdigest()
+    return int(h, 16) % 100
 
-class EmbeddingCache:
-    """Cache Gemma embeddings to avoid repeated loading"""
-
-    def __init__(self, model_name: str, device: str):
-        print("Loading Gemma embedding layer (one-time operation)...")
-        from transformers import AutoModel
-
-        # Load only the embedding layer
-        full_model = AutoModel.from_pretrained(
-            model_name,
-            device_map="cpu",  # Load to CPU first
-            dtype=torch.float32  # Use float32 for embeddings
-        )
-
-        # Extract embedding layer
-        self.embeddings = full_model.get_input_embeddings()
-        self.embeddings.to(device)
-        self.embeddings.eval()
-
-        # Freeze embeddings
-        for param in self.embeddings.parameters():
-            param.requires_grad = False
-
-        # Clean up full model
-        del full_model
-        torch.cuda.empty_cache()
-
-        print(f"Embedding layer loaded on {device}")
-
-    def get_embeddings(self, input_ids: torch.Tensor) -> torch.Tensor:
-        """Get embeddings for input_ids"""
-        with torch.no_grad():
-            return self.embeddings(input_ids)
+# ------------------------- Tokenizer & reduced vocab -------------------------
 
 
-# ============================================================================
-# DATASET
-# ============================================================================
+class TokenizerWrapper:
+    def __init__(self, hf_tokenizer_name: str, reduced_tokens: Optional[List[str]] = None):
+        self.tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_name)
+        # default reduced tokens drawn from your 'watched token' list and JSON syntax
+        if reduced_tokens is None:
+            reduced_tokens = self._default_reduced_tokens()
+        self.reduced_tokens = reduced_tokens
+        self.reduced_map = self._build_reduced_map(reduced_tokens)
+        self.other_index = len(self.reduced_tokens)
 
-class DistillationDataset(Dataset):
-    """Streaming dataset that loads training examples on-the-fly"""
+    def _default_reduced_tokens(self) -> List[str]:
+        structural = ['```', 'json', '{', '}', '"', ':', ',', '\n']
+        fields = ['tone', 'sentiment', 'safety', 'toxicity']
+        values = ['neutral', 'aggressive', 'rude', 'polite',
+                  'friendly', 'toxic', 'safe', 'positive', 'negative']
+        auxiliaries = ['the', 'a', 'is', 'of', 'and',
+                       'to', 'very', 'quite', 'extremely']
+        return list(dict.fromkeys(structural + fields + values + auxiliaries))
 
-    def __init__(self, file_paths: List[str], tokenizer, token_id_to_vocab_idx: Dict[int, int],
-                 vocab_size: int):
-        self.file_paths = file_paths
-        self.tokenizer = tokenizer
-        self.token_id_to_vocab_idx = token_id_to_vocab_idx
-        self.vocab_size = vocab_size
+    def _build_reduced_map(self, reduced_tokens: List[str]) -> Dict[int, int]:
+        mapping: Dict[int, int] = {}
+        for i, tok in enumerate(reduced_tokens):
+            # tokenizer.convert_tokens_to_ids may fail for strings not in the tokenizer vocabulary
+            tids = self.tokenizer.encode(tok, add_special_tokens=False)
+            if len(tids) == 1:
+                mapping[tids[0]] = i
+            else:
+                # If multiple token ids map, prefer the first (best-effort)
+                for t in tids:
+                    mapping[t] = i
+        return mapping
 
-        # Build index: (file_idx, line_idx) for each example
-        self.index = []
-        for file_idx, filepath in enumerate(file_paths):
-            with open(filepath, 'r') as f:
-                num_lines = sum(1 for _ in f)
-            self.index.extend([(file_idx, line_idx)
-                              for line_idx in range(num_lines)])
+    def encode(self, text: str) -> List[int]:
+        return self.tokenizer.encode(text, add_special_tokens=False)
 
-    def __len__(self):
-        return len(self.index)
+    def reduced_label_for_token_id(self, tok_id: int) -> int:
+        return self.reduced_map.get(tok_id, self.other_index)
 
-    def __getitem__(self, idx):
-        file_idx, line_idx = self.index[idx]
-        filepath = self.file_paths[file_idx]
+    def reduced_vocab_size(self) -> int:
+        return len(self.reduced_tokens) + 1
 
-        # Read specific line
-        with open(filepath, 'r') as f:
-            for i, line in enumerate(f):
-                if i == line_idx:
-                    example = json.loads(line)
-                    break
+# ------------------------- Streaming Dataset -------------------------
 
-        # Tokenize the sentence (input)
-        sentence = example['sentence']
-        # Recreate the prompt that was used during generation
-        prompt = f"""Analyze this sentence and return your evaluation as JSON:
 
-    Sentence: "{sentence}"
+class ShardedJSONLines(IterableDataset):
+    """
+    Streams JSONL files matching a glob. Each line must contain 'sentence' and 'generated_response'.
 
-    Provide exactly one value for each field based on the sentence content:
-    - tone: aggressive, rude, neutral, polite, friendly
-    - sentiment: negative, neutral, positive
-    - safety: harmful, safe
-    - toxicity: toxic, respectful
-
-    JSON:
+    Deterministically assigns each example to one of: 'test', 'train_check', 'train' based on stable hash of the sentence.
+    This avoids the need for external metadata and keeps the 10% splits stable across runs while accepting new files.
     """
 
-        input_ids = self.tokenizer.encode(
-            prompt, add_special_tokens=True, max_length=512, truncation=True)
+    def __init__(self, glob_pattern: str, tokenizer: TokenizerWrapper, mode: str = 'train', max_seq_len: int = 512):
+        assert mode in ('train', 'test', 'train_check')
+        self.glob_pattern = glob_pattern
+        self.tokenizer = tokenizer
+        self.mode = mode
+        self.max_seq_len = max_seq_len
 
-        # Extract teacher probabilities and target tokens for each step
-        teacher_probs_list = []
-        target_token_ids = []
+    def _file_list(self):
+        import glob
+        return sorted(glob.glob(self.glob_pattern))
 
-        for step in example['steps']:
-            # Get teacher's probability distribution (logits)
-            token_logits = step['probabilities']
+    def __iter__(self):
+        for fname in self._file_list():
+            with open(fname, 'r', encoding='utf-8') as f:
+                for line in f:
+                    try:
+                        obj = json.loads(line)
+                        # prefer 'sentence' as the text to hash; fallback to entire line
+                        key = obj.get('sentence') or line
+                        p = stable_hash_to_percent(key)
+                        if p < Config.TEST_PERCENT:
+                            assigned = 'test'
+                        elif p < (Config.TEST_PERCENT + Config.TRAIN_CHECK_PERCENT):
+                            assigned = 'train_check'
+                        else:
+                            assigned = 'train'
+                        if assigned != self.mode:
+                            continue
+                        # tokenize on the fly
+                        input_ids = self.tokenizer.encode(obj['sentence'])
+                        target_ids = self.tokenizer.encode(
+                            obj['generated_response'])
+                        # simple truncation strategy — drop tokens from the beginning of the input if needed
+                        available = self.max_seq_len
+                        if len(input_ids) + len(target_ids) > available:
+                            # keep tail of input and head of target
+                            keep_input = max(0, available - len(target_ids))
+                            input_ids = input_ids[-keep_input:]
+                            input_ids = input_ids[:available - len(target_ids)]
+                            # target trimmed to fit
+                            target_ids = target_ids[:available -
+                                                    len(input_ids)]
+                        yield {
+                            'input_ids': input_ids,
+                            'target_ids': target_ids
+                        }
+                    except Exception:
+                        continue
 
-            # Create logit vector over restricted vocabulary
-            logits = torch.full((self.vocab_size,), float('-inf'))
-            for token_str, logit in token_logits.items():
-                if token_str == "__OTHER__":
-                    continue  # Skip "other" tokens
+# ------------------------- Collator -------------------------
 
-                # Convert token string to ID
-                token_ids_list = self.tokenizer.convert_tokens_to_ids([
-                                                                      token_str])
-                token_id = token_ids_list[0]
 
-                # Map to our restricted vocabulary
-                if token_id in self.token_id_to_vocab_idx:
-                    vocab_idx = self.token_id_to_vocab_idx[token_id]
-                    logits[vocab_idx] = logit
+class Collator:
+    def __init__(self, tokenizer: TokenizerWrapper, max_seq_len: int = 512):
+        self.tokenizer = tokenizer
+        self.max_seq_len = max_seq_len
 
-            # Convert logits to probabilities
-            probs = F.softmax(logits, dim=0)
-            teacher_probs_list.append(probs)
-
-            # Get the actual generated token as target
-            token_str = step['token']
-            token_ids_list = self.tokenizer.convert_tokens_to_ids([token_str])
-            token_id = token_ids_list[0]
-            if token_id in self.token_id_to_vocab_idx:
-                target_token_ids.append(self.token_id_to_vocab_idx[token_id])
-            else:
-                # If token not in vocab, use 0 (will be masked)
-                target_token_ids.append(0)
-
+    def __call__(self, batch: List[Dict]) -> Dict[str, torch.Tensor]:
+        # Each example: concat input + target; labels only for target positions mapped to reduced vocab indices
+        B = len(batch)
+        seqs = []
+        labels = []
+        for ex in batch:
+            inp = ex['input_ids']
+            tgt = ex['target_ids']
+            seq = inp + tgt
+            if len(seq) > self.max_seq_len:
+                seq = seq[-self.max_seq_len:]
+                # If truncated, we must also adjust labels accordingly (assume target still at end)
+            # build labels: -100 for input positions, reduced indices for target positions
+            n_input = max(0, len(seq) - len(tgt))
+            lab = [-100] * n_input
+            # map each token id in the target slice to reduced index
+            for tok in seq[n_input:]:
+                lab.append(self.tokenizer.reduced_label_for_token_id(tok))
+            # pad
+            pad_len = self.max_seq_len - len(seq)
+            seq = seq + [0] * pad_len
+            lab = lab + [-100] * pad_len
+            seqs.append(seq)
+            labels.append(lab)
+        input_ids = torch.tensor(seqs, dtype=torch.long)
+        labels = torch.tensor(labels, dtype=torch.long)
+        attention_mask = (input_ids != 0).long()
         return {
-            'input_ids': torch.tensor(input_ids, dtype=torch.long),
-            # (num_steps, vocab_size)
-            'teacher_probs': torch.stack(teacher_probs_list),
-            'target_ids': torch.tensor(target_token_ids, dtype=torch.long)
+            'input_ids': input_ids,
+            'labels': labels,
+            'attention_mask': attention_mask
         }
 
-
-def collate_fn(batch):
-    """Custom collate function to pad sequences"""
-    # Find max lengths
-    max_input_len = max(len(item['input_ids']) for item in batch)
-    max_output_len = max(len(item['target_ids']) for item in batch)
-
-    # Pad inputs
-    input_ids = torch.zeros(len(batch), max_input_len, dtype=torch.long)
-    attention_mask = torch.zeros(len(batch), max_input_len, dtype=torch.long)
-
-    for i, item in enumerate(batch):
-        length = len(item['input_ids'])
-        input_ids[i, :length] = item['input_ids']
-        attention_mask[i, :length] = 1
-
-    # Pad outputs
-    teacher_probs = torch.zeros(
-        len(batch), max_output_len, batch[0]['teacher_probs'].shape[-1])
-    target_ids = torch.zeros(len(batch), max_output_len, dtype=torch.long)
-    output_mask = torch.zeros(len(batch), max_output_len, dtype=torch.long)
-
-    for i, item in enumerate(batch):
-        length = len(item['target_ids'])
-        teacher_probs[i, :length] = item['teacher_probs']
-        target_ids[i, :length] = item['target_ids']
-        output_mask[i, :length] = 1
-
-    return {
-        'input_ids': input_ids,
-        'attention_mask': attention_mask,
-        'teacher_probs': teacher_probs,
-        'target_ids': target_ids,
-        'output_mask': output_mask
-    }
+# ------------------------- Model -------------------------
 
 
-# ============================================================================
-# MODEL COMPONENTS
-# ============================================================================
-
-class MultiHeadAttention(nn.Module):
-    """Multi-head self-attention with causal masking"""
-
-    def __init__(self, d_model: int, num_heads: int, dropout: float = 0.1):
+class MultiHeadSelfAttention(nn.Module):
+    def __init__(self, d_model: int, n_heads: int, dropout: float = 0.0):
         super().__init__()
-        assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
-
+        assert d_model % n_heads == 0
         self.d_model = d_model
-        self.num_heads = num_heads
-        self.head_dim = d_model // num_heads
-        self.scale = math.sqrt(self.head_dim)
-
-        # Q, K, V projections (combined for efficiency)
-        self.qkv_proj = nn.Linear(d_model, 3 * d_model)
-
-        # Output projection
-        self.out_proj = nn.Linear(d_model, d_model)
-
+        self.n_heads = n_heads
+        self.head_dim = d_model // n_heads
+        # Combined linear for QKV
+        self.qkv = nn.Linear(d_model, d_model * 3, bias=False)
+        self.o_proj = nn.Linear(d_model, d_model)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
-        """
-        Args:
-            x: (batch, seq_len, d_model)
-            mask: (batch, seq_len) attention mask (1 = attend, 0 = ignore)
-        Returns:
-            (batch, seq_len, d_model)
-        """
-        batch_size, seq_len, _ = x.shape
-
-        # Project and split into Q, K, V
-        qkv = self.qkv_proj(x)  # (batch, seq_len, 3 * d_model)
-        qkv = qkv.reshape(batch_size, seq_len, 3,
-                          self.num_heads, self.head_dim)
-        # (3, batch, num_heads, seq_len, head_dim)
-        qkv = qkv.permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]
-
-        # Scaled dot-product attention
-        # (batch, num_heads, seq_len, seq_len)
-        scores = torch.matmul(q, k.transpose(-2, -1)) / self.scale
-
-        # Apply causal mask (prevent attending to future tokens)
-        causal_mask = torch.tril(torch.ones(
-            seq_len, seq_len, device=x.device)).bool()
-        scores = scores.masked_fill(~causal_mask, float('-inf'))
-
-        # Apply padding mask if provided
-        if mask is not None:
-            # Expand mask to (batch, 1, 1, seq_len) for broadcasting
-            mask = mask.unsqueeze(1).unsqueeze(2)
-            scores = scores.masked_fill(mask == 0, float('-inf'))
-
-        attn = F.softmax(scores, dim=-1)
+    def forward(self, x, attn_mask: Optional[torch.Tensor] = None):
+        # x: (B, T, D)
+        B, T, D = x.size()
+        qkv = self.qkv(x)  # (B, T, 3D)
+        qkv = qkv.view(B, T, 3, self.n_heads,
+                       self.head_dim).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]  # each (B, heads, T, head_dim)
+        # scaled dot product
+        scores = torch.matmul(q, k.transpose(-2, -1)) / \
+            math.sqrt(self.head_dim)  # (B, heads, T, T)
+        if attn_mask is not None:
+            # attn_mask expected boolean with shape (B, 1, T, T) where True means allowed
+            scores = scores.masked_fill(~attn_mask, float('-inf'))
+        attn = torch.softmax(scores, dim=-1)
         attn = self.dropout(attn)
-
-        # Apply attention to values
-        out = torch.matmul(attn, v)  # (batch, num_heads, seq_len, head_dim)
-
-        # Concatenate heads
-        # (batch, seq_len, num_heads, head_dim)
-        out = out.transpose(1, 2).contiguous()
-        out = out.reshape(batch_size, seq_len, self.d_model)
-
-        # Final projection
-        out = self.out_proj(out)
-
-        return out
+        out = torch.matmul(attn, v)  # (B, heads, T, head_dim)
+        out = out.transpose(1, 2).contiguous().view(B, T, D)
+        return self.o_proj(out)
 
 
 class FeedForward(nn.Module):
-    """Position-wise feed-forward network (2-layer MLP)"""
-
-    def __init__(self, d_model: int, d_ff: int, dropout: float = 0.1):
+    def __init__(self, d_model: int, d_ff: int, dropout: float = 0.0):
         super().__init__()
-        self.linear1 = nn.Linear(d_model, d_ff)
-        self.linear2 = nn.Linear(d_ff, d_model)
+        self.lin1 = nn.Linear(d_model, d_ff)
+        self.lin2 = nn.Linear(d_ff, d_model)
+        self.act = nn.GELU()
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            x: (batch, seq_len, d_model)
-        Returns:
-            (batch, seq_len, d_model)
-        """
-        x = self.linear1(x)
-        x = F.gelu(x)  # GELU activation (smooth alternative to ReLU)
-        x = self.dropout(x)
-        x = self.linear2(x)
-        return x
+    def forward(self, x):
+        return self.lin2(self.dropout(self.act(self.lin1(x))))
 
 
 class TransformerBlock(nn.Module):
-    """Single transformer layer with attention + FFN + residual connections"""
-
-    def __init__(self, d_model: int, num_heads: int, d_ff: int, dropout: float = 0.1):
+    def __init__(self, d_model: int, n_heads: int, d_ff: int, dropout: float = 0.0):
         super().__init__()
+        self.ln1 = nn.LayerNorm(d_model)
+        self.attn = MultiHeadSelfAttention(d_model, n_heads, dropout=dropout)
+        self.ln2 = nn.LayerNorm(d_model)
+        self.mlp = FeedForward(d_model, d_ff, dropout=dropout)
 
-        # Sub-layers
-        self.attention = MultiHeadAttention(d_model, num_heads, dropout)
-        self.ffn = FeedForward(d_model, d_ff, dropout)
-
-        # Layer normalization (applied before sub-layers - pre-norm architecture)
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
-
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
-        """
-        Args:
-            x: (batch, seq_len, d_model)
-            mask: (batch, seq_len) attention mask
-        Returns:
-            (batch, seq_len, d_model)
-        """
-        # Attention with residual
-        residual = x
-        x = self.norm1(x)
-        x = self.attention(x, mask)
-        x = self.dropout(x)
-        x = x + residual
-
-        # FFN with residual
-        residual = x
-        x = self.norm2(x)
-        x = self.ffn(x)
-        x = self.dropout(x)
-        x = x + residual
-
+    def forward(self, x, attn_mask: Optional[torch.Tensor] = None):
+        # Pre-LayerNorm style
+        x = x + self.attn(self.ln1(x), attn_mask=attn_mask)
+        x = x + self.mlp(self.ln2(x))
         return x
 
 
-class DistillationModel(nn.Module):
-    """Complete distillation model: Gemma embeddings -> Transformer -> Output head"""
-
-    def __init__(self, config: ModelConfig):
+class TinyTransformer(nn.Module):
+    def __init__(self, vocab_size: int, n_layers: int, d_model: int, n_heads: int, d_ff: int, vocab_out: int, dropout: float = 0.1, max_pos: int = 2048):
         super().__init__()
-        self.config = config
+        self.d_model = d_model
+        # token embedding sized from tokenizer vocab to avoid out of range indices
+        self.token_embedding = nn.Embedding(vocab_size, d_model)
+        self.pos_emb = nn.Embedding(max_pos, d_model)
+        self.blocks = nn.ModuleList([TransformerBlock(
+            d_model, n_heads, d_ff, dropout=dropout) for _ in range(n_layers)])
+        self.ln_f = nn.LayerNorm(d_model)
+        self.lm_head = nn.Linear(d_model, vocab_out, bias=False)
 
-        # Project Gemma embeddings to our model dimension
-        self.input_projection = nn.Linear(
-            config.teacher_embedding_dim, config.d_model)
+        self._init_weights()
 
-        # Stack of transformer blocks
-        self.layers = nn.ModuleList([
-            TransformerBlock(config.d_model, config.num_heads,
-                             config.d_ff, config.dropout)
-            for _ in range(config.num_layers)
-        ])
+    def _init_weights(self):
+        for n, p in self.named_parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
 
-        # Final layer norm
-        self.norm = nn.LayerNorm(config.d_model)
-
-        # Output head (project to restricted vocabulary)
-        self.output_head = nn.Linear(config.d_model, config.vocab_size)
-
-        # Initialize weights
-        self.apply(self._init_weights)
-
-    def _init_weights(self, module):
-        """Initialize weights with small random values"""
-        if isinstance(module, nn.Linear):
-            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            if module.bias is not None:
-                torch.nn.init.zeros_(module.bias)
-        elif isinstance(module, nn.LayerNorm):
-            torch.nn.init.zeros_(module.bias)
-            torch.nn.init.ones_(module.weight)
-
-    def forward(self, embeddings: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
-        """
-        Args:
-            embeddings: (batch, seq_len, teacher_embedding_dim) - from Gemma
-            mask: (batch, seq_len) attention mask
-        Returns:
-            logits: (batch, seq_len, vocab_size)
-        """
-        # Project embeddings to model dimension
-        x = self.input_projection(embeddings)  # (batch, seq_len, d_model)
-
-        # Pass through transformer layers
-        for layer in self.layers:
-            x = layer(x, mask)
-
-        # Final normalization
-        x = self.norm(x)
-
-        # Project to vocabulary
-        logits = self.output_head(x)  # (batch, seq_len, vocab_size)
-
+    def forward(self, input_ids: torch.Tensor, attention_mask: Optional[torch.Tensor] = None, input_embeddings: Optional[torch.Tensor] = None):
+        # input_ids: (B, T)
+        B, T = input_ids.size()
+        device = input_ids.device
+        if input_embeddings is None:
+            x = self.token_embedding(input_ids.to(device))
+        else:
+            # input_embeddings can be either (V, D) or (B, T, D)
+            if input_embeddings.dim() == 2:
+                # assume embedding table (V, D)
+                x = F.embedding(input_ids.to(device),
+                                input_embeddings.to(device))
+            else:
+                x = input_embeddings.to(device)
+        pos = torch.arange(0, T, device=device).unsqueeze(0).expand(B, T)
+        x = x + self.pos_emb(pos)
+        # attention mask: expecting (B, T) -> convert to (B, 1, T, T) causal+padding
+        if attention_mask is not None:
+            causal = torch.tril(torch.ones(
+                (T, T), dtype=torch.bool, device=device))
+            key_mask = attention_mask.to(device).unsqueeze(
+                1).unsqueeze(1).expand(B, 1, 1, T).bool()
+            attn_mask = causal.unsqueeze(0) & key_mask
+        else:
+            attn_mask = None
+        for b in self.blocks:
+            x = b(x, attn_mask=attn_mask)
+        x = self.ln_f(x)
+        logits = self.lm_head(x)
         return logits
 
-    def count_parameters(self) -> int:
-        """Count total trainable parameters"""
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
+# ------------------------- Checkpoint Manager -------------------------
 
-
-# ============================================================================
-# TRAINING UTILITIES
-# ============================================================================
 
 class CheckpointManager:
-    """Manage model checkpoints with resume capability"""
+    def __init__(self, ckpt_dir: Path):
+        self.ckpt_dir = ckpt_dir
+        self.ckpt_dir.mkdir(parents=True, exist_ok=True)
 
-    def __init__(self, checkpoint_dir: str):
-        self.checkpoint_dir = checkpoint_dir
-        os.makedirs(checkpoint_dir, exist_ok=True)
-
-    def save(self, model: nn.Module, optimizer: torch.optim.Optimizer,
-             epoch: int, step: int, loss: float):
-        """Save checkpoint"""
-        checkpoint = {
+    def save(self, name: str, model: nn.Module, optimizer: torch.optim.Optimizer, scaler: Optional[torch.cuda.amp.GradScaler], epoch: int, step: int):
+        path = self.ckpt_dir / f"ckpt_{name}.pt"
+        data = {
+            'model_state': model.state_dict(),
+            'optimizer_state': optimizer.state_dict(),
             'epoch': epoch,
-            'step': step,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': loss
+            'step': step
         }
+        if scaler is not None:
+            data['scaler_state'] = scaler.state_dict()
+        torch.save(data, path)
+        # also update latest symlink-style file
+        latest = self.ckpt_dir / 'latest.pt'
+        try:
+            if latest.exists():
+                latest.unlink()
+            latest.symlink_to(path.name)
+        except Exception:
+            # symlink may fail on Windows; instead copy
+            torch.save(data, self.ckpt_dir / 'latest.pt')
+        return path
 
-        path = os.path.join(self.checkpoint_dir,
-                            f"checkpoint_epoch{epoch}_step{step}.pt")
-        torch.save(checkpoint, path)
-        print(f"Checkpoint saved: {path}")
-
-    def load_latest(self, model: nn.Module, optimizer: torch.optim.Optimizer) -> Tuple[int, int]:
-        """Load latest checkpoint, returns (epoch, step)"""
-        checkpoints = glob.glob(os.path.join(
-            self.checkpoint_dir, "checkpoint_*.pt"))
-
-        if not checkpoints:
-            print("No checkpoints found, starting from scratch")
+    def load_latest(self, model: nn.Module, optimizer: Optional[torch.optim.Optimizer] = None, scaler: Optional[torch.cuda.amp.GradScaler] = None):
+        latest = self.ckpt_dir / 'latest.pt'
+        if not latest.exists():
             return 0, 0
+        data = torch.load(latest, map_location='cpu')
+        model.load_state_dict(data['model_state'])
+        if optimizer is not None and 'optimizer_state' in data:
+            optimizer.load_state_dict(data['optimizer_state'])
+        if scaler is not None and 'scaler_state' in data:
+            try:
+                scaler.load_state_dict(data['scaler_state'])
+            except Exception:
+                pass
+        return data.get('epoch', 0), data.get('step', 0)
 
-        # Find latest checkpoint
-        latest = max(checkpoints, key=os.path.getctime)
-
-        print(f"Loading checkpoint: {latest}")
-        checkpoint = torch.load(latest, map_location='cpu')
-
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
-        return checkpoint['epoch'], checkpoint['step']
-
-
-def compute_distillation_loss(student_logits: torch.Tensor, teacher_probs: torch.Tensor,
-                              temperature: float, mask: torch.Tensor) -> torch.Tensor:
-    """
-    Compute KL divergence loss for knowledge distillation
-
-    Args:
-        student_logits: (batch, seq_len, vocab_size) - raw logits from student
-        teacher_probs: (batch, seq_len, vocab_size) - probability distribution from teacher
-        temperature: Temperature for softening distributions
-        mask: (batch, seq_len) - valid positions mask
-    """
-    # Soften distributions with temperature
-    student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
-
-    # KL divergence: sum over vocab, mean over sequence (only valid positions)
-    kl_div = F.kl_div(student_log_probs, teacher_probs,
-                      reduction='none').sum(dim=-1)
-
-    # Apply mask and average
-    masked_kl = (kl_div * mask).sum() / mask.sum()
-
-    # Scale by T^2 as per distillation literature
-    return masked_kl * (temperature ** 2)
+# ------------------------- Trainer -------------------------
 
 
-# ============================================================================
-# TRAINING LOOP
-# ============================================================================
-
-def train_epoch(model: DistillationModel, embedding_cache: EmbeddingCache,
-                dataloader: DataLoader, optimizer: torch.optim.Optimizer,
-                config: ModelConfig, epoch: int) -> float:
-    """Train for one epoch"""
-    model.train()
-
-    total_loss = 0
-    num_batches = 0
-
-    progress_bar = tqdm(dataloader, desc=f"Epoch {epoch}")
-
-    for batch in progress_bar:
-        # Move to device
-        input_ids = batch['input_ids'].to(config.device)
-        attention_mask = batch['attention_mask'].to(config.device)
-        teacher_probs = batch['teacher_probs'].to(config.device)
-        output_mask = batch['output_mask'].to(config.device)
-
-        # Get embeddings from cache (frozen)
-        embeddings = embedding_cache.get_embeddings(input_ids)
-
-        # Forward pass through student
-        logits = model(embeddings, mask=attention_mask)
-
-        # We only compute loss on the generated tokens (not the input prompt)
-        # Align logits with teacher_probs by taking the last N positions
-        seq_len = logits.shape[1]
-        output_len = teacher_probs.shape[1]
-
-        if seq_len >= output_len:
-            # Take last output_len positions from logits
-            student_logits = logits[:, -output_len:, :]
+class Trainer:
+    def __init__(self, cfg: Config):
+        self.cfg = cfg
+        self.device = torch.device(cfg.DEVICE)
+        self.tokenizer = TokenizerWrapper(cfg.TOKENIZER_NAME)
+        self.collator = Collator(self.tokenizer, max_seq_len=cfg.MAX_SEQ_LEN)
+        vocab_size = getattr(self.tokenizer.tokenizer, 'vocab_size', None) or getattr(
+            self.tokenizer.tokenizer, 'vocab', None) and len(self.tokenizer.tokenizer.vocab) or 50257
+        self.model = TinyTransformer(vocab_size=vocab_size, n_layers=cfg.N_LAYERS, d_model=cfg.D_MODEL,
+                                     n_heads=cfg.N_HEADS, d_ff=cfg.D_FF, vocab_out=cfg.VOCAB_OUT, dropout=cfg.DROPOUT).to(self.device)
+        self.input_embeddings: Optional[torch.Tensor] = None
+        self.optimizer = torch.optim.AdamW(
+            self.model.parameters(), lr=3e-4, weight_decay=0.01)
+        # use recommended amp API
+        if self.device.type == 'cuda':
+            self.scaler = torch.amp.GradScaler(device_type='cuda')
         else:
-            # Pad teacher_probs if needed (shouldn't happen in practice)
-            student_logits = logits
-            teacher_probs = teacher_probs[:, :seq_len, :]
-            output_mask = output_mask[:, :seq_len]
+            self.scaler = torch.amp.GradScaler(device_type='cpu')
+        self.ckpt = CheckpointManager(cfg.CKPT_DIR)
+        self.start_epoch, self.global_step = 0, 0
+        # try resume
+        try:
+            e, s = self.ckpt.load_latest(
+                self.model, self.optimizer, self.scaler)
+            self.start_epoch = e
+            self.global_step = s
+            print(f"[{now()}] Resumed from epoch {e} step {s}")
+        except Exception:
+            pass
 
-        # Compute loss
-        loss = compute_distillation_loss(
-            student_logits, teacher_probs, config.temperature, output_mask
-        )
+    def attach_input_embeddings(self, embeddings_path: Optional[str] = None, freeze: bool = True):
+        # Load gemma embeddings (torch saved tensor) if provided. Shape expected (V, D_model)
+        if embeddings_path is None:
+            return
+        emb = torch.load(embeddings_path, map_location='cpu')
+        if emb.dim() != 2 or emb.size(1) != self.cfg.D_MODEL:
+            raise ValueError("Provided embeddings must be (V, D_MODEL)")
+        self.input_embeddings = emb.to(self.device)
+        if freeze:
+            self.input_embeddings.requires_grad = False
+        print(f"[{now()}] Attached external input embeddings: {embeddings_path}")
 
-        # Backward pass
-        optimizer.zero_grad()
-        loss.backward()
+    def _dataloader(self, mode: str) -> DataLoader:
+        ds = ShardedJSONLines(self.cfg.TRAINING_GLOB, self.tokenizer,
+                              mode=mode, max_seq_len=self.cfg.MAX_SEQ_LEN)
+        return DataLoader(ds, batch_size=self.cfg.BATCH_SIZE_GPU, collate_fn=self.collator, num_workers=2)
 
-        # Gradient clipping
-        torch.nn.utils.clip_grad_norm_(
-            model.parameters(), config.gradient_clip)
+    def evaluate(self, mode: str, max_batches: int = None) -> float:
+        dl = self._dataloader(mode)
+        self.model.eval()
+        total_loss = 0.0
+        n = 0
+        with torch.no_grad():
+            for i, batch in enumerate(dl):
+                input_ids = batch['input_ids'].to(self.device)
+                labels = batch['labels'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+                logits = self.model(
+                    input_ids, attention_mask=attention_mask, input_embeddings=self.input_embeddings)
+                loss = F.cross_entropy(
+                    logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
+                total_loss += loss.item()
+                n += 1
+                if max_batches is not None and n >= max_batches:
+                    break
+        return total_loss / max(1, n)
 
-        optimizer.step()
-
-        # Track metrics
-        total_loss += loss.item()
-        num_batches += 1
-
-        progress_bar.set_postfix({'loss': f"{loss.item():.4f}"})
-
-    return total_loss / num_batches
-
-
-def evaluate(model: DistillationModel, embedding_cache: EmbeddingCache,
-             dataloader: DataLoader, config: ModelConfig) -> float:
-    """Evaluate on test set"""
-    model.eval()
-
-    total_loss = 0
-    num_batches = 0
-
-    with torch.no_grad():
-        for batch in tqdm(dataloader, desc="Evaluating"):
-            # Move to device
-            input_ids = batch['input_ids'].to(config.device)
-            attention_mask = batch['attention_mask'].to(config.device)
-            teacher_probs = batch['teacher_probs'].to(config.device)
-            output_mask = batch['output_mask'].to(config.device)
-
-            # Get embeddings
-            embeddings = embedding_cache.get_embeddings(input_ids)
-
-            # Forward pass
-            logits = model(embeddings, mask=attention_mask)
-
-            # Align logits with teacher_probs
-            seq_len = logits.shape[1]
-            output_len = teacher_probs.shape[1]
-
-            if seq_len >= output_len:
-                student_logits = logits[:, -output_len:, :]
-            else:
-                student_logits = logits
-                teacher_probs = teacher_probs[:, :seq_len, :]
-                output_mask = output_mask[:, :seq_len]
-
-            # Compute loss
-            loss = compute_distillation_loss(
-                student_logits, teacher_probs, config.temperature, output_mask
-            )
-
-            total_loss += loss.item()
-            num_batches += 1
-
-    return total_loss / num_batches
-
-
-# ============================================================================
-# MAIN EXECUTION
-# ============================================================================
-
-def main():
-    # Configuration
-    config = ModelConfig()
-
-    print("=" * 80)
-    print("GEMMA DISTILLATION MODEL TRAINING")
-    print("=" * 80)
-    print(f"Device: {config.device}")
-    print(f"Training data: {config.training_data_dir}")
-    print()
-
-    # Load tokenizer only (no model needed!)
-    print("Loading tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(config.teacher_model)
-
-    # Create embedding cache (loads embeddings to GPU once)
-    embedding_cache = EmbeddingCache(config.teacher_model, config.device)
-
-    # Build vocabulary
-    vocab_builder = VocabularyBuilder(tokenizer, config.training_data_dir)
-    vocab_token_ids, token_id_to_vocab_idx = vocab_builder.build()
-    config.vocab_size = len(vocab_token_ids)
-
-    # Get all training files and split into train/test
-    all_files = sorted(
-        glob.glob(f"{config.training_data_dir}/training_data_batch_*.jsonl"))
-    split_idx = int(len(all_files) * (1 - config.test_split))
-    train_files = all_files[:split_idx]
-    test_files = all_files[split_idx:]
-
-    print(f"Training files: {len(train_files)}")
-    print(f"Test files: {len(test_files)}")
-
-    # Create datasets
-    train_dataset = DistillationDataset(
-        train_files, tokenizer, token_id_to_vocab_idx, config.vocab_size
-    )
-    test_dataset = DistillationDataset(
-        test_files, tokenizer, token_id_to_vocab_idx, config.vocab_size
-    )
-
-    print(f"Training examples: {len(train_dataset):,}")
-    print(f"Test examples: {len(test_dataset):,}")
-
-    # Create dataloaders
-    train_loader = DataLoader(
-        train_dataset, batch_size=config.batch_size,
-        shuffle=True, collate_fn=collate_fn, num_workers=0  # 0 for Windows compatibility
-    )
-    test_loader = DataLoader(
-        test_dataset, batch_size=config.batch_size,
-        shuffle=False, collate_fn=collate_fn, num_workers=0
-    )
-
-    # Initialize model
-    print("\nInitializing student model...")
-    model = DistillationModel(config)
-    model = model.to(config.device)
-
-    num_params = model.count_parameters()
-    print(f"Student model parameters: {num_params:,} ({num_params/1e6:.1f}M)")
-
-    # Optimizer
-    optimizer = torch.optim.AdamW(
-        model.parameters(),
-        lr=config.learning_rate,
-        weight_decay=config.weight_decay
-    )
-
-    # Checkpoint manager
-    checkpoint_manager = CheckpointManager(config.checkpoint_dir)
-    start_epoch, start_step = checkpoint_manager.load_latest(model, optimizer)
-
-    # Training loop
-    print("\n" + "=" * 80)
-    print("STARTING TRAINING")
-    print("=" * 80)
-
-    for epoch in range(start_epoch, config.num_epochs):
-        print(f"\nEpoch {epoch + 1}/{config.num_epochs}")
-        print("-" * 80)
-
-        # Train
-        train_loss = train_epoch(
-            model, embedding_cache, train_loader,
-            optimizer, config, epoch + 1
-        )
-
-        print(f"Train Loss: {train_loss:.4f}")
-
-        # Evaluate
-        test_loss = evaluate(model, embedding_cache, test_loader, config)
-        print(f"Test Loss: {test_loss:.4f}")
-
-        # Save checkpoint
-        checkpoint_manager.save(model, optimizer, epoch + 1, 0, test_loss)
-
-        print()
-
-    print("=" * 80)
-    print("TRAINING COMPLETED")
-    print("=" * 80)
+    def train(self):
+        gacc = self.cfg.GRADIENT_ACCUMULATION_STEPS
+        for epoch in range(self.start_epoch, self.cfg.EPOCHS):
+            print(
+                f"[{now()}] Starting epoch {epoch} (global_step={self.global_step})")
+            dl = self._dataloader('train')
+            self.model.train()
+            running_loss = 0.0
+            step_in_epoch = 0
+            self.optimizer.zero_grad()
+            for step, batch in enumerate(dl):
+                input_ids = batch['input_ids'].to(self.device)
+                labels = batch['labels'].to(self.device)
+                attention_mask = batch['attention_mask'].to(self.device)
+                with torch.amp.autocast(device_type=self.device.type):
+                    logits = self.model(
+                        input_ids, attention_mask=attention_mask, input_embeddings=self.input_embeddings)
+                    loss = F.cross_entropy(
+                        logits.view(-1, logits.size(-1)), labels.view(-1), ignore_index=-100)
+                    loss = loss / gacc
+                self.scaler.scale(loss).backward()
+                running_loss += loss.item() * gacc
+                if (step + 1) % gacc == 0:
+                    self.scaler.unscale_(self.optimizer)
+                    torch.nn.utils.clip_grad_norm_(
+                        self.model.parameters(), 1.0)
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                    self.optimizer.zero_grad()
+                    self.global_step += 1
+                step_in_epoch += 1
+                if step_in_epoch % (gacc * 50) == 0:
+                    avg = running_loss / (gacc * 50)
+                    print(
+                        f"[{now()}] Epoch {epoch} step {step} avg_loss={avg:.4f}")
+                    running_loss = 0.0
+            # epoch end
+            test_loss = self.evaluate(
+                'test', max_batches=Config.MAX_EVAL_BATCHES)
+            train_check_loss = self.evaluate(
+                'train_check', max_batches=Config.MAX_EVAL_BATCHES)
+            print(
+                f"[{now()}] Epoch {epoch} complete. TEST_LOSS={test_loss:.4f}  TRAIN_CHECK_LOSS={train_check_loss:.4f}")
+            # save checkpoint
+            if (epoch + 1) % self.cfg.SAVE_EVERY_EPOCHS == 0:
+                name = f"ep{epoch}_step{self.global_step}"
+                self.ckpt.save(name, self.model, self.optimizer,
+                               self.scaler, epoch, self.global_step)
+                print(f"[{now()}] Checkpoint saved: {name}")
+        print(f"[{now()}] Training complete")
 
 
-if __name__ == "__main__":
-    main()
+# ------------------------- MAIN -------------------------
+if __name__ == '__main__':
+    cfg = Config()
+    trainer = Trainer(cfg)
+    # Optionally attach external embeddings (uncomment and set path)
+    # trainer.attach_input_embeddings('gemma_embeddings.pt', freeze=True)
+    trainer.train()
