@@ -14,6 +14,7 @@ class ModelHandler:
         self.tokenizer = None
         self.model = None
         self.token_to_id_map = None
+        self.json_response_tokens = None
 
         self.load_tokenizer_and_model()
 
@@ -37,6 +38,8 @@ class ModelHandler:
         print("Creating vocabulary map...")
 
         self.token_to_id_map = Utilities.build_vocabulary_map(self.tokenizer)
+        self.json_response_tokens = Utilities.get_json_response_tokens(
+            self.tokenizer)
 
         elapsed_time = time() - start_time
         print(f"Created vocabulary map -> took {elapsed_time:.2f} seconds. \n")
@@ -69,6 +72,11 @@ class ModelHandler:
 
         print(
             f"Generated training example -> took {elapsed_time:.2f} seconds.")
+
+        response_tokens = self.tokenizer.tokenize(generated_text)
+        if not all(token in self.json_response_tokens for token in response_tokens):
+            print("Warning: Generated response contains unexpected tokens.")
+            return None
 
         return {
             "sentence": sentence,

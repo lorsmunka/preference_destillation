@@ -1,6 +1,22 @@
 from typing import Dict, List, Tuple
 
-import torch
+
+EXAMPLE_RESULT = """
+        ```json
+        {
+            "tone": "aggressive",
+            "tone": "rude",
+            "tone": "neutral",
+            "tone": "polite",
+            "tone": "friendly",
+            "sentiment": "negative",
+            "sentiment": "neutral",
+            "sentiment": "positive",
+            "safety": "harmful",
+            "safety": "safe",
+            "toxicity": "toxic",
+            "toxicity": "respectful"
+        }"""
 
 
 class Utilities:
@@ -23,30 +39,13 @@ JSON:
 
     @staticmethod
     def build_vocabulary_map(tokenizer) -> Dict[str, int]:
-        example_result = """
-        ```json
-        {
-            "tone": "aggressive",
-            "tone": "rude",
-            "tone": "neutral",
-            "tone": "polite",
-            "tone": "friendly",
-            "sentiment": "negative",
-            "sentiment": "neutral",
-            "sentiment": "positive",
-            "safety": "harmful",
-            "safety": "safe",
-            "toxicity": "toxic",
-            "toxicity": "respectful"
-        }
-        """
 
         auxiliary_tokens = ["the", "a", "is", "of", "and", "to", "in", "that", "it", "you",
                             "very", "quite", "somewhat", "extremely", "slightly", "moderately"]
 
         prompt_text = Utilities.create_evaluation_prompt('')
 
-        combined_text = f"{example_result} {' '.join(auxiliary_tokens)} {prompt_text}"
+        combined_text = f"{EXAMPLE_RESULT} {' '.join(auxiliary_tokens)} {prompt_text}"
 
         tokens = tokenizer.tokenize(combined_text)
         unique_tokens = sorted(set(tokens))
@@ -60,6 +59,13 @@ JSON:
         print(
             f"Pre-computed {len(token_to_id)} unique tokens for vocabulary map.")
         return token_to_id
+
+    @staticmethod
+    def get_json_response_tokens(tokenizer) -> List[str]:
+        json_response = EXAMPLE_RESULT
+        tokens = tokenizer.tokenize(json_response)
+        unique_tokens = sorted(set(tokens))
+        return unique_tokens
 
     @staticmethod
     def extract_logits(logits, token_to_id_map) -> Tuple[List[str], List[float]]:

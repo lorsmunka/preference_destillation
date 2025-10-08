@@ -19,7 +19,9 @@ for i in range(telemetryHandler.processed_sentence_count, sentenceHandler.senten
     training_example = modelHandler.generate_training_example(sentence)
     telemetryHandler.processed_sentence_count += 1
 
-    batch_examples.append(training_example)
+    if training_example is not None:
+        batch_examples.append(training_example)
+        telemetryHandler.successful_sentence_count += 1
 
     if len(batch_examples) == BATCH_SIZE:
         progress_percent = (

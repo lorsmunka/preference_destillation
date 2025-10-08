@@ -9,6 +9,7 @@ TELEMETRY_FILE_PATH = f"./{TELEMETRY_DIR}/telemetry.json"
 class TelemetryHandler:
     def __init__(self):
         self.processed_sentence_count = 0
+        self.successful_sentence_count = 0
         self.total_runtime_seconds = 0
         self.session_count = 0
         self.session_start_time = None
@@ -16,11 +17,11 @@ class TelemetryHandler:
 
     @property
     def current_batch_sentence_count(self):
-        return self.processed_sentence_count % 32
+        return self.successful_sentence_count % 32
 
     @property
     def batch_count(self):
-        return self.processed_sentence_count // 32
+        return self.successful_sentence_count // 32
 
     def load_save(self):
         start_time = time()
@@ -30,6 +31,8 @@ class TelemetryHandler:
                 data = json.load(file)
                 self.processed_sentence_count = data.get(
                     "processed_sentence_count", 0)
+                self.successful_sentence_count = data.get(
+                    "successful_sentence_count", 0)
                 self.total_runtime_seconds = data.get(
                     "total_runtime_seconds", 0)
                 self.session_count = data.get("session_count", 0)
@@ -41,6 +44,7 @@ class TelemetryHandler:
         print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.\n")
         print("== Telemetry ==")
         print(f"Processed sentences: {self.processed_sentence_count:,}")
+        print(f"Successful sentences: {self.successful_sentence_count:,}")
         print(f"Total runtime (seconds): {self.total_runtime_seconds:2,.2f}")
         print(f"Session count: {self.session_count:,}")
         print(f"Current batch count: {self.current_batch_sentence_count}")
@@ -58,6 +62,7 @@ class TelemetryHandler:
         with open(TELEMETRY_FILE_PATH, "w", encoding="utf-8") as file:
             json.dump({
                 "processed_sentence_count": self.processed_sentence_count,
+                "successful_sentence_count": self.successful_sentence_count,
                 "total_runtime_seconds": self.total_runtime_seconds,
                 "session_count": self.session_count
             }, file, indent=4)
