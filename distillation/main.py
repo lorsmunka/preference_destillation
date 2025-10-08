@@ -5,11 +5,11 @@ from ModelHandler import ModelHandler
 from SavingHandler import SavingHandler
 from ExitListener import ExitListener
 
-sentenceHandler = SentenceHandler()
-telemetryHandler = TelemetryHandler()
-modelHandler = ModelHandler()
-savingHandler = SavingHandler(telemetryHandler)
 exitListener = ExitListener()
+sentenceHandler = SentenceHandler()
+modelHandler = ModelHandler()
+telemetryHandler = TelemetryHandler()
+savingHandler = SavingHandler(telemetryHandler)
 
 BATCH_SIZE = 32
 
@@ -22,6 +22,10 @@ for i in range(telemetryHandler.processed_sentence_count, sentenceHandler.senten
     batch_examples.append(training_example)
 
     if len(batch_examples) == BATCH_SIZE:
+        progress_percent = (
+            telemetryHandler.processed_sentence_count / sentenceHandler.sentence_count) * 100
+        print(f"Saving batch, progress: {progress_percent:.2f}%")
+
         savingHandler.save_batch(batch_examples)
         batch_examples = []
 

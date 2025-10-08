@@ -38,8 +38,8 @@ class TelemetryHandler:
         self.session_start_time = time()
 
         elapsed_time = time() - start_time
-        print("== Telemetry ==")
         print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.\n")
+        print("== Telemetry ==")
         print(f"Processed sentences: {self.processed_sentence_count:,}")
         print(f"Total runtime (seconds): {self.total_runtime_seconds:2,.2f}")
         print(f"Session count: {self.session_count:,}")
