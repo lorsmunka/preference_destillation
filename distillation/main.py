@@ -3,11 +3,13 @@ from SentenceHandler import SentenceHandler
 from TelemetryHandler import TelemetryHandler
 from ModelHandler import ModelHandler
 from SavingHandler import SavingHandler
+from ExitListener import ExitListener
 
 sentenceHandler = SentenceHandler()
 telemetryHandler = TelemetryHandler()
 modelHandler = ModelHandler()
 savingHandler = SavingHandler(telemetryHandler)
+exitListener = ExitListener()
 
 BATCH_SIZE = 32
 
@@ -23,4 +25,10 @@ for i in range(sentenceHandler.sentence_count):
         savingHandler.save_batch(batch_examples)
         batch_examples = []
 
+        if exitListener.check_exit():
+            print("exited")
+            break
+
     sleep(0.1)
+
+exitListener.stop()
