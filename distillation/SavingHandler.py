@@ -22,4 +22,4 @@ class SavingHandler:
                 file.write(f"{json.dumps(example)}\n")
 
         elapsed_time = time() - start_time
-        print(f"Saved batch to {path} -> took {elapsed_time:.2f} seconds.")
+        print(f"\nSaved batch to {path} -> took {elapsed_time:.2f} seconds.\n")

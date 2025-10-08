@@ -1,6 +1,6 @@
 import json
 import os
-from time import time
+from time import time, sleep
 
 
 class TelemetryHandler:
@@ -32,8 +32,10 @@ class TelemetryHandler:
                 self.session_count = data.get("session_count", 0)
 
         elapsed_time = time() - start_time
-        print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.")
+        print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.\n")
         print(f"Processed sentences: {self.processed_sentence_count:,}")
         print(f"Total runtime (seconds): {self.total_runtime_seconds:,}")
         print(f"Session count: {self.session_count:,}")
         print(f"Current batch count: {self.current_batch_count}")
+        print(f"Waiting 3 seconds before continuing... \n")
+        sleep(3)

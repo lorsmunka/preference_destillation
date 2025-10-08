@@ -1,3 +1,4 @@
+from time import sleep
 from SentenceHandler import SentenceHandler
 from TelemetryHandler import TelemetryHandler
 from ModelHandler import ModelHandler
@@ -21,3 +22,5 @@ for i in range(sentenceHandler.sentence_count):
     if len(batch_examples) == BATCH_SIZE:
         savingHandler.save_batch(batch_examples)
         batch_examples = []
+
+    sleep(0.1)

@@ -14,7 +14,6 @@ class SentenceHandler:
         print("Loading sentences...")
         sentences = []
         with open("./sentences/sentences.jsonl", "r", encoding="utf-8") as file:
-            print("Loading sentences...")
             for line in file:
                 data = json.loads(line.strip())
                 sentences.append(data["text"])
@@ -23,7 +22,8 @@ class SentenceHandler:
         self.sentence_count = len(sentences)
 
         elapsed_time = time() - start_time
-        print(f"Loaded {len(sentences):,} -> took {elapsed_time:.2f} seconds.")
+        print(
+            f"Loaded {len(sentences):,} -> took {elapsed_time:.2f} seconds. \n")
 
     def get_sentence(self, index):
         return self.sentences[index]
