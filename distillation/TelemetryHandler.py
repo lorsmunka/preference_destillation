@@ -11,6 +11,14 @@ class TelemetryHandler:
         self.session_start_time = None
         self.load_save()
 
+    @property
+    def current_batch_count(self):
+        return self.processed_sentence_count % 32
+
+    @property
+    def batch_count(self):
+        return self.processed_sentence_count // 32
+
     def load_save(self):
         start_time = time()
         print("Loading telemetry...")
@@ -28,3 +36,4 @@ class TelemetryHandler:
         print(f"Processed sentences: {self.processed_sentence_count:,}")
         print(f"Total runtime (seconds): {self.total_runtime_seconds:,}")
         print(f"Session count: {self.session_count:,}")
+        print(f"Current batch count: {self.current_batch_count}")
