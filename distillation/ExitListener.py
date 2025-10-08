@@ -12,6 +12,7 @@ class ExitListener:
         try:
             if key.char == self.exit_key:
                 self.should_exit = True
+                print("Exit key registered.")
         except AttributeError:
             pass
 
