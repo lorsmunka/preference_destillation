@@ -75,7 +75,10 @@ class ModelHandler:
 
         response_tokens = self.tokenizer.tokenize(generated_text)
         if not all(token in self.json_response_tokens for token in response_tokens):
-            print("Warning: Generated response contains unexpected tokens.")
+            unexpected_tokens = [
+                token for token in response_tokens if token not in self.json_response_tokens]
+            print(
+                f"Warning: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None
 
         return {

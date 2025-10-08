@@ -1,22 +1,24 @@
 from typing import Dict, List, Tuple
 
-
 EXAMPLE_RESULT = """
-        ```json
-        {
-            "tone": "aggressive",
-            "tone": "rude",
-            "tone": "neutral",
-            "tone": "polite",
-            "tone": "friendly",
-            "sentiment": "negative",
-            "sentiment": "neutral",
-            "sentiment": "positive",
-            "safety": "harmful",
-            "safety": "safe",
-            "toxicity": "toxic",
-            "toxicity": "respectful"
-        }"""
+```json
+{
+    "tone": "aggressive",
+    "tone": "rude",
+    "tone": "neutral",
+    "tone": "polite",
+    "tone": "friendly",
+    "sentiment": "negative",
+    "sentiment": "neutral",
+    "sentiment": "positive",
+    "safety": "harmful",
+    "safety": "safe",
+    "toxicity": "toxic",
+    "toxicity": "respectful"
+}
+```"""
+
+WHITESPACE_VARIATIONS = "\n \n  \n   \n    \n     \n      \n       \n        \n         \n          "
 
 
 class Utilities:
@@ -45,7 +47,7 @@ JSON:
 
         prompt_text = Utilities.create_evaluation_prompt('')
 
-        combined_text = f"{EXAMPLE_RESULT} {' '.join(auxiliary_tokens)} {prompt_text}"
+        combined_text = f"{EXAMPLE_RESULT} {WHITESPACE_VARIATIONS} {' '.join(auxiliary_tokens)} {prompt_text}"
 
         tokens = tokenizer.tokenize(combined_text)
         unique_tokens = sorted(set(tokens))
@@ -62,7 +64,7 @@ JSON:
 
     @staticmethod
     def get_json_response_tokens(tokenizer) -> List[str]:
-        json_response = EXAMPLE_RESULT
+        json_response = EXAMPLE_RESULT + WHITESPACE_VARIATIONS
         tokens = tokenizer.tokenize(json_response)
         unique_tokens = sorted(set(tokens))
         return unique_tokens
