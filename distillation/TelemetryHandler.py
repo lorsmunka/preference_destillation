@@ -2,6 +2,9 @@ import json
 import os
 from time import time, sleep
 
+TELEMETRY_DIR = "./telemetry"
+TELEMETRY_FILE_PATH = f"./{TELEMETRY_DIR}/telemetry.json"
+
 
 class TelemetryHandler:
     def __init__(self):
@@ -22,8 +25,8 @@ class TelemetryHandler:
     def load_save(self):
         start_time = time()
         print("Loading telemetry...")
-        if os.path.exists("./telemetry/telemetry.json"):
-            with open("./telemetry/telemetry.json", "r", encoding="utf-8") as file:
+        if os.path.exists(TELEMETRY_FILE_PATH):
+            with open(TELEMETRY_FILE_PATH, "r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.processed_sentence_count = data.get(
                     "processed_sentence_count", 0)
@@ -39,3 +42,22 @@ class TelemetryHandler:
         print(f"Current batch count: {self.current_batch_count}")
         print(f"Waiting 3 seconds before continuing... \n")
         sleep(3)
+
+    def save(self):
+        start_time = time()
+        print("Saving telemetry...")
+
+        if not os.path.exists(TELEMETRY_DIR):
+            os.makedirs(TELEMETRY_DIR)
+
+        path = TELEMETRY_FILE_PATH
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump({
+                "processed_sentence_count": self.processed_sentence_count,
+                "total_runtime_seconds": self.total_runtime_seconds,
+                "session_count": self.session_count
+            }, file, indent=4)
+
+        elapsed_time = time() - start_time
+        print(
+            f"Saved telemetry to {path} -> took {elapsed_time:.2f} seconds.\n")
