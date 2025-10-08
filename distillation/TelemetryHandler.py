@@ -44,8 +44,8 @@ class TelemetryHandler:
         print(f"Total runtime (seconds): {self.total_runtime_seconds:2,.2f}")
         print(f"Session count: {self.session_count:,}")
         print(f"Current batch count: {self.current_batch_sentence_count}")
-        print(f"Waiting 5 seconds before continuing... \n")
-        sleep(5)
+        print(f"Waiting 2 seconds before continuing... \n")
+        sleep(2)
 
     def save(self):
         start_time = time()
