@@ -14,7 +14,7 @@ exitListener = ExitListener()
 BATCH_SIZE = 32
 
 batch_examples = []
-for i in range(sentenceHandler.sentence_count):
+for i in range(telemetryHandler.processed_sentence_count, sentenceHandler.sentence_count):
     sentence = sentenceHandler.get_sentence(i)
     training_example = modelHandler.generate_training_example(sentence)
     telemetryHandler.processed_sentence_count += 1
@@ -26,9 +26,10 @@ for i in range(sentenceHandler.sentence_count):
         batch_examples = []
 
         if exitListener.check_exit():
-            print("exited")
+            telemetryHandler.save()
             break
 
     sleep(0.1)
 
 exitListener.stop()
+print("Bye!")

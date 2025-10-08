@@ -15,7 +15,7 @@ class TelemetryHandler:
         self.load_save()
 
     @property
-    def current_batch_count(self):
+    def current_batch_sentence_count(self):
         return self.processed_sentence_count % 32
 
     @property
@@ -34,14 +34,18 @@ class TelemetryHandler:
                     "total_runtime_seconds", 0)
                 self.session_count = data.get("session_count", 0)
 
+        self.session_count += 1
+        self.session_start_time = time()
+
         elapsed_time = time() - start_time
+        print("== Telemetry ==")
         print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.\n")
         print(f"Processed sentences: {self.processed_sentence_count:,}")
-        print(f"Total runtime (seconds): {self.total_runtime_seconds:,}")
+        print(f"Total runtime (seconds): {self.total_runtime_seconds:2,.2f}")
         print(f"Session count: {self.session_count:,}")
-        print(f"Current batch count: {self.current_batch_count}")
-        print(f"Waiting 3 seconds before continuing... \n")
-        sleep(3)
+        print(f"Current batch count: {self.current_batch_sentence_count}")
+        print(f"Waiting 5 seconds before continuing... \n")
+        sleep(5)
 
     def save(self):
         start_time = time()
@@ -50,8 +54,8 @@ class TelemetryHandler:
         if not os.path.exists(TELEMETRY_DIR):
             os.makedirs(TELEMETRY_DIR)
 
-        path = TELEMETRY_FILE_PATH
-        with open(path, "w", encoding="utf-8") as file:
+        self.total_runtime_seconds += time() - self.session_start_time
+        with open(TELEMETRY_FILE_PATH, "w", encoding="utf-8") as file:
             json.dump({
                 "processed_sentence_count": self.processed_sentence_count,
                 "total_runtime_seconds": self.total_runtime_seconds,
@@ -60,4 +64,4 @@ class TelemetryHandler:
 
         elapsed_time = time() - start_time
         print(
-            f"Saved telemetry to {path} -> took {elapsed_time:.2f} seconds.\n")
+            f"Saved telemetry to {TELEMETRY_FILE_PATH} -> took {elapsed_time:.2f} seconds.\n")
