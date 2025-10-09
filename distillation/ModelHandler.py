@@ -55,7 +55,7 @@ class ModelHandler:
         current_sequence = inputs['input_ids']
 
         last_token = ""
-        while last_token != "}" and len(steps) < 100:
+        while last_token != "}" and len(steps) < 51:
             next_token, step_probs, new_sequence = self.generate_single_step(
                 current_sequence)
 
@@ -70,15 +70,20 @@ class ModelHandler:
 
         elapsed_time = time() - start_time
 
-        print(
-            f"Generated training example -> took {elapsed_time:.2f} seconds.")
-
         response_tokens = self.tokenizer.tokenize(generated_text)
+        print(
+            f"Generated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
+
         if not all(token in self.json_response_tokens for token in response_tokens):
             unexpected_tokens = [
                 token for token in response_tokens if token not in self.json_response_tokens]
             print(
-                f"Warning: Generated response contains unexpected tokens: {unexpected_tokens}")
+                f"Skipped: Generated response contains unexpected tokens: {unexpected_tokens}")
+            return None
+
+        if len(response_tokens) > 50:
+            print(
+                f"Skipped: Generated response is too long ({len(response_tokens)} tokens).")
             return None
 
         return {
