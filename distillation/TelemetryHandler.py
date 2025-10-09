@@ -3,7 +3,7 @@ import os
 from time import time, sleep
 
 TELEMETRY_DIR = "./telemetry"
-TELEMETRY_FILE_PATH = f"./{TELEMETRY_DIR}/telemetry.json"
+TELEMETRY_FILE_PATH = f"./{TELEMETRY_DIR}/data_generation_telemetry.json"
 
 
 class TelemetryHandler:
