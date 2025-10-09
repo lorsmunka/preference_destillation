@@ -4,3 +4,4 @@ logs/*
 checkpoints/*
 __pycache__/*
 distillation/__pycache__/*
+transformer/__pycache__/*
