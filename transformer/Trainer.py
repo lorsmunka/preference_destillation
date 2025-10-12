@@ -11,7 +11,7 @@ LEARNING_RATE = 3e-4
 TEMPERATURE = 1.0
 
 
-class TrainingHandler:
+class Trainer:
     def __init__(self, model: nn.Module, token_to_id: Dict[str, int], tokenizer, device: str = "cuda" if torch.cuda.is_available() else "cpu"):
         start_time = time()
         print("Initializing TrainingHandler...")

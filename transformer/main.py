@@ -2,7 +2,7 @@ from transformers import AutoTokenizer
 import os
 from BatchHandler import BatchHandler
 from Transformer import Transformer
-from TrainingHandler import TrainingHandler
+from Trainer import Trainer
 from TelemetryHandler import TelemetryHandler
 from ExitListener import ExitListener
 from Utilities import Utilities
@@ -19,7 +19,7 @@ transformerModelHandler = Transformer(
     output_token_ids=output_token_ids,
 )
 
-trainingHandler = TrainingHandler(
+trainingHandler = Trainer(
     transformerModelHandler, vocabulary_map, tokenizer)
 
 telemetryHandler = TelemetryHandler()
@@ -65,5 +65,6 @@ for epoch in range(start_epoch, trainingHandler.epoch_count()):
     trainingHandler.save_checkpoint(epoch + 1, train_loss)
     telemetryHandler.save()
 
+
 exitListener.stop()
-print("Training complete. Bye!")
+print("Bye!")

@@ -70,7 +70,7 @@ class Transformer(nn.Module):
         x = self.dropout(x)
 
         if attention_mask is None:
-            attention_mask = self._create_causal_mask(
+            attention_mask = self.create_causal_mask(
                 seq_length, input_ids.device)
         elif attention_mask.dim() == 2:
             attention_mask = attention_mask.unsqueeze(0).unsqueeze(0)
@@ -84,7 +84,7 @@ class Transformer(nn.Module):
 
         return logits
 
-    def _create_causal_mask(self, seq_length: int, device: torch.device) -> torch.Tensor:
+    def create_causal_mask(self, seq_length: int, device: torch.device) -> torch.Tensor:
         mask = torch.triu(torch.ones(
             seq_length, seq_length, device=device), diagonal=1)
         mask = mask.masked_fill(mask == 1, float('-inf'))
