@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 import math
-from typing import Dict, Optional
+from typing import Optional
 
 
-class TransformerModelHandler(nn.Module):
+class Transformer(nn.Module):
     def __init__(
         self,
         input_vocab_size: int,
@@ -41,6 +41,7 @@ class TransformerModelHandler(nn.Module):
         self.output_projection = nn.Linear(hidden_dim, output_vocab_size)
 
         self._init_weights()
+        self.model_info()
 
     def _init_weights(self):
         for module in self.modules():
@@ -50,6 +51,9 @@ class TransformerModelHandler(nn.Module):
                     torch.nn.init.zeros_(module.bias)
             elif isinstance(module, nn.Embedding):
                 torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            elif isinstance(module, nn.LayerNorm):
+                nn.init.ones_(module.weight)
+                nn.init.zeros_(module.bias)
 
     def forward(
         self,
@@ -65,14 +69,11 @@ class TransformerModelHandler(nn.Module):
         x = x + self.position_embedding(positions)
         x = self.dropout(x)
 
-        if attention_mask is not None:
+        if attention_mask is None:
             attention_mask = self._create_causal_mask(
                 seq_length, input_ids.device)
-            if attention_mask.dim() == 2:
-                attention_mask = attention_mask.unsqueeze(0).unsqueeze(0)
-        else:
-            attention_mask = self._create_causal_mask(
-                seq_length, input_ids.device)
+        elif attention_mask.dim() == 2:
+            attention_mask = attention_mask.unsqueeze(0).unsqueeze(0)
 
         for layer in self.transformer_layers:
             x = layer(x, attention_mask)
@@ -89,24 +90,50 @@ class TransformerModelHandler(nn.Module):
         mask = mask.masked_fill(mask == 1, float('-inf'))
         return mask
 
-    def map_output_logits_to_full_vocab(self, restricted_logits: torch.Tensor) -> torch.Tensor:
-        batch_size, seq_length, _ = restricted_logits.shape
-
-        full_vocab_logits = torch.full(
-            (batch_size, seq_length, self.input_vocab_size),
-            float('-inf'),
-            device=restricted_logits.device,
-            dtype=restricted_logits.dtype
-        )
-
-        output_indices = torch.tensor(
-            self.output_token_ids, device=restricted_logits.device)
-        full_vocab_logits[:, :, output_indices] = restricted_logits
-
-        return full_vocab_logits
-
     def get_num_parameters(self) -> int:
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+    def model_info(self):
+        input_embedding_params = self.input_embedding.weight.numel()
+        position_embedding_params = self.position_embedding.weight.numel()
+        embeddings_total = input_embedding_params + position_embedding_params
+
+        attention_total = sum(layer.attention.get_num_parameters()
+                              for layer in self.transformer_layers)
+        feedforward_total = sum(layer.feed_forward.get_num_parameters()
+                                for layer in self.transformer_layers)
+        block_layernorm_total = sum(
+            layer.norm1.weight.numel() + layer.norm1.bias.numel() +
+            layer.norm2.weight.numel() + layer.norm2.bias.numel()
+            for layer in self.transformer_layers
+        )
+
+        final_layernorm_total = self.layer_norm.weight.numel() + self.layer_norm.bias.numel()
+
+        output_projection_total = self.output_projection.weight.numel(
+        ) + (self.output_projection.bias.numel() or 0)
+
+        subtotal = embeddings_total + attention_total + feedforward_total + \
+            block_layernorm_total + final_layernorm_total + output_projection_total
+        total_parameters = self.get_num_parameters()
+        difference = total_parameters - subtotal
+
+        print("=== Model Parameter Overview ===")
+        print(
+            f"Total trainable parameters: {total_parameters:,}")
+        print(
+            f"Embeddings (input + positional): {embeddings_total:,} ({input_embedding_params:,} + {position_embedding_params:,})")
+        print(f"Transformer Attention parameters: {attention_total:,}")
+        print(f"Transformer Feed-Forward parameters: {feedforward_total:,}")
+        print(f"Transformer Block LayerNorms: {block_layernorm_total:,}")
+        print(f"Final LayerNorm parameters: {final_layernorm_total:,}")
+        print(f"Output projection parameters: {output_projection_total:,}")
+        print(f"\nSum of all above: {subtotal:,}")
+        print(f"Difference (if any): {difference:,}")
+        print(
+            f"\nHyperparameters: Hidden dimension={self.hidden_dim}, Heads={self.num_heads}, Layers={len(self.transformer_layers)}, Max sequence length={self.max_seq_length}")
+        print(
+            f"Input vocab size={self.input_vocab_size}, Output vocab size={self.output_vocab_size}")
 
 
 class TransformerBlock(nn.Module):
@@ -132,6 +159,15 @@ class TransformerBlock(nn.Module):
 
         return x
 
+    def get_num_parameters(self) -> int:
+        total = 0
+        total += self.attention.get_num_parameters()
+        total += self.feed_forward.get_num_parameters()
+        for ln in (self.norm1, self.norm2):
+            total += ln.weight.numel()
+            total += ln.bias.numel()
+        return total
+
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, hidden_dim: int, num_heads: int, dropout: float = 0.1, low_rank_dim: int = 256):
@@ -145,14 +181,9 @@ class MultiHeadAttention(nn.Module):
         self.scale = math.sqrt(self.head_dim)
         self.low_rank_dim = low_rank_dim
 
-        self.query_down = nn.Linear(hidden_dim, low_rank_dim, bias=False)
-        self.query_up = nn.Linear(low_rank_dim, hidden_dim)
-
-        self.key_down = nn.Linear(hidden_dim, low_rank_dim, bias=False)
-        self.key_up = nn.Linear(low_rank_dim, hidden_dim)
-
-        self.value_down = nn.Linear(hidden_dim, low_rank_dim, bias=False)
-        self.value_up = nn.Linear(low_rank_dim, hidden_dim)
+        self.query = nn.Linear(hidden_dim, hidden_dim)
+        self.key = nn.Linear(hidden_dim, hidden_dim)
+        self.value = nn.Linear(hidden_dim, hidden_dim)
 
         self.output = nn.Linear(hidden_dim, hidden_dim)
         self.dropout = nn.Dropout(dropout)
@@ -160,9 +191,9 @@ class MultiHeadAttention(nn.Module):
     def forward(self, x: torch.Tensor, attention_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         batch_size, seq_length, _ = x.shape
 
-        Q = self.query_up(self.query_down(x))
-        K = self.key_up(self.key_down(x))
-        V = self.value_up(self.value_down(x))
+        Q = self.query(x)
+        K = self.key(x)
+        V = self.value(x)
 
         Q = Q.view(batch_size, seq_length, self.num_heads,
                    self.head_dim).transpose(1, 2)
@@ -181,13 +212,20 @@ class MultiHeadAttention(nn.Module):
 
         attention_output = torch.matmul(attention_weights, V)
 
-        attention_output = attention_output.transpose(1, 2).contiguous()
-        attention_output = attention_output.view(
+        attention_output = attention_output.transpose(1, 2)
+        attention_output = attention_output.reshape(
             batch_size, seq_length, self.hidden_dim)
-
         output = self.output(attention_output)
 
         return output
+
+    def get_num_parameters(self) -> int:
+        total = 0
+        for linear in (self.query, self.key, self.value, self.output):
+            total += linear.weight.numel()
+            if linear.bias is not None:
+                total += linear.bias.numel()
+        return total
 
 
 class FeedForward(nn.Module):
@@ -207,3 +245,11 @@ class FeedForward(nn.Module):
         x = self.dropout(x)
         x = self.linear2(x)
         return x
+
+    def get_num_parameters(self) -> int:
+        total = 0
+        for linear in (self.linear1, self.linear2):
+            total += linear.weight.numel()
+            if linear.bias is not None:
+                total += linear.bias.numel()
+        return total

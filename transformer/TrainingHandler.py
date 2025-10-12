@@ -1,139 +1,317 @@
+import os
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.optim import AdamW
-from typing import Tuple, List, Dict
+from typing import Dict, List, Tuple
+from time import time
 
 EPOCH_COUNT = 10
 LEARNING_RATE = 3e-4
+TEMPERATURE = 1.0
 
 
 class TrainingHandler:
-    def __init__(self, model: nn.Module, token_to_id: Dict[str, int], device: str = "cuda" if torch.cuda.is_available() else "cpu"):
+    def __init__(self, model: nn.Module, token_to_id: Dict[str, int], tokenizer, device: str = "cuda" if torch.cuda.is_available() else "cpu"):
+        start_time = time()
+        print("Initializing TrainingHandler...")
+
         self.model = model.to(device)
         self.device = device
         self.token_to_id = token_to_id
+        self.tokenizer = tokenizer
         self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
-        self.loss_fn = nn.CrossEntropyLoss()
 
-        print(f"TrainingHandler initialized on {device}")
+        self.output_token_ids = model.output_token_ids
+        self.token_id_to_output_idx = {
+            token_id: idx for idx, token_id in enumerate(self.output_token_ids)
+        }
+
+        elapsed_time = time() - start_time
+        print(
+            f"TrainingHandler initialized on {device} -> took {elapsed_time:.2f} seconds")
         print(f"Model parameters: {model.get_num_parameters():,}")
+        print(f"Input vocab size: {model.input_vocab_size}")
+        print(f"Output vocab size: {model.output_vocab_size}\n")
 
     def epoch_count(self):
         return EPOCH_COUNT
 
-    def prepare_batch(self, batch_data: List[Dict]) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_sequences = []
-        target_sequences = []
-
-        for item in batch_data:
-            input_tokens = []
-            target_tokens = []
-
-            steps = item['steps']
-
-            for step in steps:
-                token = step['token']
-                token_id = self.token_to_id.get(token, 0)
-
-                input_tokens.append(token_id)
-                target_tokens.append(token_id)
-
-            input_sequences.append(input_tokens)
-            target_sequences.append(target_tokens)
-
-        input_ids = self.pad_sequences(input_sequences)
-        target_ids = self.pad_sequences(target_sequences)
-
-        return input_ids, target_ids
-
-    def pad_sequences(self, sequences: List[List[int]]) -> torch.Tensor:
-        max_length = max(len(seq) for seq in sequences)
-
-        padded = []
-        for seq in sequences:
-            padded_seq = seq + [0] * (max_length - len(seq))
-            padded.append(padded_seq)
-
-        return torch.tensor(padded, dtype=torch.long)
-
-    def train_epoch(self, batch_handler, batch_start: int, batch_end: int) -> float:
+    def train_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int, telemetry_handler, exit_listener, resume_from_batch: int = 0) -> float:
         self.model.train()
         total_loss = 0.0
-        batch_count = 0
+        total_steps = 0
 
-        for batch_idx in range(batch_start, batch_end):
+        start_batch = max(batch_start, resume_from_batch)
+
+        for batch_idx in range(start_batch, batch_end):
+            batch_start_time = time()
             batch_data = batch_handler.get_batch(batch_idx)
 
-            input_ids, target_ids = self.prepare_batch(batch_data)
-            input_ids = input_ids.to(self.device)
-            target_ids = target_ids.to(self.device)
+            batch_loss = 0.0
+            batch_steps = 0
 
-            self.optimizer.zero_grad()
+            for example_idx, example in enumerate(batch_data):
+                example_start_time = time()
 
-            logits = self.model(input_ids)
+                loss, num_steps = self._train_single_example(example)
 
-            loss = self.calculate_loss(logits, target_ids)
+                if num_steps > 0:
+                    batch_loss += loss * num_steps
+                    batch_steps += num_steps
+                    total_loss += loss * num_steps
+                    total_steps += num_steps
 
-            loss.backward()
-            self.optimizer.step()
+                example_elapsed = time() - example_start_time
+                print(
+                    f"  Example {example_idx + 1}/{len(batch_data)}: {num_steps} steps, loss={loss:.4f} -> took {example_elapsed:.2f}s")
 
-            total_loss += loss.item()
-            batch_count += 1
+                telemetry_handler.log_training_example(
+                    epoch, batch_idx + 1, example_idx + 1, num_steps, loss, example_elapsed)
 
-        average_loss = total_loss / batch_count
-        return average_loss
+            batch_elapsed = time() - batch_start_time
+            avg_batch_loss = batch_loss / max(batch_steps, 1)
+            print(
+                f"Batch {batch_idx + 1} processed: {batch_steps} total steps, avg_loss={avg_batch_loss:.4f} -> took {batch_elapsed:.2f}s\n")
 
-    def eval_epoch(self, batch_handler, batch_start: int, batch_end: int) -> Tuple[float, float]:
+            telemetry_handler.update_progress(epoch, batch_idx + 1)
+
+            if exit_listener.check_exit():
+                print("Exit requested. Saving progress...")
+                self.save_temp_checkpoint(epoch, avg_batch_loss)
+                telemetry_handler.save()
+                return None
+
+        avg_epoch_loss = total_loss / max(total_steps, 1)
+
+        telemetry_handler.log_train_epoch(epoch, avg_epoch_loss, total_steps)
+
+        return avg_epoch_loss
+
+    def _train_single_example(self, example: Dict) -> Tuple[float, int]:
+        sentence_tokens = self._get_sentence_tokens(example)
+        steps = example['steps']
+
+        total_loss = 0.0
+        valid_steps = 0
+        generated_token_ids = []
+
+        for step in steps:
+            token_id, target_logits = self._prepare_step_data(step)
+            if token_id is None:
+                continue
+
+            input_tensor, target_tensor = self._create_tensors(
+                sentence_tokens + generated_token_ids,
+                target_logits
+            )
+
+            loss = self._train_step(input_tensor, target_tensor)
+
+            total_loss += loss
+            valid_steps += 1
+            generated_token_ids.append(token_id)
+
+        return total_loss, valid_steps
+
+    def _train_step(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor) -> float:
+        self.optimizer.zero_grad()
+
+        model_logits = self.model(input_tensor)
+        last_token_logits = model_logits[:, -1, :]
+
+        loss = self._compute_kl_loss(last_token_logits, target_tensor)
+
+        loss.backward()
+        self.optimizer.step()
+
+        return loss.item()
+
+    def eval_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int, telemetry_handler) -> Tuple[float, float]:
         self.model.eval()
         total_loss = 0.0
         total_correct = 0
-        total_tokens = 0
+        total_steps = 0
 
         with torch.no_grad():
             for batch_idx in range(batch_start, batch_end):
+                batch_start_time = time()
                 batch_data = batch_handler.get_batch(batch_idx)
 
-                input_ids, target_ids = self.prepare_batch(batch_data)
-                input_ids = input_ids.to(self.device)
-                target_ids = target_ids.to(self.device)
+                batch_loss = 0.0
+                batch_correct = 0
+                batch_steps = 0
 
-                logits = self.model(input_ids)
+                for example_idx, example in enumerate(batch_data):
+                    loss, correct, num_steps = self._eval_single_example(
+                        example)
 
-                loss = self.calculate_loss(logits, target_ids)
-                total_loss += loss.item()
+                    if num_steps > 0:
+                        batch_loss += loss * num_steps
+                        batch_correct += correct
+                        batch_steps += num_steps
+                        total_loss += loss * num_steps
+                        total_correct += correct
+                        total_steps += num_steps
 
-                predictions = torch.argmax(logits, dim=-1)
-                correct = (predictions == target_ids).sum().item()
-                total_correct += correct
-                total_tokens += target_ids.numel()
+                batch_elapsed = time() - batch_start_time
+                avg_batch_loss = batch_loss / max(batch_steps, 1)
+                batch_accuracy = batch_correct / max(batch_steps, 1)
+                print(
+                    f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, acc={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
-        average_loss = total_loss / (batch_end - batch_start)
-        accuracy = total_correct / total_tokens
-        return average_loss, accuracy
+        avg_loss = total_loss / max(total_steps, 1)
+        accuracy = total_correct / max(total_steps, 1)
 
-    def calculate_loss(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        batch_size, seq_length, vocab_size = logits.shape
+        telemetry_handler.log_eval_epoch(
+            epoch, avg_loss, accuracy, total_steps)
 
-        logits_flat = logits.view(-1, vocab_size)
-        targets_flat = targets.view(-1)
+        return avg_loss, accuracy
 
-        loss = self.loss_fn(logits_flat, targets_flat)
-        return loss
+    def _eval_single_example(self, example: Dict) -> Tuple[float, int, int]:
+        sentence_tokens = self._get_sentence_tokens(example)
+        steps = example['steps']
 
-    def save_checkpoint(self, filepath: str, epoch: int, train_loss: float):
+        total_loss = 0.0
+        correct_predictions = 0
+        valid_steps = 0
+        generated_token_ids = []
+
+        for step in steps:
+            token_id, target_logits = self._prepare_step_data(step)
+            if token_id is None:
+                continue
+
+            input_tensor, target_tensor = self._create_tensors(
+                sentence_tokens + generated_token_ids,
+                target_logits
+            )
+
+            model_logits = self.model(input_tensor)
+            last_token_logits = model_logits[:, -1, :]
+
+            loss = self._compute_kl_loss(last_token_logits, target_tensor)
+            total_loss += loss.item()
+
+            predicted_idx = torch.argmax(last_token_logits[0]).item()
+            target_idx = torch.argmax(target_tensor[0]).item()
+
+            if predicted_idx == target_idx:
+                correct_predictions += 1
+
+            valid_steps += 1
+            generated_token_ids.append(token_id)
+
+        return total_loss, correct_predictions, valid_steps
+
+    def _get_sentence_tokens(self, example: Dict) -> List[int]:
+        return self.tokenizer.encode(example['sentence'], add_special_tokens=False)
+
+    def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float]]:
+        token = step['token']
+        probabilities = step['probabilities']
+
+        token_id = self.token_to_id.get(token)
+        if token_id is None or token_id not in self.token_id_to_output_idx:
+            return None, None
+
+        target_logits = self._build_target_logits(probabilities)
+        if target_logits is None:
+            return None, None
+
+        return token_id, target_logits
+
+    def _create_tensors(self, input_ids: List[int], target_logits: List[float]) -> Tuple[torch.Tensor, torch.Tensor]:
+        input_tensor = torch.tensor(
+            [input_ids], dtype=torch.long, device=self.device)
+        target_tensor = torch.tensor(
+            [target_logits], dtype=torch.float32, device=self.device)
+        return input_tensor, target_tensor
+
+    def _build_target_logits(self, probabilities: Dict[str, float]) -> List[float]:
+        target = [-100.0] * len(self.output_token_ids)
+
+        valid_count = 0
+        for token_str, logit_value in probabilities.items():
+            token_id = self.token_to_id.get(token_str)
+            if token_id is None:
+                continue
+
+            output_idx = self.token_id_to_output_idx.get(token_id)
+            if output_idx is None:
+                continue
+
+            target[output_idx] = logit_value
+            valid_count += 1
+
+        if valid_count == 0:
+            return None
+
+        return target
+
+    def _compute_kl_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
+        teacher_logits = teacher_logits.clone()
+        valid_mask = teacher_logits != -100.0
+        teacher_logits[~valid_mask] = -1e9
+
+        student_log_probs = F.log_softmax(student_logits / TEMPERATURE, dim=-1)
+        teacher_probs = F.softmax(teacher_logits / TEMPERATURE, dim=-1)
+
+        kl_loss = F.kl_div(student_log_probs, teacher_probs,
+                           reduction='batchmean') * (TEMPERATURE ** 2)
+
+        return kl_loss
+
+    def save_checkpoint(self, epoch: int, train_loss: float):
+        start_time = time()
+
         checkpoint = {
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'train_loss': train_loss,
         }
+
+        if not os.path.exists('checkpoints'):
+            os.makedirs('checkpoints')
+
+        filepath = os.path.join('checkpoints', f'checkpoint_epoch_{epoch}.pt')
         torch.save(checkpoint, filepath)
-        print(f"Checkpoint saved to {filepath}")
+
+        elapsed_time = time() - start_time
+        print(f"Checkpoint saved: {filepath} -> took {elapsed_time:.2f}s\n")
+
+    def save_temp_checkpoint(self, epoch: int, train_loss: float):
+        start_time = time()
+
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': self.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'train_loss': train_loss,
+        }
+
+        if not os.path.exists('checkpoints'):
+            os.makedirs('checkpoints')
+
+        filepath = os.path.join('checkpoints', 'temp_checkpoint.pt')
+        torch.save(checkpoint, filepath)
+
+        elapsed_time = time() - start_time
+        print(
+            f"Temp checkpoint saved: {filepath} -> took {elapsed_time:.2f}s\n")
 
     def load_checkpoint(self, filepath: str) -> int:
-        checkpoint = torch.load(filepath, map_location=self.device)
+        start_time = time()
+
+        checkpoint = torch.load(
+            filepath, map_location=self.device, weights_only=True)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']
-        print(f"Checkpoint loaded from {filepath} (epoch {epoch})")
+
+        elapsed_time = time() - start_time
+        print(
+            f"Checkpoint loaded: {filepath} (epoch {epoch}) -> took {elapsed_time:.2f}s\n")
+
         return epoch
