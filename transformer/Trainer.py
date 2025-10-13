@@ -128,7 +128,8 @@ class Trainer:
 
     def train_single_example(self, example: Dict) -> Tuple[float, int]:
         sentence_tokens = self._get_sentence_tokens(example)
-        steps = example['steps']
+        steps = sorted(example['steps'],
+                       key=lambda s: example['steps'].index(s))
 
         total_loss = 0.0
         valid_steps = 0
@@ -144,27 +145,19 @@ class Trainer:
                 target_logits
             )
 
-            loss = self._train_step(input_tensor, target_tensor)
+            self.optimizer.zero_grad()
+            model_logits = self.model(input_tensor)
+            last_token_logits = model_logits[:, -1, :]
+            loss = self._compute_Kullback_Leibler_Divergence_Loss(
+                last_token_logits, target_tensor)
+            loss.backward()
+            self.optimizer.step()
 
-            total_loss += loss
+            total_loss += loss.item()
             valid_steps += 1
             generated_token_ids.append(token_id)
 
         return total_loss, valid_steps
-
-    def _train_step(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor) -> float:
-        self.optimizer.zero_grad()
-
-        model_logits = self.model(input_tensor)
-        last_token_logits = model_logits[:, -1, :]
-
-        loss = self._compute_Kullback_Leibler_Divergence_Loss(
-            last_token_logits, target_tensor)
-
-        loss.backward()
-        self.optimizer.step()
-
-        return loss.item()
 
     def eval_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float]:
         self.model.eval()
@@ -210,7 +203,8 @@ class Trainer:
 
     def _eval_single_example(self, example: Dict) -> Tuple[float, int, int]:
         sentence_tokens = self._get_sentence_tokens(example)
-        steps = example['steps']
+        steps = sorted(example['steps'],
+                       key=lambda s: example['steps'].index(s))
 
         total_loss = 0.0
         correct_predictions = 0
@@ -219,8 +213,6 @@ class Trainer:
 
         for step in steps:
             token_id, target_logits = self._prepare_step_data(step)
-            if token_id is None:
-                continue
 
             input_tensor, target_tensor = self._create_tensors(
                 sentence_tokens + generated_token_ids,
