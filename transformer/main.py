@@ -19,7 +19,7 @@ transformerModelHandler = Transformer(
     output_token_ids=output_token_ids,
 )
 
-trainingHandler = Trainer(
+trainer = Trainer(
     transformerModelHandler, vocabulary_map, tokenizer)
 
 telemetryHandler = TelemetryHandler()
@@ -35,19 +35,19 @@ if telemetryHandler.should_resume():
     print(f"Resuming from epoch {start_epoch + 1}, batch {resume_batch}")
     temp_checkpoint_path = 'checkpoints/temp_checkpoint.pt'
     if os.path.exists(temp_checkpoint_path):
-        trainingHandler.load_checkpoint(temp_checkpoint_path)
+        trainer.load_checkpoint(temp_checkpoint_path)
         print("Loaded temp checkpoint\n")
     else:
         print("Warning: No temp checkpoint found, starting from scratch\n")
 else:
     print("Starting fresh training\n")
 
-for epoch in range(start_epoch, trainingHandler.epoch_count()):
-    print(f"\nEpoch {epoch + 1}/{trainingHandler.epoch_count()}")
+for epoch in range(start_epoch, trainer.epoch_count()):
+    print(f"\nEpoch {epoch + 1}/{trainer.epoch_count()}")
 
     resume_from = resume_batch if epoch == start_epoch else 0
 
-    train_loss = trainingHandler.train_epoch(
+    train_loss = trainer.train_epoch(
         batchHandler, batch_start, batch_end, epoch + 1, telemetryHandler, exitListener, resume_from)
 
     if train_loss is None:
@@ -58,11 +58,11 @@ for epoch in range(start_epoch, trainingHandler.epoch_count()):
 
     telemetryHandler.current_batch = 0
 
-    eval_loss, eval_accuracy = trainingHandler.eval_epoch(
+    eval_loss, eval_accuracy = trainer.eval_epoch(
         batchHandler, test_start, test_end, epoch + 1, telemetryHandler)
     print(f"Eval Loss: {eval_loss:.4f} | Accuracy: {eval_accuracy:.4f}")
 
-    trainingHandler.save_checkpoint(epoch + 1, train_loss)
+    trainer.save_checkpoint(epoch + 1, train_loss)
     telemetryHandler.save()
 
 

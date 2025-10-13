@@ -1,3 +1,4 @@
+from time import time
 import torch
 import torch.nn as nn
 import math
@@ -17,6 +18,8 @@ class Transformer(nn.Module):
         dropout: float = 0.1,
         low_rank_dim: int = 256
     ):
+        start_time = time()
+        print("Initializing Transformer model...")
         super().__init__()
 
         self.input_vocab_size = input_vocab_size
@@ -42,6 +45,9 @@ class Transformer(nn.Module):
 
         self._init_weights()
         self.model_info()
+
+        elapsed_time = time() - start_time
+        print(f"Model initialized -> took {elapsed_time:.2f} seconds.\n")
 
     def _init_weights(self):
         for module in self.modules():
