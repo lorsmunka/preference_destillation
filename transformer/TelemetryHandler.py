@@ -79,7 +79,15 @@ class TelemetryHandler:
         self.total_batches_processed += 1
 
     def should_resume(self):
-        return self.current_epoch > 0 or self.current_batch > 0
+        SHOULD_RESUME = self.current_epoch > 0 or self.current_batch > 0
+
+        if SHOULD_RESUME:
+            print(
+                f"Resuming from epoch {self.current_epoch + 1}, batch {self.current_batch}\n")
+        else:
+            print("Starting fresh training\n")
+
+        return SHOULD_RESUME
 
     def log_training_example(self, epoch: int, batch: int, example: int, num_steps: int, loss: float, time_seconds: float):
         self._write_log({

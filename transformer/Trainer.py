@@ -6,18 +6,26 @@ from torch.optim import AdamW
 from typing import Dict, List, Tuple
 from time import time
 
+from TelemetryHandler import TelemetryHandler
+
 EPOCH_COUNT = 10
 LEARNING_RATE = 3e-4
 TEMPERATURE = 1.0
+TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 
 class Trainer:
-    def __init__(self, model: nn.Module, token_to_id: Dict[str, int], tokenizer, device: str = "cuda" if torch.cuda.is_available() else "cpu"):
+    def __init__(self, model: nn.Module, token_to_id: Dict[str, int], tokenizer, telemetryHandler: TelemetryHandler):
         start_time = time()
-        print("Initializing TrainingHandler...")
+        print("Initializing Trainer...")
 
-        self.model = model.to(device)
-        self.device = device
+        self.device = "cpu"
+        if torch.cuda.is_available():
+            self.device = "cuda"
+        elif torch.backends.mps.is_available():
+            self.device = "mps"
+
+        self.model = model.to(self.device)
         self.token_to_id = token_to_id
         self.tokenizer = tokenizer
         self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
@@ -29,10 +37,14 @@ class Trainer:
 
         elapsed_time = time() - start_time
         print(
-            f"TrainingHandler initialized on {device} -> took {elapsed_time:.2f} seconds")
-        print(f"Model parameters: {model.get_num_parameters():,}")
-        print(f"Input vocab size: {model.input_vocab_size}")
-        print(f"Output vocab size: {model.output_vocab_size}\n")
+            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds \n")
+
+        if telemetryHandler.should_resume():
+            if os.path.exists(TEMP_CHECKPOINT_PATH):
+                self.load_checkpoint(TEMP_CHECKPOINT_PATH)
+                print("Loaded temp checkpoint\n")
+            else:
+                print("Warning: No temp checkpoint found, starting from scratch\n")
 
     def epoch_count(self):
         return EPOCH_COUNT

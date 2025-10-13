@@ -4,13 +4,13 @@ import torch.nn as nn
 import math
 from typing import Optional
 
+from transformers import AutoTokenizer
+from Utilities import Utilities
+
 
 class Transformer(nn.Module):
     def __init__(
         self,
-        input_vocab_size: int,
-        output_vocab_size: int,
-        output_token_ids: list,
         hidden_dim: int = 1024,
         num_layers: int = 16,
         num_heads: int = 16,
@@ -22,15 +22,17 @@ class Transformer(nn.Module):
         print("Initializing Transformer model...")
         super().__init__()
 
-        self.input_vocab_size = input_vocab_size
-        self.output_vocab_size = output_vocab_size
-        self.output_token_ids = output_token_ids
+        self.tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
+        self.input_vocab_size = self.tokenizer.vocab_size
+        self.vocabulary_map = Utilities.build_vocabulary_map(self.tokenizer)
+        self.output_token_ids = list(self.vocabulary_map.values())
+        self.output_vocab_size = len(self.output_token_ids)
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.max_seq_length = max_seq_length
         self.low_rank_dim = low_rank_dim
 
-        self.input_embedding = nn.Embedding(input_vocab_size, hidden_dim)
+        self.input_embedding = nn.Embedding(self.input_vocab_size, hidden_dim)
         self.position_embedding = nn.Embedding(max_seq_length, hidden_dim)
 
         self.transformer_layers = nn.ModuleList([
@@ -41,7 +43,7 @@ class Transformer(nn.Module):
         self.layer_norm = nn.LayerNorm(hidden_dim)
         self.dropout = nn.Dropout(dropout)
 
-        self.output_projection = nn.Linear(hidden_dim, output_vocab_size)
+        self.output_projection = nn.Linear(hidden_dim, self.output_vocab_size)
 
         self._init_weights()
         self.model_info()
