@@ -1,26 +1,21 @@
 import json
 import matplotlib.pyplot as plt
 from pathlib import Path
-from collections import defaultdict
+import numpy as np
 
 
 class TelemetryVisualizer:
-    def __init__(self, telemetry_file="telemetry/training.jsonl"):
+    def __init__(self, telemetry_file="telemetry/training.jsonl", smooth_window=200):
         self.telemetry_file = Path(telemetry_file)
+        self.smooth_window = smooth_window
         self.data = self._load_data()
 
     def _load_data(self):
         if not self.telemetry_file.exists():
             print(f"No telemetry file found at {self.telemetry_file}")
             return []
-
-        data = []
         with open(self.telemetry_file, 'r') as f:
-            for line in f:
-                data.append(json.loads(line.strip()))
-
-        print(f"Loaded {len(data)} telemetry entries")
-        return data
+            return [json.loads(line.strip()) for line in f]
 
     def plot_training_progress(self):
         train_examples = [d for d in self.data if d['type'] == 'train_example']
@@ -32,33 +27,37 @@ class TelemetryVisualizer:
             return
 
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-        fig.suptitle('Training Telemetry', fontsize=16, fontweight='bold')
+        fig.suptitle('Training Telemetry (Continuous View)',
+                     fontsize=16, fontweight='bold')
 
-        self._plot_example_losses(axes[0, 0], train_examples)
+        self._plot_continuous_loss(axes[0, 0], train_examples)
         self._plot_epoch_summary(axes[0, 1], train_epochs, eval_epochs)
-        self._plot_loss_distribution(axes[1, 0], train_examples)
+        self._plot_loss_histogram(axes[1, 0], train_examples)
         self._plot_accuracy_progress(axes[1, 1], eval_epochs)
 
         plt.tight_layout()
-        plt.savefig('telemetry/training_progress.png',
+        plt.savefig('telemetry/training_progress_continuous.png',
                     dpi=150, bbox_inches='tight')
-        print(f"Saved visualization to telemetry/training_progress.png")
+        print("Saved visualization to telemetry/training_progress_continuous.png")
         plt.show()
 
-    def _plot_example_losses(self, ax, train_examples):
-        epochs = defaultdict(list)
+    def _smooth(self, values):
+        if len(values) < self.smooth_window:
+            return values
+        kernel = np.ones(self.smooth_window) / self.smooth_window
+        return np.convolve(values, kernel, mode='valid')
 
-        for entry in train_examples:
-            epoch = entry['epoch']
-            loss = entry['loss']
-            epochs[epoch].append(loss)
+    def _plot_continuous_loss(self, ax, train_examples):
+        losses = [d['loss'] for d in train_examples]
+        smoothed = self._smooth(losses)
 
-        for epoch, losses in sorted(epochs.items()):
-            ax.plot(losses, alpha=0.7, label=f'Epoch {epoch}')
+        ax.plot(losses, color='lightgray', alpha=0.4, label='Raw Loss')
+        ax.plot(np.arange(len(smoothed)), smoothed, color='red',
+                linewidth=2, label=f'Smoothed (window={self.smooth_window})')
 
-        ax.set_xlabel('Example Index (within batch)')
+        ax.set_xlabel('Example Index (global)')
         ax.set_ylabel('Loss')
-        ax.set_title('Per-Example Loss During Training')
+        ax.set_title('Continuous Training Loss (Smoothed)')
         ax.legend()
         ax.grid(True, alpha=0.3)
 
@@ -81,26 +80,12 @@ class TelemetryVisualizer:
         ax.legend()
         ax.grid(True, alpha=0.3)
 
-    def _plot_loss_distribution(self, ax, train_examples):
-        epochs = defaultdict(list)
-
-        for entry in train_examples:
-            epoch = entry['epoch']
-            loss = entry['loss']
-            epochs[epoch].append(loss)
-
-        epoch_nums = sorted(epochs.keys())
-        loss_data = [epochs[e] for e in epoch_nums]
-
-        bp = ax.boxplot(loss_data, labels=[
-                        f'E{e}' for e in epoch_nums], patch_artist=True)
-
-        for patch in bp['boxes']:
-            patch.set_facecolor('lightblue')
-
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel('Loss')
-        ax.set_title('Loss Distribution per Epoch')
+    def _plot_loss_histogram(self, ax, train_examples):
+        losses = [d['loss'] for d in train_examples]
+        ax.hist(losses, bins=50, color='skyblue', edgecolor='black', alpha=0.7)
+        ax.set_xlabel('Loss')
+        ax.set_ylabel('Frequency')
+        ax.set_title('Loss Distribution (All Examples)')
         ax.grid(True, alpha=0.3, axis='y')
 
     def _plot_accuracy_progress(self, ax, eval_epochs):
@@ -112,8 +97,8 @@ class TelemetryVisualizer:
 
         epochs = [d['epoch'] for d in eval_epochs]
         accuracies = [d['accuracy'] * 100 for d in eval_epochs]
-
         ax.plot(epochs, accuracies, marker='o', linewidth=2, color='green')
+
         ax.set_xlabel('Epoch')
         ax.set_ylabel('Accuracy (%)')
         ax.set_title('Evaluation Accuracy Progress')

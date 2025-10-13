@@ -70,7 +70,7 @@ class Trainer:
             total_loss += batch_loss
             total_steps += batch_steps
 
-        avg_epoch_loss = total_loss / max(total_steps, 1)
+        avg_epoch_loss = total_loss / total_steps
         self.telemetry_handler.log_train_epoch(
             epoch, avg_epoch_loss, total_steps)
 
@@ -93,7 +93,7 @@ class Trainer:
             batch_idx, batch_steps, batch_loss, batch_start_time, epoch)
 
         if self.exit_listener.check_exit():
-            return self._handle_exit_request(epoch, batch_loss / max(batch_steps, 1))
+            return self._handle_exit_request(epoch, batch_loss / batch_steps)
 
         return batch_loss, batch_steps
 
@@ -101,9 +101,7 @@ class Trainer:
         example_start_time = time()
         loss, num_steps = self.train_single_example(example)
 
-        weighted_loss = 0.0
-        if num_steps > 0:
-            weighted_loss = loss * num_steps
+        weighted_loss = loss
 
         example_elapsed = time() - example_start_time
         print(
@@ -116,7 +114,7 @@ class Trainer:
 
     def _log_batch_completion(self, batch_idx: int, batch_steps: int, batch_loss: float, batch_start_time: float, epoch: int):
         batch_elapsed = time() - batch_start_time
-        avg_batch_loss = batch_loss / max(batch_steps, 1)
+        avg_batch_loss = batch_loss / batch_steps
         print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, avg_loss={avg_batch_loss:.4f} -> took {batch_elapsed:.2f}s\n")
         self.telemetry_handler.update_progress(epoch, batch_idx + 1)
 
@@ -137,8 +135,6 @@ class Trainer:
 
         for step in steps:
             token_id, target_logits = self._prepare_step_data(step)
-            if token_id is None:
-                continue
 
             input_tensor, target_tensor = self._create_tensors(
                 sentence_tokens + generated_token_ids,
@@ -146,10 +142,7 @@ class Trainer:
             )
 
             self.optimizer.zero_grad()
-            model_logits = self.model(input_tensor)
-            last_token_logits = model_logits[:, -1, :]
-            loss = self._compute_Kullback_Leibler_Divergence_Loss(
-                last_token_logits, target_tensor)
+            loss = self._compute_step_loss(input_tensor, target_tensor)
             loss.backward()
             self.optimizer.step()
 
@@ -178,22 +171,21 @@ class Trainer:
                     loss, correct, num_steps = self._eval_single_example(
                         example)
 
-                    if num_steps > 0:
-                        batch_loss += loss * num_steps
-                        batch_correct += correct
-                        batch_steps += num_steps
-                        total_loss += loss * num_steps
-                        total_correct += correct
-                        total_steps += num_steps
+                    batch_loss += loss * num_steps
+                    batch_correct += correct
+                    batch_steps += num_steps
+                    total_loss += loss * num_steps
+                    total_correct += correct
+                    total_steps += num_steps
 
                 batch_elapsed = time() - batch_start_time
-                avg_batch_loss = batch_loss / max(batch_steps, 1)
-                batch_accuracy = batch_correct / max(batch_steps, 1)
+                avg_batch_loss = batch_loss / batch_steps
+                batch_accuracy = batch_correct / batch_steps
                 print(
                     f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, acc={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
-        avg_loss = total_loss / max(total_steps, 1)
-        accuracy = total_correct / max(total_steps, 1)
+        avg_loss = total_loss / total_steps
+        accuracy = total_correct / total_steps
 
         self.telemetry_handler.log_eval_epoch(
             epoch, avg_loss, accuracy, total_steps)
@@ -219,16 +211,11 @@ class Trainer:
                 target_logits
             )
 
-            model_logits = self.model(input_tensor)
-            last_token_logits = model_logits[:, -1, :]
-
-            loss = self._compute_Kullback_Leibler_Divergence_Loss(
-                last_token_logits, target_tensor)
+            loss, predicted_idx = self._compute_step_loss(
+                input_tensor, target_tensor, return_prediction=True)
             total_loss += loss.item()
 
-            predicted_idx = torch.argmax(last_token_logits[0]).item()
             target_idx = torch.argmax(target_tensor[0]).item()
-
             if predicted_idx == target_idx:
                 correct_predictions += 1
 
@@ -237,6 +224,17 @@ class Trainer:
 
         return total_loss, correct_predictions, valid_steps
 
+    def _compute_step_loss(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor, return_prediction: bool = False):
+        model_logits = self.model(input_tensor)
+        last_token_logits = model_logits[:, -1, :]
+        loss = self._compute_Kullback_Leibler_Divergence_Loss(
+            last_token_logits, target_tensor)
+
+        if return_prediction:
+            predicted_idx = torch.argmax(last_token_logits[0]).item()
+            return loss, predicted_idx
+        return loss
+
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
         return self.tokenizer.encode(example['sentence'], add_special_tokens=False)
 
@@ -244,9 +242,15 @@ class Trainer:
         token = step['token']
         probabilities = step['probabilities']
 
-        token_id = self.token_to_id.get(token)
+        token_ids = self.tokenizer.convert_tokens_to_ids([token])
+        token_id = token_ids[0]
 
-        target_logits = self._build_target_logits(probabilities)
+        normalized_probs = {}
+        for token_str, logit_value in probabilities.items():
+            token_ids = self.tokenizer.convert_tokens_to_ids([token_str])
+            normalized_probs[token_ids[0]] = logit_value
+
+        target_logits = self._build_target_logits(normalized_probs)
 
         return token_id, target_logits
 
@@ -257,13 +261,13 @@ class Trainer:
             [target_logits], dtype=torch.float32, device=self.device)
         return input_tensor, target_tensor
 
-    def _build_target_logits(self, probabilities: Dict[str, float]) -> List[float]:
+    def _build_target_logits(self, probabilities: Dict[int, float]) -> List[float]:
         target = [-100.0] * len(self.output_token_ids)
 
-        for token_str, logit_value in probabilities.items():
-            token_id = self.token_to_id.get(token_str)
+        for token_id, logit_value in probabilities.items():
             output_idx = self.token_id_to_output_idx.get(token_id)
-            target[output_idx] = logit_value
+            if output_idx is not None:
+                target[output_idx] = logit_value
 
         return target
 
