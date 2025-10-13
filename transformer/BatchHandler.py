@@ -23,6 +23,9 @@ class BatchHandler:
 
         return batch
 
+    def get_batch_size(self):
+        return BATCH_SIZE
+
     def get_batch_count(self):
         import os
         files = os.listdir(TRAINING_DATA_PATH)

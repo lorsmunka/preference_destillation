@@ -7,6 +7,8 @@ from typing import Dict, List, Tuple
 from time import time
 
 from TelemetryHandler import TelemetryHandler
+from ExitListener import ExitListener
+from Transformer import Transformer
 
 EPOCH_COUNT = 10
 LEARNING_RATE = 3e-4
@@ -15,7 +17,7 @@ TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 
 class Trainer:
-    def __init__(self, model: nn.Module, token_to_id: Dict[str, int], tokenizer, telemetryHandler: TelemetryHandler):
+    def __init__(self, model: Transformer, token_to_id: Dict[str, int], tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener):
         start_time = time()
         print("Initializing Trainer...")
 
@@ -35,11 +37,14 @@ class Trainer:
             token_id: idx for idx, token_id in enumerate(self.output_token_ids)
         }
 
+        self.telemetry_handler = telemetry_handler
+        self.exit_listener = exit_listener
+
         elapsed_time = time() - start_time
         print(
             f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds \n")
 
-        if telemetryHandler.should_resume():
+        if self.telemetry_handler.should_resume():
             if os.path.exists(TEMP_CHECKPOINT_PATH):
                 self.load_checkpoint(TEMP_CHECKPOINT_PATH)
                 print("Loaded temp checkpoint\n")
@@ -49,58 +54,79 @@ class Trainer:
     def epoch_count(self):
         return EPOCH_COUNT
 
-    def train_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int, telemetry_handler, exit_listener, resume_from_batch: int = 0) -> float:
+    def train_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> float:
         self.model.train()
         total_loss = 0.0
         total_steps = 0
-
         start_batch = max(batch_start, resume_from_batch)
 
         for batch_idx in range(start_batch, batch_end):
-            batch_start_time = time()
-            batch_data = batch_handler.get_batch(batch_idx)
+            batch_result = self._process_batch(batch_handler, batch_idx, epoch)
 
-            batch_loss = 0.0
-            batch_steps = 0
+            if batch_result is None:
+                break
 
-            for example_idx, example in enumerate(batch_data):
-                example_start_time = time()
-
-                loss, num_steps = self._train_single_example(example)
-
-                if num_steps > 0:
-                    batch_loss += loss * num_steps
-                    batch_steps += num_steps
-                    total_loss += loss * num_steps
-                    total_steps += num_steps
-
-                example_elapsed = time() - example_start_time
-                print(
-                    f"  Example {example_idx + 1}/{len(batch_data)}: {num_steps} steps, loss={loss:.4f} -> took {example_elapsed:.2f}s")
-
-                telemetry_handler.log_training_example(
-                    epoch, batch_idx + 1, example_idx + 1, num_steps, loss, example_elapsed)
-
-            batch_elapsed = time() - batch_start_time
-            avg_batch_loss = batch_loss / max(batch_steps, 1)
-            print(
-                f"Batch {batch_idx + 1} processed: {batch_steps} total steps, avg_loss={avg_batch_loss:.4f} -> took {batch_elapsed:.2f}s\n")
-
-            telemetry_handler.update_progress(epoch, batch_idx + 1)
-
-            if exit_listener.check_exit():
-                print("Exit requested. Saving progress...")
-                self.save_temp_checkpoint(epoch, avg_batch_loss)
-                telemetry_handler.save()
-                return None
+            batch_loss, batch_steps = batch_result
+            total_loss += batch_loss
+            total_steps += batch_steps
 
         avg_epoch_loss = total_loss / max(total_steps, 1)
+        self.telemetry_handler.log_train_epoch(
+            epoch, avg_epoch_loss, total_steps)
 
-        telemetry_handler.log_train_epoch(epoch, avg_epoch_loss, total_steps)
+        self.telemetry_handler.current_batch = 0
 
-        return avg_epoch_loss
+    def _process_batch(self, batch_handler, batch_idx: int, epoch: int):
+        batch_start_time = time()
+        batch_data = batch_handler.get_batch(batch_idx)
 
-    def _train_single_example(self, example: Dict) -> Tuple[float, int]:
+        batch_loss = 0.0
+        batch_steps = 0
+
+        for example_idx, example in enumerate(batch_data):
+            example_loss, example_steps = self._process_example(
+                example, example_idx, len(batch_data), epoch, batch_idx)
+            batch_loss += example_loss
+            batch_steps += example_steps
+
+        self._log_batch_completion(
+            batch_idx, batch_steps, batch_loss, batch_start_time, epoch)
+
+        if self.exit_listener.check_exit():
+            return self._handle_exit_request(epoch, batch_loss / max(batch_steps, 1))
+
+        return batch_loss, batch_steps
+
+    def _process_example(self, example, example_idx: int, total_examples: int, epoch: int, batch_idx: int):
+        example_start_time = time()
+        loss, num_steps = self.train_single_example(example)
+
+        weighted_loss = 0.0
+        if num_steps > 0:
+            weighted_loss = loss * num_steps
+
+        example_elapsed = time() - example_start_time
+        print(
+            f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={loss:.4f} -> took {example_elapsed:.2f}s")
+
+        self.telemetry_handler.log_training_example(
+            epoch, batch_idx + 1, example_idx + 1, num_steps, loss, example_elapsed)
+
+        return weighted_loss, num_steps
+
+    def _log_batch_completion(self, batch_idx: int, batch_steps: int, batch_loss: float, batch_start_time: float, epoch: int):
+        batch_elapsed = time() - batch_start_time
+        avg_batch_loss = batch_loss / max(batch_steps, 1)
+        print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, avg_loss={avg_batch_loss:.4f} -> took {batch_elapsed:.2f}s\n")
+        self.telemetry_handler.update_progress(epoch, batch_idx + 1)
+
+    def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
+        print("Exit requested. Saving progress...")
+        self.save_temp_checkpoint(epoch, avg_batch_loss)
+        self.telemetry_handler.save()
+        return None
+
+    def train_single_example(self, example: Dict) -> Tuple[float, int]:
         sentence_tokens = self._get_sentence_tokens(example)
         steps = example['steps']
 
@@ -132,14 +158,15 @@ class Trainer:
         model_logits = self.model(input_tensor)
         last_token_logits = model_logits[:, -1, :]
 
-        loss = self._compute_kl_loss(last_token_logits, target_tensor)
+        loss = self._compute_Kullback_Leibler_Divergence_Loss(
+            last_token_logits, target_tensor)
 
         loss.backward()
         self.optimizer.step()
 
         return loss.item()
 
-    def eval_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int, telemetry_handler) -> Tuple[float, float]:
+    def eval_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float]:
         self.model.eval()
         total_loss = 0.0
         total_correct = 0
@@ -175,9 +202,10 @@ class Trainer:
         avg_loss = total_loss / max(total_steps, 1)
         accuracy = total_correct / max(total_steps, 1)
 
-        telemetry_handler.log_eval_epoch(
+        self.telemetry_handler.log_eval_epoch(
             epoch, avg_loss, accuracy, total_steps)
 
+        print(f"Eval Loss: {avg_loss:.4f} | Accuracy: {accuracy:.4f}")
         return avg_loss, accuracy
 
     def _eval_single_example(self, example: Dict) -> Tuple[float, int, int]:
@@ -202,7 +230,8 @@ class Trainer:
             model_logits = self.model(input_tensor)
             last_token_logits = model_logits[:, -1, :]
 
-            loss = self._compute_kl_loss(last_token_logits, target_tensor)
+            loss = self._compute_Kullback_Leibler_Divergence_Loss(
+                last_token_logits, target_tensor)
             total_loss += loss.item()
 
             predicted_idx = torch.argmax(last_token_logits[0]).item()
@@ -224,12 +253,8 @@ class Trainer:
         probabilities = step['probabilities']
 
         token_id = self.token_to_id.get(token)
-        if token_id is None or token_id not in self.token_id_to_output_idx:
-            return None, None
 
         target_logits = self._build_target_logits(probabilities)
-        if target_logits is None:
-            return None, None
 
         return token_id, target_logits
 
@@ -243,25 +268,14 @@ class Trainer:
     def _build_target_logits(self, probabilities: Dict[str, float]) -> List[float]:
         target = [-100.0] * len(self.output_token_ids)
 
-        valid_count = 0
         for token_str, logit_value in probabilities.items():
             token_id = self.token_to_id.get(token_str)
-            if token_id is None:
-                continue
-
             output_idx = self.token_id_to_output_idx.get(token_id)
-            if output_idx is None:
-                continue
-
             target[output_idx] = logit_value
-            valid_count += 1
-
-        if valid_count == 0:
-            return None
 
         return target
 
-    def _compute_kl_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
+    def _compute_Kullback_Leibler_Divergence_Loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
         teacher_logits = teacher_logits.clone()
         valid_mask = teacher_logits != -100.0
         teacher_logits[~valid_mask] = -1e9
@@ -306,12 +320,11 @@ class Trainer:
         if not os.path.exists('checkpoints'):
             os.makedirs('checkpoints')
 
-        filepath = os.path.join('checkpoints', 'temp_checkpoint.pt')
-        torch.save(checkpoint, filepath)
+        torch.save(checkpoint, TEMP_CHECKPOINT_PATH)
 
         elapsed_time = time() - start_time
         print(
-            f"Temp checkpoint saved: {filepath} -> took {elapsed_time:.2f}s\n")
+            f"Temp checkpoint saved: {TEMP_CHECKPOINT_PATH} -> took {elapsed_time:.2f}s\n")
 
     def load_checkpoint(self, filepath: str) -> int:
         start_time = time()
