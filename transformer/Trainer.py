@@ -70,11 +70,16 @@ class Trainer:
             total_loss += batch_loss
             total_steps += batch_steps
 
-        avg_epoch_loss = total_loss / total_steps
-        self.telemetry_handler.log_train_epoch(
-            epoch, avg_epoch_loss, total_steps)
+        if total_steps > 0:
+            avg_epoch_loss = total_loss / total_steps
+            self.telemetry_handler.log_train_epoch(
+                epoch, avg_epoch_loss, total_steps)
 
-        self.telemetry_handler.current_batch = 0
+            self.save_checkpoint(epoch, avg_epoch_loss)
+        else:
+            print(
+                f"No training steps completed in epoch {epoch} (exit requested)")
+            self.telemetry_handler.current_batch = 0
 
     def _process_batch(self, batch_handler, batch_idx: int, epoch: int):
         batch_start_time = time()
@@ -93,28 +98,29 @@ class Trainer:
             batch_idx, batch_steps, batch_loss, batch_start_time, epoch)
 
         if self.exit_listener.check_exit():
-            return self._handle_exit_request(epoch, batch_loss / batch_steps)
+            avg = batch_loss / batch_steps if batch_steps > 0 else 0.0
+            return self._handle_exit_request(epoch, avg)
 
         return batch_loss, batch_steps
 
     def _process_example(self, example, example_idx: int, total_examples: int, epoch: int, batch_idx: int):
         example_start_time = time()
-        loss, num_steps = self.train_single_example(example)
+        loss_sum, num_steps = self.train_single_example(example)
 
-        weighted_loss = loss
+        avg_loss = loss_sum / num_steps if num_steps > 0 else 0.0
 
         example_elapsed = time() - example_start_time
         print(
-            f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={loss:.4f} -> took {example_elapsed:.2f}s")
+            f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, avg_loss={avg_loss:.4f} (sum={loss_sum:.4f}) -> took {example_elapsed:.2f}s")
 
         self.telemetry_handler.log_training_example(
-            epoch, batch_idx + 1, example_idx + 1, num_steps, loss, example_elapsed)
+            epoch, batch_idx + 1, example_idx + 1, num_steps, avg_loss, example_elapsed)
 
-        return weighted_loss, num_steps
+        return loss_sum, num_steps
 
     def _log_batch_completion(self, batch_idx: int, batch_steps: int, batch_loss: float, batch_start_time: float, epoch: int):
         batch_elapsed = time() - batch_start_time
-        avg_batch_loss = batch_loss / batch_steps
+        avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
         print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, avg_loss={avg_batch_loss:.4f} -> took {batch_elapsed:.2f}s\n")
         self.telemetry_handler.update_progress(epoch, batch_idx + 1)
 
@@ -168,24 +174,24 @@ class Trainer:
                 batch_steps = 0
 
                 for example_idx, example in enumerate(batch_data):
-                    loss, correct, num_steps = self._eval_single_example(
+                    loss_sum, correct, num_steps = self._eval_single_example(
                         example)
 
-                    batch_loss += loss * num_steps
+                    batch_loss += loss_sum
                     batch_correct += correct
                     batch_steps += num_steps
-                    total_loss += loss * num_steps
+                    total_loss += loss_sum
                     total_correct += correct
                     total_steps += num_steps
 
                 batch_elapsed = time() - batch_start_time
-                avg_batch_loss = batch_loss / batch_steps
-                batch_accuracy = batch_correct / batch_steps
+                avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
+                batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
                 print(
                     f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, acc={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
-        avg_loss = total_loss / total_steps
-        accuracy = total_correct / total_steps
+        avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
+        accuracy = total_correct / total_steps if total_steps > 0 else 0.0
 
         self.telemetry_handler.log_eval_epoch(
             epoch, avg_loss, accuracy, total_steps)
@@ -264,10 +270,27 @@ class Trainer:
     def _build_target_logits(self, probabilities: Dict[int, float]) -> List[float]:
         target = [-100.0] * len(self.output_token_ids)
 
-        for token_id, logit_value in probabilities.items():
+        provided_idxs = []
+        provided_vals = []
+        for token_id, value in probabilities.items():
             output_idx = self.token_id_to_output_idx.get(token_id)
             if output_idx is not None:
-                target[output_idx] = logit_value
+                target[output_idx] = value
+                provided_idxs.append(output_idx)
+                provided_vals.append(value)
+
+        if not provided_idxs:
+            return target
+
+        vals = torch.tensor(provided_vals, dtype=torch.float32)
+        sum_vals = float(vals.sum().item())
+        all_in_0_1 = bool(((vals >= 0.0) & (vals <= 1.0)).all())
+
+        if all_in_0_1 and abs(sum_vals - 1.0) < 1e-3:
+            eps = 1e-12
+            logit_vals = torch.log(vals.clamp(min=eps))
+            for out_idx, lval in zip(provided_idxs, logit_vals.tolist()):
+                target[out_idx] = float(lval)
 
         return target
 

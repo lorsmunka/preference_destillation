@@ -1,7 +1,7 @@
 import torch
 from pathlib import Path
 from transformers import AutoTokenizer
-from transformer.Transformer import Transformer
+from Transformer import Transformer
 from Utilities import Utilities
 
 
@@ -23,9 +23,6 @@ class CheckpointEvaluator:
         }
 
         self.model = Transformer(
-            input_vocab_size=self.tokenizer.vocab_size,
-            output_vocab_size=len(self.output_token_ids),
-            output_token_ids=self.output_token_ids,
         ).to(self.device)
 
     def get_checkpoint_files(self):
