@@ -23,8 +23,11 @@ for epoch in range(start_epoch, trainer.epoch_count() + 1):
     resume_from = resume_batch if epoch == start_epoch else 0
     print(f"\nEpoch {epoch}/{trainer.epoch_count()}\n")
 
-    trainer.train_epoch(
+    should_continue = trainer.train_epoch(
         batchHandler, batch_start, batch_end, epoch, resume_from)
+
+    if not should_continue:
+        break
 
     trainer.eval_epoch(
         batchHandler, test_start, test_end, epoch)

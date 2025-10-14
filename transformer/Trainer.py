@@ -64,7 +64,7 @@ class Trainer:
             batch_result = self._process_batch(batch_handler, batch_idx, epoch)
 
             if batch_result is None:
-                break
+                return None
 
             batch_loss, batch_steps = batch_result
             total_loss += batch_loss
@@ -80,6 +80,8 @@ class Trainer:
             print(
                 f"No training steps completed in epoch {epoch} (exit requested)")
             self.telemetry_handler.current_batch = 0
+
+        return True
 
     def _process_batch(self, batch_handler, batch_idx: int, epoch: int):
         batch_start_time = time()

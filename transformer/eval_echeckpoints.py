@@ -43,8 +43,6 @@ class CheckpointEvaluator:
         input_ids = self.tokenizer.encode(
             sentence, add_special_tokens=False, return_tensors="pt").to(self.device)
 
-        generated_token_ids = []
-
         with torch.no_grad():
             for _ in range(self.max_length - input_ids.size(1)):
                 logits = self.model(input_ids)
@@ -54,7 +52,6 @@ class CheckpointEvaluator:
                     break
 
                 next_token_id = self.output_idx_to_token_id[next_output_idx]
-                generated_token_ids.append(next_token_id)
 
                 if next_token_id == self.tokenizer.eos_token_id:
                     break
@@ -63,8 +60,7 @@ class CheckpointEvaluator:
                     [[next_token_id]], device=self.device)
                 input_ids = torch.cat([input_ids, next_input_tensor], dim=1)
 
-        all_ids = input_ids[0].tolist() + generated_token_ids
-        return self.tokenizer.decode(all_ids, skip_special_tokens=True)
+        return self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
 
     def evaluate_all_checkpoints(self):
         checkpoint_files = self.get_checkpoint_files()
