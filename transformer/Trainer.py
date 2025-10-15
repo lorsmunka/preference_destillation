@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import AdamW
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from typing import Dict, List, Tuple
 from time import time
 
@@ -17,7 +18,7 @@ TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 
 class Trainer:
-    def __init__(self, model: Transformer, token_to_id: Dict[str, int], tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener):
+    def __init__(self, model: Transformer, token_to_id: Dict[str, int], tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler=None):
         start_time = time()
         print("Initializing Trainer...")
 
@@ -32,6 +33,16 @@ class Trainer:
         self.tokenizer = tokenizer
         self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
 
+        batch_count = batch_handler.get_training_batches_radius()[
+            1] if batch_handler else 50
+        total_training_steps = EPOCH_COUNT * batch_count
+
+        self.scheduler = CosineAnnealingLR(
+            self.optimizer,
+            T_max=total_training_steps,
+            eta_min=1e-5
+        )
+
         self.output_token_ids = model.output_token_ids
         self.token_id_to_output_idx = {
             token_id: idx for idx, token_id in enumerate(self.output_token_ids)
@@ -42,7 +53,7 @@ class Trainer:
 
         elapsed_time = time() - start_time
         print(
-            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds \n")
+            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={total_training_steps})\n")
 
         if self.telemetry_handler.should_resume():
             if os.path.exists(TEMP_CHECKPOINT_PATH):
@@ -60,6 +71,10 @@ class Trainer:
         total_steps = 0
         start_batch = max(batch_start, resume_from_batch)
 
+        current_lr = self.optimizer.param_groups[0]['lr']
+        print(
+            f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}\n")
+
         for batch_idx in range(start_batch, batch_end):
             batch_result = self._process_batch(batch_handler, batch_idx, epoch)
 
@@ -74,7 +89,6 @@ class Trainer:
             avg_epoch_loss = total_loss / total_steps
             self.telemetry_handler.log_train_epoch(
                 epoch, avg_epoch_loss, total_steps)
-
             self.save_checkpoint(epoch, avg_epoch_loss)
         else:
             print(
@@ -96,6 +110,10 @@ class Trainer:
             batch_loss += example_loss
             batch_steps += example_steps
 
+        self.scheduler.step()
+        current_lr = self.optimizer.param_groups[0]['lr']
+        print(f"Batch {batch_idx + 1} -> LR after decay: {current_lr:.8f}")
+
         self._log_batch_completion(
             batch_idx, batch_steps, batch_loss, batch_start_time, epoch)
 
@@ -110,10 +128,8 @@ class Trainer:
         loss_sum, num_steps = self.train_single_example(example)
 
         avg_loss = loss_sum / num_steps if num_steps > 0 else 0.0
-
         example_elapsed = time() - example_start_time
-        print(
-            f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, avg_loss={avg_loss:.4f} (sum={loss_sum:.4f}) -> took {example_elapsed:.2f}s")
+        print(f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, avg_loss={avg_loss:.4f} (sum={loss_sum:.4f}) -> took {example_elapsed:.2f}s")
 
         self.telemetry_handler.log_training_example(
             epoch, batch_idx + 1, example_idx + 1, num_steps, avg_loss, example_elapsed)
@@ -178,7 +194,6 @@ class Trainer:
                 for example_idx, example in enumerate(batch_data):
                     loss_sum, correct, num_steps = self._eval_single_example(
                         example)
-
                     batch_loss += loss_sum
                     batch_correct += correct
                     batch_steps += num_steps
@@ -316,6 +331,7 @@ class Trainer:
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
+            'scheduler_state_dict': self.scheduler.state_dict(),
             'train_loss': train_loss,
         }
 
@@ -335,6 +351,7 @@ class Trainer:
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
+            'scheduler_state_dict': self.scheduler.state_dict(),
             'train_loss': train_loss,
         }
 
@@ -354,6 +371,10 @@ class Trainer:
             filepath, map_location=self.device, weights_only=True)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        if 'scheduler_state_dict' in checkpoint:
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+
         epoch = checkpoint['epoch']
 
         elapsed_time = time() - start_time
