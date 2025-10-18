@@ -35,10 +35,8 @@ class BatchHandler:
 
     def get_training_batches_radius(self):
         total_batches = self.get_batch_count()
-        # return 0, int(total_batches * TRAINING_TEST_RATIO)
-        return 0, 50
+        return 0, int(total_batches * TRAINING_TEST_RATIO)
 
     def get_test_batches_radius(self):
         total_batches = self.get_batch_count()
-        # return int(total_batches * TRAINING_TEST_RATIO), total_batches
-        return 50, 60
+        return int(total_batches * TRAINING_TEST_RATIO), total_batches

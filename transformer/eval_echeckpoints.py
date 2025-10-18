@@ -6,6 +6,9 @@ from Utilities import Utilities
 
 
 EVAL_SENTENCE = "Oh fuck this happened at my school why"
+EVAL_SENTENCE = "Real thirstposting hours who up"
+# EVAL_SENTENCE = "If someone put that spinning on a drill would that fish keep trying?"
+# EVAL_SENTENCE = "Yeah wtf is up with that I keep getting it and I barely play her anymore"
 
 
 class CheckpointEvaluator:
@@ -26,10 +29,18 @@ class CheckpointEvaluator:
         ).to(self.device)
 
     def get_checkpoint_files(self):
-        return sorted(
+        checkpoint_files = sorted(
             Path(self.checkpoint_dir).glob("checkpoint_epoch_*.pt"),
             key=lambda x: int(x.stem.split('_')[-1])
         )
+
+        checkpoint_files = []
+
+        temp_checkpoint = Path(self.checkpoint_dir) / "temp_checkpoint.pt"
+        if temp_checkpoint.exists():
+            checkpoint_files.insert(0, temp_checkpoint)
+
+        return checkpoint_files
 
     def load_checkpoint(self, checkpoint_path):
         checkpoint = torch.load(
@@ -40,8 +51,9 @@ class CheckpointEvaluator:
     def generate(self, sentence: str):
         self.model.eval()
 
+        sentence_with_delimiter = sentence + '\n\n'
         input_ids = self.tokenizer.encode(
-            sentence, add_special_tokens=False, return_tensors="pt").to(self.device)
+            sentence_with_delimiter, add_special_tokens=False, return_tensors="pt").to(self.device)
 
         with torch.no_grad():
             for _ in range(self.max_length - input_ids.size(1)):
@@ -59,6 +71,9 @@ class CheckpointEvaluator:
                 next_input_tensor = torch.tensor(
                     [[next_token_id]], device=self.device)
                 input_ids = torch.cat([input_ids, next_input_tensor], dim=1)
+
+                if self.tokenizer.decode([next_token_id]) == "}":
+                    break
 
         return self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
 

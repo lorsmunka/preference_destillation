@@ -10,15 +10,16 @@ from time import time
 from TelemetryHandler import TelemetryHandler
 from ExitListener import ExitListener
 from Transformer import Transformer
+from BatchHandler import BatchHandler
 
-EPOCH_COUNT = 10
+EPOCH_COUNT = 20
 LEARNING_RATE = 3e-4
 TEMPERATURE = 1.0
 TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 
 class Trainer:
-    def __init__(self, model: Transformer, token_to_id: Dict[str, int], tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler=None):
+    def __init__(self, model: Transformer, token_to_id: Dict[str, int], tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
         start_time = time()
         print("Initializing Trainer...")
 
@@ -33,8 +34,8 @@ class Trainer:
         self.tokenizer = tokenizer
         self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
 
-        batch_count = batch_handler.get_training_batches_radius()[
-            1] if batch_handler else 50
+        self.batch_handler = batch_handler
+        batch_count = batch_handler.get_training_batches_radius()[1]
         total_training_steps = EPOCH_COUNT * batch_count
 
         self.scheduler = CosineAnnealingLR(
@@ -65,7 +66,7 @@ class Trainer:
     def epoch_count(self):
         return EPOCH_COUNT
 
-    def train_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> float:
+    def train_epoch(self, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> float:
         self.model.train()
         total_loss = 0.0
         total_steps = 0
@@ -76,7 +77,7 @@ class Trainer:
             f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}\n")
 
         for batch_idx in range(start_batch, batch_end):
-            batch_result = self._process_batch(batch_handler, batch_idx, epoch)
+            batch_result = self._process_batch(batch_idx, epoch)
 
             if batch_result is None:
                 return None
@@ -97,9 +98,9 @@ class Trainer:
 
         return True
 
-    def _process_batch(self, batch_handler, batch_idx: int, epoch: int):
+    def _process_batch(self, batch_idx: int, epoch: int):
         batch_start_time = time()
-        batch_data = batch_handler.get_batch(batch_idx)
+        batch_data = self.batch_handler.get_batch(batch_idx)
 
         batch_loss = 0.0
         batch_steps = 0
@@ -176,7 +177,7 @@ class Trainer:
 
         return total_loss, valid_steps
 
-    def eval_epoch(self, batch_handler, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float]:
+    def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float]:
         self.model.eval()
         total_loss = 0.0
         total_correct = 0
@@ -185,7 +186,7 @@ class Trainer:
         with torch.no_grad():
             for batch_idx in range(batch_start, batch_end):
                 batch_start_time = time()
-                batch_data = batch_handler.get_batch(batch_idx)
+                batch_data = self.batch_handler.get_batch(batch_idx)
 
                 batch_loss = 0.0
                 batch_correct = 0
@@ -259,7 +260,8 @@ class Trainer:
         return loss
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
-        return self.tokenizer.encode(example['sentence'], add_special_tokens=False)
+        text = example['sentence'] + '\n\n'
+        return self.tokenizer.encode(text, add_special_tokens=False)
 
     def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float]]:
         token = step['token']
@@ -287,27 +289,10 @@ class Trainer:
     def _build_target_logits(self, probabilities: Dict[int, float]) -> List[float]:
         target = [-100.0] * len(self.output_token_ids)
 
-        provided_idxs = []
-        provided_vals = []
-        for token_id, value in probabilities.items():
+        for token_id, logit_value in probabilities.items():
             output_idx = self.token_id_to_output_idx.get(token_id)
             if output_idx is not None:
-                target[output_idx] = value
-                provided_idxs.append(output_idx)
-                provided_vals.append(value)
-
-        if not provided_idxs:
-            return target
-
-        vals = torch.tensor(provided_vals, dtype=torch.float32)
-        sum_vals = float(vals.sum().item())
-        all_in_0_1 = bool(((vals >= 0.0) & (vals <= 1.0)).all())
-
-        if all_in_0_1 and abs(sum_vals - 1.0) < 1e-3:
-            eps = 1e-12
-            logit_vals = torch.log(vals.clamp(min=eps))
-            for out_idx, lval in zip(provided_idxs, logit_vals.tolist()):
-                target[out_idx] = float(lval)
+                target[output_idx] = logit_value
 
         return target
 
@@ -366,17 +351,18 @@ class Trainer:
 
     def load_checkpoint(self, filepath: str) -> int:
         start_time = time()
-
         checkpoint = torch.load(
             filepath, map_location=self.device, weights_only=True)
+
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        if 'scheduler_state_dict' in checkpoint:
-            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        batch_count = self.batch_handler.get_training_batches_radius()[1]
+        total_training_steps = EPOCH_COUNT * batch_count
+        self.scheduler = CosineAnnealingLR(
+            self.optimizer, T_max=total_training_steps, eta_min=1e-5)
 
         epoch = checkpoint['epoch']
-
         elapsed_time = time() - start_time
         print(
             f"Checkpoint loaded: {filepath} (epoch {epoch}) -> took {elapsed_time:.2f}s\n")
