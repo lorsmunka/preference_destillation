@@ -2,7 +2,7 @@ from pynput import keyboard
 
 
 class ExitListener:
-    def __init__(self, exit_key='x'):
+    def __init__(self, exit_key='%'):
         self.should_exit = False
         self.exit_key = exit_key
         self.listener = keyboard.Listener(on_press=self._on_press)

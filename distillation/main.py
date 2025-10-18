@@ -1,6 +1,10 @@
 from time import sleep, time
 
-from distillation import SentenceHandler, TelemetryHandler, ModelHandler, SavingHandler, ExitListener
+from SentenceHandler import SentenceHandler
+from TelemetryHandler import TelemetryHandler
+from ModelHandler import ModelHandler
+from SavingHandler import SavingHandler
+from ExitListener import ExitListener
 
 exitListener = ExitListener()
 sentenceHandler = SentenceHandler()
