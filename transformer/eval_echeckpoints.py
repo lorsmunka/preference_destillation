@@ -86,7 +86,7 @@ class CheckpointEvaluator:
     def generate(self, sentence: str):
         self.model.eval()
 
-        sentence_with_delimiter = sentence + '\n\n ```json\n{\n  \"tone\":'
+        sentence_with_delimiter = sentence + '\n\n'
         input_ids = self.tokenizer.encode(
             sentence_with_delimiter, add_special_tokens=False, return_tensors="pt").to(self.device)
 

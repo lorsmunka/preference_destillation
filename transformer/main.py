@@ -32,6 +32,5 @@ for epoch in range(start_epoch, trainer.epoch_count() + 1):
 
     telemetryHandler.save()
 
-
 exitListener.stop()
 print("Bye!")
