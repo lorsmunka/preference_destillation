@@ -5,7 +5,7 @@ import numpy as np
 
 
 class TelemetryVisualizer:
-    def __init__(self, telemetry_file="telemetry/training.jsonl", smooth_window=100):
+    def __init__(self, telemetry_file="telemetry/training.jsonl", smooth_window=200):
         self.telemetry_file = Path(telemetry_file)
         self.smooth_window = smooth_window
         self.data = self._load_data()

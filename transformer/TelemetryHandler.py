@@ -89,7 +89,7 @@ class TelemetryHandler:
 
         return SHOULD_RESUME
 
-    def log_training_example(self, epoch: int, batch: int, example: int, num_steps: int, loss: float, time_seconds: float):
+    def log_training_example(self, epoch: int, batch: int, example: int, num_steps: int, loss: float, time_seconds: float, kl_loss: float, ce_loss: float, accuracy: float):
         self._write_log({
             "type": "train_example",
             "epoch": epoch,
@@ -97,22 +97,29 @@ class TelemetryHandler:
             "example": example,
             "num_steps": num_steps,
             "loss": loss,
+            "kl_loss": kl_loss,
+            "ce_loss": ce_loss,
+            "accuracy": accuracy,
             "time_seconds": time_seconds
         })
 
-    def log_train_epoch(self, epoch: int, avg_loss: float, total_steps: int):
+    def log_train_epoch(self, epoch: int, avg_loss: float, total_steps: int, kl_loss: float, ce_loss: float):
         self._write_log({
             "type": "train_epoch",
             "epoch": epoch,
             "avg_loss": avg_loss,
+            "kl_loss": kl_loss,
+            "ce_loss": ce_loss,
             "total_steps": total_steps
         })
 
-    def log_eval_epoch(self, epoch: int, avg_loss: float, accuracy: float, total_steps: int):
+    def log_eval_epoch(self, epoch: int, avg_loss: float, accuracy: float, total_steps: int, kl_loss: float, ce_loss: float):
         self._write_log({
             "type": "eval_epoch",
             "epoch": epoch,
             "avg_loss": avg_loss,
+            "kl_loss": kl_loss,
+            "ce_loss": ce_loss,
             "accuracy": accuracy,
             "total_steps": total_steps
         })
