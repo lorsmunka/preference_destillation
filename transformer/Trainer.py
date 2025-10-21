@@ -181,6 +181,8 @@ class Trainer:
         correct_predictions = 0
         generated_token_ids = []
 
+        self.optimizer.zero_grad(set_to_none=True)
+
         for step in steps:
             token_id, target_logits = self._prepare_step_data(step)
 
@@ -189,12 +191,10 @@ class Trainer:
                 target_logits
             )
 
-            self.optimizer.zero_grad()
             loss, kl_loss, ce_loss, is_correct = self._compute_step_loss(
                 input_tensor, target_tensor)
 
             loss.backward()
-            self.optimizer.step()
 
             total_loss += loss.item()
             total_kl_loss += kl_loss.item()
@@ -203,6 +203,8 @@ class Trainer:
             if is_correct:
                 correct_predictions += 1
             generated_token_ids.append(token_id)
+
+        self.optimizer.step()
 
         return total_loss, total_kl_loss, total_ce_loss, valid_steps, correct_predictions
 
