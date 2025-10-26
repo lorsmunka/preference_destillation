@@ -1,0 +1,7282 @@
+
+=== Evaluating temp ===
+Example 1: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ": "": "
+    ",
+    
+    ": "
+        
+    ",
+    "safety": "
+    "toxicity": "
+}
+
+Example 2: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+  ": "": "
+  ",
+  ",
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity
+
+Example 3: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity":
+
+Example 4: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  
+    
+  "tone": "
+  sentiment": "
+   "",
+  ",
+  ",
+  
+    
+  
+  
+
+Example 5: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "
+  sentiment": "
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity": "
+}
+
+Example 6: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  ",
+  ",
+   "": "
+  ",
+  ",
+   "
+    
+  ",
+  ",
+  safety": "
+
+
+Example 7: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+    ": "
+    ",
+    ": "
+        
+    ",
+    ",
+    safety": "
+     "",
+    "toxicity":
+
+Example 8: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "
+  sentiment": "
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity": "
+}
+
+Example 9: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ": "
+    ",
+    ",
+    
+        
+    ",
+    "safety": "
+    ",
+    "toxicity": "
+}
+
+Example 10: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ": "": "
+    ",
+    
+    ": "
+        
+    ",
+    "safety": "
+    "toxicity": "
+}
+
+Example 11: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ",
+     "tone": "
+    sentiment": "
+     "
+        
+    ",
+    "safety": "
+    ",
+    "
+
+Example 12: 11/39 correct (acc=0.2821)
+Generated: ```json
+{
+  "tone": "",
+  
+    
+  ",
+  "sentiment": "
+  ",
+  ",
+  "safety": "
+  
+
+Example 13: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ```json
+   "": "
+  ",
+  
+  ": "
+    
+  ",
+  "safety": "
+  "toxicity":
+
+Example 14: 15/39 correct (acc=0.3846)
+Generated: ```json
+{
+  ": "
+  ",
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity": "
+}"
+
+
+Example 15: 11/39 correct (acc=0.2821)
+Generated: ```json
+{
+  "tone": "
+  
+  ",
+  "sentiment": "
+  safety": "",
+  ",
+  "toxicity": "
+}ful
+
+Example 16: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  ",
+   "": "
+  ",
+  ",
+   "
+    
+   "safety": "
+  toxicity
+
+Example 17: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "tone": "
+     "
+    sentiment": "
+        
+    ",
+    "safety": "
+    ",
+    "toxicity":
+
+Example 18: 6/40 correct (acc=0.1500)
+Generated: ```json
+{
+    ": "",
+    ",
+     "": "
+    ",
+    ",
+     "
+        
+    ",
+    ",
+    safety": "
+
+Example 19: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": "
+     "sentiment": " "",
+    ": "
+    ",
+     "
+        
+     "safety": "
+    toxicity
+
+Example 20: 8/38 correct (acc=0.2105)
+Generated: ```json
+{
+  jsontone": "
+    
+  ",
+  "sentiment": "
+  ": "
+    ",
+    ",
+  safety":
+
+Example 21: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  
+  ",
+  "sentiment": "
+  ",
+  ",
+  ",
+  ",
+  
+    ":
+
+Example 22: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ",
+    ",
+     "": "
+    
+    ",
+    ": "
+        
+    ",
+    ",
+    safety": "
+
+
+Example 23: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  tone": "
+   "
+    
+  ",
+  "sentiment": "
+  ",
+  ",
+  ",
+  ",
+  
+
+Example 24: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "": "
+    ",
+  ",
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity": "
+
+Example 25: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  ": "
+  ",
+   "
+    
+  ",
+  "safety": "
+  "toxicity": "
+}"
+}"
+
+
+Example 26: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  tone": "
+   "
+  ful",
+  sentiment": "
+   "",
+  ",
+  ",
+  
+    ": "
+
+
+Example 27: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+    ": "
+    sentiment": "
+     "
+        
+    ",
+    "safety": "
+    toxicity": ""
+}ful"
+
+Example 28: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "
+    ": " "",
+    ": "
+    ",
+     "
+      
+    ",
+    "safety": "
+    ",
+
+
+Example 29: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "": "
+  
+  ",
+  ": "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity":
+
+Example 30: 10/38 correct (acc=0.2632)
+Generated: ```json
+{
+  ": "
+  ",
+   "
+    
+  ",
+  "safety": "
+  toxicity": ""
+}"
+}"
+
+Example 31: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "",
+  ": "
+   "
+    ",
+  toxicity": "
+} ""
+}
+
+Example 32: 13/39 correct (acc=0.3333)
+Generated: ```json
+{
+  "tone": "
+  ",
+  ",
+  ",
+   "
+    
+  ",
+  "sentiment": "
+  ",
+  
+
+Batch 2 Results:
+  Total Correct: 256/1243
+  Accuracy: 0.2060
+  Time: 7.68s
+
+
+=== Evaluating 0 ===
+Example 1: 2/39 correct (acc=0.0513)
+Generated: json
+json
+json
+{
+    json
+    ",
+    "sentiment": "neutral",
+    ",
+    "sentiment",
+    
+    "sentiment",
+    "
+
+Example 2: 4/38 correct (acc=0.1053)
+Generated: 
+{
+{
+    ",
+    ": "
+    sentiment": "    
+    "sentiment": "
+    ": "
+    "safety": "
+    ",
+    
+
+Example 3: 3/39 correct (acc=0.0769)
+Generated: 
+{
+{
+    ",
+    ```":":": "",
+    
+    "sentiment": "
+    ": "
+    "
+     "
+    ",
+    "
+
+Example 4: 6/39 correct (acc=0.1538)
+Generated: json{
+    
+    "tone": "
+    ": "
+    "safety": "
+    ",
+    "
+         ""safety": "safe",
+    "
+
+Example 5: 3/39 correct (acc=0.0769)
+Generated: json
+{
+    
+    ":":": ""
+    
+    "sentiment": "
+    ": "
+    "
+     "
+    ",
+    "safety": "
+
+Example 6: 8/39 correct (acc=0.2051)
+Generated: ```json
+json
+{
+    ": "
+{
+    ",
+    ",
+    
+    
+    "sentiment": "
+    ": "
+    "safety": "
+
+
+Example 7: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+    {
+    tone": "    
+    ",
+    ": "
+     "
+    "
+     "
+    ",
+    "
+        
+
+Example 8: 2/39 correct (acc=0.0513)
+Generated: json
+{
+    
+    
+    ",
+    
+    
+    "sentiment": "neutral",
+    ": ""safety": "
+    ",
+    "
+    
+
+
+Example 9: 3/39 correct (acc=0.0769)
+Generated: json
+{
+    
+    ": ""sentiment": "    
+    ",
+    ": "
+    "
+    safe",
+
+    ful",
+    "
+    
+
+
+Example 10: 3/39 correct (acc=0.0769)
+Generated: 
+{
+{
+    ",
+    ": "
+    sentiment": "    
+    "sentiment": "
+    ": "
+    "
+     "
+    ",
+        
+
+Example 11: 1/39 correct (acc=0.0256)
+Generated: ``````json
+{
+    ",
+    
+    "sentiment": "",
+    
+    "safety": "
+    ": "
+    "
+     "
+    ",
+
+
+Example 12: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    ",
+    
+    
+    "sentiment": "
+    ": "
+    "sentiment": "
+    ",
+        
+         ""safety
+
+Example 13: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ":
+    ",
+    ```    ": "sentiment",
+    
+    ",
+    ": "
+    "
+    "
+     "
+    ",
+
+Example 14: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+    
+    json
+        
+    "sentiment":": "    ": "
+    "safety": "
+    ",
+        
+         ""
+
+Example 15: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+    
+    ": "sentiment",
+    ",
+    ": ""
+    ": ""safety": "
+
+    
+    "
+    
+    
+
+
+Example 16: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+    "tone": "    ",
+    ",
+
+    json
+    sentiment": "    
+    ",
+    ": "
+    "
+    "
+
+
+Example 17: 0/39 correct (acc=0.0000)
+Generated: json
+{
+    ",
+    
+    ": "",
+    
+    
+    "sentiment": "
+    ": "
+    "safety": "
+    ",
+    "
+
+Example 18: 0/40 correct (acc=0.0000)
+Generated: json
+{
+    ",
+    ",
+    sentiment": "
+    ": "
+    sentiment",
+    
+    ",
+    ": "
+    "toxicity": "
+     "
+
+Example 19: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+    "tone": "    ",
+    ",
+
+    "sentiment": "",
+    
+    "sentiment": "
+    ": "
+    "safety
+
+Example 20: 1/38 correct (acc=0.0263)
+Generated: json
+{
+    ",
+    
+    "tone": "
+    ": "
+    "
+     "
+    ",
+        
+         ""safety": "
+
+Example 21: 1/39 correct (acc=0.0256)
+Generated: json
+{
+    
+    
+    "tone": "
+    ": "
+    "safety": "
+    ",
+        
+         ""
+    
+    
+
+
+Example 22: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+{
+    ": "",
+    
+    json
+    sentiment": "    
+    "
+    ": "
+    "
+    "
+     "
+
+
+Example 23: 5/38 correct (acc=0.1316)
+Generated: ``````json
+{
+    ",
+    
+    "sentiment": "
+    ": "
+    "safety": "
+    ",
+    "
+         ""safety
+
+Example 24: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ```{
+    ": "
+    
+    
+    "sentiment": "
+    ": "
+    "
+     "
+    ",
+    "
+
+
+Example 25: 6/39 correct (acc=0.1538)
+Generated: ``````json
+{
+    ",
+    
+    
+    "sentiment": "
+    ": "
+    "safety": "
+    ",
+    "toxicity": "
+
+
+
+Example 26: 2/39 correct (acc=0.0513)
+Generated: ```json{
+    
+    "tone": "
+    ": "
+    "
+     "
+    ",
+        
+         ""safety": "
+     ""
+
+Example 27: 4/38 correct (acc=0.1053)
+Generated: json
+{
+    
+        ":":": "
+    
+    "sentiment": "
+    ": "
+    "sentiment": "
+    ",
+    "sentiment":
+
+Example 28: 2/39 correct (acc=0.0513)
+Generated: ``````json
+{
+    ": "
+    ``````",
+    ",
+    
+    
+    ",
+    ": "    ": "
+    "safety": "
+    
+
+Example 29: 1/39 correct (acc=0.0256)
+Generated: 
+{
+    ```",
+    
+    "tone": "",
+    
+    "sentiment": "
+    ": "
+    ""
+    "safety": "    "
+
+Example 30: 11/38 correct (acc=0.2895)
+Generated: ```json
+{
+    
+    "tone": "
+    sentiment": "    ",
+     ""safety": "
+} "respect",
+}"
+}
+}
+
+Example 31: 1/39 correct (acc=0.0256)
+Generated: 
+{
+    ```json
+    
+    
+    ",
+    
+    
+    "tone": "
+         "
+    "
+     "
+    ",
+        
+
+Example 32: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "```",
+    ""sentiment": "",
+    
+    ",
+    ": "
+    ful",
+             "
+    ",
+
+Batch 2 Results:
+  Total Correct: 145/1243
+  Accuracy: 0.1167
+  Time: 7.54s
+
+
+=== Evaluating 1 ===
+Example 1: 4/39 correct (acc=0.1026)
+Generated: tone
+{
+    "tonetone```json
+```json
+    tone"tone": ""tone": "",
+    ": "
+    "sentiment": "", "",
+
+
+Example 2: 0/38 correct (acc=0.0000)
+Generated: tone
+{
+{
+{
+"tone    
+    
+    tone"tonejson
+    ```
+    ```
+"tone": "
+    tone    "tone    "
+
+Example 3: 1/39 correct (acc=0.0256)
+Generated: tone
+    
+    "tonetonejson
+
+
+    
+    tone    
+    
+"tone": "",
+    ":
+    "
+        "tone    "sentiment
+
+Example 4: 6/39 correct (acc=0.1538)
+Generated: 
+{
+{
+{
+    ```": "",
+    ": "    "sentiment": "
+    "sentiment": " "
+    "safety"safety": "",
+    
+
+Example 5: 3/39 correct (acc=0.0769)
+Generated: 
+
+{
+
+```json
+tone```tonejson
+
+
+    
+
+
+
+{
+
+
+{
+
+
+
+    
+    tone": "    sentiment": "
+
+Example 6: 4/39 correct (acc=0.1026)
+Generated: ```json
+```json
+
+{
+{
+{
+
+{
+
+    
+    tone```
+{
+"tone": "json
+
+    
+
+
+    tone
+
+
+Example 7: 3/38 correct (acc=0.0789)
+Generated: 
+{
+{
+{
+json
+    "tone": "
+    "tone": "",
+    ": "
+    "sentiment": ""sentiment": "
+    
+
+
+Example 8: 4/39 correct (acc=0.1026)
+Generated: 
+{
+{
+"tone": "",
+    tone    tone": ""tone": "",
+    ": "    
+    
+    "sentiment": "    
+ "
+
+
+Example 9: 2/39 correct (acc=0.0513)
+Generated: 
+{
+
+
+
+{
+
+    
+    tone": "
+    "tone": "",
+        ",
+        tone": "    "sentiment": " "
+
+
+Example 10: 2/39 correct (acc=0.0513)
+Generated: tone
+{
+    "tonetone",
+    
+    
+    tone":
+    
+    ", "
+    
+    ": "
+    "tone": ""tone": "
+
+Example 11: 2/39 correct (acc=0.0513)
+Generated: ""tone
+{
+    "tone``````tone": "
+    "tone    tone    
+"tone": "",
+        ",
+    "tone": "",
+
+
+Example 12: 4/39 correct (acc=0.1026)
+Generated: 
+    
+    ": "
+    ",
+    
+    
+    ",
+    ",
+        ",
+    "sentiment "
+    "sentiment":
+    
+    "safety
+
+Example 13: 5/39 correct (acc=0.1282)
+Generated: 
+{
+{
+
+    
+    
+{
+     "
+    
+    tone    
+    
+    ",
+    ",
+        
+        "sentiment "
+    
+
+Example 14: 4/39 correct (acc=0.1026)
+Generated: "```json
+{
+```": "",
+    tone": "sentiment": "
+    
+    ": "
+    "sentiment": ""sentiment": "
+
+    
+    
+
+Example 15: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+{
+```json
+    
+{
+
+ "
+    ",
+ ""tone": "    "tone": " "
+    "sentiment "
+"safety
+
+Example 16: 7/39 correct (acc=0.1795)
+Generated: 
+{
+
+{
+"tone": "
+    
+    
+    sentiment": "
+    
+    sentiment": "
+    "sentiment": "",
+    ": "
+    
+
+Example 17: 2/39 correct (acc=0.0513)
+Generated: tone
+{
+        
+    ",
+    
+    json"tone": "
+    "sentiment": "",
+        ",
+        sentiment": "",
+        
+
+Example 18: 3/40 correct (acc=0.0750)
+Generated: 
+"
+{ ""tone    
+    
+        tone",tone     "
+    
+    ",
+    ": ""sentiment "
+    
+    ": "
+    "toxicity
+
+Example 19: 7/39 correct (acc=0.1795)
+Generated: ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Example 20: 4/38 correct (acc=0.1053)
+Generated: "tone": "    ",
+    tone":
+"sentiment": "",
+        ",
+        sentiment": "",
+    "sentiment": "
+    "sentiment":
+
+Example 21: 1/39 correct (acc=0.0256)
+Generated: ": "
+    "tone    
+    
+"tone": "",
+        ",
+    "tone    "sentiment": "    "sentiment": ""sentiment": "sentiment":
+
+Example 22: 1/39 correct (acc=0.0256)
+Generated: 
+{
+"tone": "
+    
+    
+    sentiment": "
+    
+    sentiment": "
+    "sentiment": "",
+
+    ",
+        ",
+
+
+Example 23: 5/38 correct (acc=0.1316)
+Generated: tonejson
+{
+{
+{
+    
+    
+    ```
+    ```json
+    json
+        
+    "tone": "    tone"tone": "
+
+
+Example 24: 1/39 correct (acc=0.0256)
+Generated: 
+{
+    "tonetone": "
+    "tone",
+    
+    
+    "tone": "
+        ",
+    "sentiment "
+    "sentiment": "
+
+Example 25: 4/39 correct (acc=0.1026)
+Generated: "tonejsontone":
+"tone": "tone    "tone": "
+    "tone": "
+     "
+    tone    "tone    "tone    
+    
+    
+
+Example 26: 1/39 correct (acc=0.0256)
+Generated: json
+{
+    
+
+    "tone
+
+
+
+
+    tone": "    ",
+    "",
+    
+    
+
+    
+    ": "
+    "
+
+Example 27: 5/38 correct (acc=0.1316)
+Generated: 
+{
+{
+{
+
+tone```tonejson
+    tone":
+    "tone": "tone"tone": "
+    tone":
+    "tone":
+    
+
+Example 28: 3/39 correct (acc=0.0769)
+Generated: ```json"json
+    
+{
+    
+    tone": "
+    sentiment": "safety": "
+    safety": "",
+    ": "
+    "toxicity    
+
+
+Example 29: 5/39 correct (acc=0.1282)
+Generated: tone
+
+
+{
+
+
+
+
+
+tone": "tone",
+    
+    "sentiment": "",
+        ",
+    "sentiment "
+    "sentiment":
+
+Example 30: 4/38 correct (acc=0.1053)
+Generated: "tonetonejson
+{
+
+{
+    tone": "
+    "tone    ",
+    ": "
+    "tone    "tone    "sentiment " "
+    
+
+Example 31: 3/39 correct (acc=0.0769)
+Generated: tone
+{
+{
+    tonejson
+
+
+    
+    tone": "": ""tone": "",
+    ": "
+    "sentiment "
+    "sentiment "
+
+Example 32: 7/39 correct (acc=0.1795)
+Generated: 
+
+
+{
+
+
+
+{
+
+tone": "
+    
+
+    "tone": ""tone": "",
+        tone": "    
+    
+    
+
+Batch 2 Results:
+  Total Correct: 112/1243
+  Accuracy: 0.0901
+  Time: 7.77s
+
+
+=== Evaluating 2 ===
+Example 1: 3/39 correct (acc=0.0769)
+Generated: 
+
+    json
+    tone": "     "": "        ": "
+    "sentiment": "    ",
+        ",
+        ": "": "    "safety
+
+Example 2: 2/38 correct (acc=0.0526)
+Generated: 
+{
+        {
+    json
+    json
+    json
+{
+    "tone": "    ",
+        ": "    ": " "": "    ",
+
+Example 3: 1/39 correct (acc=0.0256)
+Generated: 
+    
+            tonejson
+     "": "
+    json "
+    "tone": "    ",
+    ",
+     "    ": "
+        "tone
+
+Example 4: 8/39 correct (acc=0.2051)
+Generated: 
+    tone": "    "tone": "    ",
+        ",
+        ": "    "tone",
+    
+    
+         "": " "": "    
+
+Example 5: 1/39 correct (acc=0.0256)
+Generated: json
+    tonejson
+     "": "        ": "
+    "sentiment": "    ",
+    ",
+    "safety": "
+    ful"safety": "":
+
+Example 6: 3/39 correct (acc=0.0769)
+Generated: 
+    
+json
+{
+{
+        tone": "   "": "": "": "
+    "toxicity": "ful",
+}",
+} "": " "
+
+Example 7: 2/38 correct (acc=0.0526)
+Generated:         tonejson
+    "
+    
+    ": "
+    "sentiment": "    ",
+        ",
+        ": "    "
+        
+    
+
+
+Example 8: 3/39 correct (acc=0.0769)
+Generated: json        tone": "     "": "    ",
+    sentiment": "",
+    ",
+    "safety": " "": " "    "
+            "
+
+
+Example 9: 2/39 correct (acc=0.0513)
+Generated: json
+    tone": "   "": "": "": "
+    "",
+    ",
+    "
+    ": "": " "     "    ",
+    
+    
+
+Example 10: 1/39 correct (acc=0.0256)
+Generated: 
+        json
+    tonejson
+     "": "    ": "neutral",
+    ",
+    ",
+    "safety": "
+    
+    
+    ": "    
+
+Example 11: 0/39 correct (acc=0.0000)
+Generated: ",
+{tone": "      ",
+    "toxicity": "": "": "": "": "": "ful",
+}}",
+}": "": "}ful
+
+Example 12: 3/39 correct (acc=0.0769)
+Generated: tonejsontonejson "": "
+    json
+    
+    json
+    ",
+    "tone": "
+    ": "
+        "tone":"
+     "    
+
+Example 13: 2/39 correct (acc=0.0513)
+Generated: 
+    json
+{
+        {
+    json
+    json
+    ": "": "": "    ": "": "": "": "": "": " "    "
+
+Example 14: 7/39 correct (acc=0.1795)
+Generated:     tone": "     "": "    ",
+    
+    "sentiment": "    ",
+    ",
+     "": " "
+        "sentiment    "
+    "
+
+Example 15: 0/39 correct (acc=0.0000)
+Generated:  "": "
+    json "
+    "tone": "    ",
+        ",
+        ": "
+        ",
+    
+    
+    "
+    "sentiment
+
+Example 16: 2/39 correct (acc=0.0513)
+Generated: ```":"
+    
+    "
+{
+            tone": ""safety": "    ",
+    
+    "toxicity": "  ",
+}    ful"}
+
+Example 17: 2/39 correct (acc=0.0513)
+Generated: 
+{
+        {
+    json "": "
+    ",
+    
+    "safety": "ful",
+    ful",
+    ": " "": "ful",
+
+
+Example 18: 6/40 correct (acc=0.1500)
+Generated: ":"
+{
+    "tone": "": "": "
+    "
+    safety": "": "": ""toxicity": "    ",
+        ",
+    ful",
+
+Example 19: 4/39 correct (acc=0.1026)
+Generated: 
+    "tone"tone"tonetonejson
+        {
+    ": "": "
+    ": " "
+    "safety": "": "": "": "": "
+
+Example 20: 4/38 correct (acc=0.1053)
+Generated:     "tone": "": " "
+    "tone",
+    ",
+        ",
+        ": "
+        ",
+    
+    
+    "
+    
+
+Example 21: 2/39 correct (acc=0.0513)
+Generated: "tonetone": "": "
+    "sentiment": "    ",
+        ",
+        ": "    "
+        
+    
+     "": "",
+    
+
+Example 22: 5/39 correct (acc=0.1282)
+Generated: tone```json{
+{
+{
+        tone": "   "": "    ",
+    
+    "toxicity": "ful",
+        "
+}": " "
+
+Example 23: 1/38 correct (acc=0.0263)
+Generated: tonejson"tonejson
+    json
+    tone": "tone": "    ",
+        ",
+             "    "sentiment",
+    
+     " "    
+
+Example 24: 4/39 correct (acc=0.1026)
+Generated: "
+            tone": "     "": "    ",
+    sentiment": "",
+    "safety     "": "": "ful",
+    "
+        
+
+
+Example 25: 7/39 correct (acc=0.1795)
+Generated: {tone": "     "": "": "": "
+    "toxicity": "ful",
+}": "": "ful",
+}"toxicity": "": "": " "
+
+Example 26: 1/39 correct (acc=0.0256)
+Generated: "
+    ": "
+    "sentiment": "    ",
+    ",
+     "    ": "    "sentiment": "": "": " "     "": ""toxicity    
+
+Example 27: 1/38 correct (acc=0.0263)
+Generated: json
+    tone": "   "": "
+    ": "
+    "sentiment": "    ",
+        ",
+      ": "     "    "safety    
+
+
+Example 28: 10/39 correct (acc=0.2564)
+Generated: json
+{
+{tone": "      sentiment": "ful"toxicity": "    ",
+}": "": "ful",
+}safe",
+} "ful",
+}
+
+Example 29: 0/39 correct (acc=0.0000)
+Generated: 
+        ": "    tone",
+    "tone",
+    ":"
+    "tone",
+    ",
+        ": "        ": "    "
+        
+
+Example 30: 5/38 correct (acc=0.1316)
+Generated: {
+    json"
+    
+    json
+    
+    "tone": "    ",
+    ",
+     "": "": "": "ful",
+    ": "
+
+Example 31: 4/39 correct (acc=0.1026)
+Generated: 
+{
+        {
+    json
+    ": "": "": "
+    "safety": "ful",
+}",
+     "": " "": ""toxicity":
+
+Example 32: 5/39 correct (acc=0.1282)
+Generated: 
+json"
+{
+        {
+    json
+    json
+    json
+{
+    "tone": "": "    safe",
+    "safety": "": "
+
+Batch 2 Results:
+  Total Correct: 101/1243
+  Accuracy: 0.0813
+  Time: 6.96s
+
+
+=== Evaluating 3 ===
+Example 1: 0/39 correct (acc=0.0000)
+Generated: 
+```json
+{
+     "tone": "
+    sentiment": ""safety": ""
+    "toxicity": "
+    "toxicity": "
+             ""
+
+Example 2: 1/38 correct (acc=0.0263)
+Generated: 
+{
+        ": "neutral",
+    
+    sentiment": " "safety": "sentiment": ""safety": "
+    "
+    
+    
+         "
+
+Example 3: 2/39 correct (acc=0.0513)
+Generated: 
+
+
+
+
+```json
+
+    ": "    
+    ",
+    tone"tone"tone"tone",
+    ": "
+    
+    sentiment         ""
+
+Example 4: 7/39 correct (acc=0.1795)
+Generated: 
+{ "neutralneutral",
+    ": "safe",
+}    ": "}": "
+}    } ""toxicity": " " ""toxicity": "
+     "
+
+
+Example 5: 2/39 correct (acc=0.0513)
+Generated: `````````json
+{ "neutral",
+    "sentiment",
+    "sentiment": ""safety": "
+    "toxicity": "
+             ""toxicity": "
+
+Example 6: 3/39 correct (acc=0.0769)
+Generated: 
+{
+    ```"tone"tone"tone"tone": " "safety    sentiment": " " "safety": "": ""toxicity": "}": ""safety": "
+
+Example 7: 1/38 correct (acc=0.0263)
+Generated:     ```"tone"
+{ "neutral",
+    "safety": ""toxicity": ""toxicity        ": "
+     "
+             ""toxicity": "
+
+Example 8: 4/39 correct (acc=0.1026)
+Generated: `````````json
+{
+    tone":
+    ",
+    sentiment": "": "safe",
+        ": "}": "
+}    }toxicity": "toxicity":
+
+Example 9: 0/39 correct (acc=0.0000)
+Generated: ",
+    "sentiment": " "safety    
+    ",
+    
+    ",
+    "safety    "
+    "toxicity     "
+             ""toxicity    
+
+
+Example 10: 0/39 correct (acc=0.0000)
+Generated: 
+```json
+{
+    "tone": "sentimentneutral",
+    "safety": ""toxicity": "safe",
+    ": "
+     "
+             ""
+
+Example 11: 0/39 correct (acc=0.0000)
+Generated: ":":neutralneutralneutral",
+    neutralneutral",
+    sentimentsentiment": "",
+    safety    ",
+    "safety    "
+    "safety": "
+}        
+
+Example 12: 0/39 correct (acc=0.0000)
+Generated: ""tone"tone"tonejson
+```json
+{
+    ": "safe",
+        ": "
+    
+    }        "toxicity": "
+     "respect
+
+Example 13: 1/39 correct (acc=0.0256)
+Generated: 
+```json
+```json
+{
+    "tone": "sentimentsafety": "",
+    
+}"toxicity": ""toxicity}}": "}ful"
+}    
+
+Example 14: 1/39 correct (acc=0.0256)
+Generated: ``````json
+```json
+{
+    ": "neutralneutral",
+    ": "neutral",
+    ": "}",
+    }        "toxicity": "
+     "
+
+Example 15: 6/39 correct (acc=0.1538)
+Generated: ```json
+
+{
+    sentiment": "sentiment": "negative",
+        ": "
+    
+}
+         ""toxicity": " " " "
+    }}
+
+Example 16: 5/39 correct (acc=0.1282)
+Generated: ``````json
+{
+    ```"tone"tone": "neutral",sentiment": " "",
+    ",
+    
+    ",
+    "safety": "": " ""
+
+Example 17: 1/39 correct (acc=0.0256)
+Generated: 
+{
+        ": "safe",
+    toxicity": "
+    ""toxicity": "": """" "}": "}ful"toxicity": "} ""
+
+Example 18: 5/40 correct (acc=0.1250)
+Generated: ```json
+{
+    ": "neutral",
+    ": "safe",
+    
+    
+    ",
+    
+    ",
+    "toxicity": "    ": "
+    
+
+
+Example 19: 0/39 correct (acc=0.0000)
+Generated: 
+```json
+{
+    ": "neutral",
+    ": " "toxicity": "toxicity":
+    ",
+    
+}",
+    "toxicity": "}": "
+
+
+Example 20: 6/38 correct (acc=0.1579)
+Generated: ```json
+
+
+
+```": "sentiment",
+    ",
+    ": "
+    "
+    
+    
+         ""
+    
+     " "
+    
+
+Example 21: 4/39 correct (acc=0.1026)
+Generated: ```json
+
+    ": "safety    neutral",
+    "safety    "
+    "sentiment": " "
+        safety        
+    "safety        ",
+    
+
+Example 22: 1/39 correct (acc=0.0256)
+Generated: ``````json`````````json
+{
+    ": "neutral",
+    ",
+    ",
+    sentiment"sentiment": ""safety": "
+    "toxicity": "
+
+
+Example 23: 4/38 correct (acc=0.1053)
+Generated: neutralneutralneutralneutralneutralneutralneutralneutralneutralneutralneutralneutralneutralneutral",
+    "sentiment"
+    "safety": " "
+         ""safety    
+     " "
+
+Example 24: 3/39 correct (acc=0.0769)
+Generated: "
+        ```json
+    "tone"tone"tone"tone"tone"tone"tone"tone": "        "sentimentsentimentsentimentsentimentsentiment         ""sentiment
+
+Example 25: 3/39 correct (acc=0.0769)
+Generated: ```json
+
+    ```json
+
+
+    ```json
+    json
+    "tone": "
+    "tone"sentimentsentimentsentiment         ""sentiment": " " "
+
+Example 26: 5/39 correct (acc=0.1282)
+Generated: `````````json
+    tone"tone"tone"tonejson
+    ```"
+    
+    
+         ""tone"tone"tone"tone"tone"tone"
+
+Example 27: 4/38 correct (acc=0.1053)
+Generated: json
+```json
+    "tone"tonejson
+    "tone"tone"tone"tone"tone"
+    "
+    
+    
+         ""tone":
+
+Example 28: 5/39 correct (acc=0.1282)
+Generated: ```json```json
+{
+        ": "neutral",
+    
+    
+    ",
+    
+    ",
+    "safety": "
+    "
+    
+    
+
+
+Example 29: 0/39 correct (acc=0.0000)
+Generated: 
+
+{
+    ": "neutral",
+    safety    sentiment": ""safety": ""toxicity": "safe",
+    ": "
+    
+    
+         ""
+
+Example 30: 3/38 correct (acc=0.0789)
+Generated: ``````json
+    ```": "
+    ",
+    sentiment",
+    ",
+    ": "    ": "    ": "
+             ""
+    
+    
+
+Example 31: 3/39 correct (acc=0.0769)
+Generated: 
+
+
+
+{
+    "tone": "safety": "safety": "negative",
+    ": "safe",
+}",
+    }": "
+}    }toxicity":
+
+Example 32: 4/39 correct (acc=0.1026)
+Generated: 
+`````````"tone"tone"tone"tone"tone"tone"tone":"tone"tone"tone"tone"tone"
+{
+    ": " "
+    
+
+Batch 2 Results:
+  Total Correct: 84/1243
+  Accuracy: 0.0676
+  Time: 7.05s
+
+
+=== Evaluating 4 ===
+Example 1: 6/39 correct (acc=0.1538)
+Generated:  "json
+{
+    ": " " " "": "safety": " " " " " "": ""safety": " " " " ""safety": "",
+}"
+
+Example 2: 5/38 correct (acc=0.1316)
+Generated: tone```json
+{
+    "sentiment": "": "safety": " " "
+     "": ""safety":
+    ": ""toxicity": " "",
+}
+
+Example 3: 4/39 correct (acc=0.1026)
+Generated: tonejson
+{
+    ": "tone": "": "safety": " "safety": " "": "negative",
+ " " ""safety": " " "",
+}"
+
+Example 4: 1/39 correct (acc=0.0256)
+Generated: tone": " " " " " "": "neutralneutral",
+     " "" " " " " " "safety": " " " " " " " " " " " " "
+
+Example 5: 3/39 correct (acc=0.0769)
+Generated: ```json
+    "tone": "",
+ "tone": " " " " "": "neutral",
+        
+     " " " " " " " " "
+    safety
+
+Example 6: 1/39 correct (acc=0.0256)
+Generated: tone":tone": " " " "",
+    ": " " " "": " " "",
+    
+        ": "" "",
+} " ""toxicity": "
+
+Example 7: 0/38 correct (acc=0.0000)
+Generated: {
+    "tone": "": "sentiment": " " " " "safety": "ful"",
+}
+}"toxicity": " ""toxicity": " "": "
+
+Example 8: 1/39 correct (acc=0.0256)
+Generated: ",
+     " "tone": "": " " "",
+     "negative", " ""safety": " " " "" " " " " " " " "
+     "
+
+Example 9: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "": "sentiment": " "safety": "safety": "",
+   " " " "}"toxicity": "ful"toxicity": "": "
+
+Example 10: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    ": "tone": "": "safety": " "safety "negative",
+ "" "",
+}": "}"toxicity": "",
+}"
+
+Example 11: 2/39 correct (acc=0.0513)
+Generated: json
+{
+    ",
+    ": "sentiment": "": "safety": "", " " " "": """,
+    ": " ""safety": " " " "
+
+Example 12: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ",
+    ",
+    
+     "":
+    "safety": " " ""safety": " " " " " "
+    toxicity": " "
+
+Example 13: 2/39 correct (acc=0.0513)
+Generated: 
+{
+     "tone": " " " " "neutral",
+    safety":"safety": " " "": "" "": "}": ""toxicity": "toxicity":
+
+Example 14: 4/39 correct (acc=0.1026)
+Generated: ": "tone": " "": " " "json
+{
+        ": "negative",
+    ": " ""safety": " ""toxicity": "
+    toxicity": "
+
+Example 15: 1/39 correct (acc=0.0256)
+Generated:  "": "sentiment": " " " ""safety": """,
+": " " ""toxicity": " "ful"toxicity": "": ""toxicity": " " " "
+
+Example 16: 5/39 correct (acc=0.1282)
+Generated: 
+{
+    "tone": "safety": " ""toxicity": " " " "": "toxicity": " " " " " "": ""toxicity": " " " "}
+
+Example 17: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ": "sentiment": "": "safety": " " " "",
+    ": "",
+    ": " "" " " " "": " " "
+
+Example 18: 1/40 correct (acc=0.0250)
+Generated: 
+{
+    sentiment": " " " " "neutral": "",safety": " " "safety": " " " " " "": "" "": " " " "}ful"
+
+Example 19: 1/39 correct (acc=0.0256)
+Generated: 
+
+{
+    sentiment " " " " " "negative",
+     " " " " "toxicity": " " " " "toxicity": "" "",
+}
+}}
+
+Example 20: 4/38 correct (acc=0.1053)
+Generated: ```json
+    tone": " " " " " "": "neutral",
+         " "" " " " "         " " "": " " "" " "
+
+Example 21: 1/39 correct (acc=0.0256)
+Generated: json
+    tone": " " " " " "": "neutral",
+ " " " "neutral",
+     "",
+     "
+ "safety": " " " " " "
+
+Example 22: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+     " "tone": " "sentiment",
+    ": "safety": " "safety": " "": "" "",
+}": ""toxicity": "
+
+Example 23: 5/38 correct (acc=0.1316)
+Generated: ```json
+{
+    sentiment":"safety": ""safety": "" "": "ful" "" "",
+}ful"toxicity": " " " " " "
+
+Example 24: 7/39 correct (acc=0.1795)
+Generated:  " " "{
+    "sentiment": "": "safety": "",
+    "safety": ""safety": " " " ""toxicity": " ""toxicity": " "
+
+Example 25: 1/39 correct (acc=0.0256)
+Generated: 
+{
+    ": "
+    sentiment": " "safety": " " " " " "",
+}
+} ""toxicity":toxicity": " " " " "toxicity": "
+
+Example 26: 2/39 correct (acc=0.0513)
+Generated: ```json " " " " " " "": "neutral", " " " " "        ", " " " " " " "", " " "negative",
+     "safety":
+
+Example 27: 5/38 correct (acc=0.1316)
+Generated: ```json
+    "tone": "": " " "",
+     "negative",
+    ful"safety": " ""    " " " " " " " "
+    
+
+Example 28: 2/39 correct (acc=0.0513)
+Generated: {
+    ",
+    ",
+    ": "tone": " "": "safety": " " " " " "": "" "",
+}": " ""toxicity": "
+
+Example 29: 7/39 correct (acc=0.1795)
+Generated:  "json
+{
+    ": "sentiment": "": "safety": " " " " "safety": "" "",
+}
+}}"toxicity":toxicity": " " "
+
+Example 30: 7/38 correct (acc=0.1842)
+Generated: 
+{
+    ": "": "sentiment": " " " " "safety": ""safety": " " " ""toxicity": " ""toxicity": " "",
+}
+
+Example 31: 4/39 correct (acc=0.1026)
+Generated:  " " "json
+{
+    ",
+    ": "sentiment": " " " " " "": ""safety": " " " "" "",
+    ful" " "
+
+Example 32: 1/39 correct (acc=0.0256)
+Generated: tone "", " " "",
+    ", "sentiment": "": "safety": " " " " " "": "" "",
+}": "" " " " ""
+
+Batch 2 Results:
+  Total Correct: 114/1243
+  Accuracy: 0.0917
+  Time: 7.06s
+
+
+=== Evaluating 5 ===
+Example 1: 2/39 correct (acc=0.0513)
+Generated: {
+    tone": "
+    sentiment": "
+    safety": "negativesafety": "
+     "    "safety": " " "        safety": " " "toxicity":
+
+Example 2: 4/38 correct (acc=0.1053)
+Generated: ```json```json```":
+neutral",
+{
+  sentiment": "negativesentiment": "
+        neutral",
+    ":
+            safety": " "  safety
+
+Example 3: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  
+{
+    "tone": " " "sentiment": "aggressive",
+    "safety": " " " "      safety": "      toxicity":
+
+Example 4: 10/39 correct (acc=0.2564)
+Generated: 
+{
+{
+{
+    ": "    ",
+     " " "  ": " "    "safety": "    ",
+     " " " " "   "
+    
+
+Example 5: 6/39 correct (acc=0.1538)
+Generated: tonejson
+{
+{
+    ": "tone": "neutral",
+    safety": "    "toxicity": " " "        toxicity": " " "toxicity": "
+    
+
+Example 6: 2/39 correct (acc=0.0513)
+Generated: json{
+    json  ":"tone": "        ",
+    ": "
+    ",
+     " "
+    "safetyful",
+     " "    ful"toxicity
+
+Example 7: 0/38 correct (acc=0.0000)
+Generated: json
+{
+{
+    ": "sentiment
+    "sentiment
+    sentiment": "    negative",
+     " "    ": " "    ful"toxicity": " " "
+
+Example 8: 6/39 correct (acc=0.1538)
+Generated: ```json{
+{
+{
+    ": "",
+    sentiment": "
+    ",
+    ",
+    ": "    ": " "    fulsafe",
+    safety":
+
+Example 9: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    ": "
+    sentiment": "sentiment": " " "": "    ",
+         "          safety": " " "toxicity": " " "
+
+Example 10: 2/39 correct (acc=0.0513)
+Generated: {
+    tone": "     "sentiment": " "": "    ",
+     " " "": "    ",
+    ": " "        ",
+    ful"toxicity":
+
+Example 11: 3/39 correct (acc=0.0769)
+Generated: json```tone```json
+{
+      tone": "
+    sentiment
+    negative",
+    sentiment": "    "safety": " " "        toxicity": " " "
+
+Example 12: 12/39 correct (acc=0.3077)
+Generated: 
+{
+{
+  ": "": "neutral",
+    sentiment": "    negative",
+      "sentiment": "
+    "sentimentsentiment": "
+    ",
+    
+
+Example 13: 6/39 correct (acc=0.1538)
+Generated: 
+{
+{
+    tone": "
+    sentiment": "
+    toxicity": "safe", "
+    ": "    safe",
+     " "    ":
+            
+
+Example 14: 12/39 correct (acc=0.3077)
+Generated: ```json
+{
+{
+  tone": "sentiment
+  "sentiment": "    ",
+    ", " "      safety": "      safety": " " " " "
+
+Example 15: 3/39 correct (acc=0.0769)
+Generated: neutral",
+{
+  ",
+  "sentiment": "    ",
+     " " "        safety": " " " " "    ",
+     " " " "      
+
+Example 16: 0/39 correct (acc=0.0000)
+Generated: {
+{
+    tone": "
+   "sentiment": "
+    sentiment": "": "sentiment
+    ",
+    "safety": "    safe",
+     " "  
+
+Example 17: 4/39 correct (acc=0.1026)
+Generated: 
+{
+  ", "
+    sentiment": "
+    safety": "negativesentiment": "
+     "    "toxicity": " " "        
+        ful"toxicity":
+
+Example 18: 4/40 correct (acc=0.1000)
+Generated: 
+{
+{
+    tone": " "tone": "   "sentiment": "
+    sentiment
+    ",
+    "safety": "    ",
+     " " "      ",
+
+Example 19: 0/39 correct (acc=0.0000)
+Generated: {
+{
+    tone": "
+   "sentiment": " " "sentiment": "": "sentiment
+    ",
+    "safety": "    safe",
+     " "  
+
+Example 20: 0/38 correct (acc=0.0000)
+Generated: ",
+{
+{
+{
+{
+  "tone": "    ",
+    ": "  ": " "            safety": " " " " " " " "
+
+Example 21: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+{
+{
+    tone": "    negative",
+      "safety": " "}ful"toxicity": " " "
+    "toxicity": " "
+
+Example 22: 0/39 correct (acc=0.0000)
+Generated: json
+{
+{
+{
+    ", "
+    sentiment": "
+    safety": "negative", " "
+     ""safety": " " " "        ",
+
+
+Example 23: 0/38 correct (acc=0.0000)
+Generated: {
+{
+  ": "
+    "tone": "
+     "    negative",
+    ": "        safety": "      safety": " "
+     " "
+
+Example 24: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+   "tone": "
+  sentiment": "sentiment": " " "": "    ",
+      
+            safety": " " ""toxicity":
+
+Example 25: 4/39 correct (acc=0.1026)
+Generated: 
+{
+{
+    ": "tone": "sentiment": " "
+      ",
+     " " "          safety": "      safety": " "
+     "
+
+Example 26: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    "sentiment": "  negative",
+    
+          safety": " "  safety": "
+    ",
+        toxicity": " "
+
+
+Example 27: 5/38 correct (acc=0.1316)
+Generated: ```json
+{
+{
+    
+  tone": " "
+    "sentiment": "    ",
+     " " "        safety": "      safety": " "
+
+Example 28: 9/39 correct (acc=0.2308)
+Generated: ```json```json
+{
+  ": "
+  sentiment": "": "
+  ",
+     "safety": " "    safe",
+     " "        ",
+    
+
+Example 29: 2/39 correct (acc=0.0513)
+Generated: 
+{
+    ", "
+    tone": "
+    sentiment
+    negativesentiment": " "": "    "safety": " " "  ful"
+    ful"toxicity":
+
+Example 30: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+{
+  tone": "",
+    negative",
+    "safety": " " " " " " " "  ful"toxicity": "
+    "
+
+Example 31: 3/39 correct (acc=0.0769)
+Generated: ```json```json
+{
+{
+   "
+  tone": "neutral",
+    ",
+    neutral",
+    ": "
+        safety": "      "safety
+
+Example 32: 3/39 correct (acc=0.0769)
+Generated: 
+{
+{
+    tone": "
+    sentiment": "
+    
+    ",
+     " "
+    "safetyful",
+     " "        ", "  ":
+
+Batch 2 Results:
+  Total Correct: 141/1243
+  Accuracy: 0.1134
+  Time: 7.39s
+
+
+=== Evaluating 6 ===
+Example 1: 4/39 correct (acc=0.1026)
+Generated: json
+{
+    ": "
+    neutral",
+    sentiment": "",
+    ",
+        "
+    "safety": "
+    toxicity": "
+} "
+
+
+Example 2: 2/38 correct (acc=0.0526)
+Generated: json
+{
+    ": "",
+    ",
+    sentiment": "",
+    ",
+    negative",
+    "sentiment": "      ",
+         "
+
+Example 3: 1/39 correct (acc=0.0256)
+Generated: json
+{
+    ": "neutral",
+    ": "
+    ",safety": "neutral",
+    "safety": " "
+          safety": "
+     "  
+
+Example 4: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    ",
+    ": "    ",
+    ": "    safety": "
+     "  ": "
+}
+}": " "}
+}"
+
+Example 5: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+        ": "",
+    ",sentiment
+    ",
+    ": " "
+     "
+          safety": "
+     "  ": " "
+
+Example 6: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    "
+    ": "
+neutral",
+    ": "
+     "",
+    ",
+    ": ""
+     "
+          safety":
+
+Example 7: 9/38 correct (acc=0.2368)
+Generated: {
+    neutral",
+    ": "
+    ",
+    
+    ",
+    "
+    "toxicity": " "}
+}"toxicity": "
+} "
+
+
+Example 8: 3/39 correct (acc=0.0769)
+Generated: 
+{
+     "tone": "
+    safety": "",
+    ",
+    ": " "": " "
+    }  toxicity": "
+}toxicity": "
+}
+
+Example 9: 3/39 correct (acc=0.0769)
+Generated: 
+{
+     "tone": "
+    safety": "",
+  ",
+  ": "  ",
+  ": "    toxicity": "
+} "
+}
+}
+
+Example 10: 8/39 correct (acc=0.2051)
+Generated: {
+    
+    ": " "
+     "": "
+     "",
+    ",
+    "safety": "safe",
+}}}toxicity": " "
+}":
+
+Example 11: 2/39 correct (acc=0.0513)
+Generated: json```json```json
+{
+     "
+     "": "
+     "",
+    ",
+    ": " "": " "
+          safety": "
+  
+
+Example 12: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ": " "neutral",
+    ",
+    ": " "": " "
+          safety": "
+     "": "
+    ": " "
+
+Example 13: 3/39 correct (acc=0.0769)
+Generated: 
+{
+    "tone": "": " "
+    ",
+    safety": " "
+    ",
+    ": "
+    "
+    "
+    
+    
+
+
+Example 14: 7/39 correct (acc=0.1795)
+Generated: ```json```json
+{
+    tone": "",
+    ",
+    ": "safety": " "
+"
+    ",safety": "
+}
+}": "
+}
+
+Example 15: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ",
+    ",
+        "
+    "sentiment": "
+    sentiment
+        sentiment": "": "    
+    ": "
+    
+
+Example 16: 3/39 correct (acc=0.0769)
+Generated: ``````json
+{
+    ",
+"sentiment": "": " "sentiment": "": "
+     "",
+    ",
+     ""safety": " "
+      
+
+Example 17: 1/39 correct (acc=0.0256)
+Generated: {
+{
+    ": "neutral",
+    ": "
+    ",safety": "neutral",
+    "
+    " "
+          safety": "
+   "
+
+
+Example 18: 4/40 correct (acc=0.1000)
+Generated: ```json```json
+{
+     " "
+    
+     "
+    neutral",
+     " "",
+    ",
+    
+     "": " "
+          safety
+
+Example 19: 3/39 correct (acc=0.0769)
+Generated: ``````json
+{
+    ",
+"
+    "
+     "sentiment": "": "
+    safety": "
+}",
+}"
+}"toxicity": " "
+
+Example 20: 2/38 correct (acc=0.0526)
+Generated: {
+    ": " " "",
+    ",
+      "
+    "safety": " "  toxicity": "
+}toxicity": "
+}",toxicity": "
+
+
+Example 21: 0/39 correct (acc=0.0000)
+Generated: {
+    tone": "",
+    ",
+    ": "": "", "
+            ",sentiment
+     " "  ": " "}
+  ": "}"
+
+Example 22: 3/39 correct (acc=0.0769)
+Generated: ```json```json```json```json```json
+{
+    neutral",
+    tone": "",
+    ",
+    ": "": "", "
+            safety":
+
+Example 23: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+    tone": "",
+    ",
+    ": " "": " "
+            ",
+       ""
+    
+  ": " "
+
+Example 24: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    
+        "
+    sentiment": "",
+    ",
+    ": " "": " "": " "    safety": "
+    toxicity": "
+
+Example 25: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+    ": "
+    ",
+    
+    ": " "neutral",
+     "
+        safety": "
+  safety": "": "
+  
+
+Example 26: 3/39 correct (acc=0.0769)
+Generated: json
+{
+    sentiment": "": " "safe",
+} "
+"toxicity": "
+}": " "}": " "}
+}": "
+}
+}
+
+Example 27: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+         "": "
+     "",
+    "safety": ""
+  "toxicity": " "ful"
+}}} "
+}":
+
+Example 28: 2/39 correct (acc=0.0513)
+Generated: ``````json
+{
+    
+    ": " "
+     "": "
+     "",
+    ",
+  ": " "": " "
+}}}toxicity": "
+
+Example 29: 3/39 correct (acc=0.0769)
+Generated: json```json
+{
+     "
+     "": "
+    ",sentiment": "",
+    ": " "": " "
+      ": "
+    "safety":
+
+Example 30: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+    ": "
+     "",
+    ",
+    ": "
+    "safety": "
+  toxicity": "
+} "}": " " "
+
+Example 31: 2/39 correct (acc=0.0513)
+Generated: json
+{
+    ": "neutral",
+    ": "
+    ",safety": " "": "fulsafe",
+} "
+}}}toxicity}"toxicity": "}
+
+Example 32: 3/39 correct (acc=0.0769)
+Generated: 
+{
+    "
+    ": "
+    
+    ",
+    sentiment": "",
+    ",
+      "
+    "safety": "    toxicity": "
+
+
+Batch 2 Results:
+  Total Correct: 136/1243
+  Accuracy: 0.1094
+  Time: 7.40s
+
+
+=== Evaluating 8 ===
+Example 1: 2/39 correct (acc=0.0513)
+Generated: {
+    
+    ": " "tone": "": " " " "",
+    ",
+    ": "
+    ",sentiment": "        ",
+     "   "":
+
+Example 2: 3/38 correct (acc=0.0789)
+Generated: {
+    
+  ": " "sentiment": "": "
+     "",
+    ",
+    ": "safety": " "
+        ful"
+}} "toxicity
+
+Example 3: 1/39 correct (acc=0.0256)
+Generated: {
+    
+  ": " "sentiment": "": "
+     ""safety": "
+  ": " " " " "
+          ",
+     " "",
+
+Example 4: 7/39 correct (acc=0.1795)
+Generated: 
+{
+    
+    "tone": " " "": " "
+            ",
+     " "sentiment": " "
+     "
+     "
+    
+     "
+
+Example 5: 2/39 correct (acc=0.0513)
+Generated: 
+{
+     "tone": "": " " " " " " "" " "": " " " " "
+            "sentiment": " " "",
+    
+
+
+Example 6: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": "": "
+    ": "": " "
+    ",
+      ""safety": " " " " "
+        ful"toxicity
+
+Example 7: 0/38 correct (acc=0.0000)
+Generated: 
+    "tone": " "": " " " " " "    ",
+    ", ""sentiment": "    ",
+    "safety": " " "",
+    
+
+
+Example 8: 3/39 correct (acc=0.0769)
+Generated: 
+    
+     "tone": "": "
+     "",
+    ",
+    ",sentiment": " " "
+        ",
+     "  sentiment": " "
+
+
+Example 9: 3/39 correct (acc=0.0769)
+Generated: 
+    
+     "tone": "": " " "",tone": " "neutral",": "": "", "
+            ",
+    ": "sentiment",
+    
+
+
+Example 10: 2/39 correct (acc=0.0513)
+Generated: {
+    
+    ": " "": " "": " " " "",
+    "sentiment": " " " " " "
+        ",
+    ": " "",
+
+Example 11: 1/39 correct (acc=0.0256)
+Generated: json
+{
+    
+  ": " "": " "": " " " "",
+    ",
+    ": "
+     " "
+        ",
+    ": "
+
+Example 12: 2/39 correct (acc=0.0513)
+Generated: {
+    ": "": "
+    ",sentiment": ""
+    ": " " " " "
+            ",
+           "": " "
+     " "
+
+Example 13: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "": " " " "
+    ",
+     " ""sentiment",
+    ": ""toxicity": " "
+}}}",
+} "
+
+Example 14: 2/39 correct (acc=0.0513)
+Generated: 
+     "tone": "": "
+    ",tone": "",
+    ": "",
+     "
+            ",
+    
+    sentiment",
+    
+     "
+
+Example 15: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    json
+    "tone": " " " " " "
+          ",
+    ": " "",
+    
+     " "
+            
+
+Example 16: 2/39 correct (acc=0.0513)
+Generated: {
+    "tone": "",
+    "sentiment": "
+     " " "": " " " ""sentiment": "    
+    " " " " "    ""
+
+Example 17: 1/39 correct (acc=0.0256)
+Generated: {
+    
+    ": " "": " "": " " " "",
+    ""sentiment": " " " " "  " "  "safety": " " "",
+
+Example 18: 1/40 correct (acc=0.0250)
+Generated: json
+    json
+    ",
+    "tone": " " "sentiment": "": "sentiment",sentiment": "
+    "sentiment": " " "sentiment": " "        ",
+
+Example 19: 2/39 correct (acc=0.0513)
+Generated: {
+
+    tone": "",
+    "sentiment": "     "
+  ",
+   " " "",safety": "
+    ": "toxicity": " "}"toxicity
+
+Example 20: 1/38 correct (acc=0.0263)
+Generated: ": "": "
+{
+     "
+    "tone": " " " " "
+            "sentiment": "   "",
+    
+     "
+     "
+
+Example 21: 9/39 correct (acc=0.2308)
+Generated: ```",
+     " ""tone": ""tone": "",tone": "
+          ",
+         "sentiment",
+    
+     "safety": "
+    
+
+Example 22: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": "": "
+     " "": " " " "": " " "",
+    ": "
+     " "
+      ful",
+
+
+Example 23: 4/38 correct (acc=0.1053)
+Generated:  "```json
+    
+    
+    ": "
+    "tone": "
+    ",
+    "sentiment": " "
+     " "",
+    
+     ""
+
+Example 24: 5/39 correct (acc=0.1282)
+Generated: 
+{
+    ": " "tone": "": " " " "",
+    ",
+    ": "": "": "
+          "sentiment": "  toxicity": "
+
+Example 25: 4/39 correct (acc=0.1026)
+Generated: 
+{
+{
+    ",
+     " " " "
+    "tone": " " "
+    
+            ",
+    ": "safety": " "
+     "
+
+Example 26: 1/39 correct (acc=0.0256)
+Generated: 
+     " ""tone": ""tone": ""tone": "
+            ",
+    
+    ""sentiment": "     "
+    
+        
+    
+
+Example 27: 3/38 correct (acc=0.0789)
+Generated: 
+    ": "
+{
+    ",
+     " ""sentiment": "    
+    "safety": " "}"""toxicity": "} " "",
+}
+
+Example 28: 2/39 correct (acc=0.0513)
+Generated: json
+{      tone",
+  ": " "sentiment": "": "
+   "",toxicity": "
+}": "toxicity": " "
+}}ful"toxicity":
+
+Example 29: 1/39 correct (acc=0.0256)
+Generated: {
+    
+  ": " "sentiment": "": "
+    ",safety": ""
+}": " " " " "
+      ",
+}} " "",
+
+Example 30: 7/38 correct (acc=0.1842)
+Generated: 
+    
+    ": "": "
+     "",
+    ",
+    ": "": "": "
+            ",
+    ": "": "": "
+    
+
+Example 31: 2/39 correct (acc=0.0513)
+Generated: {
+    
+  ": " "": " "": " " " "",
+    "sentiment": ""sentiment": " "
+      "safety": " "toxicity":
+
+Example 32: 4/39 correct (acc=0.1026)
+Generated: json
+    
+    tone": "  """"""""""""""""""""""""""""""
+
+Batch 2 Results:
+  Total Correct: 101/1243
+  Accuracy: 0.0813
+  Time: 7.15s
+
+
+=== Evaluating 9 ===
+Example 1: 3/39 correct (acc=0.0769)
+Generated: {
+    
+    
+{
+        ```",
+    
+    ",
+    "tone": "
+     "": "    "
+    
+    
+     "
+    
+
+Example 2: 3/38 correct (acc=0.0789)
+Generated: {
+    
+    ": "
+    ",
+    ": "
+    ",
+    "sentiment": " "
+     " "
+    "toxicity": " "
+}
+
+Example 3: 2/39 correct (acc=0.0513)
+Generated: {
+    tone": "
+    sentiment": "": "
+     "",
+    "sentiment": " "
+     " "
+        "safety": "
+  toxicity":
+
+Example 4: 4/39 correct (acc=0.1026)
+Generated: 
+     "",
+    "tone": " "
+    ",
+    negative",
+     "
+     "
+    
+    
+         "
+    
+    
+     "
+
+Example 5: 2/39 correct (acc=0.0513)
+Generated: 
+{
+     "tone": "": "
+     "",
+    negative",
+     "
+     " "
+            
+    
+     "
+    ": "
+
+
+Example 6: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    
+    
+    
+     "sentiment": "": "
+     "",
+    "sentiment": " "
+     " "
+        negative",
+
+
+Example 7: 2/38 correct (acc=0.0526)
+Generated: 
+{
+    tone": "": "
+     "",
+     "     "": "
+     " "
+        "toxicity": "
+  
+  
+  
+
+
+Example 8: 2/39 correct (acc=0.0513)
+Generated: 
+{
+    
+    ``````json
+    
+    ",tone": "     "
+    ": " " "
+        "sentiment": " "
+    ",
+    safety
+
+Example 9: 6/39 correct (acc=0.1538)
+Generated: 
+{
+    
+    "tone": "
+     "",
+    "safety": "
+    ": " "
+        "toxicity": "
+  
+  ": "
+
+
+Example 10: 1/39 correct (acc=0.0256)
+Generated: {
+    
+    
+    
+    ",
+    ``````",
+     "
+    "sentiment": "
+     " "    negative",
+    ": "": "
+    
+
+Example 11: 1/39 correct (acc=0.0256)
+Generated: ``````json
+{
+    
+    
+{
+    ": "
+     "",
+    neutral",
+     "
+     " "
+        negative",
+     "
+
+
+Example 12: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ": "
+    ",
+    "sentiment": "
+    ": " "
+        "toxicity": "
+  toxicity": " "
+  "
+
+
+Example 13: 4/39 correct (acc=0.1026)
+Generated: 
+{
+    
+    
+    ": "
+    ",
+    ": "
+    ",sentiment": "     "": "
+     " "
+    "toxicity": " "
+
+Example 14: 6/39 correct (acc=0.1538)
+Generated: ````````````json
+
+{
+    tone":
+    "tone": " "
+     " "
+        negative",
+    
+  toxicity": " "
+    
+
+Example 15: 1/39 correct (acc=0.0256)
+Generated: json
+{
+     "",
+    "tone": "
+    ": " "
+        negative",
+     " "
+    ": "
+         "
+    
+    
+
+Example 16: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    `````````": "
+    ": "
+    "sentiment",
+     " "",
+    "sentiment": "
+    ": " "
+        
+
+Example 17: 4/39 correct (acc=0.1026)
+Generated: {
+    
+        "tone": " "": "
+     "",
+    "sentiment": "
+     " " "
+        ",
+    
+    
+    ",
+
+Example 18: 0/40 correct (acc=0.0000)
+Generated: json
+{
+    ": "    tone": "
+    "tone": " "": "
+     "",
+    "tone": "
+     " " "
+            sentiment
+
+Example 19: 2/39 correct (acc=0.0513)
+Generated: ````````````````````````````````````````````````json
+{
+    
+     "": "
+    tone": " "tone": " "
+        
+
+Example 20: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+     "",
+    "tone": " "
+     " "
+        negative": "
+   "
+    ": "
+  "toxicity": "
+
+Example 21: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+{ "
+    "tone": " "
+     " "
+        negative",
+    ": "
+    ",
+    negative",
+    
+        
+
+Example 22: 6/39 correct (acc=0.1538)
+Generated: ```````````````json
+{
+    
+    
+    "tone": "
+     "",
+    "safety": "
+    ": " "
+        "toxicity":
+
+Example 23: 1/38 correct (acc=0.0263)
+Generated: 
+{
+    ":
+    
+    ":
+    "tone": " "
+         "
+        negative",
+     "
+    ",
+    
+        ":
+
+Example 24: 7/39 correct (acc=0.1795)
+Generated: 
+{
+    
+     "tone": "": "
+     "",
+    neutral",
+     "
+     " "
+            
+    
+     "
+    ":
+
+Example 25: 8/39 correct (acc=0.2051)
+Generated: 
+{
+{
+    ": "tone": "",
+    "sentiment": " "
+     " "
+        negative",
+    ": "
+  
+  
+      
+
+Example 26: 6/39 correct (acc=0.1538)
+Generated: ```json
+{ "tone": "    
+     "
+     " "
+        "sentiment": " "
+    ": " "
+  "toxicity": "
+  
+  
+
+Example 27: 6/38 correct (acc=0.1579)
+Generated: 
+{
+    
+    "tone": "
+     "",
+    "safety": "
+    ": " "
+        "toxicity": "
+  
+  ": "
+
+Example 28: 5/39 correct (acc=0.1282)
+Generated: ```````````````````````````json
+{
+    ```json
+     "tone": "
+    ": "": "
+     " "
+        negative",
+    
+
+Example 29: 5/39 correct (acc=0.1282)
+Generated: {
+    
+        "tone": " "": "
+     "",
+    "sentiment": "
+    ": " "
+        "safety": "
+    toxicity":
+
+Example 30: 4/38 correct (acc=0.1053)
+Generated: ````````````json
+{
+    tone": " "
+    "sentiment": "
+     " "
+        negative",
+    ": "
+  ": "
+  
+
+Example 31: 4/39 correct (acc=0.1026)
+Generated: {
+    
+    
+    
+    ``````json
+    
+    ",
+    "tone": " "
+     " "
+        "toxicity": "": "
+}
+
+Example 32: 2/39 correct (acc=0.0513)
+Generated: 
+{
+    tonetone": "
+     "sentiment": "": " "
+    ",sentiment": "
+    ": "
+     " "
+             "
+     "
+
+Batch 2 Results:
+  Total Correct: 129/1243
+  Accuracy: 0.1038
+  Time: 7.01s
+
+
+=== Evaluating 10 ===
+Example 1: 3/39 correct (acc=0.0769)
+Generated: ```json
+```json
+{
+{
+    ": "    
+  sentiment": "",
+  ": "": "",
+}"toxicity": "
+}
+}":
+
+Example 2: 12/38 correct (acc=0.3158)
+Generated: ```json
+```json
+{
+    ":":":": "sentiment":":": "",": "": "",": "",
+  "toxicity": "
+}
+}
+
+Example 3: 3/39 correct (acc=0.0769)
+Generated: ```json
+```json
+{
+    {
+        
+    
+    ": "":": "": "",": "": "toxicity": "
+      
+  ":
+
+Example 4: 0/39 correct (acc=0.0000)
+Generated: 
+```":": "
+  ",
+    ":":": "": "safety": "toxicity": "toxicity": "": " "": "toxicity": "
+}}}"toxicity
+
+Example 5: 3/39 correct (acc=0.0769)
+Generated: json
+{
+    ": "
+    sentiment " "",": "",": "": "",": "",
+  ",
+      safety": "": "
+  
+
+Example 6: 4/39 correct (acc=0.1026)
+Generated: json
+```json
+{
+{
+    ": "
+  ",": "
+     "",
+  ",": "":
+    "toxicity": "
+}
+  
+
+Example 7: 3/38 correct (acc=0.0789)
+Generated: ":": "
+{
+  ":": "
+  ",": "",": "": "",": "",
+}"toxicity": "
+}
+}": "
+
+
+
+Example 8: 5/39 correct (acc=0.1282)
+Generated: ":":": "
+```json
+{
+    tone": "",
+  ",
+  ": "": "": "toxicity":
+}
+}}
+}": "
+}
+
+Example 9: 0/39 correct (acc=0.0000)
+Generated: 
+```json
+```json
+```json
+{
+    ": "
+    ",
+    ": "": "",
+  "safety": "  toxicity": "": " "":
+
+Example 10: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+    tone": "":":": "
+  
+  sentiment
+  ",
+  ": "": "",
+}"toxicity": "}toxicity": "":
+
+Example 11: 4/39 correct (acc=0.1026)
+Generated: json
+```json
+```json
+{
+{
+    ":": " "
+  sentiment": "",
+  ": "": "": "toxicity": "toxicity": "
+  
+
+Example 12: 6/39 correct (acc=0.1538)
+Generated: json
+```json
+```json
+{
+    ": "",": "": "",": "",
+  "toxicity": "
+  
+  ": "
+}"
+  
+
+Example 13: 2/39 correct (acc=0.0513)
+Generated: 
+```json
+```json
+```json
+```json
+
+
+
+
+{
+    ": "": "": "": "": "",
+    
+  ": "
+
+
+Example 14: 4/39 correct (acc=0.1026)
+Generated: ": "
+```json
+{
+    
+
+
+
+    ",": "": "",": "": "safety": "
+    toxicity": "": "
+  "toxicity
+
+Example 15: 2/39 correct (acc=0.0513)
+Generated: ":":json
+```json
+```json
+```json
+{
+        ": "neutral",
+      sentiment
+  ": " "": "
+  
+  
+  
+
+Example 16: 3/39 correct (acc=0.0769)
+Generated: ```json
+```json
+{
+    
+    ": "": "
+  ful"sentiment": "
+  ",": "",": "":
+}}"
+}"toxicity
+
+Example 17: 6/39 correct (acc=0.1538)
+Generated: ```json
+```json
+{
+{
+    ": "
+   "",": "",": "": "",": "": "toxicity": "toxicity": "
+}
+}
+
+Example 18: 2/40 correct (acc=0.0500)
+Generated: json
+```json
+```json
+{
+{
+{
+{
+    
+        
+    ": "",
+  ",
+  ": "": "",
+    }
+
+
+Example 19: 4/39 correct (acc=0.1026)
+Generated: ```json
+```json
+```json
+{
+
+    ": " "
+  
+             "",
+  "safety":":": "": "",
+
+
+
+
+Example 20: 2/38 correct (acc=0.0526)
+Generated: json
+{
+    {
+    ": "":": "": "",": "": ""sentiment
+        
+  ": "
+  "toxicity": "
+
+
+Example 21: 2/39 correct (acc=0.0513)
+Generated: ":":": "
+{
+   "",": "": "",": "",
+  ful  
+      
+  ": "
+  "toxicity": "
+}}
+
+Example 22: 2/39 correct (acc=0.0513)
+Generated: jsonjson
+```json
+{
+    ": "sentiment "": "": "
+     "",
+  ",": "": "",
+}",
+}"toxicity": "
+
+Example 23: 3/38 correct (acc=0.0789)
+Generated: 
+```json
+{
+    tone": "sentiment": "": "": "",": "",
+  "toxicity": "
+  
+  ": "
+}"toxicity":
+
+Example 24: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    tone": "": "": "sentiment": "",
+  ",
+  ",": "toxicity": "safety": "
+    toxicity": "": "
+
+Example 25: 3/39 correct (acc=0.0769)
+Generated: json
+```json
+```json
+{
+    ": "
+  ",
+  ": "": "": ""safety": "
+    
+  ": " "": "}
+
+Example 26: 4/39 correct (acc=0.1026)
+Generated:     tone",":":": "",":":":":":": "", "neutral",
+          "sentiment": "safety": ""sentiment": "
+    
+  
+
+Example 27: 2/38 correct (acc=0.0526)
+Generated: ":":":json
+{
+    ":": "sentiment":":": "",": "": "",": "",
+  "toxicity": "}}
+}": "
+
+
+Example 28: 2/39 correct (acc=0.0513)
+Generated: json
+```json
+{
+{
+    
+    ": "": "
+    ": "": "",": "": "",": "": "toxicity":
+      
+
+Example 29: 4/39 correct (acc=0.1026)
+Generated: ```json
+```json
+{
+    ": "": "
+   "",
+  ",": "": "
+}"toxicity": "",
+}  }}
+}":
+
+Example 30: 2/38 correct (acc=0.0526)
+Generated: ":
+```json
+```json
+    "tone":": "",": "": "",": "",
+  "safety": "}toxicity": "": "
+}"
+
+Example 31: 3/39 correct (acc=0.0769)
+Generated: ```json
+```json
+{
+
+{
+": "
+  ": "",
+  ",
+  ": "": "": "toxicity": "
+  }toxicity": "":
+
+Example 32: 3/39 correct (acc=0.0769)
+Generated: 
+```json
+{
+
+    ": "
+  ": "
+  
+   "", "
+  ",
+  ": "": "",
+}"toxicity": "
+  
+
+Batch 2 Results:
+  Total Correct: 115/1243
+  Accuracy: 0.0925
+  Time: 6.93s
+
+
+=== Evaluating 11 ===
+Example 1: 5/39 correct (acc=0.1282)
+Generated: ```json```json```json```json
+{
+  ",
+  sentiment": "
+  ": "": "": ""toxicity": "
+  "toxicity": "
+   "
+
+Example 2: 5/38 correct (acc=0.1316)
+Generated: ```json```json```json```json```json```json```json```json```json```json
+{
+  ",
+  ": "",
+  "toxicity": "
+}
+
+Example 3: 4/39 correct (acc=0.1026)
+Generated: ```json
+```json
+```json
+{
+  "sentiment",
+  ",
+  ": "": "": "
+  
+  ",
+  
+  ",
+   "
+
+Example 4: 6/39 correct (acc=0.1538)
+Generated: 
+{
+  json
+  ": "": "",
+  ",
+   "
+  
+  ",
+} "
+}": "
+}toxicity": "
+}"toxicity
+
+Example 5: 0/39 correct (acc=0.0000)
+Generated: 
+
+{
+  tone",
+  ful  safety": "safety":toxicity": "": "": "
+  
+  
+}"
+}",
+} "
+}
+
+
+Example 6: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  
+   "
+  sentiment " "ful"safety": "toxicity": "
+}",
+}ful"toxicity":
+}
+}
+}"
+
+
+Example 7: 5/38 correct (acc=0.1316)
+Generated: 
+{
+  tone": "",
+  safety",
+  
+   "
+  
+    "toxicity": "
+}"
+}",
+} "
+}":
+
+Example 8: 5/39 correct (acc=0.1282)
+Generated: ```json
+```
+```json
+{
+  tone": "sentiment": "
+  ful"safety": " "
+} "
+  
+}",
+} "": "
+
+
+Example 9: 5/39 correct (acc=0.1282)
+Generated: 
+
+```json
+```json
+```json
+{
+  "tone": "
+  
+  ful"toxicity": "
+  "
+  ",
+   "
+  
+
+
+Example 10: 8/39 correct (acc=0.2051)
+Generated: ```json
+```json
+{
+```": "":
+  "sentiment": "
+  ": "": "": "toxicity":toxicity": "
+}
+}",
+} "
+
+Example 11: 0/39 correct (acc=0.0000)
+Generated: json```json
+{
+
+   "tone",
+  ",
+  "sentiment",
+  ",
+  ",
+  ful"toxicity": "
+}"
+}",
+
+
+Example 12: 5/39 correct (acc=0.1282)
+Generated: json
+```json
+{
+  "tone": "
+   " "": "": " " "
+   "
+  
+}",
+} "
+}": "
+}
+
+Example 13: 1/39 correct (acc=0.0256)
+Generated: 
+```jsontonejson
+{
+
+  tone":
+  ",
+  safety",
+  ",
+    ful",
+  "toxicity": "
+}"
+}",
+
+Example 14: 0/39 correct (acc=0.0000)
+Generated: json```json
+{
+  "tone": "": "
+  ": "": "": "
+  
+   "
+  
+  ",
+   "
+  ": "
+
+
+Example 15: 3/39 correct (acc=0.0769)
+Generated: json
+{
+  tone": "
+  ": "": "": ""toxicity": "
+}"
+}",
+} "": "
+}toxicity": "
+}}
+
+Example 16: 6/39 correct (acc=0.1538)
+Generated: ```json
+```json
+```json "
+  tone": "": "": " "": " " "safety": "
+  ful"safety": "ful"toxicity": "
+
+
+Example 17: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    tone": "
+  ",
+  safety",
+  
+  ",
+  ": "": " "
+} "
+    
+}",
+} "
+
+Example 18: 5/40 correct (acc=0.1250)
+Generated: ```json
+{
+  
+  
+  tone": "": " "",
+  "safety",
+  ",
+   "
+  
+      "toxicity": "
+}"
+
+Example 19: 4/39 correct (acc=0.1026)
+Generated: ```json
+```json
+tonejson "
+   "": "": "": "
+  ",
+  ": "",
+  ",
+  
+      "safety": "
+
+
+Example 20: 2/38 correct (acc=0.0526)
+Generated: json
+{
+  "tone": "
+   "
+  ": "
+   "
+   "
+  
+  ",
+   "
+  ": "
+    toxicity
+
+Example 21: 1/39 correct (acc=0.0256)
+Generated: 
+  ":tone": " "
+{
+  "sentiment": "
+  ",
+   "
+  
+}",
+   "
+  
+}toxicity": "
+}ful
+
+Example 22: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  
+   "
+  sentiment
+  ful",
+  
+  toxicity": "
+  ful"
+}
+  "
+}"
+}"
+
+
+Example 23: 5/38 correct (acc=0.1316)
+Generated: tonejsontonejson
+{
+  tone": "
+   "
+  
+  ful"toxicity": "
+}"toxicity": "
+} "": "": "
+}
+
+Example 24: 4/39 correct (acc=0.1026)
+Generated: 
+```json
+{
+  tone": "": "
+  safety": "
+   "
+  
+  "toxicity":
+   "
+  
+  ",
+   "
+
+
+Example 25: 2/39 correct (acc=0.0513)
+Generated: json
+```json
+```json
+```json
+{
+  ": "
+   "": "
+  
+   "
+  
+  ",
+   "
+  ": "
+
+
+Example 26: 2/39 correct (acc=0.0513)
+Generated: "tonejson
+{
+  ": "
+  ": "
+  ",
+  toxicity": "
+  "toxicity": "
+  ": "
+}
+  
+}
+}
+
+Example 27: 2/38 correct (acc=0.0526)
+Generated: ": "":": " "": "",
+  sentiment":": "
+  ": "": "": ""safety": "
+}"
+}",
+} "
+}
+
+Example 28: 0/39 correct (acc=0.0000)
+Generated: json
+```jsontonejson
+{
+  tone": "": "": "
+  safety": "
+   "
+  
+  "toxicity":
+}"toxicity": "
+
+
+Example 29: 3/39 correct (acc=0.0769)
+Generated: ```json```json
+{
+  tonejson
+  "tone": " "
+  ": "
+  
+    "safety": "
+}"
+}",
+} "
+
+Example 30: 1/38 correct (acc=0.0263)
+Generated: json```json
+{
+  "tone": " " "
+   "
+  
+  ful"toxicity": "
+}"
+}",
+} "
+}": "
+
+Example 31: 5/39 correct (acc=0.1282)
+Generated: ```json
+```json
+```json
+{
+  "sentiment": "
+  
+  ": "": "": "
+  
+  ",
+  
+  ",
+   "
+
+Example 32: 0/39 correct (acc=0.0000)
+Generated: 
+```jsontonejson
+{
+  tone": "": "": " " "toxicity": "
+   "
+  
+  "toxicity": "",
+  "
+}",
+
+Batch 2 Results:
+  Total Correct: 113/1243
+  Accuracy: 0.0909
+  Time: 6.90s
+
+
+=== Evaluating 12 ===
+Example 1: 3/39 correct (acc=0.0769)
+Generated: json
+{
+  
+  tone": "
+  ": "
+  "sentiment":":": "
+  sentiment":": "
+    
+    sentiment": "
+  
+
+Example 2: 0/38 correct (acc=0.0000)
+Generated: 
+```json
+{
+  
+  json
+  json
+  
+  "tone": "
+  
+  ": "
+  
+  
+  "sentiment": "
+
+
+Example 3: 1/39 correct (acc=0.0256)
+Generated: json
+{
+  
+  
+  json
+  ": "
+  "tone":":": "
+  
+  ": "
+    
+  "sentiment": "
+  
+
+Example 4: 2/39 correct (acc=0.0513)
+Generated: 
+  
+  "tone":": "
+  
+  ": "
+    
+  "sentiment":": "
+  
+  
+  
+  
+  "sentiment": "
+
+Example 5: 8/39 correct (acc=0.2051)
+Generated: 
+```json
+{
+
+
+  json
+  
+  "tone": "
+  
+  ": "
+  
+  
+  "sentiment": "
+    
+  
+
+Example 6: 7/39 correct (acc=0.1795)
+Generated: ```json```json
+    
+  
+  ":json
+
+
+  ":
+  
+  "tone":": "
+  sentiment": "
+  sentiment": "
+  
+
+Example 7: 5/38 correct (acc=0.1316)
+Generated: 
+
+```json
+
+
+{
+  ": "
+  ":":": "
+  
+  ": "
+    
+        
+        
+  
+
+Example 8: 7/39 correct (acc=0.1795)
+Generated: 
+{
+  tonejson
+  
+  
+  
+  "tone":": "
+  tone":": "
+    
+    tone": "
+    
+  
+
+Example 9: 7/39 correct (acc=0.1795)
+Generated: json
+```json
+{
+  
+  
+  
+  "tone":": "
+  sentiment": "
+  ",
+    "sentiment": "
+    
+  
+
+Example 10: 3/39 correct (acc=0.0769)
+Generated: json
+{
+  
+  
+  ":": "
+  ": "
+  ":":": "
+  
+  ": "
+    
+    sentiment": "
+  
+
+Example 11: 2/39 correct (acc=0.0513)
+Generated: 
+```json
+
+  
+  json
+{
+  
+    ": "
+  ":": "
+  
+  ": "
+  ": "
+  "tone": "
+
+Example 12: 2/39 correct (acc=0.0513)
+Generated: json
+  json
+  ":
+  
+  "tone":": "
+  ": "
+  
+    
+        
+        
+  
+    
+
+Example 13: 0/39 correct (acc=0.0000)
+Generated: json```json
+{
+  
+  json
+  json
+  json
+  
+  "tone":": "
+   "
+    
+    
+    sentiment":
+
+Example 14: 2/39 correct (acc=0.0513)
+Generated: 
+  
+  json
+  json
+{
+  "tone":": "
+  sentiment": "
+  ",
+      sentiment": "
+    
+  
+  
+
+Example 15: 0/39 correct (acc=0.0000)
+Generated: 
+  json
+{
+  "tone": "
+  
+  ": "
+  
+  
+  "sentiment": "
+    
+  
+  
+  
+  "
+
+Example 16: 4/39 correct (acc=0.1026)
+Generated: ```json
+```json
+{
+    
+  
+  ": "
+  
+  ": "
+  "tone":":":":
+  
+  ": "
+    
+
+Example 17: 1/39 correct (acc=0.0256)
+Generated: json
+{
+{
+  
+  json
+  ": "
+  "tone":": "
+  
+  ": "
+  
+  
+    sentiment": "
+  
+
+Example 18: 7/40 correct (acc=0.1750)
+Generated: json```jsonjson
+{
+    
+  
+  ": "
+  
+  ": "
+  "sentiment":":": "
+  
+  ": "
+    
+  
+
+Example 19: 6/39 correct (acc=0.1538)
+Generated: ```json
+```json
+{
+    
+  
+  ":
+  
+  
+  
+  
+  "tone":
+    
+  ": "
+  
+  
+
+Example 20: 2/38 correct (acc=0.0526)
+Generated: json
+{
+  json
+  "tone":": "
+  sentiment": "
+  ",
+        sentiment": "
+  
+  
+  
+  
+
+
+Example 21: 2/39 correct (acc=0.0513)
+Generated: 
+  json
+{
+  "tone": "
+  
+  ": "
+  ",
+    "sentiment": "
+    
+  
+      
+  "
+
+Example 22: 8/39 correct (acc=0.2051)
+Generated: ```json
+```json
+{
+  
+  json
+  json
+  json
+  
+  "tone":
+    
+  ": "
+  
+  
+    
+
+Example 23: 1/38 correct (acc=0.0263)
+Generated: "
+
+
+{
+  ": "
+  ":":": "
+  
+  ": "
+    
+  "sentiment": "
+    
+  
+  
+
+
+Example 24: 11/39 correct (acc=0.2821)
+Generated: ```json
+{
+  
+  json
+  json
+  "tone": "
+  ":
+  tone": "
+  ",
+          
+        
+
+Example 25: 4/39 correct (acc=0.1026)
+Generated: 
+{
+{
+  
+  
+  
+  "tone":": "
+  sentiment": "
+  sentiment": "
+      
+    
+  
+  
+  
+
+Example 26: 5/39 correct (acc=0.1282)
+Generated: ": "
+  "tone":":": "
+  sentiment": "
+  ",
+        sentiment": "
+  
+  
+  
+  
+    
+  
+
+Example 27: 5/38 correct (acc=0.1316)
+Generated: 
+{
+  tone": "
+  ": "
+  "tone":":": "
+  sentiment": "
+  
+  
+    sentiment": "
+  
+  
+
+Example 28: 3/39 correct (acc=0.0769)
+Generated: "```json
+```json
+{
+  ": "
+  
+  ": "
+  "sentiment":":": "
+  ",
+      
+    sentiment": "sentiment
+
+Example 29: 3/39 correct (acc=0.0769)
+Generated: json
+{
+  
+  
+  ":": "
+  ": "
+  ":":
+  {
+  ": "
+  
+  
+  "tone":":": "
+
+Example 30: 1/38 correct (acc=0.0263)
+Generated: 
+{
+  ":": "
+  ": "
+  ":":": "
+  
+  ": "
+    "tone": "
+      ",
+  
+
+
+Example 31: 2/39 correct (acc=0.0513)
+Generated: json
+{
+  
+  
+  json
+  ": "
+  "tone":":": "
+  
+  ": "
+    
+  "sentiment": "
+  
+
+Example 32: 2/39 correct (acc=0.0513)
+Generated: json
+```json
+
+  json
+  
+  ":": "
+  ": "
+  ":":": "
+  
+  ": "
+    
+  "sentiment":
+
+Batch 2 Results:
+  Total Correct: 116/1243
+  Accuracy: 0.0933
+  Time: 6.94s
+
+
+=== Evaluating 15 ===
+Example 1: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    
+  ",
+  tone": " "
+   " "     "
+   " "": "
+  ": " " "  ",
+  ",
+
+
+Example 2: 5/38 correct (acc=0.1316)
+Generated: ```json
+{
+    
+  ",
+  sentiment": " "
+   " "
+  
+   "safety": "
+  ful",
+  "toxicity": " "
+
+Example 3: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  
+  ",
+  sentiment": " "
+   " "     "
+  
+  ": "
+  ": " " " "
+   " " "
+
+Example 4: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "
+  
+  ": "
+  ": " "
+  ",
+  ",
+      ",
+  
+  ": "
+    
+
+Example 5: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  
+  tone": " "
+  ": "
+  
+   "sentiment": "
+  ",
+   "  ",
+  ",
+   "  
+
+Example 6: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "  ": "
+  ",
+  tone": " "
+   " "
+  
+   "toxicity": "
+}ful"
+}}
+
+Example 7: 5/38 correct (acc=0.1316)
+Generated: ```json
+{
+   " "
+   "
+   " "
+  
+   "sentiment": "
+  ": " " "ite",
+  ",
+   "  
+
+Example 8: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": " "
+   "
+   " "
+  
+   "sentiment": "
+  ": " " "ite",
+  ",
+      
+
+Example 9: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": " "
+   "
+   "
+   "
+   "sentiment": "
+  ",
+   "ite",
+  ",
+      
+
+Example 10: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  
+  ",
+  sentiment": " "
+   " "     "
+   " "": "
+  ful",
+    ",
+  ",
+
+
+Example 11: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  
+    
+  ",
+   "
+   "
+   " "
+  
+  
+  ": "
+  ": " " "   "
+  
+
+Example 12: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    
+   "
+   "",
+  
+  
+  ": "
+  ": " " "  ",
+  ",
+  ",
+     "
+
+Example 13: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+    "tone": "
+    ": "tone": " "
+  ",
+   "
+   "sentiment": "
+  ",
+  ful",
+  
+
+Example 14: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  tone": " "
+   "
+   "
+  
+  ": "
+  ": " " "ite",
+  ",
+  ",
+  "
+
+Example 15: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": " "
+  
+   "sentiment": "
+  ",
+   "  ",
+  ",
+   "  ful"
+  
+  
+
+
+Example 16: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+        "     "  ": "
+  ",
+  sentiment": " "
+   " " "
+   " " "": "
+  ": "
+
+Example 17: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  
+  ",
+  tone": " "
+   "",
+  
+   "safety": "
+  ",
+   "  ",
+  ",
+
+
+Example 18: 10/40 correct (acc=0.2500)
+Generated: ```json
+{
+      ",
+      ": "
+  ",
+  tone": " "
+   "
+   "
+   "toxicity": "
+}ful"
+}
+
+Example 19: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+        "   "  ": "": "tone": "",
+   "
+  ",
+   "
+       "
+  
+  
+  
+
+Example 20: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  ": " " "
+  
+   "tone": "
+  ": " "
+  ",
+  ",
+   "    "safety": " "
+
+Example 21: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": " "tone": " " "tone": "
+  ": " " "ite",
+  ",
+   "  "toxicity": " "
+}
+
+Example 22: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "  ": "
+  ",
+  tone": " "
+   "
+   "
+   "toxicity": "
+}ful"
+}}
+
+Example 23: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  tone": "": " "
+  
+   "sentiment": "
+  ": " " " " "": " " "
+  ",
+  ":
+
+Example 24: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ",
+  ": "
+   "
+  ",
+    
+   " "": "
+  ": " " "   "": " " "
+
+
+Example 25: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  tone": " "
+  ": "
+  
+   "sentiment": "
+  ": " " "ful",
+  ",
+      ful",
+
+Example 26: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+   "      
+    ",
+  
+  ful",
+  "tone": " " "
+  ite",
+   "    ",
+   "
+
+Example 27: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  ": " "
+   "
+   "
+   "
+  
+  ": "
+  ": " " "ite",
+  ",
+    
+
+Example 28: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+   "  ": "
+  ",
+  toxicity": " "
+} " "}
+} " "
+} "
+}ful"
+}```json
+
+Example 29: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  
+  ",
+  
+  sentiment": " " " "     "
+   "sentiment": "
+  ": " "ful"
+}ful"
+
+
+Example 30: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+  tone": " "
+  ": "
+  
+  
+  ": "
+  ": " " "  ",
+  ",
+   "  ful
+
+Example 31: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    
+  ",
+  tone": " "
+   " "safety": " " "toxicity": "
+}"
+} "}
+}"
+}
+
+Example 32: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    "tone": "
+    ": "tone": " "
+  ",
+   "
+   "sentiment": "
+  ",
+   "  ",
+
+
+Batch 2 Results:
+  Total Correct: 206/1243
+  Accuracy: 0.1657
+  Time: 6.92s
+
+
+=== Evaluating 16 ===
+Example 1: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "": "",
+  ",
+  ",
+  ": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+
+Example 2: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+  ": "": "tone": "",
+  ",
+  ": "": "
+  negative",
+  "safety": "",
+  ful",
+
+Example 3: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "": "tone": "",
+  ",
+  ": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+
+Example 4: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  tone": "
+  
+  ",
+  "sentiment": "",
+  ",
+  ful",
+  "safety": "",
+   "
+
+
+Example 5: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  ": "
+  ",
+  
+  
+  
+  
+  
+  ",
+  "tone": "",
+  ",
+  
+  ",
+
+Example 6: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  ```json"tone": "
+{
+  "tone": "
+  ": "": "": "
+  ",
+  ",
+  ",
+  
+
+Example 7: 8/38 correct (acc=0.2105)
+Generated: ```json
+{
+  ": "": "",
+  "tone": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+   "
+
+Example 8: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "
+  ",
+  ",
+  ": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+   "
+
+Example 9: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  ": "
+  ",
+  "tone": "
+  
+  ": "",
+  ",
+    ",
+  ",
+  ": "":
+
+Example 10: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "": "",
+  "tone": "neutral",
+  ": "
+    ": "": "",
+  ful",
+  ": "
+
+
+Example 11: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "": "": "tone": "",
+  "sentiment": "
+  
+  
+  ",
+  ",
+    ",
+  ",
+
+Example 12: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "",
+  ": "": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+   "": "safety
+
+Example 13: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+{
+  
+  ",
+  "tone": "
+  
+  
+  ",
+  ",
+  ": "": "
+
+Example 14: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  
+  "tone": "": "": "": "
+  "sentiment": "",
+   "",
+  ",
+  ": "": "":
+
+Example 15: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  
+  
+  ",
+  "sentiment": "",
+  ": "  ": "ful",
+  "safety": "
+
+Example 16: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ```": "```json
+{
+  "tone": "
+  ",
+  ",
+  ": "": "
+  ",
+  ",
+  
+
+Example 17: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "": "tone": "",
+  ",
+  ": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+
+Example 18: 10/40 correct (acc=0.2500)
+Generated: ```json
+{
+      "tone": "": "": "": "tone": "",
+  "sentiment": "
+  
+  
+  ",
+  ",
+    
+
+Example 19: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ```": "
+  
+  ": "
+  ": "
+  ",
+  "tone": "
+  ": "
+  ",
+  ",
+
+
+Example 20: 10/38 correct (acc=0.2632)
+Generated: ```json
+{
+  "tone": "": "": "
+  ",
+  ",
+  ",
+  ",
+      
+   "": "  negative",
+
+Example 21: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  
+  
+  ",
+  "sentiment": "",
+  ",
+  ": "",
+    "safety": "
+
+Example 22: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  ```json"tone": "
+{
+  "sentiment": "
+  ": "": "": "
+  ",
+  ",
+  ",
+  
+
+Example 23: 13/38 correct (acc=0.3421)
+Generated: ```json
+{
+  "tone": " "
+  
+  
+  
+  ",
+  "sentiment": "",
+  ",
+  ": "": "": "
+
+Example 24: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  ",
+  "sentiment": "
+  
+  
+  ",
+  "safety": "",
+  ful",
+  
+
+Example 25: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  
+  "tone": "": "": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+  ",
+  
+
+Example 26: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  
+  ",
+  "sentiment": "",
+  ",
+  ful",
+  ": "
+  
+     "
+
+Example 27: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  ": "
+  ",
+  ",
+  "tone": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+  
+
+Example 28: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+   "```json
+  ",
+  ": "": "",
+  "sentiment": "": "
+  ",
+  ",
+  ",
+  ",
+
+Example 29: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "": "": "": "",
+  ": "": "": "
+  ",
+  ",
+  ",
+  ",
+  ful",
+
+Example 30: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+  
+  "tone": "": "": "": "
+  "sentiment": "",
+   "",
+  ",
+  ": "ful",
+
+Example 31: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "": "",
+  ",
+  "tone": "
+  
+  
+  ",
+  ",
+    ",
+  ": "}
+
+Example 32: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ```json
+{
+  ": "
+  ",
+  ",
+  ": "": "
+  ",
+  ",
+  ",
+  ",
+
+
+Batch 2 Results:
+  Total Correct: 247/1243
+  Accuracy: 0.1987
+  Time: 6.97s
+
+
+=== Evaluating 17 ===
+Example 1: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ": "": "
+    ",
+    ",
+    ": "
+    ": " "
+    
+    ": "
+    ",
+    "safety":
+
+Example 2: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+    ": "": "
+    ",
+    ",
+    jsonsafety": "
+     "
+    
+    "toxicity": "
+} "ful"
+
+Example 3: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  tone": "": "": "
+    ",
+    jsonsentiment": "
+     "
+      ",
+    "safety": "
+  ful"
+
+Example 4: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    "tone": " "
+  
+  "sentiment": "
+   "
+  ",
+    ",
+   "
+  ": "
+  
+
+Example 5: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "": "
+  ",
+  jsonsafety": "
+   "
+  
+  "toxicity": "
+} "ful"
+}ful"
+
+Example 6: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": "": "": "": "
+    ",
+  ",
+  ": "
+  ": " "
+    
+   "
+      ",
+
+Example 7: 5/38 correct (acc=0.1316)
+Generated: ```json
+{
+  ": "
+    ",
+    ": "
+      ": " "
+    
+    "safety": "
+     "
+    ",
+      
+
+Example 8: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "": "
+  ",
+  ",
+     "
+  
+  ful",
+  "safety": "
+  ful",
+    
+
+Example 9: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ": "": "
+    ",
+    ": "
+    ": " "
+    
+     "
+        ",
+    "safety": "
+    
+
+Example 10: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "": "
+    ",
+    ",
+    jsonsafety": "
+     "
+    
+    "toxicity": "
+} "ful"
+
+
+Example 11: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  jsontone": "": "
+  ",
+  ",
+  ": "
+  safety": "
+  
+  "toxicity": "
+}"
+
+
+Example 12: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  ",
+  ",
+  jsonsafety": "
+   "
+    "toxicity": "
+}"
+}ful"
+}}"
+}
+
+Example 13: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  tone": "": "": "
+  ",
+  ",
+  jsonsafety": "
+   "
+  
+  "toxicity": "
+}"
+
+Example 14: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  ": "
+  ",
+  jsonsafety": "
+   "
+  
+  "toxicity": "
+} "ful"
+}ful"
+}
+
+Example 15: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  ": "
+  "tone": " "
+  
+   "
+    sentiment": "
+  ",
+    ",
+   "
+  ":
+
+Example 16: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+    "tone": "": "
+    ": "": "
+    ",
+    ",
+  ": "
+  safety": "
+  
+  "toxicity
+
+Example 17: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ": "": "
+    ",
+    ",
+    ",
+      ": " "
+    
+     "
+        ",
+    "safety":
+
+Example 18: 7/40 correct (acc=0.1750)
+Generated: ```json
+{
+     "tone": "ite",
+   "": "
+  ",
+  ",
+  ",
+    ": " "
+  
+  "safety": "
+
+Example 19: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  "tone": "": "",
+   "": "
+  ",
+  ",
+  ": "
+  safety": "
+  
+  "toxicity
+
+Example 20: 9/38 correct (acc=0.2368)
+Generated: ```json
+{
+  tone": "
+  ite",
+   "
+    ",
+  "sentiment": "
+  ful",
+    ",
+   "
+
+
+Example 21: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+   "
+  
+     "
+  "toxicity": "
+}"
+}"
+}ful"
+}}"
+} "
+}"
+
+Example 22: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    tone": "",
+     "": "
+    ",
+    ",
+    ": "
+     "
+    
+    
+     "safety": "
+
+
+Example 23: 9/38 correct (acc=0.2368)
+Generated: ```json
+{
+  tone": " "
+  {
+  sentiment": "
+  
+   "
+    ",
+  ",
+  ",
+  ",
+  
+
+Example 24: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+   "": "
+  ",
+  ",
+  ",
+    ": " "
+  
+  ",
+      ",
+  "safety": "
+
+Example 25: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "
+  ",
+  jsonsafety": "
+  "toxicity": "
+}
+}}"
+}ful"
+}
+}"
+
+
+Example 26: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  json
+     "
+  "tone": "ite",
+  ",
+  "sentiment": "
+  ",
+   "
+  ": "
+
+
+Example 27: 9/38 correct (acc=0.2368)
+Generated: ```json
+{
+  ": "": "
+  ",
+  jsonsafety": "
+   "
+    "toxicity": "
+}"
+}ful"
+}
+
+Example 28: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+     "tone": "",
+  ": "": "
+  ",
+  ",
+    ": " "
+  
+  ",
+    ",
+
+
+Example 29: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    ": "": "
+    ",
+    ",
+    json"safety": "
+    "toxicity": "
+}"
+}"
+}ful"
+
+Example 30: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  ": "
+  ",
+  jsonsafety": "
+   "
+  
+  "toxicity": "
+} "ful"
+}
+}"
+
+Example 31: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  tone": "": "": "
+  ",
+  ",
+    ": " "
+  
+   "
+      ",
+  "safety":
+
+Example 32: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ```json
+   "": "
+  ",
+  ",
+  ",
+    safety": "
+  
+  "toxicity": "
+} "
+
+Batch 2 Results:
+  Total Correct: 239/1243
+  Accuracy: 0.1923
+  Time: 6.96s
+
+
+=== Evaluating 18 ===
+Example 1: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+    ": "tone": "
+    sentiment": "",
+    ": "
+    toxicity": "
+}
+}
+}}"
+}"
+}
+
+Example 2: 5/38 correct (acc=0.1316)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "
+  ",
+    safety": "
+  "toxicity": "ful"
+} ""
+
+
+Example 3: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  tone": "",
+  "sentiment": "",
+  ": "   "
+  "toxicity": "
+}"
+}"
+}"
+
+
+Example 4: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "
+  tone": "
+  sentiment": "
+  ",
+  "safety": "
+  "toxicity": ""
+}ful"
+
+
+Example 5: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "": "
+  ",
+  ",
+    safety": "
+  "toxicity": "
+}toxic"
+}ful"
+}toxic
+
+Example 6: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": "",
+   "": "
+  ",
+  ",
+  "safety": "
+   "
+  "toxicity": "
+}"
+
+Example 7: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  ": "
+  ",
+  "safety": "  toxicity": "
+}"
+}
+}
+}"
+}"
+}"
+
+
+Example 8: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  tone": "
+  ",
+   "
+   "   "
+  
+  ",
+   "
+  ",
+  ",
+  ",
+  
+
+Example 9: 12/39 correct (acc=0.3077)
+Generated: ```json
+{
+    ": "",
+    ",
+     "",
+      safety": "
+  "toxicity": "
+}"
+}"
+}"
+}
+
+Example 10: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    ": "tone": "
+    sentiment": "
+    ",
+      safety": "
+    "toxicity": ""
+}"
+}"
+
+
+Example 11: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": " "": "": "
+    ",
+    "sentiment": "  safety": "
+    "toxicity": "
+}"
+}"
+
+Example 12: 12/39 correct (acc=0.3077)
+Generated: ```json
+{
+  "tone": "
+  ",
+    sentiment": "
+  "safety": "
+  "toxicity": "ful"
+}ful"
+}
+
+Example 13: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  tone": "
+  ",
+  ": "safety": "",
+     "   "
+  "sentiment": "safety": "toxicity": ""
+
+Example 14: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "tone": "
+  ",
+    sentiment": "
+  ",
+    "safety": "
+      "toxicity": "
+
+
+Example 15: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  tone": "
+    ": "tone": "
+  "sentiment": "
+   "",
+  ",
+  ",
+  
+    "
+
+Example 16: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+      ": "
+     "tone": " "": " "": "
+    ",
+  "sentiment": "
+   "
+  "safety": "
+
+Example 17: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    ": "tone": "
+    ",
+    sentiment": "
+    safety": "
+  "toxicity": ""
+}"
+}"
+
+
+Example 18: 8/40 correct (acc=0.2000)
+Generated: ```json
+{
+     "tone": "",
+    ": " "",
+    "safety": "",
+    ": "   "
+    "toxicity": ""
+}}
+
+Example 19: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+        ": "
+     "tone": " "": "",
+    sentiment": "
+   "
+    safety": "
+    
+  "toxicity
+
+Example 20: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  tone": "
+   "{
+   "
+  "sentiment": "
+  ",
+  ",
+  ",
+  ",
+  ": "
+
+Example 21: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  tone": "
+    tone": "
+  
+  "sentiment": "
+   "",
+  ",
+  ",
+  safety": "
+
+
+Example 22: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    tone": "",
+     "": "
+    ",
+    ",
+     "
+         "
+    "safety": "toxicity": "}"
+
+Example 23: 14/38 correct (acc=0.3684)
+Generated: ```json
+{
+  tone": "
+  ",
+    sentiment": "
+  ",
+  safety": "
+  "toxicity": "
+}ful"
+}
+
+Example 24: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+     "tone": "",
+    ",
+     "
+     "
+    safety": "",
+    "toxicity": "
+}"
+}ful"
+
+Example 25: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  ": "
+  ",
+  ",
+    safety": "
+  "toxicity": "
+}"
+}ful"
+}
+}"
+
+
+Example 26: 11/39 correct (acc=0.2821)
+Generated: ```json
+{
+  tone": "
+  
+  
+  
+  "sentiment": "
+   ""safety": "
+  "toxicity": ""
+}
+}
+
+Example 27: 11/38 correct (acc=0.2895)
+Generated: ```json
+{
+  tone": "
+  ",
+  "sentiment": "  safety": "
+  "toxicity": "
+}
+}"
+}
+}toxic
+
+Example 28: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+     "tone": "",
+  ": "",
+  ",
+  ",
+   "  safety": "
+  "toxicity": "
+}"
+
+
+Example 29: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "tone": "
+    sentiment": "
+  ",
+    safety": "
+  "toxicity": "
+}"
+}"
+}
+
+Example 30: 8/38 correct (acc=0.2105)
+Generated: ```json
+{
+  ": "
+  ",
+  ",
+    ": " "
+  "tone": "
+  ": "
+  ful",
+  "
+
+
+Example 31: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  tone": "",
+  "sentiment": "",
+  ": "   "
+  toxicity": "
+}
+}}"
+}"
+}
+
+Example 32: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  "tone": " "": "",
+  sentiment": "
+  ",
+     "
+  "safety": "toxicity": "
+}"
+
+
+Batch 2 Results:
+  Total Correct: 250/1243
+  Accuracy: 0.2011
+  Time: 6.94s
+
+
+=== Evaluating 19 ===
+Example 1: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "": "
+    ",
+    
+    ": "
+        
+    "toxicity": "
+}
+}}
+} "
+}
+
+
+Example 2: 9/38 correct (acc=0.2368)
+Generated: ```json
+{
+  ": "": "
+  ",
+  
+  ful",
+    
+  "toxicity": "
+}
+}}
+} "
+}
+
+Example 3: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "
+  ",
+    
+  ",
+  "safety": "
+  "toxicity": "
+}
+
+Example 4: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+        
+  "tone": "
+  sentiment": "
+   "
+    ",
+  ",
+  
+    
+  
+  
+
+Example 5: 12/39 correct (acc=0.3077)
+Generated: ```json
+{
+  ": "
+  sentiment": "
+  ",
+    
+  ",
+  "safety": "
+  "toxicity": "
+}"
+}
+
+Example 6: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  "tone": "
+   "": "
+  ",
+  ",
+  ",
+    
+   "
+  ",
+  safety": "
+
+
+Example 7: 10/38 correct (acc=0.2632)
+Generated: ```json
+{
+    ": "
+    ",
+    ": "
+      
+    "toxicity": "
+}
+}
+}"
+}
+}"
+}
+
+Example 8: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  ": "
+  sentiment": "
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity": "
+}
+
+Example 9: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+  ": "
+    sentiment": "
+    ",
+    
+  "safety": "
+  toxicity": "
+} "
+}
+}"
+
+
+Example 10: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "tone": "
+    sentiment": "
+    ",
+        
+    ",
+    "safety": "
+    ",
+    "toxicity":
+
+Example 11: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+    ",
+     "": "
+    ",
+    
+    ": "
+        
+    "toxicity": "
+}
+}
+}"
+}
+
+Example 12: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  "tone": "
+   "
+    
+  "sentiment": "
+  safety": "
+   "
+    "toxicity": "
+}
+
+Example 13: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ",
+   "": "
+  ",
+  
+    ",
+    
+  ",
+  "tone": "
+  ",
+  
+
+Example 14: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "
+  
+  ful",
+    
+  "toxicity": "
+}
+}}"
+}"
+}"
+}"
+
+
+Example 15: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  tone": "
+    
+  "sentiment": "
+  safety": "
+   "
+  toxicity": "}"
+}
+}}ful
+
+Example 16: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "",
+  ": " "": "
+  ",
+  
+  ful",
+    
+  "toxicity": "
+}
+
+
+Example 17: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "tone": "
+    sentiment": "
+    ",
+        
+    ",
+    "safety": "
+    ",
+    "toxicity":
+
+Example 18: 10/40 correct (acc=0.2500)
+Generated: ```json
+{
+    ": "",
+    ",
+     "": "
+    
+    ",
+    ": "
+        
+    "toxicity": "
+}
+}}
+
+Example 19: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    "tone": "",
+    sentiment": "",
+  ": "
+  "safety": "
+      
+  "toxicity": "
+}
+
+
+Example 20: 8/38 correct (acc=0.2105)
+Generated: ```json
+{
+  "tone": "
+    
+  ",
+  "sentiment": "
+  ",
+  "safety": "
+  "toxicity": "
+
+
+Example 21: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  tone": "
+    
+  "sentiment": "
+  safety": "
+   "
+  toxicity": "}"
+}
+}}ful
+
+Example 22: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+    tone": "",
+     "": "
+    ",
+    ",
+    ",
+        
+    ",
+    "safety": "
+    ",
+
+Example 23: 8/38 correct (acc=0.2105)
+Generated: ```json
+{
+  tone": "
+  ",
+    
+  ",
+  "sentiment": "
+  ",
+  "safety": "
+  "toxicity":
+
+Example 24: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+   "": "
+    "tone": "
+    ": "
+  
+  ",
+  ",
+  sentiment": "
+   "
+  ",
+
+
+Example 25: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  ": "
+  ",
+  ": "
+  
+  ",
+  "safety": "
+  "toxicity": "
+}"
+}"
+
+
+Example 26: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+   "
+    
+  "tone": "
+  sentiment": "
+   "
+    ",
+  ",
+  
+    
+  
+
+
+Example 27: 6/38 correct (acc=0.1579)
+Generated: ```json
+{
+  ": "
+  tone": "
+  ",
+    
+   "
+  "sentiment": "
+  ",
+  ful",
+    
+
+Example 28: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  tone": "
+   "": "
+  ",
+  ",
+  ": "
+  
+  ",
+  "safety": "
+  "toxicity
+
+Example 29: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "": "
+  ",
+  
+  ful",
+    
+  "toxicity": "
+}
+}}
+} "
+}
+
+
+Example 30: 10/38 correct (acc=0.2632)
+Generated: ```json
+{
+  ": "
+  ",
+  ": "
+  
+  ",
+  "safety": "
+  "toxicity": "
+}"
+}"
+
+Example 31: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "
+  ",
+    
+   "
+  "safety": "
+  "toxicity": "
+}
+
+Example 32: 13/39 correct (acc=0.3333)
+Generated: ```json
+{
+  "tone": " "": "
+  "sentiment": "
+   "
+    
+  ",
+  "safety": "
+  ",
+  
+
+Batch 2 Results:
+  Total Correct: 253/1243
+  Accuracy: 0.2035
+  Time: 7.27s
+
+
+=== Evaluating 20 ===
+Example 1: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+    ": "": "
+    ",
+    
+    ": "
+        
+    ",
+    "toxicity": "
+}"
+}"
+}
+
+Example 2: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  ": "": "
+  ",
+  
+  ": "
+    
+  "safety": "
+  toxicity": "
+} ""
+
+
+Example 3: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "
+   "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity":
+
+Example 4: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  
+    
+  "tone": "
+  sentiment": "
+   "",
+  "safety": "
+  
+    
+  
+  
+
+Example 5: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "
+  tone": "
+   "
+    
+  ",
+  "sentiment": "
+  ",
+  "safety": "
+  
+
+Example 6: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  "tone": "
+   "": "
+  ",
+  "safety": "
+    
+  "toxicity": "
+}
+}}"
+
+Example 7: 8/38 correct (acc=0.2105)
+Generated: ```json
+{
+    ": "
+    ",
+    ": "
+        
+    ",
+    "safety": "
+    "toxicity": "
+}"
+}
+
+Example 8: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+  ": "
+  tone": "
+   "
+    
+  "sentiment": "
+  safety": "
+   "",
+  "toxicity":
+
+Example 9: 12/39 correct (acc=0.3077)
+Generated: ```json
+{
+    ": "
+    ",
+    sentiment": "
+        
+    ",
+    "safety": "
+    "toxicity": "
+}"
+}
+
+Example 10: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ": "": "
+    ",
+    
+    
+    
+        
+    ",
+    "tone": "
+    ",
+    "safety":
+
+Example 11: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+    ",
+     "tone": "
+    sentiment": "
+     "
+        
+    ",
+    "safety": "
+    ",
+    "
+
+Example 12: 12/39 correct (acc=0.3077)
+Generated: ```json
+{
+  "tone": "
+   "
+    sentiment": "safety": "
+  toxicity": "
+} ""
+}"
+}"
+}
+
+Example 13: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": " "": "
+  ",
+  "sentiment": "
+    
+  ",
+  "safety": "
+  "toxicity":
+
+Example 14: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "
+  "tone": "
+    
+  "sentiment": "
+  safety": "",
+  ",
+  ",
+  ",
+
+
+Example 15: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  
+  ",
+  "sentiment": "
+  ",
+  "safety": "
+  "toxicity": "
+}ful
+
+Example 16: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  "tone": "
+  ",
+   "": "
+  "safety": "
+  toxicity": "
+} "
+}ful"
+}
+
+
+Example 17: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    ": "tone": "
+    ": "
+    ": "
+        
+    ",
+    "safety": "
+    ",
+    "toxicity":
+
+Example 18: 7/40 correct (acc=0.1750)
+Generated: ```json
+{
+    ": "
+     "",
+     "": "
+    ",
+    ",
+     "
+        
+    ",
+    "safety": "
+    
+
+Example 19: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+    "tone": "
+    ",
+     "",
+    ": "
+    ",
+    safety": "
+     "
+    "toxicity": "
+
+
+Example 20: 11/38 correct (acc=0.2895)
+Generated: ```json
+{
+  "tone": "
+    
+  ",
+  "sentiment": "
+  ",
+  ",
+  ",
+  ",
+  
+  
+
+Example 21: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  "tone": "
+  
+  ",
+  "sentiment": "
+  ",
+  ",
+  ",
+  ",
+  
+    ":
+
+Example 22: 6/39 correct (acc=0.1538)
+Generated: ```json
+{
+    tone": "",
+    ": "
+    ": "
+    ",
+     "
+        
+    ",
+    ",
+    safety": "",
+
+Example 23: 7/38 correct (acc=0.1842)
+Generated: ```json
+{
+  tone": "
+   "
+    
+  ",
+  "sentiment": "
+  ",
+  "safety": "
+  "toxicity":
+
+Example 24: 5/39 correct (acc=0.1282)
+Generated: ```json
+{
+   "": "
+  "tone": "
+   "
+    
+  ",
+  "sentiment": "
+  ",
+  "safety": "
+
+Example 25: 15/39 correct (acc=0.3846)
+Generated: ```json
+{
+  ": "
+  "sentiment": "
+    
+  ",
+  "safety": "
+  ",
+  "toxicity": "
+}"
+
+
+Example 26: 8/39 correct (acc=0.2051)
+Generated: ```json
+{
+  tone": "
+   "
+  ful",
+  sentiment": "
+   "",
+  ",
+  ",
+  
+    ": "
+
+
+Example 27: 9/38 correct (acc=0.2368)
+Generated: ```json
+{
+  ": "
+  tone": "
+   "
+    
+  ",
+  "safety": "
+  "toxicity": "
+}"
+
+
+Example 28: 10/39 correct (acc=0.2564)
+Generated: ```json
+{
+  "tone": "
+  ",
+  ": "
+  ",
+  safety": "
+   "toxicity": "
+}"
+}
+}"
+
+Example 29: 7/39 correct (acc=0.1795)
+Generated: ```json
+{
+  ": "": "
+  ",
+  
+  ": "
+    
+  "tone": "
+  safety": "
+   "",
+  
+
+Example 30: 10/38 correct (acc=0.2632)
+Generated: ```json
+{
+  ": "
+  ",
+   "
+    
+  ",
+  "safety": "
+  "toxicity": "
+}"
+}"
+
+Example 31: 9/39 correct (acc=0.2308)
+Generated: ```json
+{
+  ": "tone": "
+  sentiment": "
+   "
+    
+   "safety": "
+  toxicity": "
+} ""
+}
+
+Example 32: 11/39 correct (acc=0.2821)
+Generated: ```json
+{
+  "tone": " "": "
+  "sentiment": "
+  safety": "
+    "toxicity": "
+}
+}}"
+}
+
+Batch 2 Results:
+  Total Correct: 269/1243
+  Accuracy: 0.2164
+  Time: 7.17s
+
+
+=== Summary ===
+temp acc: 0.2060
+0 acc: 0.1167
+1 acc: 0.0901
+2 acc: 0.0813
+3 acc: 0.0676
+4 acc: 0.0917
+5 acc: 0.1134
+6 acc: 0.1094
+8 acc: 0.0813
+9 acc: 0.1038
+10 acc: 0.0925
+11 acc: 0.0909
+12 acc: 0.0933
+15 acc: 0.1657
+16 acc: 0.1987
+17 acc: 0.1923
+18 acc: 0.2011
+19 acc: 0.2035
+20 acc: 0.2164

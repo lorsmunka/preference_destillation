@@ -17,7 +17,6 @@ test_start, test_end = batchHandler.get_test_batches_radius()
 start_epoch = telemetryHandler.current_epoch
 resume_batch = telemetryHandler.current_batch
 
-
 for epoch in range(start_epoch, trainer.epoch_count() + 1):
     resume_from = resume_batch if epoch == start_epoch else 0
     print(f"\nEpoch {epoch + 1}/{trainer.epoch_count()}\n")

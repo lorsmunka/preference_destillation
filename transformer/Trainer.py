@@ -15,7 +15,7 @@ from BatchHandler import BatchHandler
 EPOCH_COUNT = 24
 LEARNING_RATE = 6e-4
 TEMPERATURE = 1.0
-KL_RATIO = 0.5
+KL_RATIO = 0.3
 TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 

@@ -1,7 +1,7 @@
 {
-    "current_epoch": 18,
-    "current_batch": 155,
-    "total_batches_processed": 1535,
-    "total_runtime_seconds": 247197.47487330437,
-    "session_count": 89
+    "current_epoch": 21,
+    "current_batch": 261,
+    "total_batches_processed": 3033,
+    "total_runtime_seconds": 349939.3949801922,
+    "session_count": 108
 }
