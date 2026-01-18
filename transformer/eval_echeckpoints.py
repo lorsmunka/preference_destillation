@@ -2,7 +2,7 @@ import torch
 from pathlib import Path
 from transformers import AutoTokenizer
 from Transformer import Transformer
-from Utilities import Utilities
+from shared import Utilities
 
 
 EVAL_SENTENCES = [

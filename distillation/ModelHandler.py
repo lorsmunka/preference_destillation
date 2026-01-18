@@ -3,7 +3,7 @@ from time import sleep, time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from Utilities import Utilities
+from shared import Utilities
 
 from typing import Dict, List, Tuple
 

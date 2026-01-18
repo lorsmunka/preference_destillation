@@ -5,7 +5,7 @@ import math
 from typing import Optional
 
 from transformers import AutoTokenizer
-from Utilities import Utilities
+from shared import Utilities
 
 
 class Transformer(nn.Module):

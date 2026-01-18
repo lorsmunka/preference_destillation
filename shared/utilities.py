@@ -25,7 +25,7 @@ class Utilities:
     @staticmethod
     def create_evaluation_prompt(sentence: str) -> str:
         prompt = f"""Analyze this sentence and return your evaluation as JSON:
-        
+
 
 Sentence: "{sentence}"
 
