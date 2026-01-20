@@ -19,10 +19,8 @@ class ModelEvaluator:
 
         self.model = Transformer().to(self.device)
         self.tokenizer = self.model.tokenizer
+        self.vocabulary = self.model.vocabulary
         self.output_token_ids = self.model.output_token_ids
-        self.token_id_to_output_idx = {
-            token_id: idx for idx, token_id in enumerate(self.output_token_ids)
-        }
 
         self.checkpoint_dir = checkpoint_dir
         self.log_dir = Path("evals")
@@ -136,15 +134,11 @@ class ModelEvaluator:
 
     def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float]]:
         token = step["token"]
-        probs = step["probabilities"]
+        logit_vector = step["logits"]
+
         token_id = self.tokenizer.convert_tokens_to_ids([token])[0]
-        target_logits = [-100.0] * len(self.output_token_ids)
-        for tok_str, val in probs.items():
-            tok_id = self.tokenizer.convert_tokens_to_ids([tok_str])[0]
-            out_idx = self.token_id_to_output_idx.get(tok_id)
-            if out_idx is not None:
-                target_logits[out_idx] = val
-        return token_id, target_logits
+
+        return token_id, logit_vector
 
 
 def main():

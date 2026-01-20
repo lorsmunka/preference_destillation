@@ -24,9 +24,15 @@ class Transformer(nn.Module):
 
         self.tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
         self.input_vocab_size = self.tokenizer.vocab_size
-        self.vocabulary_map = Utilities.build_vocabulary_map(self.tokenizer)
-        self.output_token_ids = list(self.vocabulary_map.values())
-        self.output_vocab_size = len(self.output_token_ids)
+
+        self.vocabulary = Utilities.build_vocabulary(self.tokenizer)
+        self.output_vocab_size = self.vocabulary['vocab_size']
+
+        self.output_token_ids = [
+            self.vocabulary['token_to_id'][token]
+            for token in self.vocabulary['token_list']
+        ]
+
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.max_seq_length = max_seq_length
@@ -101,6 +107,12 @@ class Transformer(nn.Module):
     def get_num_parameters(self) -> int:
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
+    def get_vocabulary(self) -> dict:
+        return self.vocabulary
+
+    def get_positions(self) -> dict:
+        return self.vocabulary['positions']
+
     def model_info(self):
         input_embedding_params = self.input_embedding.weight.numel()
         position_embedding_params = self.position_embedding.weight.numel()
@@ -126,6 +138,8 @@ class Transformer(nn.Module):
         total_parameters = self.get_num_parameters()
         difference = total_parameters - subtotal
 
+        positions = self.vocabulary['positions']
+
         print("=== Model Parameter Overview ===")
         print(
             f"Total trainable parameters: {total_parameters:,}")
@@ -142,6 +156,11 @@ class Transformer(nn.Module):
             f"\nHyperparameters: Hidden dimension={self.hidden_dim}, Heads={self.num_heads}, Layers={len(self.transformer_layers)}, Max sequence length={self.max_seq_length}")
         print(
             f"Input vocab size={self.input_vocab_size}, Output vocab size={self.output_vocab_size}")
+        print(f"\nOutput vocabulary sections:")
+        print(f"  Example tokens: {positions['example'][0]}-{positions['example'][1]}")
+        print(f"  Whitespace tokens: {positions['whitespace'][0]}-{positions['whitespace'][1]}")
+        print(f"  Prompt tokens: {positions['prompt'][0]}-{positions['prompt'][1]}")
+        print(f"  Auxiliary tokens: {positions['auxiliary'][0]}-{positions['auxiliary'][1]}")
 
 
 class TransformerBlock(nn.Module):

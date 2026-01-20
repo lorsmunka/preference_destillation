@@ -9,8 +9,9 @@ transformer = Transformer()
 telemetryHandler = TelemetryHandler()
 exitListener = ExitListener()
 batchHandler = BatchHandler()
+
 trainer = Trainer(
-    transformer, transformer.vocabulary_map, transformer.tokenizer, telemetryHandler, exitListener, batchHandler)
+    transformer, transformer.vocabulary, transformer.tokenizer, telemetryHandler, exitListener, batchHandler)
 
 batch_start, batch_end = batchHandler.get_training_batches_radius()
 test_start, test_end = batchHandler.get_test_batches_radius()

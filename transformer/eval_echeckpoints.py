@@ -6,6 +6,7 @@ from shared import Utilities
 
 
 EVAL_SENTENCES = [
+    "You think that 67 of Britons are unemployed?",
     "Real thirstposting hours who up",
     "If someone put that spinning on a drill would that fish keep trying?",
     "It's not. Different branches of government actually.",
@@ -53,8 +54,12 @@ class CheckpointEvaluator:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
-        self.vocabulary_map = Utilities.build_vocabulary_map(self.tokenizer)
-        self.output_token_ids = list(self.vocabulary_map.values())
+
+        self.vocabulary = Utilities.build_vocabulary(self.tokenizer)
+        self.output_token_ids = [
+            self.vocabulary['token_to_id'][token]
+            for token in self.vocabulary['token_list']
+        ]
 
         self.output_idx_to_token_id = {
             idx: token_id for idx, token_id in enumerate(self.output_token_ids)
@@ -71,7 +76,7 @@ class CheckpointEvaluator:
 
         checkpoint_files = []
 
-        temp_checkpoint = Path(self.checkpoint_dir) / "temp_checkpoint.pt"
+        temp_checkpoint = Path(self.checkpoint_dir) / "checkpoint_epoch_24.pt"
         if temp_checkpoint.exists():
             checkpoint_files.insert(0, temp_checkpoint)
 

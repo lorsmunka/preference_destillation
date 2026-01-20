@@ -1,3 +1,3 @@
-from .utilities import Utilities, EXAMPLE_RESULT, WHITESPACE_VARIATIONS
+from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 
-__all__ = ['Utilities', 'EXAMPLE_RESULT', 'WHITESPACE_VARIATIONS']
+__all__ = ['Utilities', 'DEBUG_TOKEN_MAP_PATH']

@@ -20,7 +20,7 @@ TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 
 class Trainer:
-    def __init__(self, model: Transformer, token_to_id: Dict[str, int], tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
+    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
         start_time = time()
         print("Initializing Trainer...")
 
@@ -31,7 +31,7 @@ class Trainer:
             self.device = "mps"
 
         self.model = model.to(self.device)
-        self.token_to_id = token_to_id
+        self.vocabulary = vocabulary
         self.tokenizer = tokenizer
         self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
 
@@ -45,10 +45,8 @@ class Trainer:
             eta_min=1e-5
         )
 
-        self.output_token_ids = model.output_token_ids
-        self.token_id_to_output_idx = {
-            token_id: idx for idx, token_id in enumerate(self.output_token_ids)
-        }
+        self.vocab_size = vocabulary['vocab_size']
+        self.token_to_index = vocabulary['token_to_index']
 
         self.telemetry_handler = telemetry_handler
         self.exit_listener = exit_listener
@@ -171,8 +169,7 @@ class Trainer:
 
     def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
         sentence_tokens = self._get_sentence_tokens(example)
-        steps = sorted(example['steps'],
-                       key=lambda s: example['steps'].index(s))
+        steps = example['steps']
 
         total_loss = 0.0
         total_kl_loss = 0.0
@@ -184,7 +181,8 @@ class Trainer:
         self.optimizer.zero_grad(set_to_none=True)
 
         for step in steps:
-            token_id, target_logits = self._prepare_step_data(step)
+            token_id, target_logits, target_index = self._prepare_step_data(
+                step)
 
             input_tensor, target_tensor = self._create_tensors(
                 sentence_tokens + generated_token_ids,
@@ -192,7 +190,7 @@ class Trainer:
             )
 
             loss, kl_loss, ce_loss, is_correct = self._compute_step_loss(
-                input_tensor, target_tensor)
+                input_tensor, target_tensor, target_index)
 
             loss.backward()
 
@@ -263,8 +261,7 @@ class Trainer:
 
     def _eval_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
         sentence_tokens = self._get_sentence_tokens(example)
-        steps = sorted(example['steps'],
-                       key=lambda s: example['steps'].index(s))
+        steps = example['steps']
 
         total_loss = 0.0
         total_kl_loss = 0.0
@@ -274,7 +271,8 @@ class Trainer:
         generated_token_ids = []
 
         for step in steps:
-            token_id, target_logits = self._prepare_step_data(step)
+            token_id, target_logits, target_index = self._prepare_step_data(
+                step)
 
             input_tensor, target_tensor = self._create_tensors(
                 sentence_tokens + generated_token_ids,
@@ -282,7 +280,7 @@ class Trainer:
             )
 
             loss, kl_loss, ce_loss, is_correct = self._compute_step_loss(
-                input_tensor, target_tensor)
+                input_tensor, target_tensor, target_index)
             total_loss += loss.item()
             total_kl_loss += kl_loss.item()
             total_ce_loss += ce_loss.item()
@@ -295,7 +293,7 @@ class Trainer:
 
         return total_loss, total_kl_loss, total_ce_loss, correct_predictions, valid_steps
 
-    def _compute_step_loss(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor):
+    def _compute_step_loss(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor, target_index: int):
         model_logits = self.model(input_tensor)
         last_token_logits = model_logits[:, -1, :]
 
@@ -303,13 +301,12 @@ class Trainer:
             last_token_logits, target_tensor)
 
         ce_loss = self._compute_Cross_Entropy_Loss(
-            last_token_logits, target_tensor)
+            last_token_logits, target_index)
 
         combined_loss = KL_RATIO * kl_loss + (1 - KL_RATIO) * ce_loss
 
         predicted_idx = torch.argmax(last_token_logits[0]).item()
-        target_idx = torch.argmax(target_tensor[0]).item()
-        is_correct = predicted_idx == target_idx
+        is_correct = predicted_idx == target_index
 
         return combined_loss, kl_loss, ce_loss, is_correct
 
@@ -317,21 +314,15 @@ class Trainer:
         text = example['sentence'] + '\n\n'
         return self.tokenizer.encode(text, add_special_tokens=False)
 
-    def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float]]:
+    def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float], int]:
         token = step['token']
-        probabilities = step['probabilities']
+        logit_vector = step['logits']
+        target_index = step['predicted_token_index']
 
         token_ids = self.tokenizer.convert_tokens_to_ids([token])
         token_id = token_ids[0]
 
-        normalized_probs = {}
-        for token_str, logit_value in probabilities.items():
-            token_ids = self.tokenizer.convert_tokens_to_ids([token_str])
-            normalized_probs[token_ids[0]] = logit_value
-
-        target_logits = self._build_target_logits(normalized_probs)
-
-        return token_id, target_logits
+        return token_id, logit_vector, target_index
 
     def _create_tensors(self, input_ids: List[int], target_logits: List[float]) -> Tuple[torch.Tensor, torch.Tensor]:
         input_tensor = torch.tensor(
@@ -340,21 +331,7 @@ class Trainer:
             [target_logits], dtype=torch.float32, device=self.device)
         return input_tensor, target_tensor
 
-    def _build_target_logits(self, probabilities: Dict[int, float]) -> List[float]:
-        target = [-100.0] * len(self.output_token_ids)
-
-        for token_id, logit_value in probabilities.items():
-            output_idx = self.token_id_to_output_idx.get(token_id)
-            if output_idx is not None:
-                target[output_idx] = logit_value
-
-        return target
-
     def _compute_Kullback_Leibler_Divergence_Loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
-        teacher_logits = teacher_logits.clone()
-        valid_mask = teacher_logits != -100.0
-        teacher_logits[~valid_mask] = -1e9
-
         student_log_probs = F.log_softmax(student_logits / TEMPERATURE, dim=-1)
         teacher_probs = F.softmax(teacher_logits / TEMPERATURE, dim=-1)
 
@@ -363,14 +340,11 @@ class Trainer:
 
         return kl_loss
 
-    def _compute_Cross_Entropy_Loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
-        teacher_logits = teacher_logits.clone()
-        valid_mask = teacher_logits != -100.0
-        teacher_logits[~valid_mask] = -1e9
-
-        target_idx = torch.argmax(teacher_logits, dim=-1)
+    def _compute_Cross_Entropy_Loss(self, student_logits: torch.Tensor, target_index: int) -> torch.Tensor:
+        target_tensor = torch.tensor(
+            [target_index], device=student_logits.device)
         ce_loss = F.cross_entropy(
-            student_logits / TEMPERATURE, target_idx) * (TEMPERATURE ** 2)
+            student_logits / TEMPERATURE, target_tensor) * (TEMPERATURE ** 2)
 
         return ce_loss
 

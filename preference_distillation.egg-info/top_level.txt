@@ -1,4 +1,3 @@
 distillation
-distillation_batches
 shared
 transformer

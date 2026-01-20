@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command:*)",
+      "Bash(git -C \"C:\\\\Users\\\\Ors\\\\preference_destillation\" diff --cached)"
+    ]
+  }
+}
