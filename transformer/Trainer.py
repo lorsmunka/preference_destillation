@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from time import time
 
 from TelemetryHandler import TelemetryHandler
@@ -65,7 +65,7 @@ class Trainer:
     def epoch_count(self):
         return EPOCH_COUNT
 
-    def train_epoch(self, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> float:
+    def train_epoch(self, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> Optional[bool]:
         self.model.train()
         total_loss = 0.0
         total_kl_loss = 0.0
