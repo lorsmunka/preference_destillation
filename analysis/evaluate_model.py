@@ -1,11 +1,16 @@
-import torch
+import sys
+from pathlib import Path
 from typing import Dict, List, Tuple
 from time import time
-from pathlib import Path
 
-from batch_handler import BatchHandler
-from model import Transformer
+import torch
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "training"))
+
 from shared import get_device
+from training.batch_handler import BatchHandler
+from training.model import Transformer
 
 
 class ModelEvaluator:
@@ -21,8 +26,7 @@ class ModelEvaluator:
         self.log_dir = Path("evals")
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
-        print(
-            f"Evaluator ready on {self.device} -> init took {time() - start_time:.2f}s\n")
+        print(f"Evaluator ready on {self.device} -> init took {time() - start_time:.2f}s\n")
 
     def get_checkpoint_files(self):
         files = sorted(
@@ -36,8 +40,7 @@ class ModelEvaluator:
 
     def _load_checkpoint(self, filepath: Path):
         print(f"\n[Loading {filepath.name}]")
-        ckpt = torch.load(filepath, map_location=self.device,
-                          weights_only=True)
+        ckpt = torch.load(filepath, map_location=self.device, weights_only=True)
         self.model.load_state_dict(ckpt["model_state_dict"])
         self.model.eval()
 
@@ -52,11 +55,10 @@ class ModelEvaluator:
         results = []
 
         with open(log_path, "w", encoding="utf-8") as logf:
-            for idx, ckpt_path in enumerate(checkpoints, start=1):
+            for index, ckpt_path in enumerate(checkpoints, start=1):
                 epoch_name = ckpt_path.stem.replace(
                     "checkpoint_epoch_", "").replace("temp_checkpoint", "temp")
-                print(
-                    f"\n=== [Epoch {epoch_name}] ({idx}/{len(checkpoints)}) ===")
+                print(f"\n=== [Epoch {epoch_name}] ({index}/{len(checkpoints)}) ===")
                 logf.write(f"\n=== Evaluating {epoch_name} ===\n")
 
                 self._load_checkpoint(ckpt_path)
@@ -64,7 +66,7 @@ class ModelEvaluator:
                     batch_index, batch_handler, logf)
 
                 results.append((epoch_name, batch_acc))
-                logf.flush()  # ensure per-epoch data is written
+                logf.flush()
 
             logf.write("\n=== Summary ===\n")
             for name, acc in results:
@@ -79,13 +81,12 @@ class ModelEvaluator:
         total_correct = total_steps = 0
 
         with torch.no_grad():
-            for example_idx, example in enumerate(batch_data):
-                correct, steps, generated_text = self._evaluate_example(
-                    example)
+            for example_index, example in enumerate(batch_data):
+                correct, steps, generated_text = self._evaluate_example(example)
                 total_correct += correct
                 total_steps += steps
                 acc = correct / steps if steps else 0.0
-                line = f"Example {example_idx + 1}: {correct}/{steps} correct (acc={acc:.4f})"
+                line = f"Example {example_index + 1}: {correct}/{steps} correct (acc={acc:.4f})"
                 print(" ", line)
                 logf.write(line + "\n")
                 logf.write(f"Generated: {generated_text}\n\n")
@@ -110,18 +111,17 @@ class ModelEvaluator:
         generated_ids_model = []
 
         for step in steps:
-            gt_id, target_logits = self._prepare_step_data(step)
+            ground_truth_id, target_logits = self._prepare_step_data(step)
             inp = torch.tensor([sentence_tokens + generated_ids_model],
                                dtype=torch.long, device=self.device)
             logits = self.model(inp)
-            pred_idx = torch.argmax(logits[:, -1, :][0]).item()
-            pred_token_id = self.output_token_ids[pred_idx]
-            if pred_token_id == gt_id:
+            pred_index = torch.argmax(logits[:, -1, :][0]).item()
+            pred_token_id = self.output_token_ids[pred_index]
+            if pred_token_id == ground_truth_id:
                 correct_predictions += 1
             generated_ids_model.append(pred_token_id)
 
-        gen_text = self.tokenizer.decode(
-            generated_ids_model, skip_special_tokens=True)
+        gen_text = self.tokenizer.decode(generated_ids_model, skip_special_tokens=True)
         return correct_predictions, len(steps), gen_text
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
@@ -130,9 +130,7 @@ class ModelEvaluator:
     def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float]]:
         token = step["token"]
         logit_vector = step["logits"]
-
         token_id = self.tokenizer.convert_tokens_to_ids([token])[0]
-
         return token_id, logit_vector
 
 
@@ -140,9 +138,9 @@ def main():
     print("=== Model Accuracy Evaluator (All Checkpoints) ===\n")
     checkpoint_dir = "checkpoints"
     batch_index = int(input("Enter batch index (0-based): ").strip())
-    bh = BatchHandler()
+    batch_handler = BatchHandler()
     evaluator = ModelEvaluator(checkpoint_dir)
-    evaluator.evaluate_all_checkpoints(bh, batch_index)
+    evaluator.evaluate_all_checkpoints(batch_handler, batch_index)
 
 
 if __name__ == "__main__":
