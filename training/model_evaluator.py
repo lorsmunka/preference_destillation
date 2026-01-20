@@ -3,8 +3,8 @@ from typing import Dict, List, Tuple
 from time import time
 from pathlib import Path
 
-from BatchHandler import BatchHandler
-from Transformer import Transformer
+from batch_handler import BatchHandler
+from model import Transformer
 from shared import get_device
 
 

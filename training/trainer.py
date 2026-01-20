@@ -9,7 +9,7 @@ from time import time
 
 from shared import (
     ExitListener,
-    TelemetryHandler,
+    Logger,
     get_device,
     EPOCH_COUNT,
     LEARNING_RATE,
@@ -17,12 +17,12 @@ from shared import (
     KL_RATIO,
     TEMP_CHECKPOINT_PATH,
 )
-from Transformer import Transformer
-from BatchHandler import BatchHandler
+from model import Transformer
+from batch_handler import BatchHandler
 
 
 class Trainer:
-    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
+    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, logger: Logger, exit_listener: ExitListener, batch_handler: BatchHandler):
         start_time = time()
         print("Initializing Trainer...")
 
@@ -45,14 +45,14 @@ class Trainer:
         self.vocab_size = vocabulary['vocab_size']
         self.token_to_index = vocabulary['token_to_index']
 
-        self.telemetry_handler = telemetry_handler
+        self.logger = logger
         self.exit_listener = exit_listener
 
         elapsed_time = time() - start_time
         print(
             f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={total_training_steps})\n")
 
-        if self.telemetry_handler.should_resume():
+        if self.logger.should_resume():
             if os.path.exists(TEMP_CHECKPOINT_PATH):
                 self.load_checkpoint(TEMP_CHECKPOINT_PATH)
                 print("Loaded temp checkpoint\n")
@@ -90,13 +90,13 @@ class Trainer:
             avg_epoch_loss = total_loss / total_steps
             avg_epoch_kl_loss = total_kl_loss / total_steps
             avg_epoch_ce_loss = total_ce_loss / total_steps
-            self.telemetry_handler.log_train_epoch(
+            self.logger.log_train_epoch(
                 epoch, avg_epoch_loss, total_steps, avg_epoch_kl_loss, avg_epoch_ce_loss)
             self.save_checkpoint(epoch, avg_epoch_loss)
         else:
             print(
                 f"No training steps completed in epoch {epoch} (exit requested)")
-            self.telemetry_handler.current_batch = 0
+            self.logger.current_batch = 0
 
         return True
 
@@ -144,7 +144,7 @@ class Trainer:
         example_elapsed = time() - example_start_time
         print(f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={avg_loss:.4f}, kl={avg_kl_loss:.4f}, ce={avg_ce_loss:.4f}, acc={accuracy:.4f} -> took {example_elapsed:.2f}s")
 
-        self.telemetry_handler.log_training_example(
+        self.logger.log_training_example(
             epoch, batch_idx + 1, example_idx + 1, num_steps, avg_loss, example_elapsed, avg_kl_loss, avg_ce_loss, accuracy)
 
         return loss_sum, kl_loss_sum, ce_loss_sum, num_steps, correct
@@ -156,12 +156,12 @@ class Trainer:
         avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
         print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
-        self.telemetry_handler.update_progress(epoch, batch_idx + 1)
+        self.logger.update_progress(epoch, batch_idx + 1)
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
         print("Exit requested. Saving progress...")
         self.save_temp_checkpoint(epoch, avg_batch_loss)
-        self.telemetry_handler.save()
+        self.logger.save()
         return None
 
     def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
@@ -249,7 +249,7 @@ class Trainer:
         avg_ce_loss = total_ce_loss / total_steps if total_steps > 0 else 0.0
         accuracy = total_correct / total_steps if total_steps > 0 else 0.0
 
-        self.telemetry_handler.log_eval_epoch(
+        self.logger.log_eval_epoch(
             epoch, avg_loss, accuracy, total_steps, avg_kl_loss, avg_ce_loss)
 
         print(

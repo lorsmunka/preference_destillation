@@ -4,14 +4,14 @@ from time import time, sleep
 from typing import Dict
 from pathlib import Path
 
-from .config import TELEMETRY_DIR, BATCH_SIZE
+from .config import LOGS_DIR, BATCH_SIZE
 
 
-TELEMETRY_FILE = f"{TELEMETRY_DIR}/telemetry.json"
-TRAINING_LOG_FILE = f"{TELEMETRY_DIR}/training.jsonl"
+STATE_FILE = f"{LOGS_DIR}/state.json"
+TRAINING_LOG_FILE = f"{LOGS_DIR}/training.jsonl"
 
 
-class TelemetryHandler:
+class Logger:
     def __init__(self):
         self.processed_sentence_count = 0
         self.successful_sentence_count = 0
@@ -22,15 +22,15 @@ class TelemetryHandler:
         self.session_count = 0
         self.session_start_time = None
 
-        Path(TELEMETRY_DIR).mkdir(exist_ok=True)
+        Path(LOGS_DIR).mkdir(exist_ok=True)
         self._load()
 
     def _load(self):
         start_time = time()
         print("Loading telemetry...")
 
-        if os.path.exists(TELEMETRY_FILE):
-            with open(TELEMETRY_FILE, "r", encoding="utf-8") as file:
+        if os.path.exists(STATE_FILE):
+            with open(STATE_FILE, "r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.processed_sentence_count = data.get(
                     "processed_sentence_count", 0)
@@ -68,7 +68,7 @@ class TelemetryHandler:
         self.total_runtime_seconds += time() - self.session_start_time
         self.session_start_time = time()
 
-        with open(TELEMETRY_FILE, "w", encoding="utf-8") as file:
+        with open(STATE_FILE, "w", encoding="utf-8") as file:
             json.dump({
                 "processed_sentence_count": self.processed_sentence_count,
                 "successful_sentence_count": self.successful_sentence_count,

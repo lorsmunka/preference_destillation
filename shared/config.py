@@ -37,8 +37,8 @@ KL_RATIO = 0.3
 TRAINING_TEST_RATIO = 0.9
 
 # Directories
-DISTILLATION_BATCHES_DIR = "./distillation_batches"
-TELEMETRY_DIR = "./telemetry"
+BATCHES_DIR = "./batches"
+LOGS_DIR = "./logs"
 CHECKPOINTS_DIR = "./checkpoints"
 
 # File paths

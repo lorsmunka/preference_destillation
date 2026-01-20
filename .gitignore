@@ -1,10 +1,11 @@
 sentences/*
 probabilities/*
 logs/*
+batches/*
 checkpoints/*
 __pycache__/*
-distillation/__pycache__/*
-transformer/__pycache__/*
+data_generation/__pycache__/*
+training/__pycache__/*
 
 *.json
 *.jsonl

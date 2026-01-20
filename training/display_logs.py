@@ -3,19 +3,21 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 
+from shared import LOGS_DIR
 
-class TelemetryVisualizer:
-    def __init__(self, telemetry_file="telemetry/training.jsonl", smooth_window=200):
-        self.telemetry_file = Path(telemetry_file)
+
+class LogVisualizer:
+    def __init__(self, log_file=f"{LOGS_DIR}/training.jsonl", smooth_window=200):
+        self.log_file = Path(log_file)
         self.smooth_window = smooth_window
         self.data = self._load_data()
 
     def _load_data(self):
-        if not self.telemetry_file.exists():
-            print(f"No telemetry file found at {self.telemetry_file}")
+        if not self.log_file.exists():
+            print(f"No log file found at {self.log_file}")
             return []
-        with open(self.telemetry_file, 'r') as f:
-            return [json.loads(line.strip()) for line in f]
+        with open(self.log_file, 'r') as file:
+            return [json.loads(line.strip()) for line in file]
 
     def plot_training_progress(self):
         train_examples = [d for d in self.data if d['type'] == 'train_example']
@@ -27,7 +29,7 @@ class TelemetryVisualizer:
             return
 
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
-        fig.suptitle('Training Telemetry (Continuous View)',
+        fig.suptitle('Training Logs (Continuous View)',
                      fontsize=16, fontweight='bold')
 
         self._plot_continuous_loss(axes[0, 0], train_examples)
@@ -36,9 +38,9 @@ class TelemetryVisualizer:
         self._plot_accuracy_progress(axes[1, 1], eval_epochs)
 
         plt.tight_layout()
-        plt.savefig('telemetry/training_progress_continuous.png',
+        plt.savefig(f'{LOGS_DIR}/training_progress_continuous.png',
                     dpi=150, bbox_inches='tight')
-        print("Saved visualization to telemetry/training_progress_continuous.png")
+        print(f"Saved visualization to {LOGS_DIR}/training_progress_continuous.png")
         plt.show()
 
     def _smooth(self, values):
@@ -129,6 +131,6 @@ class TelemetryVisualizer:
             print(f"Latest eval loss: {eval_epochs[-1]['avg_loss']:.4f}")
 
 
-visualizer = TelemetryVisualizer()
+visualizer = LogVisualizer()
 visualizer.print_summary()
 visualizer.plot_training_progress()

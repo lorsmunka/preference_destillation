@@ -1,6 +1,6 @@
 from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 from .exit_listener import ExitListener
-from .telemetry_handler import TelemetryHandler
+from .logger import Logger
 from .config import (
     get_device,
     MODEL_NAME,
@@ -18,8 +18,8 @@ from .config import (
     TEMPERATURE,
     KL_RATIO,
     TRAINING_TEST_RATIO,
-    DISTILLATION_BATCHES_DIR,
-    TELEMETRY_DIR,
+    BATCHES_DIR,
+    LOGS_DIR,
     CHECKPOINTS_DIR,
     TEMP_CHECKPOINT_PATH,
 )
@@ -28,7 +28,7 @@ __all__ = [
     'Utilities',
     'DEBUG_TOKEN_MAP_PATH',
     'ExitListener',
-    'TelemetryHandler',
+    'Logger',
     'get_device',
     'MODEL_NAME',
     'MIN_SENTENCE_LENGTH',
@@ -45,8 +45,8 @@ __all__ = [
     'TEMPERATURE',
     'KL_RATIO',
     'TRAINING_TEST_RATIO',
-    'DISTILLATION_BATCHES_DIR',
-    'TELEMETRY_DIR',
+    'BATCHES_DIR',
+    'LOGS_DIR',
     'CHECKPOINTS_DIR',
     'TEMP_CHECKPOINT_PATH',
 ]
