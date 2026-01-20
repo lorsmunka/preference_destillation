@@ -3,14 +3,14 @@ from time import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Utilities
+from shared import Utilities, MODEL_NAME, MAX_GENERATION_STEPS
 
 from typing import Dict, List, Tuple, Optional
 
 
 class ModelHandler:
     def __init__(self):
-        self.model_name = "google/gemma-3-4b-it"
+        self.model_name = MODEL_NAME
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
@@ -54,7 +54,7 @@ class ModelHandler:
         current_sequence = inputs['input_ids']
 
         last_token = ""
-        while last_token != "}" and len(steps) < 51:
+        while last_token != "}" and len(steps) <= MAX_GENERATION_STEPS:
             next_token, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
                 current_sequence)
 
@@ -81,7 +81,7 @@ class ModelHandler:
                 f"Skipped: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None
 
-        if len(response_tokens) > 50:
+        if len(response_tokens) > MAX_GENERATION_STEPS:
             print(
                 f"Skipped: Generated response is too long ({len(response_tokens)} tokens).")
             return None

@@ -2,8 +2,7 @@ import json
 import os
 from time import time, sleep
 
-TELEMETRY_DIR = "./telemetry"
-TELEMETRY_FILE_PATH = f"./{TELEMETRY_DIR}/data_generation_telemetry.json"
+from shared import TELEMETRY_DIR, DISTILLATION_TELEMETRY_FILE, BATCH_SIZE
 
 
 class TelemetryHandler:
@@ -17,17 +16,17 @@ class TelemetryHandler:
 
     @property
     def current_batch_sentence_count(self):
-        return self.successful_sentence_count % 32
+        return self.successful_sentence_count % BATCH_SIZE
 
     @property
     def batch_count(self):
-        return self.successful_sentence_count // 32
+        return self.successful_sentence_count // BATCH_SIZE
 
     def load_save(self):
         start_time = time()
         print("Loading telemetry...")
-        if os.path.exists(TELEMETRY_FILE_PATH):
-            with open(TELEMETRY_FILE_PATH, "r", encoding="utf-8") as file:
+        if os.path.exists(DISTILLATION_TELEMETRY_FILE):
+            with open(DISTILLATION_TELEMETRY_FILE, "r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.processed_sentence_count = data.get(
                     "processed_sentence_count", 0)
@@ -59,7 +58,7 @@ class TelemetryHandler:
             os.makedirs(TELEMETRY_DIR)
 
         self.total_runtime_seconds += time() - self.session_start_time
-        with open(TELEMETRY_FILE_PATH, "w", encoding="utf-8") as file:
+        with open(DISTILLATION_TELEMETRY_FILE, "w", encoding="utf-8") as file:
             json.dump({
                 "processed_sentence_count": self.processed_sentence_count,
                 "successful_sentence_count": self.successful_sentence_count,
@@ -69,4 +68,4 @@ class TelemetryHandler:
 
         elapsed_time = time() - start_time
         print(
-            f"Saved telemetry to {TELEMETRY_FILE_PATH} -> took {elapsed_time:.2f} seconds.\n")
+            f"Saved telemetry to {DISTILLATION_TELEMETRY_FILE} -> took {elapsed_time:.2f} seconds.\n")

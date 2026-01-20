@@ -5,23 +5,31 @@ import math
 from typing import Optional
 
 from transformers import AutoTokenizer
-from shared import Utilities
+from shared import (
+    Utilities,
+    MODEL_NAME,
+    HIDDEN_DIM,
+    NUM_LAYERS,
+    NUM_HEADS,
+    MAX_SEQ_LENGTH,
+    DROPOUT,
+)
 
 
 class Transformer(nn.Module):
     def __init__(
         self,
-        hidden_dim: int = 1024,
-        num_layers: int = 16,
-        num_heads: int = 16,
-        max_seq_length: int = 75,
-        dropout: float = 0.1
+        hidden_dim: int = HIDDEN_DIM,
+        num_layers: int = NUM_LAYERS,
+        num_heads: int = NUM_HEADS,
+        max_seq_length: int = MAX_SEQ_LENGTH,
+        dropout: float = DROPOUT
     ):
         start_time = time()
         print("Initializing Transformer model...")
         super().__init__()
 
-        self.tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
+        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
         self.input_vocab_size = self.tokenizer.vocab_size
 
         self.vocabulary = Utilities.build_vocabulary(self.tokenizer)

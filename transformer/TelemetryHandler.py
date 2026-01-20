@@ -4,8 +4,7 @@ from time import time, sleep
 from typing import Dict
 from pathlib import Path
 
-TELEMETRY_DIR = "./telemetry"
-TELEMETRY_FILE_PATH = f"{TELEMETRY_DIR}/training_telemetry.json"
+from shared import TELEMETRY_DIR, TRAINING_TELEMETRY_FILE
 
 
 class TelemetryHandler:
@@ -26,8 +25,8 @@ class TelemetryHandler:
     def load_save(self):
         start_time = time()
         print("Loading telemetry...")
-        if os.path.exists(TELEMETRY_FILE_PATH):
-            with open(TELEMETRY_FILE_PATH, "r", encoding="utf-8") as file:
+        if os.path.exists(TRAINING_TELEMETRY_FILE):
+            with open(TRAINING_TELEMETRY_FILE, "r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.current_epoch = data.get("current_epoch", 0)
                 self.current_batch = data.get("current_batch", 0)
@@ -60,7 +59,7 @@ class TelemetryHandler:
             os.makedirs(TELEMETRY_DIR)
 
         self.total_runtime_seconds += time() - self.session_start_time
-        with open(TELEMETRY_FILE_PATH, "w", encoding="utf-8") as file:
+        with open(TRAINING_TELEMETRY_FILE, "w", encoding="utf-8") as file:
             json.dump({
                 "current_epoch": self.current_epoch,
                 "current_batch": self.current_batch,
@@ -71,7 +70,7 @@ class TelemetryHandler:
 
         elapsed_time = time() - start_time
         print(
-            f"Saved telemetry to {TELEMETRY_FILE_PATH} -> took {elapsed_time:.2f} seconds.\n")
+            f"Saved telemetry to {TRAINING_TELEMETRY_FILE} -> took {elapsed_time:.2f} seconds.\n")
 
     def update_progress(self, epoch: int, batch: int):
         self.current_epoch = epoch

@@ -3,7 +3,7 @@ import json
 from time import time
 from TelemetryHandler import TelemetryHandler
 
-OUTPUT_DIR = "./distillation_batches"
+from shared import DISTILLATION_BATCHES_DIR
 
 
 class SavingHandler:
@@ -13,10 +13,10 @@ class SavingHandler:
     def save_batch(self, batch_examples):
         start_time = time()
 
-        if not os.path.exists(OUTPUT_DIR):
-            os.makedirs(OUTPUT_DIR)
+        if not os.path.exists(DISTILLATION_BATCHES_DIR):
+            os.makedirs(DISTILLATION_BATCHES_DIR)
 
-        path = f"{OUTPUT_DIR}/batch_{self.telemetry_handler.batch_count}.jsonl"
+        path = f"{DISTILLATION_BATCHES_DIR}/batch_{self.telemetry_handler.batch_count}.jsonl"
         with open(path, "w", encoding="utf-8") as file:
             for example in batch_examples:
                 file.write(f"{json.dumps(example)}\n")

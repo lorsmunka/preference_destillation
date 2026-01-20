@@ -6,6 +6,8 @@ import kagglehub
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
+from shared import MODEL_NAME, MIN_SENTENCE_LENGTH, MAX_SENTENCE_LENGTH
+
 
 def download_reddit_data():
     print("Downloading Reddit dataset...")
@@ -21,9 +23,7 @@ def download_reddit_data():
 
 def load_gemma_tokenizer():
     print("Loading Gemma-3 tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(
-        "google/gemma-3-4b-it",
-    )
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     return tokenizer
 
 
@@ -48,7 +48,7 @@ def filter_sentences(comments, tokenizer):
             tokens = tokenizer.encode(comment, add_special_tokens=False)
             token_count = len(tokens)
 
-            if 3 <= token_count <= 25:
+            if MIN_SENTENCE_LENGTH <= token_count <= MAX_SENTENCE_LENGTH:
                 sentences.append(comment)
 
     return list(set(sentences))

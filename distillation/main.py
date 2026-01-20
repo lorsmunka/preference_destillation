@@ -4,15 +4,13 @@ from SentenceHandler import SentenceHandler
 from TelemetryHandler import TelemetryHandler
 from ModelHandler import ModelHandler
 from SavingHandler import SavingHandler
-from shared import ExitListener
+from shared import ExitListener, BATCH_SIZE
 
 exitListener = ExitListener()
 sentenceHandler = SentenceHandler()
 modelHandler = ModelHandler()
 telemetryHandler = TelemetryHandler()
 savingHandler = SavingHandler(telemetryHandler)
-
-BATCH_SIZE = 32
 
 batch_examples = []
 batch_start_time = time()

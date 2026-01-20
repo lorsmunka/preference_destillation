@@ -8,15 +8,16 @@ from typing import Dict, List, Optional, Tuple
 from time import time
 
 from TelemetryHandler import TelemetryHandler
-from shared import ExitListener
+from shared import (
+    ExitListener,
+    EPOCH_COUNT,
+    LEARNING_RATE,
+    TEMPERATURE,
+    KL_RATIO,
+    TEMP_CHECKPOINT_PATH,
+)
 from Transformer import Transformer
 from BatchHandler import BatchHandler
-
-EPOCH_COUNT = 24
-LEARNING_RATE = 6e-4
-TEMPERATURE = 1.0
-KL_RATIO = 0.3
-TEMP_CHECKPOINT_PATH = 'checkpoints/temp_checkpoint.pt'
 
 
 class Trainer:
