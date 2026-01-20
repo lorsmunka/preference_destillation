@@ -7,9 +7,9 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from typing import Dict, List, Optional, Tuple
 from time import time
 
-from TelemetryHandler import TelemetryHandler
 from shared import (
     ExitListener,
+    TrainingTelemetryHandler,
     get_device,
     EPOCH_COUNT,
     LEARNING_RATE,
@@ -22,7 +22,7 @@ from BatchHandler import BatchHandler
 
 
 class Trainer:
-    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
+    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, telemetry_handler: TrainingTelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
         start_time = time()
         print("Initializing Trainer...")
 

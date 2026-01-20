@@ -1,5 +1,6 @@
 from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 from .exit_listener import ExitListener
+from .telemetry_handler import TrainingTelemetryHandler, DistillationTelemetryHandler
 from .config import (
     get_device,
     MODEL_NAME,
@@ -29,6 +30,8 @@ __all__ = [
     'Utilities',
     'DEBUG_TOKEN_MAP_PATH',
     'ExitListener',
+    'TrainingTelemetryHandler',
+    'DistillationTelemetryHandler',
     'get_device',
     'MODEL_NAME',
     'MIN_SENTENCE_LENGTH',
