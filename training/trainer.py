@@ -13,7 +13,7 @@ from shared import (
     get_device,
     EPOCH_COUNT,
     LEARNING_RATE,
-    TEMPERATURE,
+    DISTILLATION_TEMPERATURE,
     KL_RATIO,
     TEMP_CHECKPOINT_PATH,
 )
@@ -340,19 +340,21 @@ class Trainer:
         return input_tensor, target_tensor
 
     def _compute_Kullback_Leibler_Divergence_Loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
-        student_log_probs = F.log_softmax(student_logits / TEMPERATURE, dim=-1)
-        teacher_probs = F.softmax(teacher_logits / TEMPERATURE, dim=-1)
+        temperature = DISTILLATION_TEMPERATURE
+        student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
+        teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
 
         kl_loss = F.kl_div(student_log_probs, teacher_probs,
-                           reduction='batchmean') * (TEMPERATURE ** 2)
+                           reduction='batchmean') * (temperature ** 2)
 
         return kl_loss
 
     def _compute_Cross_Entropy_Loss(self, student_logits: torch.Tensor, target_index: int) -> torch.Tensor:
+        temperature = DISTILLATION_TEMPERATURE
         target_tensor = torch.tensor(
             [target_index], device=student_logits.device)
         ce_loss = F.cross_entropy(
-            student_logits / TEMPERATURE, target_tensor) * (TEMPERATURE ** 2)
+            student_logits / temperature, target_tensor) * (temperature ** 2)
 
         return ce_loss
 

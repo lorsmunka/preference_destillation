@@ -4,11 +4,12 @@ from typing import Dict, List, Tuple
 from time import time
 
 import torch
+import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "training"))
 
-from shared import get_device
+from shared import get_device, INFERENCE_TEMPERATURE
 from training.batch_handler import BatchHandler
 from training.model import Transformer
 
@@ -115,7 +116,9 @@ class ModelEvaluator:
             inp = torch.tensor([sentence_tokens + generated_ids_model],
                                dtype=torch.long, device=self.device)
             logits = self.model(inp)
-            pred_index = torch.argmax(logits[:, -1, :][0]).item()
+            last_logits = logits[:, -1, :][0]
+
+            pred_index = self._sample_from_logits(last_logits)
             pred_token_id = self.output_token_ids[pred_index]
             if pred_token_id == ground_truth_id:
                 correct_predictions += 1
@@ -123,6 +126,14 @@ class ModelEvaluator:
 
         gen_text = self.tokenizer.decode(generated_ids_model, skip_special_tokens=True)
         return correct_predictions, len(steps), gen_text
+
+    def _sample_from_logits(self, logits: torch.Tensor) -> int:
+        if INFERENCE_TEMPERATURE is None or INFERENCE_TEMPERATURE == 0:
+            return torch.argmax(logits).item()
+
+        scaled_logits = logits / INFERENCE_TEMPERATURE
+        probabilities = F.softmax(scaled_logits, dim=-1)
+        return torch.multinomial(probabilities, num_samples=1).item()
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
         return self.tokenizer.encode(example["sentence"] + "\n\n", add_special_tokens=False)
