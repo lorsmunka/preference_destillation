@@ -144,9 +144,6 @@ class Trainer:
         example_elapsed = time() - example_start_time
         print(f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={avg_loss:.4f}, kl={avg_kl_loss:.4f}, ce={avg_ce_loss:.4f}, acc={accuracy:.4f} -> took {example_elapsed:.2f}s")
 
-        self.logger.log_training_example(
-            epoch, batch_idx + 1, example_idx + 1, num_steps, avg_loss, example_elapsed, avg_kl_loss, avg_ce_loss, accuracy)
-
         return loss_sum, kl_loss_sum, ce_loss_sum, num_steps, correct
 
     def _log_batch_completion(self, batch_idx: int, batch_steps: int, batch_loss: float, batch_kl_loss: float, batch_ce_loss: float, batch_correct: int, batch_start_time: float, epoch: int):
@@ -155,7 +152,21 @@ class Trainer:
         avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
         avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
+        current_lr = self.optimizer.param_groups[0]['lr']
+
         print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
+
+        self.logger.log_training_batch(
+            epoch=epoch,
+            batch=batch_idx + 1,
+            steps=batch_steps,
+            loss=avg_batch_loss,
+            kl_loss=avg_batch_kl_loss,
+            ce_loss=avg_batch_ce_loss,
+            accuracy=batch_accuracy,
+            learning_rate=current_lr,
+            time_seconds=batch_elapsed
+        )
         self.logger.update_progress(epoch, batch_idx + 1)
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):

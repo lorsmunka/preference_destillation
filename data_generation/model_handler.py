@@ -1,11 +1,10 @@
 from time import time
+from typing import Dict, List, Tuple, Optional
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from shared import Utilities, MODEL_NAME, MAX_GENERATION_STEPS, get_device
-
-from typing import Dict, List, Tuple, Optional
 
 
 class ModelHandler:
@@ -28,8 +27,7 @@ class ModelHandler:
             dtype=torch.bfloat16
         )
         elapsed_time = time() - start_time
-        print(
-            f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
+        print(f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
 
         self.create_vocabulary()
 
@@ -43,7 +41,7 @@ class ModelHandler:
         elapsed_time = time() - start_time
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
 
-    def generate_training_example(self, sentence: str) -> Optional[Dict]:
+    def generate_training_example(self, sentence: str) -> Tuple[Optional[Dict], Optional[str]]:
         start_time = time()
 
         prompt = Utilities.create_evaluation_prompt(sentence)
@@ -71,26 +69,23 @@ class ModelHandler:
         elapsed_time = time() - start_time
 
         response_tokens = self.tokenizer.tokenize(generated_text)
-        print(
-            f"Generated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
+        print(f"Generated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
 
         if not all(token in self.json_response_tokens for token in response_tokens):
             unexpected_tokens = [
                 token for token in response_tokens if token not in self.json_response_tokens]
-            print(
-                f"Skipped: Generated response contains unexpected tokens: {unexpected_tokens}")
-            return None
+            print(f"Skipped: Generated response contains unexpected tokens: {unexpected_tokens}")
+            return None, "unexpected_tokens"
 
         if len(response_tokens) > MAX_GENERATION_STEPS:
-            print(
-                f"Skipped: Generated response is too long ({len(response_tokens)} tokens).")
-            return None
+            print(f"Skipped: Generated response is too long ({len(response_tokens)} tokens).")
+            return None, "too_long"
 
         return {
             "sentence": sentence,
             "model_response": generated_text,
             "steps": steps
-        }
+        }, None
 
     def generate_single_step(self, current_sequence: torch.Tensor) -> Tuple[str, List[float], int, torch.Tensor]:
         current_inputs = {

@@ -13,25 +13,44 @@ saving_handler = SavingHandler(logger)
 
 batch_examples = []
 batch_start_time = time()
+batch_processed = 0
+batch_skip_reasons = {}
+
 for i in range(logger.processed_sentence_count, sentence_handler.sentence_count):
     sentence = sentence_handler.get_sentence(i)
-    training_example = model_handler.generate_training_example(sentence)
+    training_example, skip_reason = model_handler.generate_training_example(sentence)
+
     logger.processed_sentence_count += 1
+    batch_processed += 1
 
     if training_example is not None:
         batch_examples.append(training_example)
         logger.successful_sentence_count += 1
+    else:
+        batch_skip_reasons[skip_reason] = batch_skip_reasons.get(skip_reason, 0) + 1
 
     if len(batch_examples) == BATCH_SIZE:
-        progress_percent = (
-            logger.processed_sentence_count / sentence_handler.sentence_count) * 100
+        batch_time = time() - batch_start_time
+        progress_percent = (logger.processed_sentence_count / sentence_handler.sentence_count) * 100
 
-        print(
-            f"Saving batch, progress: {progress_percent:.2f}%, elapsed time for batch: {time() - batch_start_time:.2f} seconds, average time per sentence: {(time() - batch_start_time) / BATCH_SIZE:.2f} seconds")
-        batch_start_time = time()
+        print(f"Saving batch {logger.batch_count}, progress: {progress_percent:.2f}%, "
+              f"batch time: {batch_time:.2f}s, avg per sentence: {batch_time / batch_processed:.2f}s")
 
         saving_handler.save_batch(batch_examples)
+
+        logger.log_generation_batch(
+            batch_index=logger.batch_count,
+            processed=batch_processed,
+            successful=BATCH_SIZE,
+            skipped=batch_processed - BATCH_SIZE,
+            time_seconds=batch_time,
+            skip_reasons=batch_skip_reasons if batch_skip_reasons else None
+        )
+
         batch_examples = []
+        batch_processed = 0
+        batch_skip_reasons = {}
+        batch_start_time = time()
 
         if exit_listener.check_exit():
             logger.save()
