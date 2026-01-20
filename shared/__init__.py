@@ -1,6 +1,7 @@
 from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 from .exit_listener import ExitListener
 from .config import (
+    get_device,
     MODEL_NAME,
     MIN_SENTENCE_LENGTH,
     MAX_SENTENCE_LENGTH,
@@ -28,6 +29,7 @@ __all__ = [
     'Utilities',
     'DEBUG_TOKEN_MAP_PATH',
     'ExitListener',
+    'get_device',
     'MODEL_NAME',
     'MIN_SENTENCE_LENGTH',
     'MAX_SENTENCE_LENGTH',

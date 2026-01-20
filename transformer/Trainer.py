@@ -10,6 +10,7 @@ from time import time
 from TelemetryHandler import TelemetryHandler
 from shared import (
     ExitListener,
+    get_device,
     EPOCH_COUNT,
     LEARNING_RATE,
     TEMPERATURE,
@@ -25,12 +26,7 @@ class Trainer:
         start_time = time()
         print("Initializing Trainer...")
 
-        self.device = "cpu"
-        if torch.cuda.is_available():
-            self.device = "cuda"
-        elif torch.backends.mps.is_available():
-            self.device = "mps"
-
+        self.device = get_device()
         self.model = model.to(self.device)
         self.vocabulary = vocabulary
         self.tokenizer = tokenizer

@@ -3,7 +3,7 @@ from time import time
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Utilities, MODEL_NAME, MAX_GENERATION_STEPS
+from shared import Utilities, MODEL_NAME, MAX_GENERATION_STEPS, get_device
 
 from typing import Dict, List, Tuple, Optional
 
@@ -47,7 +47,7 @@ class ModelHandler:
         start_time = time()
 
         prompt = Utilities.create_evaluation_prompt(sentence)
-        inputs = self.prepare_inputs_for_gpu(prompt)
+        inputs = self.prepare_inputs_for_device(prompt)
 
         steps = []
         generated_text = ""
@@ -112,14 +112,12 @@ class ModelHandler:
 
         return next_token, logit_vector, predicted_token_index, new_sequence
 
-    def prepare_inputs_for_gpu(self, text: str) -> Dict[str, torch.Tensor]:
+    def prepare_inputs_for_device(self, text: str) -> Dict[str, torch.Tensor]:
         inputs = self.tokenizer(text, return_tensors="pt")
+        device = get_device()
 
-        if torch.cuda.is_available():
-            new_inputs = {}
-            for k, v in inputs.items():
-                new_inputs[k] = v.cuda()
-            inputs = new_inputs
+        if device != "cpu":
+            inputs = {k: v.to(device) for k, v in inputs.items()}
 
         return inputs
 

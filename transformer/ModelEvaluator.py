@@ -5,18 +5,13 @@ from pathlib import Path
 
 from BatchHandler import BatchHandler
 from Transformer import Transformer
+from shared import get_device
 
 
 class ModelEvaluator:
     def __init__(self, checkpoint_dir: str):
         start_time = time()
-        if torch.cuda.is_available():
-            self.device = "cuda"
-        elif torch.backends.mps.is_available():
-            self.device = "mps"
-        else:
-            self.device = "cpu"
-
+        self.device = get_device()
         self.model = Transformer().to(self.device)
         self.tokenizer = self.model.tokenizer
         self.vocabulary = self.model.vocabulary

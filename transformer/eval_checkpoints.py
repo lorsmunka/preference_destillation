@@ -2,6 +2,7 @@ import torch
 from pathlib import Path
 from Transformer import Transformer
 from BatchHandler import BatchHandler
+from shared import get_device
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -11,7 +12,7 @@ RESET = "\033[0m"
 class CheckpointEvaluator:
     def __init__(self, checkpoint_dir="checkpoints"):
         self.checkpoint_dir = checkpoint_dir
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = get_device()
 
         self.model = Transformer().to(self.device)
         self.tokenizer = self.model.tokenizer
