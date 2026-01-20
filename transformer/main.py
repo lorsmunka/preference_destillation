@@ -2,7 +2,7 @@ from BatchHandler import BatchHandler
 from Transformer import Transformer
 from Trainer import Trainer
 from TelemetryHandler import TelemetryHandler
-from ExitListener import ExitListener
+from shared import ExitListener
 
 
 transformer = Transformer()

@@ -4,7 +4,7 @@ from SentenceHandler import SentenceHandler
 from TelemetryHandler import TelemetryHandler
 from ModelHandler import ModelHandler
 from SavingHandler import SavingHandler
-from ExitListener import ExitListener
+from shared import ExitListener
 
 exitListener = ExitListener()
 sentenceHandler = SentenceHandler()

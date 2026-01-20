@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 from time import time
 
 from TelemetryHandler import TelemetryHandler
-from ExitListener import ExitListener
+from shared import ExitListener
 from Transformer import Transformer
 from BatchHandler import BatchHandler
 
