@@ -1,86 +1,41 @@
 import torch
 from pathlib import Path
-from transformers import AutoTokenizer
 from Transformer import Transformer
-from shared import Utilities
+from BatchHandler import BatchHandler
 
-
-EVAL_SENTENCES = [
-    "You think that 67 of Britons are unemployed?",
-    "Real thirstposting hours who up",
-    "If someone put that spinning on a drill would that fish keep trying?",
-    "It's not. Different branches of government actually.",
-    "Yeah wtf is up with that I keep getting it and I barely play her anymore",
-    "The gods will protect",
-    "Its the DBZ live action movie all over again.",
-    "Not until it's drenched in my cum",
-    "He doesn't get it back. He'll be fine without it.",
-    "What if they said that when they were raising him.",
-    "If I was ever there I would drink a hot sauce bottle like a beer.",
-    "Lol stop. We just want to give women, minorities. and LGBTQ free folk more representation",
-    "Imagine if thanos broke mjolnir and no one could return it",
-    "Imagine liking in reddit",
-    "Why does Sanic look like hes been photoshopped into the film by a high school graphic design student?",
-    "You look amazing! It would take every ounce of restraint to keep myself from bending you over that bed instantly!",
-    "Haley is literally the definition of work ethic over skill",
-    "See theres a word missing from this sentence that makes it so much better and that is the word again after the word ring.",
-    "poltards deserve to be mocked in any way possible.",
-    "Nobody Pencil niggas yall mind if I STICK?",
-    "No it doesn't lol. Europe can be incredibly racist.",
-    "Stocks go up and they go down",
-    "I googled this to double check it wasn't a very, very convincing fake fact. It's real!",
-    "What do u use to get the cropped faces to stay on a moving target",
-    "Spoiler gt!It was sad to see the character that started it all go out like that!lt",
-    "Yea that sucks because how do people not know the game",
-    "Science communication articles which don't link to the source publication...",
-    "Swoon! You did an amazing job!!!",
-    "This dude put a lv1 barrel stabilizer on his car and a lv4 on his longbow",
-    "This is why we cant have nice things.",
-    "Yes this comment right here, officer.",
-    "Aahhh a master of the meme language, it's a pleasure to have you by.",
-    "I despise those cock wombles at Epic.",
-    "People really thought Giannis would be locked up the whole series after 1 game lol",
-    "The hOund Ned gendrY Stark.",
-    "That's SpongeBob and Patrick's baby!",
-    "Who else tried saying this in his voice and failed due to extreme laughter?",
-    "Dude Sharks PP lmao"
-]
+GREEN = "\033[92m"
+RED = "\033[91m"
+RESET = "\033[0m"
 
 
 class CheckpointEvaluator:
-    def __init__(self, checkpoint_dir="checkpoints", max_length=75):
+    def __init__(self, checkpoint_dir="checkpoints"):
         self.checkpoint_dir = checkpoint_dir
-        self.max_length = max_length
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        self.tokenizer = AutoTokenizer.from_pretrained("google/gemma-3-4b-it")
+        self.model = Transformer().to(self.device)
+        self.tokenizer = self.model.tokenizer
+        self.vocabulary = self.model.vocabulary
+        self.output_token_ids = self.model.output_token_ids
 
-        self.vocabulary = Utilities.build_vocabulary(self.tokenizer)
-        self.output_token_ids = [
-            self.vocabulary['token_to_id'][token]
-            for token in self.vocabulary['token_list']
-        ]
-
-        self.output_idx_to_token_id = {
-            idx: token_id for idx, token_id in enumerate(self.output_token_ids)
+        self.output_index_to_token_id = {
+            index: token_id for index, token_id in enumerate(self.output_token_ids)
         }
 
-        self.model = Transformer(
-        ).to(self.device)
+        self.batch_handler = BatchHandler()
+
+        print(f"Evaluator ready on {self.device}\n")
 
     def get_checkpoint_files(self):
         checkpoint_files = sorted(
             Path(self.checkpoint_dir).glob("checkpoint_epoch_*.pt"),
             key=lambda x: int(x.stem.split('_')[-1])
         )
-
-        checkpoint_files = []
-
-        temp_checkpoint = Path(self.checkpoint_dir) / "checkpoint_epoch_24.pt"
-        if temp_checkpoint.exists():
-            checkpoint_files.insert(0, temp_checkpoint)
-
         return checkpoint_files
+
+    def get_temp_checkpoint(self):
+        temp_checkpoint = Path(self.checkpoint_dir) / "temp_checkpoint.pt"
+        return temp_checkpoint if temp_checkpoint.exists() else None
 
     def load_checkpoint(self, checkpoint_path):
         checkpoint = torch.load(
@@ -88,64 +43,111 @@ class CheckpointEvaluator:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         return checkpoint.get('epoch', 0)
 
-    def generate(self, sentence: str):
+    def evaluate_example_with_teacher_forcing(self, example):
         self.model.eval()
+
+        sentence = example['sentence']
+        ground_truth_steps = example['steps']
 
         sentence_with_delimiter = sentence + '\n\n'
         input_ids = self.tokenizer.encode(
-            sentence_with_delimiter, add_special_tokens=False, return_tensors="pt").to(self.device)
+            sentence_with_delimiter, add_special_tokens=False)
 
-        generated_text = ""
+        colored_output = ""
+        correct_count = 0
+        total_count = len(ground_truth_steps)
 
         with torch.no_grad():
-            for step in range(50):
-                logits = self.model(input_ids)
-                next_output_idx = torch.argmax(logits[0, -1, :]).item()
+            for step in ground_truth_steps:
+                ground_truth_token = step['token']
+                ground_truth_token_id = self.tokenizer.convert_tokens_to_ids([ground_truth_token])[0]
 
-                if next_output_idx not in self.output_idx_to_token_id:
-                    break
+                input_tensor = torch.tensor([input_ids], dtype=torch.long, device=self.device)
+                logits = self.model(input_tensor)
+                predicted_output_index = torch.argmax(logits[0, -1, :]).item()
 
-                next_token_id = self.output_idx_to_token_id[next_output_idx]
+                predicted_token_id = self.output_index_to_token_id.get(predicted_output_index)
+                predicted_token = self.tokenizer.decode([predicted_token_id]) if predicted_token_id else "<?>"
 
-                next_token_str = self.tokenizer.decode([next_token_id])
-                generated_text += next_token_str
+                is_correct = predicted_token_id == ground_truth_token_id
 
-                encoded_ids = self.tokenizer.encode(
-                    next_token_str, add_special_tokens=False)
+                if is_correct:
+                    colored_output += f"{GREEN}{predicted_token}{RESET}"
+                    correct_count += 1
+                else:
+                    colored_output += f"{RED}{predicted_token}{RESET}"
 
-                if len(encoded_ids) == 0:
-                    break
+                input_ids.append(ground_truth_token_id)
 
-                actual_token_id = encoded_ids[0]
+        accuracy = correct_count / total_count if total_count > 0 else 0.0
+        return colored_output, correct_count, total_count, accuracy
 
-                next_input_tensor = torch.tensor(
-                    [[actual_token_id]], device=self.device)
-                input_ids = torch.cat([input_ids, next_input_tensor], dim=1)
+    def evaluate_checkpoint(self, checkpoint_path, examples):
+        epoch = self.load_checkpoint(checkpoint_path)
+        print(f"\n{'='*60}")
+        print(f"Epoch {epoch}")
+        print(f"{'='*60}")
 
-                if next_token_str == "}":
-                    break
+        total_correct = 0
+        total_tokens = 0
 
-        return generated_text
+        for example_index, example in enumerate(examples):
+            sentence = example['sentence']
+            ground_truth_response = example.get('model_response', '')
 
-    def evaluate_all_checkpoints(self):
+            colored_output, correct, total, accuracy = self.evaluate_example_with_teacher_forcing(example)
+
+            total_correct += correct
+            total_tokens += total
+
+            print(f"\n[Example {example_index + 1}] {sentence[:60]}...")
+            print(f"Ground truth: {ground_truth_response}")
+            print(f"Prediction:   {colored_output}")
+            print(f"Accuracy: {correct}/{total} ({accuracy:.1%})")
+
+        overall_accuracy = total_correct / total_tokens if total_tokens > 0 else 0.0
+        print(f"\n{'─'*60}")
+        print(f"Overall: {total_correct}/{total_tokens} ({overall_accuracy:.1%})")
+
+    def run(self):
         checkpoint_files = self.get_checkpoint_files()
+        temp_checkpoint = self.get_temp_checkpoint()
 
-        if not checkpoint_files:
+        if not checkpoint_files and not temp_checkpoint:
             print(f"No checkpoints found in {self.checkpoint_dir}/")
             return
 
-        for EVAL_SENTENCE in EVAL_SENTENCES:
-            print(f"Using device: {self.device}\n")
-            print(f"Catalyst sentence: {EVAL_SENTENCE}\n")
+        print(f"Available checkpoints:")
+        for index, path in enumerate(checkpoint_files):
+            print(f"  [{index}] {path.name}")
+        if temp_checkpoint:
+            print(f"  [temp] {temp_checkpoint.name}")
 
+        checkpoint_input = input("\nSelect checkpoint (number / 'temp' / 'all'): ").strip().lower()
+
+        example_count = int(input("How many examples to evaluate: ").strip())
+        batch_index = int(input("Batch index (0-based): ").strip())
+
+        batch_data = self.batch_handler.get_batch(batch_index)
+        examples = batch_data[:example_count]
+
+        print(f"\nEvaluating {len(examples)} examples from batch {batch_index + 1}")
+
+        if checkpoint_input == 'all':
             for checkpoint_path in checkpoint_files:
-                epoch = self.load_checkpoint(checkpoint_path)
-                generated_text = self.generate(EVAL_SENTENCE)
+                self.evaluate_checkpoint(checkpoint_path, examples)
+            if temp_checkpoint:
+                self.evaluate_checkpoint(temp_checkpoint, examples)
+        elif checkpoint_input == 'temp':
+            if temp_checkpoint:
+                self.evaluate_checkpoint(temp_checkpoint, examples)
+            else:
+                print("No temp checkpoint found")
+        else:
+            checkpoint_index = int(checkpoint_input)
+            self.evaluate_checkpoint(checkpoint_files[checkpoint_index], examples)
 
-                print(f"=== Epoch {epoch} ===")
-                print(generated_text)
-                print("-" * 80)
 
-
-evaluator = CheckpointEvaluator()
-evaluator.evaluate_all_checkpoints()
+if __name__ == "__main__":
+    evaluator = CheckpointEvaluator()
+    evaluator.run()
