@@ -17,7 +17,7 @@ test_start, test_end = batch_handler.get_test_batches_radius()
 start_epoch = logger.current_epoch
 resume_batch = logger.current_batch
 
-for epoch in range(start_epoch, trainer.epoch_count() + 1):
+for epoch in range(start_epoch, trainer.epoch_count()):
     resume_from = resume_batch if epoch == start_epoch else 0
     print(f"\nEpoch {epoch + 1}/{trainer.epoch_count()}\n")
 
