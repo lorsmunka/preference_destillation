@@ -15,8 +15,7 @@ class Transformer(nn.Module):
         num_layers: int = 16,
         num_heads: int = 16,
         max_seq_length: int = 75,
-        dropout: float = 0.1,
-        low_rank_dim: int = 256
+        dropout: float = 0.1
     ):
         start_time = time()
         print("Initializing Transformer model...")
@@ -36,13 +35,12 @@ class Transformer(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.max_seq_length = max_seq_length
-        self.low_rank_dim = low_rank_dim
 
         self.input_embedding = nn.Embedding(self.input_vocab_size, hidden_dim)
         self.position_embedding = nn.Embedding(max_seq_length, hidden_dim)
 
         self.transformer_layers = nn.ModuleList([
-            TransformerBlock(hidden_dim, num_heads, dropout, low_rank_dim)
+            TransformerBlock(hidden_dim, num_heads, dropout)
             for _ in range(num_layers)
         ])
 
@@ -164,11 +162,10 @@ class Transformer(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, hidden_dim: int, num_heads: int, dropout: float = 0.1, low_rank_dim: int = 256):
+    def __init__(self, hidden_dim: int, num_heads: int, dropout: float = 0.1):
         super().__init__()
 
-        self.attention = MultiHeadAttention(
-            hidden_dim, num_heads, dropout, low_rank_dim)
+        self.attention = MultiHeadAttention(hidden_dim, num_heads, dropout)
         self.feed_forward = FeedForward(hidden_dim, dropout)
 
         self.norm1 = nn.LayerNorm(hidden_dim)
@@ -197,7 +194,7 @@ class TransformerBlock(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, hidden_dim: int, num_heads: int, dropout: float = 0.1, low_rank_dim: int = 256):
+    def __init__(self, hidden_dim: int, num_heads: int, dropout: float = 0.1):
         super().__init__()
 
         assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
@@ -206,7 +203,6 @@ class MultiHeadAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
         self.scale = math.sqrt(self.head_dim)
-        self.low_rank_dim = low_rank_dim
 
         self.query = nn.Linear(hidden_dim, hidden_dim)
         self.key = nn.Linear(hidden_dim, hidden_dim)
