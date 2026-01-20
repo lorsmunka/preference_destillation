@@ -1,6 +1,7 @@
 from time import time
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import math
 from typing import Optional
 
@@ -265,22 +266,20 @@ class FeedForward(nn.Module):
 
         ff_dim = hidden_dim * 4
 
-        self.linear1 = nn.Linear(hidden_dim, ff_dim)
-        self.linear2 = nn.Linear(ff_dim, hidden_dim)
+        self.gate_proj = nn.Linear(hidden_dim, ff_dim, bias=False)
+        self.up_proj = nn.Linear(hidden_dim, ff_dim, bias=False)
+        self.down_proj = nn.Linear(ff_dim, hidden_dim, bias=False)
         self.dropout = nn.Dropout(dropout)
-        self.activation = nn.GELU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.linear1(x)
-        x = self.activation(x)
+        gate = F.gelu(self.gate_proj(x))
+        up = self.up_proj(x)
+        x = self.down_proj(gate * up)
         x = self.dropout(x)
-        x = self.linear2(x)
         return x
 
     def get_num_parameters(self) -> int:
         total = 0
-        for linear in (self.linear1, self.linear2):
+        for linear in (self.gate_proj, self.up_proj, self.down_proj):
             total += linear.weight.numel()
-            if linear.bias is not None:
-                total += linear.bias.numel()
         return total

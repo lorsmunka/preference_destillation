@@ -7,6 +7,8 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from typing import Dict, List, Optional, Tuple
 from time import time
 
+import math
+
 from shared import (
     ExitListener,
     Logger,
@@ -14,7 +16,8 @@ from shared import (
     EPOCH_COUNT,
     LEARNING_RATE,
     DISTILLATION_TEMPERATURE,
-    KL_RATIO,
+    KL_RATIO_START,
+    KL_RATIO_END,
     TEMP_CHECKPOINT_PATH,
 )
 from model import Transformer
@@ -34,11 +37,12 @@ class Trainer:
 
         self.batch_handler = batch_handler
         batch_count = batch_handler.get_training_batches_radius()[1]
-        total_training_steps = EPOCH_COUNT * batch_count
+        self.total_training_steps = EPOCH_COUNT * batch_count
+        self.current_step = 0
 
         self.scheduler = CosineAnnealingLR(
             self.optimizer,
-            T_max=total_training_steps,
+            T_max=self.total_training_steps,
             eta_min=1e-5
         )
 
@@ -50,7 +54,7 @@ class Trainer:
 
         elapsed_time = time() - start_time
         print(
-            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={total_training_steps})\n")
+            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={self.total_training_steps})\n")
 
         if self.logger.should_resume():
             if os.path.exists(TEMP_CHECKPOINT_PATH):
@@ -120,8 +124,10 @@ class Trainer:
             batch_correct += example_correct
 
         self.scheduler.step()
+        self.current_step += 1
         current_lr = self.optimizer.param_groups[0]['lr']
-        print(f"Batch {batch_idx + 1} -> LR after decay: {current_lr:.8f}")
+        current_kl_ratio = self._get_current_kl_ratio()
+        print(f"Batch {batch_idx + 1} -> LR: {current_lr:.8f}, KL ratio: {current_kl_ratio:.3f}")
 
         self._log_batch_completion(
             batch_idx, batch_steps, batch_loss, batch_kl_loss, batch_ce_loss, batch_correct, batch_start_time, epoch)
@@ -311,12 +317,20 @@ class Trainer:
         ce_loss = self._compute_Cross_Entropy_Loss(
             last_token_logits, target_index)
 
-        combined_loss = KL_RATIO * kl_loss + (1 - KL_RATIO) * ce_loss
+        kl_ratio = self._get_current_kl_ratio()
+        combined_loss = kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss
 
         predicted_idx = torch.argmax(last_token_logits[0]).item()
         is_correct = predicted_idx == target_index
 
         return combined_loss, kl_loss, ce_loss, is_correct
+
+    def _get_current_kl_ratio(self) -> float:
+        if self.total_training_steps <= 1:
+            return KL_RATIO_START
+        progress = self.current_step / self.total_training_steps
+        cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
+        return KL_RATIO_END + (KL_RATIO_START - KL_RATIO_END) * cosine_decay
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
         text = example['sentence'] + '\n\n'
@@ -363,6 +377,7 @@ class Trainer:
 
         checkpoint = {
             'epoch': epoch,
+            'current_step': self.current_step,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'scheduler_state_dict': self.scheduler.state_dict(),
@@ -383,6 +398,7 @@ class Trainer:
 
         checkpoint = {
             'epoch': epoch,
+            'current_step': self.current_step,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'scheduler_state_dict': self.scheduler.state_dict(),
@@ -408,18 +424,21 @@ class Trainer:
         self.optimizer = AdamW(self.model.parameters(), lr=LEARNING_RATE)
 
         batch_count = self.batch_handler.get_training_batches_radius()[1]
-        total_training_steps = EPOCH_COUNT * batch_count
         self.scheduler = CosineAnnealingLR(
-            self.optimizer, T_max=total_training_steps, eta_min=1e-5)
+            self.optimizer, T_max=self.total_training_steps, eta_min=1e-5)
 
         epoch = checkpoint['epoch']
 
-        completed_steps = epoch * batch_count
-        for _ in range(completed_steps):
+        if 'current_step' in checkpoint:
+            self.current_step = checkpoint['current_step']
+        else:
+            self.current_step = epoch * batch_count
+
+        for _ in range(self.current_step):
             self.scheduler.step()
 
         elapsed_time = time() - start_time
         print(
-            f"Checkpoint loaded: {filepath} (epoch {epoch}) -> took {elapsed_time:.2f}s\n")
+            f"Checkpoint loaded: {filepath} (epoch {epoch}, step {self.current_step}) -> took {elapsed_time:.2f}s\n")
 
         return epoch
