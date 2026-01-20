@@ -1,6 +1,6 @@
 from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 from .exit_listener import ExitListener
-from .telemetry_handler import TrainingTelemetryHandler, DistillationTelemetryHandler
+from .telemetry_handler import TelemetryHandler
 from .config import (
     get_device,
     MODEL_NAME,
@@ -21,8 +21,6 @@ from .config import (
     DISTILLATION_BATCHES_DIR,
     TELEMETRY_DIR,
     CHECKPOINTS_DIR,
-    TRAINING_TELEMETRY_FILE,
-    DISTILLATION_TELEMETRY_FILE,
     TEMP_CHECKPOINT_PATH,
 )
 
@@ -30,8 +28,7 @@ __all__ = [
     'Utilities',
     'DEBUG_TOKEN_MAP_PATH',
     'ExitListener',
-    'TrainingTelemetryHandler',
-    'DistillationTelemetryHandler',
+    'TelemetryHandler',
     'get_device',
     'MODEL_NAME',
     'MIN_SENTENCE_LENGTH',
@@ -51,7 +48,5 @@ __all__ = [
     'DISTILLATION_BATCHES_DIR',
     'TELEMETRY_DIR',
     'CHECKPOINTS_DIR',
-    'TRAINING_TELEMETRY_FILE',
-    'DISTILLATION_TELEMETRY_FILE',
     'TEMP_CHECKPOINT_PATH',
 ]

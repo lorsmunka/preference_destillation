@@ -4,16 +4,17 @@ from time import time, sleep
 from typing import Dict
 from pathlib import Path
 
-from .config import (
-    TELEMETRY_DIR,
-    TRAINING_TELEMETRY_FILE,
-    DISTILLATION_TELEMETRY_FILE,
-    BATCH_SIZE,
-)
+from .config import TELEMETRY_DIR, BATCH_SIZE
 
 
-class TrainingTelemetryHandler:
+TELEMETRY_FILE = f"{TELEMETRY_DIR}/telemetry.json"
+TRAINING_LOG_FILE = f"{TELEMETRY_DIR}/training.jsonl"
+
+
+class TelemetryHandler:
     def __init__(self):
+        self.processed_sentence_count = 0
+        self.successful_sentence_count = 0
         self.current_epoch = 0
         self.current_batch = 0
         self.total_batches_processed = 0
@@ -21,18 +22,20 @@ class TrainingTelemetryHandler:
         self.session_count = 0
         self.session_start_time = None
 
-        self.training_log_dir = Path(TELEMETRY_DIR)
-        self.training_log_dir.mkdir(exist_ok=True)
-        self.training_log_file = self.training_log_dir / "training.jsonl"
+        Path(TELEMETRY_DIR).mkdir(exist_ok=True)
+        self._load()
 
-        self.load_save()
-
-    def load_save(self):
+    def _load(self):
         start_time = time()
         print("Loading telemetry...")
-        if os.path.exists(TRAINING_TELEMETRY_FILE):
-            with open(TRAINING_TELEMETRY_FILE, "r", encoding="utf-8") as file:
+
+        if os.path.exists(TELEMETRY_FILE):
+            with open(TELEMETRY_FILE, "r", encoding="utf-8") as file:
                 data = json.load(file)
+                self.processed_sentence_count = data.get(
+                    "processed_sentence_count", 0)
+                self.successful_sentence_count = data.get(
+                    "successful_sentence_count", 0)
                 self.current_epoch = data.get("current_epoch", 0)
                 self.current_batch = data.get("current_batch", 0)
                 self.total_batches_processed = data.get(
@@ -44,56 +47,65 @@ class TrainingTelemetryHandler:
         self.session_count += 1
         self.session_start_time = time()
 
-        elapsed_time = time() - start_time
-        print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.\n")
-        print("== Telemetry ==")
-        print(f"Current epoch: {self.current_epoch}")
-        print(f"Current batch: {self.current_batch}")
-        print(f"Total batches processed: {self.total_batches_processed:,}")
-        print(f"Total runtime (seconds): {self.total_runtime_seconds:,.2f}")
-        print(f"Session count: {self.session_count:,}")
-        print(f"Training log file: {self.training_log_file}")
-        print(f"Waiting 2 seconds before continuing... \n")
+        print(f"Loaded telemetry -> took {time() - start_time:.2f} seconds.\n")
+        self._print_status()
+        print(f"Waiting 2 seconds before continuing...\n")
         sleep(2)
+
+    def _print_status(self):
+        print("== Telemetry ==")
+        print(
+            f"Distillation: {self.successful_sentence_count:,}/{self.processed_sentence_count:,} sentences")
+        print(
+            f"Training: epoch {self.current_epoch}, batch {self.current_batch}, total batches {self.total_batches_processed:,}")
+        print(
+            f"Runtime: {self.total_runtime_seconds:,.2f}s over {self.session_count:,} sessions\n")
 
     def save(self):
         start_time = time()
         print("Saving telemetry...")
 
-        if not os.path.exists(TELEMETRY_DIR):
-            os.makedirs(TELEMETRY_DIR)
-
         self.total_runtime_seconds += time() - self.session_start_time
-        with open(TRAINING_TELEMETRY_FILE, "w", encoding="utf-8") as file:
+        self.session_start_time = time()
+
+        with open(TELEMETRY_FILE, "w", encoding="utf-8") as file:
             json.dump({
+                "processed_sentence_count": self.processed_sentence_count,
+                "successful_sentence_count": self.successful_sentence_count,
                 "current_epoch": self.current_epoch,
                 "current_batch": self.current_batch,
                 "total_batches_processed": self.total_batches_processed,
                 "total_runtime_seconds": self.total_runtime_seconds,
-                "session_count": self.session_count
+                "session_count": self.session_count,
             }, file, indent=4)
 
-        elapsed_time = time() - start_time
-        print(
-            f"Saved telemetry to {TRAINING_TELEMETRY_FILE} -> took {elapsed_time:.2f} seconds.\n")
+        print(f"Saved telemetry -> took {time() - start_time:.2f} seconds.\n")
+
+    @property
+    def current_batch_sentence_count(self) -> int:
+        return self.successful_sentence_count % BATCH_SIZE
+
+    @property
+    def batch_count(self) -> int:
+        return self.successful_sentence_count // BATCH_SIZE
 
     def update_progress(self, epoch: int, batch: int):
         self.current_epoch = epoch
         self.current_batch = batch
         self.total_batches_processed += 1
 
-    def should_resume(self):
-        SHOULD_RESUME = self.current_epoch > 0 or self.current_batch > 0
-
-        if SHOULD_RESUME:
+    def should_resume(self) -> bool:
+        should_resume = self.current_epoch > 0 or self.current_batch > 0
+        if should_resume:
             print(
                 f"Resuming from epoch {self.current_epoch + 1}, batch {self.current_batch}\n")
         else:
             print("Starting fresh training\n")
+        return should_resume
 
-        return SHOULD_RESUME
-
-    def log_training_example(self, epoch: int, batch: int, example: int, num_steps: int, loss: float, time_seconds: float, kl_loss: float, ce_loss: float, accuracy: float):
+    def log_training_example(self, epoch: int, batch: int, example: int, num_steps: int,
+                             loss: float, time_seconds: float, kl_loss: float,
+                             ce_loss: float, accuracy: float):
         self._write_log({
             "type": "train_example",
             "epoch": epoch,
@@ -107,7 +119,8 @@ class TrainingTelemetryHandler:
             "time_seconds": time_seconds
         })
 
-    def log_train_epoch(self, epoch: int, avg_loss: float, total_steps: int, kl_loss: float, ce_loss: float):
+    def log_train_epoch(self, epoch: int, avg_loss: float, total_steps: int,
+                        kl_loss: float, ce_loss: float):
         self._write_log({
             "type": "train_epoch",
             "epoch": epoch,
@@ -117,7 +130,8 @@ class TrainingTelemetryHandler:
             "total_steps": total_steps
         })
 
-    def log_eval_epoch(self, epoch: int, avg_loss: float, accuracy: float, total_steps: int, kl_loss: float, ce_loss: float):
+    def log_eval_epoch(self, epoch: int, avg_loss: float, accuracy: float,
+                       total_steps: int, kl_loss: float, ce_loss: float):
         self._write_log({
             "type": "eval_epoch",
             "epoch": epoch,
@@ -129,71 +143,5 @@ class TrainingTelemetryHandler:
         })
 
     def _write_log(self, data: Dict):
-        with open(self.training_log_file, 'a') as f:
-            f.write(json.dumps(data) + '\n')
-
-
-class DistillationTelemetryHandler:
-    def __init__(self):
-        self.processed_sentence_count = 0
-        self.successful_sentence_count = 0
-        self.total_runtime_seconds = 0
-        self.session_count = 0
-        self.session_start_time = None
-        self.load_save()
-
-    @property
-    def current_batch_sentence_count(self):
-        return self.successful_sentence_count % BATCH_SIZE
-
-    @property
-    def batch_count(self):
-        return self.successful_sentence_count // BATCH_SIZE
-
-    def load_save(self):
-        start_time = time()
-        print("Loading telemetry...")
-        if os.path.exists(DISTILLATION_TELEMETRY_FILE):
-            with open(DISTILLATION_TELEMETRY_FILE, "r", encoding="utf-8") as file:
-                data = json.load(file)
-                self.processed_sentence_count = data.get(
-                    "processed_sentence_count", 0)
-                self.successful_sentence_count = data.get(
-                    "successful_sentence_count", 0)
-                self.total_runtime_seconds = data.get(
-                    "total_runtime_seconds", 0)
-                self.session_count = data.get("session_count", 0)
-
-        self.session_count += 1
-        self.session_start_time = time()
-
-        elapsed_time = time() - start_time
-        print(f"Loaded telemetry -> took {elapsed_time:.2f} seconds.\n")
-        print("== Telemetry ==")
-        print(f"Processed sentences: {self.processed_sentence_count:,}")
-        print(f"Successful sentences: {self.successful_sentence_count:,}")
-        print(f"Total runtime (seconds): {self.total_runtime_seconds:2,.2f}")
-        print(f"Session count: {self.session_count:,}")
-        print(f"Current batch count: {self.current_batch_sentence_count}")
-        print(f"Waiting 2 seconds before continuing... \n")
-        sleep(2)
-
-    def save(self):
-        start_time = time()
-        print("Saving telemetry...")
-
-        if not os.path.exists(TELEMETRY_DIR):
-            os.makedirs(TELEMETRY_DIR)
-
-        self.total_runtime_seconds += time() - self.session_start_time
-        with open(DISTILLATION_TELEMETRY_FILE, "w", encoding="utf-8") as file:
-            json.dump({
-                "processed_sentence_count": self.processed_sentence_count,
-                "successful_sentence_count": self.successful_sentence_count,
-                "total_runtime_seconds": self.total_runtime_seconds,
-                "session_count": self.session_count
-            }, file, indent=4)
-
-        elapsed_time = time() - start_time
-        print(
-            f"Saved telemetry to {DISTILLATION_TELEMETRY_FILE} -> took {elapsed_time:.2f} seconds.\n")
+        with open(TRAINING_LOG_FILE, 'a') as file:
+            file.write(json.dumps(data) + '\n')

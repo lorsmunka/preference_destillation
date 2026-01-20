@@ -42,6 +42,4 @@ TELEMETRY_DIR = "./telemetry"
 CHECKPOINTS_DIR = "./checkpoints"
 
 # File paths
-TRAINING_TELEMETRY_FILE = f"{TELEMETRY_DIR}/training_telemetry.json"
-DISTILLATION_TELEMETRY_FILE = f"{TELEMETRY_DIR}/data_generation_telemetry.json"
 TEMP_CHECKPOINT_PATH = f"{CHECKPOINTS_DIR}/temp_checkpoint.pt"

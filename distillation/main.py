@@ -3,12 +3,12 @@ from time import sleep, time
 from SentenceHandler import SentenceHandler
 from ModelHandler import ModelHandler
 from SavingHandler import SavingHandler
-from shared import ExitListener, DistillationTelemetryHandler, BATCH_SIZE
+from shared import ExitListener, TelemetryHandler, BATCH_SIZE
 
 exitListener = ExitListener()
 sentenceHandler = SentenceHandler()
 modelHandler = ModelHandler()
-telemetryHandler = DistillationTelemetryHandler()
+telemetryHandler = TelemetryHandler()
 savingHandler = SavingHandler(telemetryHandler)
 
 batch_examples = []

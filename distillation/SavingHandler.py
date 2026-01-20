@@ -2,11 +2,11 @@ import os
 import json
 from time import time
 
-from shared import DISTILLATION_BATCHES_DIR, DistillationTelemetryHandler
+from shared import DISTILLATION_BATCHES_DIR, TelemetryHandler
 
 
 class SavingHandler:
-    def __init__(self, telemetry_handler: DistillationTelemetryHandler):
+    def __init__(self, telemetry_handler: TelemetryHandler):
         self.telemetry_handler = telemetry_handler
 
     def save_batch(self, batch_examples):

@@ -9,7 +9,7 @@ from time import time
 
 from shared import (
     ExitListener,
-    TrainingTelemetryHandler,
+    TelemetryHandler,
     get_device,
     EPOCH_COUNT,
     LEARNING_RATE,
@@ -22,7 +22,7 @@ from BatchHandler import BatchHandler
 
 
 class Trainer:
-    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, telemetry_handler: TrainingTelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
+    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, telemetry_handler: TelemetryHandler, exit_listener: ExitListener, batch_handler: BatchHandler):
         start_time = time()
         print("Initializing Trainer...")
 

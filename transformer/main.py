@@ -1,11 +1,11 @@
 from BatchHandler import BatchHandler
 from Transformer import Transformer
 from Trainer import Trainer
-from shared import ExitListener, TrainingTelemetryHandler
+from shared import ExitListener, TelemetryHandler
 
 
 transformer = Transformer()
-telemetryHandler = TrainingTelemetryHandler()
+telemetryHandler = TelemetryHandler()
 exitListener = ExitListener()
 batchHandler = BatchHandler()
 

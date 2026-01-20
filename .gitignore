@@ -5,3 +5,7 @@ checkpoints/*
 __pycache__/*
 distillation/__pycache__/*
 transformer/__pycache__/*
+
+*.json
+*.jsonl
+*.pyc
