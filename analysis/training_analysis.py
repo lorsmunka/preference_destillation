@@ -63,6 +63,10 @@ class TrainingAnalyzer:
         lrs = [b['learning_rate'] for b in self.train_batches]
         print(f"\nLearning rate - Start: {lrs[0]:.2e}, Current: {lrs[-1]:.2e}")
 
+        kl_ratios = [b.get('kl_ratio', 0) for b in self.train_batches]
+        if any(kl_ratios):
+            print(f"KL ratio - Start: {kl_ratios[0]:.4f}, Current: {kl_ratios[-1]:.4f}")
+
     def plot(self, moving_average_func, exponential_moving_average_func):
         if not self.train_batches:
             print("No training data to plot.")
@@ -116,12 +120,24 @@ class TrainingAnalyzer:
         ax.grid(True, alpha=0.3)
 
         ax = fig.add_subplot(gs[1, 1])
-        ax.plot(batch_indices, lrs, color='orange', linewidth=2)
+        ax.plot(batch_indices, lrs, color='orange', linewidth=2, label='Learning Rate')
         ax.set_xlabel('Batch')
-        ax.set_ylabel('Learning Rate')
-        ax.set_title('Learning Rate Schedule')
+        ax.set_ylabel('Learning Rate', color='orange')
+        ax.tick_params(axis='y', labelcolor='orange')
         ax.ticklabel_format(style='scientific', axis='y', scilimits=(0, 0))
         ax.grid(True, alpha=0.3)
+
+        kl_ratios = [b.get('kl_ratio', 0) for b in self.train_batches]
+        if any(kl_ratios):
+            ax2 = ax.twinx()
+            ax2.plot(batch_indices, kl_ratios, color='purple', linewidth=2, label='KL Ratio')
+            ax2.set_ylabel('KL Ratio', color='purple')
+            ax2.tick_params(axis='y', labelcolor='purple')
+            ax2.set_ylim([0, 1])
+            lines1, labels1 = ax.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax.legend(lines1 + lines2, labels1 + labels2, loc='center right')
+        ax.set_title('LR & KL Ratio Schedule')
 
         ax = fig.add_subplot(gs[2, 0])
         if self.train_epochs and self.eval_epochs:

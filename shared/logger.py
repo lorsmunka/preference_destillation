@@ -129,7 +129,7 @@ class Logger:
 
     def log_training_batch(self, epoch: int, batch: int, steps: int,
                            loss: float, kl_loss: float, ce_loss: float,
-                           accuracy: float, learning_rate: float, time_seconds: float):
+                           accuracy: float, learning_rate: float, kl_ratio: float, time_seconds: float):
         self._write_training_log({
             "timestamp": self._timestamp(),
             "session_id": self.session_id,
@@ -142,6 +142,7 @@ class Logger:
             "ce_loss": round(ce_loss, 6),
             "accuracy": round(accuracy, 4),
             "learning_rate": learning_rate,
+            "kl_ratio": round(kl_ratio, 6),
             "time_seconds": round(time_seconds, 2),
         })
 

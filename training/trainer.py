@@ -160,6 +160,7 @@ class Trainer:
         avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
         current_lr = self.optimizer.param_groups[0]['lr']
+        current_kl_ratio = self._get_current_kl_ratio()
 
         print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
 
@@ -172,6 +173,7 @@ class Trainer:
             ce_loss=avg_batch_ce_loss,
             accuracy=batch_accuracy,
             learning_rate=current_lr,
+            kl_ratio=current_kl_ratio,
             time_seconds=batch_elapsed
         )
         self.logger.update_progress(epoch, batch_idx + 1)
