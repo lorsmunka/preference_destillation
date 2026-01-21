@@ -223,12 +223,13 @@ class Trainer:
 
         return total_loss, total_kl_loss, total_ce_loss, valid_steps, correct_predictions
 
-    def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float]:
+    def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float, float]:
         self.model.eval()
         total_loss = 0.0
         total_kl_loss = 0.0
         total_ce_loss = 0.0
-        total_correct = 0
+        total_teacher_forced_correct = 0
+        total_student_correct = 0
         total_steps = 0
 
         with torch.no_grad():
@@ -239,76 +240,89 @@ class Trainer:
                 batch_loss = 0.0
                 batch_kl_loss = 0.0
                 batch_ce_loss = 0.0
-                batch_correct = 0
+                batch_teacher_forced_correct = 0
+                batch_student_correct = 0
                 batch_steps = 0
 
                 for example_idx, example in enumerate(batch_data):
-                    loss_sum, kl_loss_sum, ce_loss_sum, correct, num_steps = self._eval_single_example(
+                    loss_sum, kl_loss_sum, ce_loss_sum, teacher_forced_correct, student_correct, num_steps = self._eval_single_example(
                         example)
                     batch_loss += loss_sum
                     batch_kl_loss += kl_loss_sum
                     batch_ce_loss += ce_loss_sum
-                    batch_correct += correct
+                    batch_teacher_forced_correct += teacher_forced_correct
+                    batch_student_correct += student_correct
                     batch_steps += num_steps
                     total_loss += loss_sum
                     total_kl_loss += kl_loss_sum
                     total_ce_loss += ce_loss_sum
-                    total_correct += correct
+                    total_teacher_forced_correct += teacher_forced_correct
+                    total_student_correct += student_correct
                     total_steps += num_steps
 
                 batch_elapsed = time() - batch_start_time
                 avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
                 avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
                 avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
-                batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
+                batch_teacher_forced_accuracy = batch_teacher_forced_correct / batch_steps if batch_steps > 0 else 0.0
+                batch_student_accuracy = batch_student_correct / batch_steps if batch_steps > 0 else 0.0
                 print(
-                    f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, acc={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s")
+                    f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_teacher_forced_accuracy:.4f}, student_acc={batch_student_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
         avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
         avg_kl_loss = total_kl_loss / total_steps if total_steps > 0 else 0.0
         avg_ce_loss = total_ce_loss / total_steps if total_steps > 0 else 0.0
-        accuracy = total_correct / total_steps if total_steps > 0 else 0.0
+        teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
+        student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
 
         self.logger.log_eval_epoch(
-            epoch, avg_loss, accuracy, total_steps, avg_kl_loss, avg_ce_loss)
+            epoch, avg_loss, teacher_forced_accuracy, student_accuracy, total_steps, avg_kl_loss, avg_ce_loss)
 
         print(
-            f"Eval Loss: {avg_loss:.4f} | KL Loss: {avg_kl_loss:.4f} | CE Loss: {avg_ce_loss:.4f} | Accuracy: {accuracy:.4f}")
-        return avg_loss, accuracy
+            f"Eval Loss: {avg_loss:.4f} | KL Loss: {avg_kl_loss:.4f} | CE Loss: {avg_ce_loss:.4f} | TF Accuracy: {teacher_forced_accuracy:.4f} | Student Accuracy: {student_accuracy:.4f}")
+        return avg_loss, teacher_forced_accuracy, student_accuracy
 
-    def _eval_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
+    def _eval_single_example(self, example: Dict) -> Tuple[float, float, float, int, int, int]:
         sentence_tokens = self._get_sentence_tokens(example)
         steps = example['steps']
 
         total_loss = 0.0
         total_kl_loss = 0.0
         total_ce_loss = 0.0
-        correct_predictions = 0
+        teacher_forced_correct = 0
+        student_correct = 0
         valid_steps = 0
-        generated_token_ids = []
+        teacher_forced_token_ids = []
+        student_token_ids = []
 
         for step in steps:
-            token_id, target_logits, target_index = self._prepare_step_data(
-                step)
+            ground_truth_token_id, target_logits, target_index = self._prepare_step_data(step)
 
-            input_tensor, target_tensor = self._create_tensors(
-                sentence_tokens + generated_token_ids,
+            teacher_input_tensor, target_tensor = self._create_tensors(
+                sentence_tokens + teacher_forced_token_ids,
                 target_logits
             )
-
-            loss, kl_loss, ce_loss, is_correct = self._compute_step_loss(
-                input_tensor, target_tensor, target_index)
+            loss, kl_loss, ce_loss, teacher_is_correct = self._compute_step_loss(
+                teacher_input_tensor, target_tensor, target_index)
             total_loss += loss.item()
             total_kl_loss += kl_loss.item()
             total_ce_loss += ce_loss.item()
+            if teacher_is_correct:
+                teacher_forced_correct += 1
+            teacher_forced_token_ids.append(ground_truth_token_id)
 
-            if is_correct:
-                correct_predictions += 1
+            student_input_tensor = torch.tensor(
+                [sentence_tokens + student_token_ids], dtype=torch.long, device=self.device)
+            student_logits = self.model(student_input_tensor)[:, -1, :]
+            student_predicted_index = torch.argmax(student_logits[0]).item()
+            student_predicted_token_id = self.model.output_token_ids[student_predicted_index]
+            if student_predicted_index == target_index:
+                student_correct += 1
+            student_token_ids.append(student_predicted_token_id)
 
             valid_steps += 1
-            generated_token_ids.append(token_id)
 
-        return total_loss, total_kl_loss, total_ce_loss, correct_predictions, valid_steps
+        return total_loss, total_kl_loss, total_ce_loss, teacher_forced_correct, student_correct, valid_steps
 
     def _compute_step_loss(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor, target_index: int):
         model_logits = self.model(input_tensor)

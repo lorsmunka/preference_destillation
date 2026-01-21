@@ -49,7 +49,10 @@ class TrainingAnalyzer:
             latest_eval = self.eval_epochs[-1]
             print(f"\nLatest evaluation (epoch {latest_eval['epoch']}):")
             print(f"  Loss: {latest_eval['avg_loss']:.4f}")
-            print(f"  Accuracy: {latest_eval['accuracy'] * 100:.1f}%")
+            teacher_forced_acc = latest_eval.get('teacher_forced_accuracy', latest_eval.get('accuracy', 0))
+            student_acc = latest_eval.get('student_accuracy', 0)
+            print(f"  Teacher-Forced Accuracy: {teacher_forced_acc * 100:.1f}%")
+            print(f"  Student Accuracy: {student_acc * 100:.1f}%")
 
         if len(self.train_batches) >= 100:
             recent = self.train_batches[-100:]
@@ -163,9 +166,12 @@ class TrainingAnalyzer:
         ax = fig.add_subplot(gs[2, 1])
         if self.eval_epochs:
             eval_ep = [d['epoch'] for d in self.eval_epochs]
-            eval_acc = [d['accuracy'] * 100 for d in self.eval_epochs]
-            ax.plot(eval_ep, eval_acc, marker='o', color='green', linewidth=2)
+            teacher_forced_acc = [d.get('teacher_forced_accuracy', d.get('accuracy', 0)) * 100 for d in self.eval_epochs]
+            student_acc = [d.get('student_accuracy', 0) * 100 for d in self.eval_epochs]
+            ax.plot(eval_ep, teacher_forced_acc, marker='o', color='green', linewidth=2, label='Teacher-Forced')
+            ax.plot(eval_ep, student_acc, marker='s', color='blue', linewidth=2, label='Student')
             ax.set_ylim([0, 100])
+            ax.legend()
         else:
             ax.text(0.5, 0.5, 'No evaluation data yet', ha='center', va='center', transform=ax.transAxes)
         ax.set_xlabel('Epoch')

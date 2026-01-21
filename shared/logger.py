@@ -159,8 +159,8 @@ class Logger:
             "total_steps": total_steps,
         })
 
-    def log_eval_epoch(self, epoch: int, avg_loss: float, accuracy: float,
-                       total_steps: int, kl_loss: float, ce_loss: float):
+    def log_eval_epoch(self, epoch: int, avg_loss: float, teacher_forced_accuracy: float,
+                       student_accuracy: float, total_steps: int, kl_loss: float, ce_loss: float):
         self._write_training_log({
             "timestamp": self._timestamp(),
             "session_id": self.session_id,
@@ -169,7 +169,8 @@ class Logger:
             "avg_loss": round(avg_loss, 6),
             "kl_loss": round(kl_loss, 6),
             "ce_loss": round(ce_loss, 6),
-            "accuracy": round(accuracy, 4),
+            "teacher_forced_accuracy": round(teacher_forced_accuracy, 4),
+            "student_accuracy": round(student_accuracy, 4),
             "total_steps": total_steps,
         })
 
