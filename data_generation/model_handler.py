@@ -51,20 +51,20 @@ class ModelHandler:
         generated_text = ""
         current_sequence = inputs['input_ids']
 
-        last_token = ""
-        while last_token != "}" and len(steps) <= MAX_GENERATION_STEPS:
-            next_token, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
+        last_token_decoded = ""
+        while last_token_decoded != "}" and len(steps) <= MAX_GENERATION_STEPS:
+            token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
                 current_sequence)
 
             steps.append({
-                "token": next_token,
+                "token": token_repr,
                 "logits": logit_vector,
                 "predicted_token_index": predicted_token_index
             })
 
-            generated_text += next_token
+            generated_text += token_decoded
             current_sequence = new_sequence
-            last_token = next_token
+            last_token_decoded = token_decoded
 
         elapsed_time = time() - start_time
 
@@ -87,7 +87,7 @@ class ModelHandler:
             "steps": steps
         }, None
 
-    def generate_single_step(self, current_sequence: torch.Tensor) -> Tuple[str, List[float], int, torch.Tensor]:
+    def generate_single_step(self, current_sequence: torch.Tensor) -> Tuple[str, str, List[float], int, torch.Tensor]:
         current_inputs = {
             'input_ids': current_sequence,
             'attention_mask': torch.ones_like(current_sequence)
@@ -100,12 +100,13 @@ class ModelHandler:
         predicted_token_index = int(max(range(len(logit_vector)), key=lambda i: logit_vector[i]))
 
         next_token_id = torch.argmax(logits).item()
-        next_token = self.tokenizer.decode([next_token_id])
+        token_repr = self.tokenizer.convert_ids_to_tokens([next_token_id])[0]
+        token_decoded = self.tokenizer.decode([next_token_id])
 
         new_sequence = torch.cat([current_sequence, torch.tensor(
             [[next_token_id]], device=current_sequence.device)], dim=1)
 
-        return next_token, logit_vector, predicted_token_index, new_sequence
+        return token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence
 
     def prepare_inputs_for_device(self, text: str) -> Dict[str, torch.Tensor]:
         inputs = self.tokenizer(text, return_tensors="pt")

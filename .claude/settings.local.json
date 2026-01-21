@@ -10,7 +10,15 @@
       "Bash(git reset:*)",
       "Bash(git checkout:*)",
       "Bash(wc:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git clean:*)",
+      "Bash(cmd /c \"del /f /q \\\\?\\\\C:\\\\Users\\\\Ors\\\\preference_destillation\\\\nul\")",
+      "Bash(cmd /c \"dir nul\")",
+      "Bash(cmd /c \"dir /a nul 2>&1\")",
+      "Bash(git update-index:*)",
+      "Bash(cmd /c \"ren nul deleteme.txt 2>&1 && del deleteme.txt 2>&1\")",
+      "Bash(del \"\\\\.\\\\C:\\\\Users\\\\Ors\\\\preference_destillation\\\\nul\")",
+      "Bash(cmd /c del \"\\\\.\\\\C:\\\\Users\\\\Ors\\\\preference_destillation\\\\nul\")"
     ]
   }
 }

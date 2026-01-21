@@ -76,7 +76,7 @@ class Trainer:
 
         current_lr = self.optimizer.param_groups[0]['lr']
         print(
-            f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}\n")
+            f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}\n ")
 
         for batch_idx in range(start_batch, batch_end):
             batch_result = self._process_batch(batch_idx, epoch)
@@ -127,7 +127,8 @@ class Trainer:
         self.current_step += 1
         current_lr = self.optimizer.param_groups[0]['lr']
         current_kl_ratio = self._get_current_kl_ratio()
-        print(f"Batch {batch_idx + 1} -> LR: {current_lr:.8f}, KL ratio: {current_kl_ratio:.3f}")
+        print(
+            f"Batch {batch_idx + 1} -> LR: {current_lr:.8f}, KL ratio: {current_kl_ratio:.3f}")
 
         self._log_batch_completion(
             batch_idx, batch_steps, batch_loss, batch_kl_loss, batch_ce_loss, batch_correct, batch_start_time, epoch)
@@ -341,8 +342,8 @@ class Trainer:
         logit_vector = step['logits']
         target_index = step['predicted_token_index']
 
-        token_ids = self.tokenizer.convert_tokens_to_ids([token])
-        token_id = token_ids[0]
+        token_ids = self.tokenizer.encode(token, add_special_tokens=False)
+        token_id = token_ids[0] if token_ids else self.tokenizer.unk_token_id
 
         return token_id, logit_vector, target_index
 
