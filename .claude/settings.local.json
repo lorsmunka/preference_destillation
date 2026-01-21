@@ -18,7 +18,11 @@
       "Bash(git update-index:*)",
       "Bash(cmd /c \"ren nul deleteme.txt 2>&1 && del deleteme.txt 2>&1\")",
       "Bash(del \"\\\\.\\\\C:\\\\Users\\\\Ors\\\\preference_destillation\\\\nul\")",
-      "Bash(cmd /c del \"\\\\.\\\\C:\\\\Users\\\\Ors\\\\preference_destillation\\\\nul\")"
+      "Bash(cmd /c del \"\\\\.\\\\C:\\\\Users\\\\Ors\\\\preference_destillation\\\\nul\")",
+      "Bash(python -m py_compile:*)",
+      "Bash(python -m pip:*)",
+      "Bash(C:UsersOrspreference_destillation.venvScriptspip.exe list)",
+      "Bash(findstr:*)"
     ]
   }
 }

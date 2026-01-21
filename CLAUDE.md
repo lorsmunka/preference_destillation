@@ -1,38 +1,51 @@
 # Preference Distillation
 
-University thesis project. Proof of concept: distill domain-specific knowledge from large models (Gemma 3 4B) into small transformers using reduced vocabulary.
+University thesis proof of concept: distill domain-specific knowledge from Gemma 3 4B into a small transformer using reduced vocabulary. Autoregressive generation is intentional—simpler architectures (BERT, classifiers) could classify, but this proves the technique works for generation.
 
-Classification could be done more easily with other model types (BERT, simple classifiers), but autoregressive generation is the point. This architecture proves the technique works with available resources. Different architectures will be explored later.
+## Task
 
-## Purpose
-
-Demonstrate that task-specific models with minimal vocabularies can replace expensive LLM calls. Applications: email classification, agentic workflow nodes, any structured output task. Potential 10x cost reduction.
-
-Example extension: a "math model" using only mathematical characters.
+Reddit comment classification (tone, sentiment, safety, toxicity) → deterministic JSON output.
 
 ## Architecture
 
 - **Teacher**: Gemma 3 4B generates training data with logits
-- **Student**: Small transformer (~50M params) with reduced output vocabulary (~400 tokens)
-- **Task**: Reddit comment classification (tone, sentiment, safety, toxicity)
-- **Output**: Deterministic JSON with fixed schema
+- **Student**: Small transformer with reduced output vocabulary (~525 tokens)
+- **Loss**: KL divergence (match teacher distribution) + Cross-entropy (match predicted token), ratio anneals from 0.9→0.1
 
-## Vocabulary Sections (in order)
+## Project Structure
 
-1. **Example tokens**: JSON structure and label values
-2. **Whitespace tokens**: Formatting variations
-3. **Prompt tokens**: Evaluation prompt vocabulary
-4. **Auxiliary tokens**: Common English fallback tokens
+```
+training/       Model, trainer, entry point (run from here)
+shared/         Config, logger, utilities
+analysis/       Log visualization, model evaluation
+batches/        Training data (JSONL)
+logs/           Training logs, state persistence
+checkpoints/    Model checkpoints per epoch
+```
 
-## Training
+## Running
 
-- KL divergence loss (match teacher distribution) + Cross-entropy loss (match predicted token)
-- Autoregressive generation is intentional for the proof of concept
-- Future: mask deterministic tokens at inference, only predict uncertain positions
+```
+cd training && python main.py
+```
+
+Press `%` for graceful exit (saves temp checkpoint).
+
+## Configuration
+
+All in `shared/config.py`. Key params:
+- `EPOCH_COUNT`, `BATCH_SIZE`, `LEARNING_RATE`
+- `KL_RATIO_START/END` - Loss blend annealing
+- `DISTILLATION_TEMPERATURE` - Softens logits
+
+## Evaluation
+
+Two accuracy types:
+- **Teacher-forced**: Ground truth as context (optimistic)
+- **Student**: Own predictions as context (realistic)
 
 ## Code Style
 
-- Write full variable names, no abbreviations (use `index` not `idx`, `value` not `val`)
-- Self-documenting code structure over comments
-- Simple and beginner-friendly
-- No over-engineering
+- Full variable names (`index` not `idx`)
+- Self-documenting over comments
+- Simple, beginner-friendly, no over-engineering
