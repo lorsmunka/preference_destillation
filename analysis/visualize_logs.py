@@ -8,8 +8,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from shared import LOGS_DIR
 
-from .generation_analysis import GenerationAnalyzer
-from .training_analysis import TrainingAnalyzer
+from analysis.generation_analysis import GenerationAnalyzer
+from analysis.training_analysis import TrainingAnalyzer
 
 
 GENERATION_LOG_FILE = Path(LOGS_DIR) / "generation.jsonl"
