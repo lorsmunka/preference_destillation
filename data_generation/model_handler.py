@@ -27,7 +27,8 @@ class ModelHandler:
             dtype=torch.bfloat16
         )
         elapsed_time = time() - start_time
-        print(f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
+        print(
+            f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
 
         self.create_vocabulary()
 
@@ -36,7 +37,8 @@ class ModelHandler:
         print("Creating vocabulary...")
 
         self.vocabulary = Utilities.build_vocabulary(self.tokenizer)
-        self.json_response_tokens = Utilities.get_json_response_tokens(self.tokenizer)
+        self.json_response_tokens = Utilities.get_json_response_tokens(
+            self.tokenizer)
 
         elapsed_time = time() - start_time
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
@@ -69,16 +71,19 @@ class ModelHandler:
         elapsed_time = time() - start_time
 
         response_tokens = self.tokenizer.tokenize(generated_text)
-        print(f"Generated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
+        print(
+            f"\tGenerated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
 
         if not all(token in self.json_response_tokens for token in response_tokens):
             unexpected_tokens = [
                 token for token in response_tokens if token not in self.json_response_tokens]
-            print(f"Skipped: Generated response contains unexpected tokens: {unexpected_tokens}")
+            print(
+                f"\tSkipped: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None, "unexpected_tokens"
 
         if len(response_tokens) > MAX_GENERATION_STEPS:
-            print(f"Skipped: Generated response is too long ({len(response_tokens)} tokens).")
+            print(
+                f"\tSkipped: Generated response is too long ({len(response_tokens)} tokens).")
             return None, "too_long"
 
         return {
@@ -96,8 +101,10 @@ class ModelHandler:
         with torch.no_grad():
             logits = self.model(**current_inputs).logits[0, -1, :]
 
-        logit_vector = Utilities.extract_logits_as_vector(logits, self.vocabulary)
-        predicted_token_index = int(max(range(len(logit_vector)), key=lambda i: logit_vector[i]))
+        logit_vector = Utilities.extract_logits_as_vector(
+            logits, self.vocabulary)
+        predicted_token_index = int(
+            max(range(len(logit_vector)), key=lambda i: logit_vector[i]))
 
         next_token_id = torch.argmax(logits).item()
         token_repr = self.tokenizer.convert_ids_to_tokens([next_token_id])[0]

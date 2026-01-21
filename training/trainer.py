@@ -162,7 +162,7 @@ class Trainer:
         current_lr = self.optimizer.param_groups[0]['lr']
         current_kl_ratio = self._get_current_kl_ratio()
 
-        print(f"Batch {batch_idx + 1} processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
+        print(f"Batch {batch_idx + 1} (of Epoch {epoch}) processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
 
         self.logger.log_training_batch(
             epoch=epoch,
@@ -264,16 +264,20 @@ class Trainer:
                 avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
                 avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
                 avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
-                batch_teacher_forced_accuracy = batch_teacher_forced_correct / batch_steps if batch_steps > 0 else 0.0
-                batch_student_accuracy = batch_student_correct / batch_steps if batch_steps > 0 else 0.0
+                batch_teacher_forced_accuracy = batch_teacher_forced_correct / \
+                    batch_steps if batch_steps > 0 else 0.0
+                batch_student_accuracy = batch_student_correct / \
+                    batch_steps if batch_steps > 0 else 0.0
                 print(
                     f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_teacher_forced_accuracy:.4f}, student_acc={batch_student_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
         avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
         avg_kl_loss = total_kl_loss / total_steps if total_steps > 0 else 0.0
         avg_ce_loss = total_ce_loss / total_steps if total_steps > 0 else 0.0
-        teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
-        student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
+        teacher_forced_accuracy = total_teacher_forced_correct / \
+            total_steps if total_steps > 0 else 0.0
+        student_accuracy = total_student_correct / \
+            total_steps if total_steps > 0 else 0.0
 
         self.logger.log_eval_epoch(
             epoch, avg_loss, teacher_forced_accuracy, student_accuracy, total_steps, avg_kl_loss, avg_ce_loss)
@@ -296,7 +300,8 @@ class Trainer:
         student_token_ids = []
 
         for step in steps:
-            ground_truth_token_id, target_logits, target_index = self._prepare_step_data(step)
+            ground_truth_token_id, target_logits, target_index = self._prepare_step_data(
+                step)
 
             teacher_input_tensor, target_tensor = self._create_tensors(
                 sentence_tokens + teacher_forced_token_ids,
