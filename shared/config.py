@@ -20,6 +20,7 @@ MAX_SENTENCE_LENGTH = 25
 
 # Distillation
 MAX_GENERATION_STEPS = 50
+PROMPT_DELIMITER = "\n\n"
 
 # Transformer architecture
 HIDDEN_DIM = 1024

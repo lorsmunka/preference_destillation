@@ -23,7 +23,8 @@
       "Bash(python -m pip:*)",
       "Bash(C:UsersOrspreference_destillation.venvScriptspip.exe list)",
       "Bash(findstr:*)",
-      "Bash(del \"C:\\\\Users\\\\Ors\\\\preference_destillation\\\\analysis\\\\use_model.py\")"
+      "Bash(del \"C:\\\\Users\\\\Ors\\\\preference_destillation\\\\analysis\\\\use_model.py\")",
+      "Bash(find:*)"
     ]
   }
 }

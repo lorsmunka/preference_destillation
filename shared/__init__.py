@@ -24,6 +24,7 @@ from .config import (
     LOGS_DIR,
     CHECKPOINTS_DIR,
     TEMP_CHECKPOINT_PATH,
+    PROMPT_DELIMITER,
 )
 
 __all__ = [
@@ -53,4 +54,5 @@ __all__ = [
     'LOGS_DIR',
     'CHECKPOINTS_DIR',
     'TEMP_CHECKPOINT_PATH',
+    'PROMPT_DELIMITER',
 ]

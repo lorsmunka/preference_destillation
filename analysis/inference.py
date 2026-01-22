@@ -16,6 +16,7 @@ from shared import (
     INFERENCE_TEMPERATURE,
     MIN_SENTENCE_LENGTH,
     MAX_SENTENCE_LENGTH,
+    PROMPT_DELIMITER,
 )
 
 
@@ -106,7 +107,7 @@ def generate_teacher(model, tokenizer, sentence, device, logger):
 
 
 def generate_student(model, tokenizer, output_token_ids, sentence, device, logger):
-    prompt = Utilities.create_evaluation_prompt(sentence)
+    prompt = sentence + PROMPT_DELIMITER
     input_ids = tokenizer.encode(prompt, add_special_tokens=False)
 
     generated_ids = []

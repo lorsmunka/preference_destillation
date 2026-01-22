@@ -19,6 +19,7 @@ from shared import (
     KL_RATIO_START,
     KL_RATIO_END,
     TEMP_CHECKPOINT_PATH,
+    PROMPT_DELIMITER,
 )
 from model import Transformer
 from batch_handler import BatchHandler
@@ -355,7 +356,7 @@ class Trainer:
         return KL_RATIO_END + (KL_RATIO_START - KL_RATIO_END) * cosine_decay
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
-        text = example['sentence'] + '\n\n'
+        text = example['sentence'] + PROMPT_DELIMITER
         return self.tokenizer.encode(text, add_special_tokens=False)
 
     def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float], int]:

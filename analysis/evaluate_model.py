@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from training.model import Transformer
 from training.batch_handler import BatchHandler
-from shared import get_device, INFERENCE_TEMPERATURE
+from shared import get_device, INFERENCE_TEMPERATURE, PROMPT_DELIMITER
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -41,7 +41,7 @@ class Evaluator:
         return ids[0] if ids else self.tokenizer.unk_token_id
 
     def evaluate(self, example: dict) -> dict:
-        prompt = self.tokenizer.encode(example["sentence"] + "\n\n", add_special_tokens=False)
+        prompt = self.tokenizer.encode(example["sentence"] + PROMPT_DELIMITER, add_special_tokens=False)
         steps = example["steps"]
 
         student_ids, teacher_forced, ground_truth_ids = [], [], []
@@ -80,7 +80,7 @@ def get_checkpoints() -> list:
 def format_tokens(tokens: list, color: bool) -> str:
     if color:
         return "".join(f"{GREEN if ok else RED}{t}{RESET}" for t, ok in tokens)
-    return "".join(f"[{'OK' if ok else 'X'}:{t}]" for t, ok in tokens)
+    return "".join(t for t, ok in tokens)
 
 
 def main():

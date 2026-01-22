@@ -1,3 +1,6 @@
+from analysis.training_analysis import TrainingAnalyzer
+from analysis.generation_analysis import GenerationAnalyzer
+from shared import LOGS_DIR
 import json
 import sys
 from pathlib import Path
@@ -6,10 +9,6 @@ from typing import List, Dict
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from shared import LOGS_DIR
-
-from analysis.generation_analysis import GenerationAnalyzer
-from analysis.training_analysis import TrainingAnalyzer
 
 
 GENERATION_LOG_FILE = Path(LOGS_DIR) / "generation.jsonl"
@@ -67,12 +66,14 @@ class LogVisualizer:
             elif choice == '3':
                 self.generation_analyzer.plot(moving_average)
             elif choice == '4':
-                self.training_analyzer.plot(moving_average, exponential_moving_average)
+                self.training_analyzer.plot(
+                    moving_average, exponential_moving_average)
             elif choice == '5':
                 self.generation_analyzer.print_summary()
                 self.training_analyzer.print_summary()
                 self.generation_analyzer.plot(moving_average)
-                self.training_analyzer.plot(moving_average, exponential_moving_average)
+                self.training_analyzer.plot(
+                    moving_average, exponential_moving_average)
             elif choice == 'q':
                 print("Bye!")
                 break
