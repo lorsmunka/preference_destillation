@@ -43,15 +43,15 @@ Az első, kiinduló modellnél fontos volt, hogy a lehető legnagyobb eséllyel 
 - Működik-e a pipeline end-to-end? Elérhető-e közel 100%-os student only accuracy?
 - Tud-e koherens JSON-t generálni a saját modell? Egyáltalán a rendelkezésre álló erőforrásokon betanítható-e?
 - Működik-e a csökkentett kimeneti szótár?
-Ezért a legkedvezőbb körülményeket próbáltam biztosítani: nagy puha címke (~525 token), elegendő paraméter (~530M), Gemma-szerű architektúra. A kimeneti szótár mérete lineárisan skálázódik, így a nagyobb puha címke meghagyható - segít a modellnek magába szívni a teacher "dark knowledge"-ét. A context length négyzetesen skálázódik, így a 75 token ideális balance, de nagyobb sem lenne feltétlenül probléma.
+Ezért a legkedvezőbb körülményeket próbáltam biztosítani: nagy puha címke (~525 token), elegendő paraméter (~537M), Gemma-szerű architektúra. A kimeneti szótár mérete lineárisan skálázódik, így a nagyobb puha címke meghagyható - segít a modellnek magába szívni a teacher "dark knowledge"-ét. A context length négyzetesen skálázódik, így a 75 token ideális balance, de nagyobb sem lenne feltétlenül probléma.
 Később más modellek, más architektúrák is tesztelhetők - ez az első modell a proof of concept.
 2.4.1 Architektúra és Gemma hasonlóságok
-A student modell összesen ~530 millió paraméterből áll:
-- Input embedding: ~262M (ugyanaz a tokenizer, mint Gemma 3 4b)
-- Attention rétegek: ~67M
-- Feed-forward rétegek: ~201M
-- Output projection + normalizáció: ~1M
-Az input embedding (~262M) viszonylag fix költség: a tokenizer méretétől függ, nem a modell kapacitásától. Jelen felállásban, ahol korlátozott erőforrásokkal kis modellt kis architektúrába desztillálok, az embedding aránytalanul nagynak tűnik (a paraméterek ~50%-a). Nagyobb léptékű desztillációnál (pl. 100B → 1B) az embedding ugyanekkora maradna, de a modell többi része jóval nagyobb lenne, így az arány kedvezőbb. A jelenlegi cél nem az optimális paraméter-hatékonyság, hanem annak bizonyítása, hogy ez a fajta desztillációs training működik: a teacher modell tudása átvihető egy eltérő, kisebb architektúrájú student modellbe.
+A student modell összesen ~537 millió paraméterből áll:
+- Input embedding: ~268M (262,144 token × 1024 dim)
+- Attention rétegek: ~67M (16 layer)
+- Feed-forward rétegek: ~201M (16 layer)
+- Output projection + normalizáció: ~0.5M
+Az input embedding (~268M) viszonylag fix költség: a tokenizer méretétől függ, nem a modell kapacitásától. Jelen felállásban, ahol korlátozott erőforrásokkal kis modellt kis architektúrába desztillálok, az embedding aránytalanul nagynak tűnik (a paraméterek ~50%-a). Nagyobb léptékű desztillációnál (pl. 100B → 1B) az embedding ugyanekkora maradna, de a modell többi része jóval nagyobb lenne, így az arány kedvezőbb. A jelenlegi cél nem az optimális paraméter-hatékonyság, hanem annak bizonyítása, hogy ez a fajta desztillációs training működik: a teacher modell tudása átvihető egy eltérő, kisebb architektúrájú student modellbe.
 A modell a következő architekturális elemeket veszi át Gemmától:
 - RMSNorm: a hagyományos LayerNorm helyett, ahogy Gemma is használja
 - RoPE (Rotary Position Embedding): pozíció kódolásra, Gemma-kompatibilis
@@ -61,7 +61,7 @@ Ezek a hasonlóságok biztosítják, hogy a student modell "felfogása" közel �
 2.4.2 Optimalizációk
 A modell bemeneti szótára megegyezik Gemma 3 4b-vel (262,144 token), így minden kommentet, amit Gemma 3 4b ki tud értékelni, a student modell is. A kimeneti szótár viszont jelentősen le van csökkentve: a 262,144 token helyett mindössze ~525 tokenre korlátozódik (32 szükséges + ~493 auxiliary). Ez ~99,8%-os csökkentés.
 A context length 75-re van csökkentve (25 token bemenet + 50 token kimenet), szemben Gemma 3 4b 128k context window-jával.
-A teacher modell 4 milliárd paraméteres, a student ~530 millió, tehát ~7,5x kisebb modellt kapunk. Ez a méretbeli különbség tükröződik a sebességben is: egy MacBook Pro M1 Pro 32GB rendszeren Gemma 3 4b 1,7 TPS teljesítményt ér el, míg a student modell 12,5 TPS-t. Nvidia RTX 4070-en is érezhető a gyorsulás.
+A teacher modell 4 milliárd paraméteres, a student ~537 millió, tehát ~7,5x kisebb modellt kapunk. Ez a méretbeli különbség tükröződik a sebességben is: egy MacBook Pro M1 Pro 32GB rendszeren Gemma 3 4b 1,7 TPS teljesítményt ér el, míg a student modell 12,5 TPS-t. Nvidia RTX 4070-en is érezhető a gyorsulás.
 2.4.3 Modell részletek
 A modellnek a hidden dimensionja 1024, fele Gemma 3 4b-nek, de továbbra is gazdag reprezentációt biztosít. 16 rétege van, rétegenként 16 attention head-del.
 3 Módszertan
@@ -107,7 +107,7 @@ Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanított
 3.3 Korai becslés
 Saját hardveren (felső középkategóriás gép, RTX 4070 12GB videokártya) a teljes training és adatelőállítási idő 2870 óra lenne.
 Az adatbázisban ~500 ezer Reddit komment van, ami megfelel minden kitételnek. Ezekből a példamondatokból saját hardveren (~62 másodperc / 32 példa) optimális esetben 270 óra alatt lehetne egy teljes tanító adatbázist létrehozni.
-A "Chinchilla scaling" szerint minden egyes paraméterre 20 tokennyi példa kell a sikeres tanításhoz. Ez ~530 millió modell paraméter esetében ~10 milliárd tokent jelent, viszont az 500 ezer komment legjobb esetben is csak 20 millió példa. A desztillációból fakadó előnyök és a specifikus domain csökkentett tudásigénye mellett is több mint valószínű, hogy az összes példát fog kelleni használni.
+A "Chinchilla scaling" szerint minden egyes paraméterre 20 tokennyi példa kell a sikeres tanításhoz. Ez ~537 millió modell paraméter esetében ~11 milliárd tokent jelent, viszont az 500 ezer komment legjobb esetben is csak 20 millió példa. A desztillációból fakadó előnyök és a specifikus domain csökkentett tudásigénye mellett is több mint valószínű, hogy az összes példát fog kelleni használni.
 15 epoch 500 ezer példán, példánkénti 1,25 sebességgel ideális esetben is 2600 órányi folyamatos GPU idő.
 Tehát a pilot teszt alapján egy modell end-to-end tanítás 2870 óra, vagyis 120 nap, innentől kezdve pedig további modellenként 2600 órával, vagyis 108 nappal kell számolni.
 
