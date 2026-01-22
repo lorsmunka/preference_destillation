@@ -35,91 +35,44 @@ A modellnek 16 rétege van és rétegenként 16 attention headje. A modell param
 Aktivációs függvényként GeLU-t használtam, ez a népszerű ReLU függvények egy folyamatos verziója, gyakran használt LLM-eknél és transformereknél.
 3 Módszertan
 3.1 Pilot run
-A teljes modell betanítások előtt saját hardveren is futattam egy 97 órás training runt. Ezzel párhuzamosan generáltam az adatokat (összesen további 11 óra alatt), hogy lássam, hogy a kódom is jól működik és a modell is elkezd-e konvergálni. Az első 10 epochot az első 10 batch adaton tette a modell. Ez 10-szer 32 példamondat 40 lépését jelenti. Ekkor még csak KL divergencia veszteséget használtam. Az első pár példa 4,5 körüli értékéről hamar lement (pár 10 példa) az 1,1-1,4 közötti sávra. A modell ebben az időszakban 8% pontossággal találta el a következő tokent. A loss folyamatosan csökkent, illetve a 10. epoch után folyamatosan növeltem a train datasetet, 50, 100 majd 250 batchre.
-Az utolsó 2 epochig nem volt megfigyelhető a túltanulás, a train loss mindig magasabb volt, mint az epoch végére előálló modell teszt lossa.
-Körülbelül a ~15. epochban (ekkor már ~300 batch adaton tanult a modell) bevezetésre került a CE loss is, és ezután egyre nagyobb hangsúlyt kapott, hogy a modell pontosabban tudja a következő tokent megbecsülni. A CE loss alapból viszonylag alacsony értéken kezdett, és nem volt hirtelen kiugró loss csökkenés a bevezetés után, ez azt sugallja, hogy a KL loss alapból hasonló irányba vitte a modellt, mint ami CE lossnak az optimumja, tehát a desztilláció ilyen szempontból működött.
-A modell összesen 20 epochot ment, az utolsó 3-ban 500 batch adaton tanult már. A loss még mindig folyamatosan csökkent, viszont ezek voltak az első epochok, amikor a train loss alacsonyabb volt, mint a test loss, tehát látszólag elkezdődött a túltanulás, a nagy nyelvi modellek nagyságrendjében igencsak kicsinek mondható tanítási adathalmazon. A végső train loss 0,06 - 0,08 körül volt. Az accuracy felment 20% körülre. Megfigyelhető az is, hogy függetlenül a példamondat hosszától, a modell elkezdte megtanulni az első 5-6 tokent, ami szinte mindig ugyanaz a JSON generálásnál, ez valószínűleg részben köszönhető a 13. epochban bevezetett dupla sortörés tokennek, ami a mondatot és generálást elválasztja, illetve mivel állandóan megjelenik a modell kontextusában, minden példában, attention sinkként is használhatja a modell.
-3.2 Első eredmények
-A pilot run végére 20 epochot tett meg a modell. Minden epoch végén készült egy checkpoint. Nem minden checkpoint között egyforma compute távolság van, hiszen az első 10 epoch csak 10 batch adaton történt. Egy példamondaton, amit a modell látott tanítás közben, a következőképpen javult az accuracy:
-0. epoch acc: 0.1184
-1. epoch acc: 0.0886
-2. epoch acc: 0.0950
-3. epoch acc: 0.1256
-4. epoch acc: 0.0765
-5. epoch acc: 0.1216
-6. epoch acc: 0.1176
-8. epoch acc: 0.0926
-9. epoch acc: 0.0829
-10. epoch acc: 0.0636
-11. epoch acc: 0.0765
-12. epoch acc: 0.0580
-15. epoch acc: 0.1908
-16 . epoch acc: 0.2077
-17. epoch acc: 0.1973
-18. epoch acc: 0.2061
-19. epoch acc: 0.1924
-20. epoch acc: 0.2077
+A teljes modell betanítások előtt saját hardveren futtattam pilot runokat, hogy lássam, hogy a kódom jól működik és a modell elkezd-e konvergálni. Egy 30 perces teszt pilot 10 batch adaton már megmutatta, hogy a modell képes helyes JSON outputot generálni. Egy 3 órás pilot run 100 batch adaton, 3,5 epoch után egy 10 batch-es (10*32 példa) teszten a student only accuracy átlagosan 87,69%, míg a teacher forced accuracy átlagosan 98,97% volt. Példa a tesztből, ahol a modell tökéletesen eltalálta a teacher modell klasszifikációját (student only accuracy: 100%):
 
-Ez egy reprezentatív példa, példamondatonként eltérhet a pontos accuracy, de jól látható a javuló tendencia.
-Példa a JSON generálásra különböző checkpointoknál, ugyanaz a mondat.
-1. epoch:
-json
-json
-json
-{
-    json
-    ",
-    "sentiment": "neutral",
-    ",
-    "sentiment",
-    
-    "sentiment",
-    "
-5. epoch:
- {
-    tone": "
-    sentiment": "
-    safety": "negativesafety": "
-     "    "safety": " " "        safety": " " "toxicity":
-
-10. epoch:
- ```json
+Bemenet: "F**k you and your family"
+Kimenet:
 ```json
 {
-{
-    ": "    
-  sentiment": "",
-  ": "": "",
-}"toxicity": "
+  "tone": "aggressive",
+  "sentiment": "negative",
+  "safety": "harmful",
+  "toxicity": "toxic"
 }
-}":
+```
 
-15. epoch:
- ```json
-{
-    
-  ",
-  tone": " "
-   " "     "
-   " "": "
-  ": " " "  ",
-  ",
+Példa, ahol a modell hibázott (student only accuracy: 69,23%, teacher forced accuracy: 97,44%):
 
-20. epoch:
+Bemenet: "Bro no way you did this to me again"
+Modell kimenet:
 ```json
 {
-    ": "": "
-    ",
-    
-    ": "
-        
-    ",
-    "toxicity": "
-}"
-}"
+  "tone": "neutral",
+  "sentiment": "neutral",
+  "safety": "safe",
+  "toxicity": "respectful"
 }
+```
+Teacher kimenet (ground truth):
+```json
+{
+  "tone": "aggressive",
+  "sentiment": "negative",
+  "safety": "harmful",
+  "toxicity": "toxic"
+}
+```
 
-Az autoregresszív modelleknél különösen veszélyes az alacsony accuracy, ugyanis ha bármelyik előző token hibásan került generálásra, a modell tanítás során még nem látott ilyen hibásan generált helyes folytatást, és onnantól borulhat a modell teljes válasza. Ennek ellenére is megfigyelhető, hogy ugyanazon a példán a későbbi checkpoint modell generálások több helyes tokent tudják eltalálni, az első 8 token már helyes a 20. epochban, és kezdetleges JSON forma mintázatok is megfigyelhetőek.
+A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált.
+3.2 Korábbi pilot
+Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanítottam a modellt. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 3.1-ben leírt eredményeket kaptam.
 3.3 Korai becslés
 Saját hardveren (felső középkategóriás gép, RTX 4070 12GB videokártya) a teljes training és adatelőállítási idő 2870 óra lenne.
 Az adatbázisban ~500 ezer Reddit komment van, ami megfelel minden kitételnek. Ezekből a példamondatokból saját hardveren (~62 másodperc / 32 példa) optimális esetben 270 óra alatt lehetne egy teljes tanító adatbázist létrehozni.
