@@ -9,43 +9,94 @@ A dolgozat célja egy olyan desztillációs pipeline kifejlesztése, amely lehet
 
 1.1 Probléma és motiváció
 Az LLM-ek használata egyszerű, jól definiált feladatokra gyakran nem gazdaságos. Egy sentiment klasszifikáció vagy strukturált JSON generálás nem igényli egy több száz milliárd paraméteres modell teljes kapacitását, mégis sok vállalat és fejlesztő ilyen modelleket használ API hívásokon keresztül, magas költségek mellett, hiszen az általános jellegű intelligencia, amellyel ezek a modellek dolgoznak, túlzóan vonzónak tűnhet.
-A desztilláció alternatívát kínál: egy kisebb modell megtanulhatja a nagyobb modell viselkedését egy adott feladatra, és azt töredék erőforrással képes végrehajtani. Ez lehetővé teszi:
+A desztilláció alternatívát kínál: egy kisebb modell megtanulhatja a nagyobb modell viselkedését egy adott feladatra, és azt töredék erőforrással képes végrehajtani [2]. Ez lehetővé teszi:
 - on-device futtatást (pl. telefonon, edge eszközökön)
 - jelentősen alacsonyabb latenciát és költséget
 - függetlenséget külső API-któl
 A dolgozatban Reddit komment klasszifikációt használok teszt esetként, de a cél egy olyan rendszer, ami könnyen alkalmazható más problémákra is: lokális matematikai egyenlet megoldás, email szeparálás, on-device tartalommoderáció, vagy bármilyen domain-specifikus feladat, ahol egy nagy modell tudását szeretnénk kisebb formában elérhetővé tenni.
-A desztilláció előtt költségelemzés szükséges: elég gyakran hívják-e az adott node-ot ahhoz, hogy megérje a desztillációs befektetés? Egy adott architektúra jobb-e egy másik feladatra? 
+A desztilláció előtt költségelemzés szükséges: elég gyakran hívják-e az adott node-ot ahhoz, hogy megérje a desztillációs befektetés? Egy adott architektúra jobb-e egy másik feladatra?
 A dolgozat nem egy kész framework, hanem egy kutatási kiindulópont, amely segítségével tesztelhetők különböző desztillációs megközelítések: megéri-e egyáltalán, hogyan érdemes csinálni, milyen architektúrák működnek jobban. A kód könnyen módosítható az adott igényekhez (feladat, tanár vagy szülő model cseréje).
 
-2. Implementáció
-A projekt 3 részre bontható: data extraction pipeline, tanítás és a modell(ek). A data extraction pipeline egy tanármodellt használva állítja elő és menti el a desztillációs tanításhoz szükséges adatokat (ami akár több modell tanításához is újrahasználható). A tanítás és modell jobban összefügg, a tanítás egy speciális curriculum, amely célja először a teacher modell következő token predikció disztribúciójának a student modellhez való közelítése, majd ezt követően a következő helyes token fontosságára nagyobb hangsúlyt fektetve megerősíteni a modellt, hogy ne csak hasonlóan gondolkodjon, mint a teacher modell, de a helyes döntést is hozza meg. Több fajta student modellt is lehet használni, a dolgozat viszont elsősorban kisebb multi-headed attentiont használó Transformer modellekre fog fókuszálni, amelyek ugyanazzal az autoregresszív viselkedéssel állítják elő a kimeneti választ, mint a manapság leginkább elterjedt nagy nyelvi modellek (pl.: OpenAI GPT, Google Gemini, Anthropic Claude modellek) és a desztillációhoz használt teacher modellek maguk is.
+2. Irodalomkutatás
 
-2.1 Példa
+2.1 Transformer architektúra
+A modern nagy nyelvi modellek alapját a Vaswani et al. (2017) által bevezetett Transformer architektúra adja [1]. A kulcsinnovációk: self-attention mechanizmus (a szekvencia bármely pozíciójából közvetlenül figyel bármely másikra), multi-head attention (párhuzamos attention mechanizmusok különböző aspektusokra), és pozícionális kódolás. Az eredeti architektúra 6 encoder és 6 decoder réteget használt. A dolgozat student modellje decoder-only transformer, hasonlóan a modern LLM-ekhez (GPT, Gemma, Claude).
+A Transformer architektúra megértéséhez a 3Blue1Brown YouTube csatorna vizualizációi [24] és a Welch Labs neurális hálózat alapozó sorozata [25] szolgáltak kiindulópontként. Az első saját transformer implementáció ezek alapján készült, majd a működő modellt Gemma-kompatibilissé alakítottam.
+
+2.2 Knowledge Distillation
+A knowledge distillation fogalmát Hinton et al. (2015) vezette be [2]. A módszer lényege: egy nagyobb "teacher" modell tudását kisebb "student" modellbe tömörítjük. A kulcs a "soft targets" használata - a teacher softmax kimenetét magas hőmérséklettel (temperature) lágyítva kapjuk az eloszlást, amely gazdagabb információt tartalmaz a hard labels-nél. Hinton ezt "dark knowledge"-nek nevezte: a teacher bizonytalanságai és a hibás osztályok közötti preferenciái is átadódnak.
+A desztillációs loss általános formája: L = α·L_CE + (1-α)·L_KL, ahol L_CE a cross-entropy a ground truth címkékkel, L_KL pedig a Kullback-Leibler divergencia a teacher és student eloszlások között [3]. A soft targets információgazdagsága miatt kevesebb adat és tanítási idő szükséges.
+
+2.3 LLM-specifikus desztilláció
+A DistilBERT [4] 40%-kal kisebb modellt ért el a BERT-hez képest, 97%-os teljesítménymegőrzéssel. A TinyBERT [5] továbbment: transformer rétegek, embedding-ek és predikciós rétegek együttes desztillációjával 7,5x kisebb, 9,4x gyorsabb modellt hozott létre 96,8%-os GLUE teljesítménnyel.
+A MiniLLM [6] megállapítása szerint autoregresszív generálásnál a forward KL divergencia helyett reverse KL előnyösebb, mert megakadályozza, hogy a student túlbecsülje a teacher alacsony valószínűségű régióit. A dolgozat forward KL-t használ, de a CE loss dominanciájának növelése a tanítás végén hasonló hatást ér el.
+
+2.4 Curriculum Learning és Loss Annealing
+A curriculum learning - ahol a modell először könnyebb, majd fokozatosan nehezebb példákon tanul - bevett módszer [7]. A dolgozat egy speciális curriculum-ot alkalmaz: nem a példák nehézségét, hanem a loss komponensek arányát változtatja (KL: 90%→10%, CE: 10%→90%). Ez az "Annealing Knowledge Distillation" [8] megközelítéshez hasonlít, ahol a temperature-t csökkentik a tanítás során.
+A "Curriculum Temperature for Knowledge Distillation" [9] kimutatta, hogy a student modellek lágyabb eloszlásokból profitálnak a tanítás elején, de élesebb eloszlásokra van szükségük később. A dolgozat megközelítése - KL dominancia az elején, CE dominancia a végén - konzisztens ezzel.
+
+2.5 Csökkentett kimeneti szótár
+A vocabulary reduction desztillációban kevésbé kutatott terület. A "Knowledge Distillation with Reduction of Vocabulary" [10] 17-49x tömörítést ért el orosz nyelvi modelleken. A "Fast Vocabulary Transfer" [11] a vocabulary cseréjét vizsgálta desztilláció során.
+A dolgozat megközelítése eltér: nem a teljes vocabulary-t csökkenti, hanem a kimeneti szótárat korlátozza a feladathoz szükséges tokenekre (525 a 262,144-ből). Ez task-specifikus output vocabulary, miközben az input vocabulary teljes marad. Ez a kombináció kevésbé kutatott terület a szakirodalomban.
+
+2.6 Architektúrai komponensek
+A student modell a következő, szakirodalomban megalapozott komponenseket használja:
+- RMSNorm [12]: Zhang és Sennrich (2019). A LayerNorm egyszerűsített változata, amely csak RMS-sel normalizál, mean subtraction nélkül. 7-64%-kal gyorsabb, azonos teljesítmény mellett. A modern LLM-ek (LLaMA, Gemma) ezt használják.
+- RoPE [13]: Su et al. (2021). Rotary Position Embedding - a pozíció információt rotációs mátrixokkal kódolja. Paramétermentes, jól skálázódik hosszú kontextusra.
+- GeGLU [14]: Shazeer (2020). A feed-forward rétegekben GELU aktivációt gated mechanizmussal kombinál. A Gemma és más modern LLM-ek ezt használják.
+
+2.7 Optimalizáció
+AdamW [15]: Loshchilov és Hutter (2017) javított Adam változata, ahol a weight decay különválik a gradiens alapú frissítéstől. A transformer tanítás de facto standard optimizere.
+Cosine Annealing [16]: Szintén Loshchilov és Hutter munkája (2016). A learning rate koszinusz görbe mentén csökken, opcionálisan warm restarts-szal. A dolgozat ezt használja a learning rate-re és a KL/CE arány változtatására is.
+
+2.8 Scaling Laws
+A Chinchilla scaling law (Hoffmann et al., 2022) [17] megállapította, hogy compute-optimális tanításhoz minden modell paraméterre ~20 token szükséges. Az 537M paraméter × 20 = ~11 milliárd token. A desztilláció más dinamikát követ - a soft labels információgazdagabbak, így potenciálisan kevesebb adat is elegendő lehet. A dolgozat ~500 ezer példával dolgozik, ami jóval kevesebb, de a domain-specifikus feladat és a desztillációs előnyök miatt működhet.
+
+2.9 Toxicitás klasszifikáció
+A Reddit és általános toxicitás klasszifikáció aktív kutatási terület. A Jigsaw Toxic Comment Classification Challenge [18] alapvető benchmark. A transformer modellek (BERT, RoBERTa) state-of-the-art eredményeket érnek el [19]. A Detoxify projekt [20] széles körben használt pre-trained modelleket kínál.
+A dolgozat megközelítése eltér: nem fine-tuned classifier, hanem generatív, autoregresszív JSON output. Ez komplexebb, de a kódbázis rugalmas - könnyen átírható más domain-specifikus feladatokra (pl. email klasszifikáció, matematikai feladatok) a kimeneti vocabulary és prompt cseréjével.
+
+2.10 Gemma modell
+A Gemma 3 modellcsalád (Google DeepMind, 2025) [21] maga is desztillációval készült - egy nagyobb teacher modellből tanult. A 4B variáns 4,3 milliárd paraméterrel rendelkezik, 4 trillió tokenen pretrained. A dolgozat ezt használja teacher modellként.
+
+2.11 Autoregresszív generálás vs klasszifikáció
+A dolgozat tudatosan választ autoregresszív generálást a klasszifikáció helyett. Egyszerű sentiment analysis-hez általában encoder modelleket (BERT) vagy classifier head-eket használnak [22]. A T5 modell [23] bizonyította, hogy minden NLP feladat text-to-text formában kezelhető, beleértve a klasszifikációt is. A dolgozat megközelítése ezt követi: a cél nem az optimális klasszifikáció, hanem annak bizonyítása, hogy a desztillációs pipeline működik generatív feladatokra is.
+
+2.12 A dolgozat pozícionálása
+A dolgozat több ismert technikát kombinál:
+- Standard elemek: KL+CE loss, AdamW, Cosine Annealing, Transformer architektúra, RMSNorm, RoPE, GeGLU
+- Kevésbé standard: dinamikus KL/CE arányváltozás curriculum-ként
+- Újszerű kombináció: task-specifikus output vocabulary redukció (~99,8%) + teljes input vocabulary + autoregresszív strukturált output generálás
+
+3. Implementáció
+A projekt 3 részre bontható: data extraction pipeline, tanítás és a modell(ek). A data extraction pipeline egy tanármodellt használva állítja elő és menti el a desztillációs tanításhoz szükséges adatokat (ami akár több modell tanításához is újrahasználható). A tanítás és modell jobban összefügg, a tanítás egy speciális curriculum, amely célja először a teacher modell következő token predikció disztribúciójának a student modellhez való közelítése, majd ezt követően a következő helyes token fontosságára nagyobb hangsúlyt fektetve megerősíteni a modellt, hogy ne csak hasonlóan gondolkodjon, mint a teacher modell, de a helyes döntést is hozza meg [2][8]. Több fajta student modellt is lehet használni, a dolgozat viszont elsősorban kisebb multi-headed attentiont használó Transformer modellekre fog fókuszálni [1], amelyek ugyanazzal az autoregresszív viselkedéssel állítják elő a kimeneti választ, mint a manapság leginkább elterjedt nagy nyelvi modellek (pl.: OpenAI GPT, Google Gemini, Anthropic Claude modellek) és a desztillációhoz használt teacher modellek maguk is.
+
+3.1 Példa
 A projektet számos feladat optimalizálására lehet használni, ügyfélszolgálati emailek automatikus LLM-ekkel történő osztályozásától, online fórumokon autómoderálásán keresztül, ágensalapú workflow-okig. A dolgozat során Reddit komment sentiment analízisét fogom példának használni, vagyis a feladat az, hogy egy beérkező Reddit kommentet JSON objektummal jellemezze a modell (példa: 1. kép).
 
 
 1. Kép
 
-2.2 Data extraction pipeline
-A projekt során a Google Gemma 3 4b open source modellt használtam mint teacher. A modell méretéhez képest elfogadható intelligenciával rendelkezik, képes megbízhatóan structured outputot (JSON) előállítani. Mérete miatt kényelmesen elfér 12GB VRAM-on, és consumer grade videókártyán jó sebességgel használható inferenciára. A projektben csak a 3 és 25 token hosszúságú, speciális tageket és URL-eket nem tartalmazó kommenteket vizsgáltam. A 3 és 25 token közötti mondatok vizsgálata előre ismertté teszi a maximum context lengthet, így ez is használható az optimalizálás során. A tagek és URL-ek nem figyelembevétele pedig azért szükséges, hogy a modellek ne kapjanak zavaró, félrevezető adatokat.
-A mondatokat Gemma 3 4b klasszifikálja, és a klasszifikálás során minden autoregresszív lépésnél mentésre kerülnek a szükséges és auxiliary tokenek nyers logit értékei. A szükséges tokenek azok a tokenek, amelyek abszolút szükségesek az összes lehetséges valid JSON generálásához (~32 token), míg az auxiliary tokenek (whitespace, prompt tokenek, gyakori angol szavak) nagyobb puha címkét biztosítanak a student modellnek, így jobban el tudja sajátítani a teacher "dark knowledge"-jét (~493 auxiliary token, összesen ~525 token). A kimeneti szótár mérete lineárisan skálázódik a compute-tal. Gemma vocab mérete 262,144 token - ehhez képest 32 tokenre csökkentés 99,988%-os redukció, míg 525 tokenre 99,80%-os. A különbség mindössze ~0,19%, de az auxiliary tokenekkel ~16x (1540%) gazdagabb információt kap a student modell - ezért a nagyobb puha címke meghagyható. Tehát egy klasszifikációs példa generálása során 37-42 lépés történik, és minden egyes lépésnél mentésre kerül a teacher modell ~525 figyelt token nyers logit eloszlása. Ezek a példák 128-asával mentésre kerülnek egy JSONL batchbe.
-Az, hogy Gemma 3 4b viszonylag gyakran félreklasszifikál mondatokat, nem jelent problémát, hiszen nem azt szeretném bizonyítani, hogy a desztillált modell emberi szempontból helyes választ adott-e, hanem hogy mennyire tudja a student modell követni a teacher modell preferenciáját.
+3.2 Data extraction pipeline
+A projekt során a Google Gemma 3 4b open source modellt használtam mint teacher [21]. A modell méretéhez képest elfogadható intelligenciával rendelkezik, képes megbízhatóan structured outputot (JSON) előállítani. Mérete miatt kényelmesen elfér 12GB VRAM-on, és consumer grade videókártyán jó sebességgel használható inferenciára. A projektben csak a 3 és 25 token hosszúságú, speciális tageket és URL-eket nem tartalmazó kommenteket vizsgáltam. A 3 és 25 token közötti mondatok vizsgálata előre ismertté teszi a maximum context lengthet, így ez is használható az optimalizálás során. A tagek és URL-ek nem figyelembevétele pedig azért szükséges, hogy a modellek ne kapjanak zavaró, félrevezető adatokat.
+A mondatokat Gemma 3 4b klasszifikálja, és a klasszifikálás során minden autoregresszív lépésnél mentésre kerülnek a szükséges és auxiliary tokenek nyers logit értékei. A szükséges tokenek azok a tokenek, amelyek abszolút szükségesek az összes lehetséges valid JSON generálásához (27 token), míg a kiegészítő tokenek (whitespace, prompt tokenek, gyakori angol szavak) nagyobb puha címkét biztosítanak a student modellnek, így jobban el tudja sajátítani a teacher "dark knowledge"-jét [2] (498 kiegészítő token, összesen 525 token). A kimeneti projekció paraméterszáma lineárisan skálázódik a vocabulary méretével, így a compute igény is. Gemma vocab mérete 262,144 token - ehhez képest akár 27, akár 525 tokenre csökkentünk, mindkét esetben 99%+ redukciót érünk el (99,99% illetve 99,80%). A vocabulary szempontjából a különbség elhanyagolható, viszont desztillációs szempontból az 525 tokenes puha címke ~19x annyi információt hordozhat, mint a 27 tokenes - ezért a nagyobb vocabulary meghagyható. Tehát egy klasszifikációs példa generálása során 37-42 lépés történik, és minden egyes lépésnél mentésre kerül a teacher modell ~525 figyelt token nyers logit eloszlása. Ezek a példák 128-asával mentésre kerülnek egy JSONL batchbe.
+Az, hogy Gemma 3 4b viszonylag gyakran félreklasszifikál mondatokat, nem jelent problémát, hiszen nem azt szeretném bizonyítani, hogy a desztillált modell emberi szempontból helyes választ adott-e, hanem hogy mennyire tudja a student modell követni a teacher modell preferenciáját. Ez azt is jelenti, hogy a student modell maximum annyira lehet jó, mint a teacher, hiszen a teacher hibáit is megtanulja.
 Gemma 3 4b egy felső középkategóriás gépen, egy Nvidia RTX 4070-es videókártyán torch.bfloat16 pontossággal 58-62 másodperc alatt generál 32 példát, példánként átlagosan 40 lépéssel.
-2.3 A tanítás
-A tanítás egyik legfontosabb része a veszteség, amit használva a modell optimalizál. A projekt két veszteség együttesét használja, változó arányban. A Kullback-Leibler divergencia veszteség két valószínűségi eloszlás közötti különbséget számol, tehát azt mondja meg, hogy a teacher és a student modell mennyire gondolkodnak hasonlóan. A student modell nem csak a helyes választ látja, de a teacher modell eloszlásából a bizonyosságot is, így a sokkal információgazdagabb példából tud a modell tanulni. A tanítás későbbi részében a cross entropy loss kap nagyobb hangsúlyt, amely a helyes következő tokenre optimalizál. A KL divergencia veszteség szerepe elsősorban, hogy gyorsabban tudjon a modell tanulni, kevesebb adatra és tanítási időre legyen szükség. A végső célt azonban, a helyes következő token predikciót a CE loss fogja megerősíteni. A tanítás elején 90%-10% arányban van KL és CE veszteség használva, a tanítás végén az arány megfordul, 10%-90%-ra. Az arány változása cosine annealing-et követ, hasonlóan a learning rate-hez. Mindkét veszteség végig jelen van a gradiensben, így stabilabb a tanulás.
-Nagy nyelvi modelleknél szinte kizárólagosan AdamW-t használnak optimizerként, hiszen stabilabb tanulást eredményez (főleg nagyobb modelleknél) és jobban kezeli a sparse adatokat (mint például a nyelv). Ráadásul a modern AI/LLM infrastruktúra többnyire erre az optimizerre van optimalizálva, ez az industry standard.
-Hogy a modell kezdetben gyorsabban tudjon tanulni, illetve legyen lehetősége fine-tuneolni a tanítás végére, Cosine Annealinget használtam Learning Rate Schedulernek.
+3.3 A tanítás
+A tanítás egyik legfontosabb része a veszteség, amit használva a modell optimalizál. A projekt két veszteség együttesét használja, változó arányban [3]. A Kullback-Leibler divergencia veszteség két valószínűségi eloszlás közötti különbséget számol, tehát azt mondja meg, hogy a teacher és a student modell mennyire gondolkodnak hasonlóan. A student modell nem csak a helyes választ látja, de a teacher modell eloszlásából a bizonyosságot is, így a sokkal információgazdagabb példából tud a modell tanulni [2]. A tanítás későbbi részében a cross entropy loss kap nagyobb hangsúlyt, amely a helyes következő tokenre optimalizál. A KL divergencia veszteség szerepe elsősorban, hogy gyorsabban tudjon a modell tanulni, kevesebb adatra és tanítási időre legyen szükség. A végső célt azonban, a helyes következő token predikciót a CE loss fogja megerősíteni. A tanítás elején 90%-10% arányban van KL és CE veszteség használva, a tanítás végén az arány megfordul, 10%-90%-ra. Az arány változása cosine annealing-et követ [16], hasonlóan a learning rate-hez. Mindkét veszteség végig jelen van a gradiensben, így stabilabb a tanulás [8][9].
+Nagy nyelvi modelleknél szinte kizárólagosan AdamW-t használnak optimizerként [15], hiszen stabilabb tanulást eredményez (főleg nagyobb modelleknél) és jobban kezeli a sparse adatokat (mint például a nyelv). Ráadásul a modern AI/LLM infrastruktúra többnyire erre az optimizerre van optimalizálva, ez az industry standard.
+Hogy a modell kezdetben gyorsabban tudjon tanulni, illetve legyen lehetősége fine-tuneolni a tanítás végére, Cosine Annealinget használtam Learning Rate Schedulernek [16].
 A tanítás folyamán folyamatosan látjuk a konzolon a train losst, a train accuracyt és az adott példa vagy batch idejét. Ezeknek az adatoknak a fontosabb része mentésre is kerül.
 Minden epoch végén készül checkpoint és tesztelésre kerül a modell a teljes adathalmaz 10%-án, ami erre a célra lett félretéve.
 A program kezeli a graceful shutdownt, tehát epochok között is el tudja menteni a progresst.
-2.4 Student modell
+3.4 Student modell
 Az első, kiinduló modellnél fontos volt, hogy a lehető legnagyobb eséllyel legyen sikeres a desztilláció. A fő kérdések:
 - Működik-e a pipeline end-to-end? Elérhető-e közel 100%-os student only accuracy?
 - Tud-e koherens JSON-t generálni a saját modell? Egyáltalán a rendelkezésre álló erőforrásokon betanítható-e?
 - Működik-e a csökkentett kimeneti szótár?
-Ezért a legkedvezőbb körülményeket próbáltam biztosítani: nagy puha címke (~525 token), elegendő paraméter (~537M), Gemma-szerű architektúra. A kimeneti szótár mérete lineárisan skálázódik, így a nagyobb puha címke meghagyható - segít a modellnek magába szívni a teacher "dark knowledge"-ét. A context length négyzetesen skálázódik, így a 75 token ideális balance, de nagyobb sem lenne feltétlenül probléma.
+Ezért a legkedvezőbb körülményeket próbáltam biztosítani: nagy puha címke (525 token), elegendő paraméter (~537M), Gemma-szerű architektúra. A kimeneti szótár mérete lineárisan skálázódik, így a nagyobb puha címke meghagyható - segít a modellnek magába szívni a teacher "dark knowledge"-ét [2]. Az attention számítás négyzetesen skálázódik a context length-szel, így a 75 token ideális balance, de nagyobb sem lenne feltétlenül probléma.
 Később más modellek, más architektúrák is tesztelhetők - ez az első modell a proof of concept.
-2.4.1 Architektúra és Gemma hasonlóságok
+3.4.1 Architektúra és Gemma hasonlóságok
 A student modell összesen ~537 millió paraméterből áll:
 - Input embedding: ~268M (262,144 token × 1024 dim)
 - Attention rétegek: ~67M (16 layer)
@@ -53,19 +104,19 @@ A student modell összesen ~537 millió paraméterből áll:
 - Output projection + normalizáció: ~0.5M
 Az input embedding (~268M) viszonylag fix költség: a tokenizer méretétől függ, nem a modell kapacitásától. Jelen felállásban, ahol korlátozott erőforrásokkal kis modellt kis architektúrába desztillálok, az embedding aránytalanul nagynak tűnik (a paraméterek ~50%-a). Nagyobb léptékű desztillációnál (pl. 100B → 1B) az embedding ugyanekkora maradna, de a modell többi része jóval nagyobb lenne, így az arány kedvezőbb. A jelenlegi cél nem az optimális paraméter-hatékonyság, hanem annak bizonyítása, hogy ez a fajta desztillációs training működik: a teacher modell tudása átvihető egy eltérő, kisebb architektúrájú student modellbe.
 A modell a következő architekturális elemeket veszi át Gemmától:
-- RMSNorm: a hagyományos LayerNorm helyett, ahogy Gemma is használja
-- RoPE (Rotary Position Embedding): pozíció kódolásra, Gemma-kompatibilis
-- GeGLU-szerű aktiváció: GELU(gate) * linear, hasonló a Gemma megoldásához
+- RMSNorm [12]: a hagyományos LayerNorm helyett, ahogy Gemma is használja
+- RoPE (Rotary Position Embedding) [13]: pozíció kódolásra, Gemma-kompatibilis
+- GeGLU-szerű aktiváció [14]: GELU(gate) * linear, hasonló a Gemma megoldásához
 - Ugyanaz a tokenizer: a bemeneti tokenek azonos reprezentációt kapnak
 Ezek a hasonlóságok biztosítják, hogy a student modell "felfogása" közel áll a teacher modelléhez, így a desztilláció hatékonyabb.
-2.4.2 Optimalizációk
-A modell bemeneti szótára megegyezik Gemma 3 4b-vel (262,144 token), így minden kommentet, amit Gemma 3 4b ki tud értékelni, a student modell is. A kimeneti szótár viszont jelentősen le van csökkentve: a 262,144 token helyett mindössze ~525 tokenre korlátozódik (32 szükséges + ~493 auxiliary). Ez ~99,8%-os csökkentés.
+3.4.2 Optimalizációk
+A modell bemeneti szótára megegyezik Gemma 3 4b-vel (262,144 token), így minden kommentet, amit Gemma 3 4b ki tud értékelni, a student modell is. A kimeneti szótár viszont jelentősen le van csökkentve: a 262,144 token helyett mindössze 525 tokenre korlátozódik (27 szükséges + 498 kiegészítő). Ez 99,8%-os csökkentés.
 A context length 75-re van csökkentve (25 token bemenet + 50 token kimenet), szemben Gemma 3 4b 128k context window-jával.
-A teacher modell 4 milliárd paraméteres, a student ~537 millió, tehát ~7,5x kisebb modellt kapunk. Ez a méretbeli különbség tükröződik a sebességben is: egy MacBook Pro M1 Pro 32GB rendszeren Gemma 3 4b 1,7 TPS teljesítményt ér el, míg a student modell 12,5 TPS-t. Nvidia RTX 4070-en is érezhető a gyorsulás.
-2.4.3 Modell részletek
-A modellnek a hidden dimensionja 1024, fele Gemma 3 4b-nek, de továbbra is gazdag reprezentációt biztosít. 16 rétege van, rétegenként 16 attention head-del.
-3 Módszertan
-3.1 Pilot run
+A teacher modell 4,3 milliárd paraméteres, a student ~537 millió, tehát ~8x kisebb modellt kapunk [5]. Ez a méretbeli különbség tükröződik a sebességben is: egy MacBook Pro M1 Pro 32GB rendszeren Gemma 3 4b 1,7 TPS teljesítményt ér el, míg a student modell 12,5 TPS-t. Nvidia RTX 4070-en is érezhető a gyorsulás.
+3.4.3 Modell részletek
+A modellnek a hidden dimensionja 1024, fele Gemma 3 4b-nek (2048), de továbbra is gazdag reprezentációt biztosít. 16 rétege van, rétegenként 16 attention head-del.
+4. Módszertan
+4.1 Pilot run
 A teljes modell betanítások előtt saját hardveren futtattam pilot runokat, hogy lássam, hogy a kódom jól működik és a modell elkezd-e konvergálni. Egy 30 perces teszt pilot 10 batch adaton már megmutatta, hogy a modell képes helyes JSON outputot generálni. Egy 3 órás pilot run 100 batch adaton, 3,5 epoch után egy 10 batch-es (10*32 példa) teszten a student only accuracy átlagosan 87,69%, míg a teacher forced accuracy átlagosan 98,97% volt. Példa a tesztből, ahol a modell tökéletesen eltalálta a teacher modell klasszifikációját (student only accuracy: 100%):
 
 Bemenet: "F**k you and your family"
@@ -101,13 +152,89 @@ Teacher kimenet (ground truth):
 }
 ```
 
-A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált.
-3.2 Korábbi pilot
-Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanítottam a modellt. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 3.1-ben leírt eredményeket kaptam.
-3.3 Korai becslés
+A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált. Érdemes megjegyezni, hogy a teacher klasszifikációja is vitatható - kontextus nélkül a mondat inkább frusztrált/játékos, mint toxic.
+4.2 Korábbi pilot
+Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanítottam a modellt. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 4.1-ben leírt eredményeket kaptam.
+4.3 Korai becslés
 Saját hardveren (felső középkategóriás gép, RTX 4070 12GB videokártya) a teljes training és adatelőállítási idő 2870 óra lenne.
 Az adatbázisban ~500 ezer Reddit komment van, ami megfelel minden kitételnek. Ezekből a példamondatokból saját hardveren (~62 másodperc / 32 példa) optimális esetben 270 óra alatt lehetne egy teljes tanító adatbázist létrehozni.
-A "Chinchilla scaling" szerint minden egyes paraméterre 20 tokennyi példa kell a sikeres tanításhoz. Ez ~537 millió modell paraméter esetében ~11 milliárd tokent jelent, viszont az 500 ezer komment legjobb esetben is csak 20 millió példa. A desztillációból fakadó előnyök és a specifikus domain csökkentett tudásigénye mellett is több mint valószínű, hogy az összes példát fog kelleni használni.
-15 epoch 500 ezer példán, példánkénti 1,25 sebességgel ideális esetben is 2600 órányi folyamatos GPU idő.
+A "Chinchilla scaling" [17] szerint minden egyes paraméterre 20 tokennyi példa kell a sikeres tanításhoz. Ez ~537 millió modell paraméter esetében ~11 milliárd tokent jelent, viszont az 500 ezer komment (kommentenként ~40 generálási lépéssel) összesen ~20 millió tanítási példát jelent. A desztillációból fakadó előnyök és a specifikus domain csökkentett tudásigénye mellett is több mint valószínű, hogy az összes példát fog kelleni használni.
+15 epoch 500 ezer példán, példánkénti 1,25 másodperc sebességgel ideális esetben is 2600 órányi folyamatos GPU idő.
 Tehát a pilot teszt alapján egy modell end-to-end tanítás 2870 óra, vagyis 120 nap, innentől kezdve pedig további modellenként 2600 órával, vagyis 108 nappal kell számolni.
 
+5. Források
+
+[1] Vaswani, A., et al. (2017). "Attention Is All You Need." NeurIPS 2017. https://arxiv.org/abs/1706.03762
+A Transformer architektúra alapcikke, amelyre az egész modern LLM ökoszisztéma épül.
+
+[2] Hinton, G., Vinyals, O., Dean, J. (2015). "Distilling the Knowledge in a Neural Network." https://arxiv.org/abs/1503.02531
+A knowledge distillation alapműve, a soft targets és dark knowledge koncepciók forrása.
+
+[3] Hugging Face Blog. "Everything You Need to Know about Knowledge Distillation." https://huggingface.co/blog/Kseniase/kd
+A desztillációs loss kombinációk gyakorlati áttekintése.
+
+[4] Sanh, V., et al. (2019). "DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter." https://arxiv.org/abs/1910.01108
+Az első sikeres nagyléptékű transformer desztilláció.
+
+[5] Jiao, X., et al. (2019). "TinyBERT: Distilling BERT for Natural Language Understanding." https://arxiv.org/abs/1909.10351
+Többszintű desztilláció (embedding, attention, prediction), referencia a 7,5x tömörítéshez.
+
+[6] Gu, Y., et al. (2023). "MiniLLM: Knowledge Distillation of Large Language Models." https://arxiv.org/abs/2306.08543
+LLM-specifikus desztilláció, reverse KL divergencia autoregresszív modellekhez.
+
+[7] Bengio, Y., et al. (2009). "Curriculum Learning." ICML 2009.
+A curriculum learning alapelve - fokozatosan növekvő nehézség.
+
+[8] Jafari, A., et al. (2021). "Annealing Knowledge Distillation." EACL 2021. https://aclanthology.org/2021.eacl-main.212/
+Temperature annealing τ_max → 1, hasonló a dolgozat KL/CE arányváltozásához.
+
+[9] Li, Z., et al. (2023). "Curriculum Temperature for Knowledge Distillation." AAAI 2023. https://ojs.aaai.org/index.php/AAAI/article/view/25236
+A lágy → éles eloszlás tanítási stratégia elméleti megalapozása.
+
+[10] Kolesnikova, A., et al. (2022). "Knowledge Distillation of Russian Language Models with Reduction of Vocabulary." https://arxiv.org/abs/2205.02340
+A legközelebbi munka a vocabulary reduction desztillációhoz.
+
+[11] Samenko, I., et al. (2024). "Fast Vocabulary Transfer for Language Model Compression." https://arxiv.org/abs/2402.09977
+Vocabulary csere/transzfer a desztilláció során.
+
+[12] Zhang, B., Sennrich, R. (2019). "Root Mean Square Layer Normalization." NeurIPS 2019. https://arxiv.org/abs/1910.07467
+RMSNorm, a modern transformer architektúrák normalizációs rétege.
+
+[13] Su, J., et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." https://arxiv.org/abs/2104.09864
+RoPE, a Gemma és más modern LLM-ek pozíció kódolása.
+
+[14] Shazeer, N. (2020). "GLU Variants Improve Transformer." https://arxiv.org/abs/2002.05202
+GeGLU/SwiGLU aktiváció, a Gemma feed-forward rétegeinek alapja.
+
+[15] Loshchilov, I., Hutter, F. (2017). "Decoupled Weight Decay Regularization." https://arxiv.org/abs/1711.05101
+AdamW optimizer, az LLM tanítás standard optimizere.
+
+[16] Loshchilov, I., Hutter, F. (2016). "SGDR: Stochastic Gradient Descent with Warm Restarts." https://arxiv.org/abs/1608.03983
+Cosine Annealing learning rate scheduler.
+
+[17] Hoffmann, J., et al. (2022). "Training Compute-Optimal Large Language Models." NeurIPS 2022. https://arxiv.org/abs/2203.15556
+Chinchilla scaling - 20 token/paraméter szabály.
+
+[18] Kaggle. "Jigsaw Toxic Comment Classification Challenge." https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge
+Alapvető toxicitás klasszifikáció benchmark.
+
+[19] ResearchGate. "A Comprehensive Survey and Comparative Analysis of Toxic Comment Classification Techniques." https://www.researchgate.net/publication/391347534
+Transformer modellek toxicitás detekciós teljesítményének áttekintése.
+
+[20] Hanu, L. "Detoxify - Toxic Comment Classification." https://huggingface.co/unitary/toxic-bert
+Gyakorlati implementáció, pre-trained toxicitás modellek.
+
+[21] Google DeepMind. (2025). "Gemma 3 Technical Report." https://arxiv.org/abs/2503.19786
+A teacher modell hivatalos dokumentációja.
+
+[22] HuggingFace Transformers Documentation. "Summary of the Models." https://huggingface.co/transformers/v3.1.0/model_summary.html
+Autoencoding vs autoregressive modellek klasszifikációs felhasználása.
+
+[23] Raffel, C., et al. (2019). "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer." (T5) https://arxiv.org/abs/1910.10683
+Text-to-text megközelítés klasszifikációra.
+
+[24] 3Blue1Brown. "Neural Networks" és "Transformers" YouTube sorozat. https://www.youtube.com/c/3blue1brown
+Vizuális magyarázatok a neurális hálózatok és transformer architektúra működéséről.
+
+[25] Welch Labs. "Neural Networks Demystified" YouTube sorozat. https://www.youtube.com/c/WelchLabsVideo
+Neurális hálózatok alapjai, a saját implementáció kiindulópontja.
