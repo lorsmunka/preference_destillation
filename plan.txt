@@ -1,0 +1,94 @@
+================================================================================
+UBUNTU SERVER SETUP PLAN - Preference Distillation Project
+================================================================================
+
+STEP 1: Check what's already installed
+--------------------------------------------------------------------------------
+Run these commands to see what you have:
+
+    python3 --version
+    git --version
+    nvidia-smi
+
+Expected: Python 3.x, git, and NVIDIA GPU info should show up.
+If python3 or git are missing, go to Step 2. Otherwise skip to Step 3.
+
+
+STEP 2: Install missing tools (only if needed)
+--------------------------------------------------------------------------------
+    sudo apt update
+    sudo apt install -y python3-pip python3-venv git
+
+
+STEP 3: Clone the repository
+--------------------------------------------------------------------------------
+    cd ~
+    git clone https://github.com/lorsmunka/preference_destillation.git
+    cd preference_destillation
+
+
+STEP 4: Create virtual environment
+--------------------------------------------------------------------------------
+    python3 -m venv venv
+    source venv/bin/activate
+
+Your prompt should now show (venv) at the beginning.
+
+
+STEP 5: Install PyTorch with CUDA
+--------------------------------------------------------------------------------
+    pip install torch --index-url https://download.pytorch.org/whl/cu121
+
+This downloads ~2GB. Wait for it to finish.
+
+
+STEP 6: Install HuggingFace Transformers
+--------------------------------------------------------------------------------
+    pip install transformers
+
+
+STEP 7: Verify GPU is working
+--------------------------------------------------------------------------------
+    python3 -c "import torch; print('CUDA:', torch.cuda.is_available())"
+
+Expected output: CUDA: True
+If it says False, there's a driver/CUDA issue.
+
+
+STEP 8: Run the training
+--------------------------------------------------------------------------------
+    cd training
+    python3 main.py
+
+Training will start. Press % to gracefully exit and save checkpoint.
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Problem: "nvidia-smi" not found or no GPU shown
+Solution: NVIDIA drivers not installed. Contact your professor.
+
+Problem: torch.cuda.is_available() returns False
+Solution: Try different PyTorch CUDA version:
+    pip uninstall torch
+    pip install torch --index-url https://download.pytorch.org/whl/cu118
+
+Problem: "No module named transformers"
+Solution: Make sure venv is activated, then: pip install transformers
+
+Problem: Permission denied
+Solution: Add sudo before the command
+
+Problem: Connection timeout during git clone
+Solution: Check VPN connection, try again
+
+
+================================================================================
+RESUMING WORK (when you reconnect later)
+================================================================================
+    cd ~/preference_destillation
+    source venv/bin/activate
+    cd training
+    python3 main.py
