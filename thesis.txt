@@ -159,7 +159,7 @@ Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanított
 A pilot teszt összesen ~9 órát vett igénybe: 2,63 óra adatgenerálás (101 batch, 3232 mondat) és 6,25 óra tanítás (347 batch, 3 epoch). A 2. képen láthatók a tanítás metrikái.
 A loss az első batcheknél élesen csökken (~25-ről ~2-re), majd tovább csökken, de fluktuálva. A fluktuáció oka, hogy a tanítás előrehaladtával a CE loss egyre nagyobb súlyt kap, ami élesebb, kevésbé sima gradienst eredményez. Az accuracy folyamatosan emelkedik, 35%-ról 95% fölé (ez tanítás közbeni, teacher forced accuracy).
 Az aggregált train loss magasabb, mint az eval loss (epoch summary), tehát overfitting nem figyelhető meg, annak ellenére, hogy viszonylag kevés adaton tanult a modell.
-A teacher-forced és student-only accuracy párhuzamosan emelkedik. A teacher-forced accuracy magasabb (~97%), mert a modell ilyenkor mindig a helyes kontextust kapja. A student-only accuracy alacsonyabb (~88%), mert bizonyos tokeneket (elsősorban kategória értékeket: "aggressive", "neutral" stb.) nehezebben talál el a modell. Ráadásul az autoregresszív generálás miatt ha egy korai token hibás, az a teljes kimenet hibás predikciót okozhat.
+A teacher-forced és student-only accuracy párhuzamosan emelkedik. A teacher-forced accuracy magasabb (~97%), mert a modell ilyenkor mindig a helyes kontextust kapja. A student-only accuracy alacsonyabb (~88%), mert bizonyos tokeneket (elsősorban kategória értékeket: "aggressive", "neutral" stb.) nehezebben talál el a modell. Ráadásul az autoregresszív generálás miatt, ha egy korai token hibás, az a teljes kimenet hibás predikciót okozhat.
 Mindezek ellenére a student-only módban is az esetek túlnyomó többségében koherens, valid JSON generálódik.
 
 2. kép
