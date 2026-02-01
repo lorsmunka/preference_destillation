@@ -24,7 +24,9 @@
       "Bash(C:UsersOrspreference_destillation.venvScriptspip.exe list)",
       "Bash(findstr:*)",
       "Bash(del \"C:\\\\Users\\\\Ors\\\\preference_destillation\\\\analysis\\\\use_model.py\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

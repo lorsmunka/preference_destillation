@@ -1,30 +1,30 @@
 Domain Specifikus LLM Desztillációs Pipeline
 
 Abstract
-Sok feladatra szeretnénk az LLM-ek általános intelligenciáját alkalmazni. Gyakran használt LLM alapú ágensrendszereknél (pl.: döntési pontok) és strukturált output generálásnál (pl.: text sentiment classification) hasznos lehet egy desztillációs optimalizálást végrehajtani, hiszen az adott feladatot akár 10-100-szor hatékonyabban fogja tudni elvégezni a desztillált modell. A dolgozat vizsgálja az ilyen rendszerek generalizált megvalósíthatóságát, illetve olyan optimalizációs eszközöket használ, mint a csökkentett kimeneti szótár, csökkentett kontextusméret és csökkentett paraméterszám. A tanítás során egy kisebb transformer modell kerül betanításra curriculum traininget alkalmazva, ahol a modell többfajta loss metrika (Kullback-Leibler divergencia, cross entropy) arányváltozásán keresztül tanul: először a tanármodell eloszlását, majd a következő token pontos eltalálására fektet nagyobb hangsúlyt. A gradiensben végig megjelenik mindkét loss. Az ilyen optimalizálások elérhetővé tehetik nagyobb modellek domain-specifikus tudását akár consumer grade hardveren, vagy jelentősen csökkenthetik az LLM-ek vállalati felhasználási költségeit, miközben a válaszidő is javulhat.
+Sok feladatra szeretnénk az LLM-ek általános intelligenciáját alkalmazni. Gyakran használt LLM alapú ágensrendszereknél (pl.: döntési pontok) vagy strukturált output generálásnál (pl.: text sentiment classification) hasznos lehet egy desztillációs optimalizálást végrehajtani, hiszen az adott feladatot akár 10-100-szor hatékonyabban fogja tudni elvégezni a desztillált modell. A dolgozat vizsgálja az ilyen (domain specifikus) rendszerek generalizált megvalósíthatóságát, olyan optimalizációs eszközöket használatával, mint a csökkentett kimeneti szótár, csökkentett kontextusméret és csökkentett paraméterszám. A tanítás során egy kisebb transformer modell kerül betanításra curriculum traininget alkalmazva, ahol a modell többfajta loss metrika (Kullback-Leibler divergencia, cross entropy) arányváltozásán keresztül tanul: először a tanármodell eloszlását, majd a következő token pontos eltalálására fektet nagyobb hangsúlyt. A gradiensben végig megjelenik mindkét loss. Az ilyen optimalizálások elérhetővé tehetik nagyobb modellek domain-specifikus tudását akár consumer grade hardveren, vagy jelentősen csökkenthetik az LLM-ek vállalati felhasználási költségeit, miközben a válaszidő is javulhat.
 
 1. Bevezetés
-A nagy nyelvi modellek (LLM-ek) az elmúlt években jelentős áttörést hoztak a természetes nyelvfeldolgozásban. Képesek szöveget generálni, klasszifikálni, strukturált outputot előállítani. Ugyanakkor ezek a modellek erőforrásigényesek: drága hardvert, sok memóriát és energiát igényelnek. Sok domain-specifikus feladathoz - ahol a modellnek csak egy szűk területen kell jól teljesítenie - túlzás egy többmilliárd paraméteres általános célú modellt használni.
+A nagy nyelvi modellek (LLM-ek) az elmúlt években jelentős áttörést hoztak a természetes nyelvfeldolgozásban. Képesek szöveget generálni, klasszifikálni, strukturált outputot előállítani. Ugyanakkor ezek a modellek erőforrásigényesek: drága hardvert, sok memóriát és energiát igényelnek. Sok domain-specifikus feladathoz, ahol a modellnek csak egy szűk területen kell jól teljesítenie, túlzás egy többmilliárd paraméteres általános célú modellt használni.
 A dolgozat célja egy olyan desztillációs pipeline kifejlesztése, amely lehetővé teszi nagy nyelvi modellek domain-specifikus tudásának kisebb, hatékonyabb modellekbe történő átültetését. A rendszer úgy lett tervezve, hogy könnyen adaptálható legyen különböző architektúrákra, teacher modellekre és problémakörökre.
 
 1.1 Probléma és motiváció
-Az LLM-ek használata egyszerű, jól definiált feladatokra gyakran nem gazdaságos. Egy sentiment klasszifikáció vagy strukturált JSON generálás nem igényli egy több száz milliárd paraméteres modell teljes kapacitását, mégis sok vállalat és fejlesztő ilyen modelleket használ API hívásokon keresztül, magas költségek mellett, hiszen az általános jellegű intelligencia, amellyel ezek a modellek dolgoznak, túlzóan vonzónak tűnhet.
+Az LLM-ek használata egyszerű, jól definiált feladatokra gyakran nem gazdaságos. Egy sentiment klasszifikáció vagy strukturált JSON generálás nem igényli egy több száz milliárd paraméteres modell teljes kapacitását, mégis sok vállalat és fejlesztő ilyen modelleket használ API hívásokon keresztül, magas költségek mellett, hiszen az általános jellegű intelligencia, amellyel ezek a modellek dolgoznak, túlzóan vonzónak tűnhet. A mixture of experts (MoE) modellek részben megoldást kínálnak a nagy számítási igények csökkentésére, de a nagy paraméterszám miatt továbbra is óriási memóriaigényük van.
 A desztilláció alternatívát kínál: egy kisebb modell megtanulhatja a nagyobb modell viselkedését egy adott feladatra, és azt töredék erőforrással képes végrehajtani [2]. Ez lehetővé teszi:
 - on-device futtatást (pl. telefonon, edge eszközökön)
 - jelentősen alacsonyabb latenciát és költséget
 - függetlenséget külső API-któl
-A dolgozatban Reddit komment klasszifikációt használok teszt esetként, de a cél egy olyan rendszer, ami könnyen alkalmazható más problémákra is: lokális matematikai egyenlet megoldás, email szeparálás, on-device tartalommoderáció, vagy bármilyen domain-specifikus feladat, ahol egy nagy modell tudását szeretnénk kisebb formában elérhetővé tenni.
-A desztilláció előtt költségelemzés szükséges: elég gyakran hívják-e az adott node-ot ahhoz, hogy megérje a desztillációs befektetés? Egy adott architektúra jobb-e egy másik feladatra?
+A dolgozatban Reddit komment klasszifikációt használok teszt esetként, de a cél egy olyan rendszer, ami könnyen alkalmazható más problémákra is: lokális matematikai egyenlet megoldás, email szeparálás, on-device tartalommoderáció vagy dinamikus dialógus generálás, vagy bármilyen domain-specifikus feladat, ahol egy nagy modell tudását szeretnénk kisebb formában elérhetővé tenni.
+A desztilláció előtt költségelemzés szükséges: elég gyakran hívják-e az adott node-ot ahhoz, hogy megérje a desztillációs befektetés? Szükséges-e edge eszközön futtatni? Szükséges-e egyáltalán egy komplex transformer a feladatra, ami KL divergencia veszteséggel (is) tanul?
 A dolgozat nem egy kész framework, hanem egy kutatási kiindulópont, amely segítségével tesztelhetők különböző desztillációs megközelítések: megéri-e egyáltalán, hogyan érdemes csinálni, milyen architektúrák működnek jobban. A kód könnyen módosítható az adott igényekhez (feladat, tanár vagy szülő model cseréje).
 
 2. Irodalomkutatás
 
 2.1 Transformer architektúra
 A modern nagy nyelvi modellek alapját a Vaswani et al. (2017) által bevezetett Transformer architektúra adja [1]. A kulcsinnovációk: self-attention mechanizmus (a szekvencia bármely pozíciójából közvetlenül figyel bármely másikra), multi-head attention (párhuzamos attention mechanizmusok különböző aspektusokra), és pozícionális kódolás. Az eredeti architektúra 6 encoder és 6 decoder réteget használt. A dolgozat student modellje decoder-only transformer, hasonlóan a modern LLM-ekhez (GPT, Gemma, Claude).
-A Transformer architektúra megértéséhez a 3Blue1Brown YouTube csatorna vizualizációi [24] és a Welch Labs neurális hálózat alapozó sorozata [25] szolgáltak kiindulópontként. Az első saját transformer implementáció ezek alapján készült, majd a működő modellt Gemma-kompatibilissé alakítottam.
+A Transformer architektúra megértéséhez a 3Blue1Brown YouTube csatorna [24] és a Welch Labs alapozó videói [25] szolgáltak kiindulópontként. Az első saját transformer implementáció ezek alapján készült, majd a működő modellt hasonlóbbá tettem a Gemma architektúrájához, a könyebb desztilláció érdekében.
 
 2.2 Knowledge Distillation
-A knowledge distillation fogalmát Hinton et al. (2015) vezette be [2]. A módszer lényege: egy nagyobb "teacher" modell tudását kisebb "student" modellbe tömörítjük. A kulcs a "soft targets" használata - a teacher softmax kimenetét magas hőmérséklettel (temperature) lágyítva kapjuk az eloszlást, amely gazdagabb információt tartalmaz a hard labels-nél. Hinton ezt "dark knowledge"-nek nevezte: a teacher bizonytalanságai és a hibás osztályok közötti preferenciái is átadódnak.
+A knowledge distillation fogalmát Hinton et al. (2015) vezette be [2]. A módszer lényege: egy nagyobb "teacher" modell tudását kisebb "student" modellbe tömörítjük. A kulcs a "soft targets" használata, a teacher softmax kimenetét magas temperatur-rel lágyítva kapjuk az eloszlást, amely gazdagabb információt tartalmaz a hard labels-nél. Hinton ezt "dark knowledge"-nek nevezte: a teacher bizonytalanságai és a hibás osztályok közötti preferenciái is átadódnak.
 A desztillációs loss általános formája: L = α·L_CE + (1-α)·L_KL, ahol L_CE a cross-entropy a ground truth címkékkel, L_KL pedig a Kullback-Leibler divergencia a teacher és student eloszlások között [3]. A soft targets információgazdagsága miatt kevesebb adat és tanítási idő szükséges.
 
 2.3 LLM-specifikus desztilláció
@@ -32,8 +32,8 @@ A DistilBERT [4] 40%-kal kisebb modellt ért el a BERT-hez képest, 97%-os telje
 A MiniLLM [6] megállapítása szerint autoregresszív generálásnál a forward KL divergencia helyett reverse KL előnyösebb, mert megakadályozza, hogy a student túlbecsülje a teacher alacsony valószínűségű régióit. A dolgozat forward KL-t használ, de a CE loss dominanciájának növelése a tanítás végén hasonló hatást ér el.
 
 2.4 Curriculum Learning és Loss Annealing
-A curriculum learning - ahol a modell először könnyebb, majd fokozatosan nehezebb példákon tanul - bevett módszer [7]. A dolgozat egy speciális curriculum-ot alkalmaz: nem a példák nehézségét, hanem a loss komponensek arányát változtatja (KL: 90%→10%, CE: 10%→90%). Ez az "Annealing Knowledge Distillation" [8] megközelítéshez hasonlít, ahol a temperature-t csökkentik a tanítás során.
-A "Curriculum Temperature for Knowledge Distillation" [9] kimutatta, hogy a student modellek lágyabb eloszlásokból profitálnak a tanítás elején, de élesebb eloszlásokra van szükségük később. A dolgozat megközelítése - KL dominancia az elején, CE dominancia a végén - konzisztens ezzel.
+A curriculum learning, ahol a modell először könnyebb, majd fokozatosan nehezebb példákon tanul, bevett módszer [7]. A dolgozat egy speciális curriculum-ot alkalmaz: nem a példák nehézségét, hanem a loss komponensek arányát változtatja (KL: 90%→10%, CE: 10%→90%). Ez az "Annealing Knowledge Distillation" [8] megközelítéshez hasonlít, ahol a temperature-t csökkentik a tanítás során.
+A "Curriculum Temperature for Knowledge Distillation" [9] kimutatta, hogy a student modellek lágyabb eloszlásokból profitálnak a tanítás elején, de élesebb eloszlásokra van szükségük később. A dolgozat megközelítése, KL dominancia az elején, CE dominancia a végén, konzisztens ezzel.
 
 2.5 Csökkentett kimeneti szótár
 A vocabulary reduction desztillációban kevésbé kutatott terület. A "Knowledge Distillation with Reduction of Vocabulary" [10] 17-49x tömörítést ért el orosz nyelvi modelleken. A "Fast Vocabulary Transfer" [11] a vocabulary cseréjét vizsgálta desztilláció során.
@@ -60,7 +60,7 @@ A dolgozat megközelítése eltér: nem fine-tuned classifier, hanem generatív,
 A Gemma 3 modellcsalád (Google DeepMind, 2025) [21] maga is desztillációval készült - egy nagyobb teacher modellből tanult. A 4B variáns 4,3 milliárd paraméterrel rendelkezik, 4 trillió tokenen pretrained. A dolgozat ezt használja teacher modellként.
 
 2.11 Autoregresszív generálás vs klasszifikáció
-A dolgozat tudatosan választ autoregresszív generálást a klasszifikáció helyett. Egyszerű sentiment analysis-hez általában encoder modelleket (BERT) vagy classifier head-eket használnak [22]. A T5 modell [23] bizonyította, hogy minden NLP feladat text-to-text formában kezelhető, beleértve a klasszifikációt is. A dolgozat megközelítése ezt követi: a cél nem az optimális klasszifikáció, hanem annak bizonyítása, hogy a desztillációs pipeline működik generatív feladatokra is.
+A dolgozat tudatosan választ autoregresszív generálást a klasszifikáció helyett. Egyszerű sentiment analysis-hez általában encoder modelleket (BERT) vagy classifier head-eket használnak [22]. A T5 modell [23] bizonyította, hogy minden NLP feladat text-to-text formában kezelhető, beleértve a klasszifikációt is. A dolgozat megközelítése ezt követi: a cél nem az optimális klasszifikáció, hanem annak bizonyítása, hogy a desztillációs pipeline működik, olyan feladatokra is, ahol az autóregreszsív transformer modellek előnyösebbek. 
 
 2.12 A dolgozat pozícionálása
 A dolgozat több ismert technikát kombinál:
@@ -69,7 +69,7 @@ A dolgozat több ismert technikát kombinál:
 - Újszerű kombináció: task-specifikus output vocabulary redukció (~99,8%) + teljes input vocabulary + autoregresszív strukturált output generálás
 
 3. Implementáció
-A projekt 3 részre bontható: data extraction pipeline, tanítás és a modell(ek). A data extraction pipeline egy tanármodellt használva állítja elő és menti el a desztillációs tanításhoz szükséges adatokat (ami akár több modell tanításához is újrahasználható). A tanítás és modell jobban összefügg, a tanítás egy speciális curriculum, amely célja először a teacher modell következő token predikció disztribúciójának a student modellhez való közelítése, majd ezt követően a következő helyes token fontosságára nagyobb hangsúlyt fektetve megerősíteni a modellt, hogy ne csak hasonlóan gondolkodjon, mint a teacher modell, de a helyes döntést is hozza meg [2][8]. Több fajta student modellt is lehet használni, a dolgozat viszont elsősorban kisebb multi-headed attentiont használó Transformer modellekre fog fókuszálni [1], amelyek ugyanazzal az autoregresszív viselkedéssel állítják elő a kimeneti választ, mint a manapság leginkább elterjedt nagy nyelvi modellek (pl.: OpenAI GPT, Google Gemini, Anthropic Claude modellek) és a desztillációhoz használt teacher modellek maguk is.
+A projekt 3 részre bontható: data extraction pipeline, tanítás és a modell(ek). A data extraction pipeline egy tanármodellt használva állítja elő és menti el a desztillációs tanításhoz szükséges adatokat (ami akár több modell tanításához is újrahasználható). A tanítás és modell jobban összefügg, a tanítás egy speciális curriculum, amely célja először a teacher modell következő token predikció disztribúciójának a student modellhez való közelítése, majd ezt követően a következő helyes token fontosságára nagyobb hangsúlyt fektetve megerősíteni a modellt, hogy ne csak hasonlóan gondolkodjon, mint a teacher modell, de a helyes döntést is hozza meg [2][8]. Több fajta student modellt is lehet használni, a dolgozat viszont elsősorban kisebb multi-headed attentiont használó Transformer modellekre fókuszál [1], amelyek ugyanazzal az autoregresszív viselkedéssel állítják elő a kimeneti választ, mint a manapság leginkább elterjedt nagy nyelvi modellek (pl.: OpenAI GPT, Google Gemini, Anthropic Claude modellek) és a desztillációhoz használt teacher modellek maguk is.
 
 3.1 Példa
 A projektet számos feladat optimalizálására lehet használni, ügyfélszolgálati emailek automatikus LLM-ekkel történő osztályozásától, online fórumokon autómoderálásán keresztül, ágensalapú workflow-okig. A dolgozat során Reddit komment sentiment analízisét fogom példának használni, vagyis a feladat az, hogy egy beérkező Reddit kommentet JSON objektummal jellemezze a modell (példa: 1. kép).
@@ -108,7 +108,7 @@ A modell a következő architekturális elemeket veszi át Gemmától:
 - RoPE (Rotary Position Embedding) [13]: pozíció kódolásra, Gemma-kompatibilis
 - GeGLU-szerű aktiváció [14]: GELU(gate) * linear, hasonló a Gemma megoldásához
 - Ugyanaz a tokenizer: a bemeneti tokenek azonos reprezentációt kapnak
-Ezek a hasonlóságok biztosítják, hogy a student modell "felfogása" közel áll a teacher modelléhez, így a desztilláció hatékonyabb.
+Ezek a hasonlóságok biztosítják, hogy a student modell architektúrája közel áll a teacher modelléhez, így a desztilláció hatékonyabb.
 3.4.2 Optimalizációk
 A modell bemeneti szótára megegyezik Gemma 3 4b-vel (262,144 token), így minden kommentet, amit Gemma 3 4b ki tud értékelni, a student modell is. A kimeneti szótár viszont jelentősen le van csökkentve: a 262,144 token helyett mindössze 525 tokenre korlátozódik (27 szükséges + 498 kiegészítő). Ez 99,8%-os csökkentés.
 A context length 75-re van csökkentve (25 token bemenet + 50 token kimenet), szemben Gemma 3 4b 128k context window-jával.
@@ -152,7 +152,7 @@ Teacher kimenet (ground truth):
 }
 ```
 
-A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált. Érdemes megjegyezni, hogy a teacher klasszifikációja is vitatható - kontextus nélkül a mondat inkább frusztrált/játékos, mint toxic.
+A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált. Érdemes megjegyezni, hogy a teacher klasszifikációja is vitatható, kontextus nélkül a mondat inkább frusztrált/játékos, mint toxic.
 4.2 Korábbi pilot
 Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanítottam a modellt. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 4.1-ben leírt eredményeket kaptam.
 4.3 Korai becslés
@@ -182,7 +182,7 @@ Többszintű desztilláció (embedding, attention, prediction), referencia a 7,5
 [6] Gu, Y., et al. (2023). "MiniLLM: Knowledge Distillation of Large Language Models." https://arxiv.org/abs/2306.08543
 LLM-specifikus desztilláció, reverse KL divergencia autoregresszív modellekhez.
 
-[7] Bengio, Y., et al. (2009). "Curriculum Learning." ICML 2009.
+[7] Bengio, Y., et al. (2009). "Curriculum Learning." ICML 2009. https://ronan.collobert.com/pub/2009_curriculum_icml.pdf
 A curriculum learning alapelve - fokozatosan növekvő nehézség.
 
 [8] Jafari, A., et al. (2021). "Annealing Knowledge Distillation." EACL 2021. https://aclanthology.org/2021.eacl-main.212/

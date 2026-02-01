@@ -1,14 +1,12 @@
-from analysis.training_analysis import TrainingAnalyzer
-from analysis.generation_analysis import GenerationAnalyzer
-from shared import LOGS_DIR
 import json
-import sys
 from pathlib import Path
 from typing import List, Dict
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from analysis.generation_analysis import GenerationAnalyzer
+from analysis.training_analysis import TrainingAnalyzer
+from shared import LOGS_DIR
 
 
 GENERATION_LOG_FILE = Path(LOGS_DIR) / "generation.jsonl"

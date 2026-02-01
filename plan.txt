@@ -2,93 +2,108 @@
 UBUNTU SERVER SETUP PLAN - Preference Distillation Project
 ================================================================================
 
-STEP 1: Check what's already installed
---------------------------------------------------------------------------------
-Run these commands to see what you have:
+Server IP: 10.1.158.223
 
+================================================================================
+IMPORTANT: DO NOT TOUCH DRIVERS
+================================================================================
+The professor manages GPU/CUDA/nvidia drivers. NEVER run anything in ~/nvidia
+or any driver-related commands. If GPU stops working, email the professor.
+
+
+================================================================================
+INITIAL SETUP (one-time)
+================================================================================
+
+1. Check Python version (need 3.8+, ideally 3.10+):
     python3 --version
-    git --version
-    nvidia-smi
 
-Expected: Python 3.x, git, and NVIDIA GPU info should show up.
-If python3 or git are missing, go to Step 2. Otherwise skip to Step 3.
-
-
-STEP 2: Install missing tools (only if needed)
---------------------------------------------------------------------------------
+   If it's 3.7, install a newer version:
     sudo apt update
-    sudo apt install -y python3-pip python3-venv git
+    sudo apt install python3.10 python3.10-venv python3.10-dev
+
+2. Clone the repository:
+    git clone <repo-url> ~/preference_destillation
+
+3. Create virtual environment (use python3.10 if installed):
+    cd ~/preference_destillation
+    python3.10 -m venv venv
+
+4. Activate and install dependencies:
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install torch transformers
+
+5. Verify GPU access:
+    python -c "import torch; print('CUDA:', torch.cuda.is_available())"
+
+6. HuggingFace login (required for Gemma model):
+    pip install huggingface_hub
+    huggingface-cli login
+
+   You need a HuggingFace account and access token from:
+   https://huggingface.co/settings/tokens
+
+   Also accept the Gemma license at:
+   https://huggingface.co/google/gemma-3-4b-it
+
+7. Upload data file (from local machine):
+    scp sentences/sentences.jsonl user@10.1.158.223:~/preference_destillation/data_generation/sentences/
 
 
-STEP 3: Clone the repository
---------------------------------------------------------------------------------
-    cd ~
-    git clone https://github.com/lorsmunka/preference_destillation.git
-    cd preference_destillation
+================================================================================
+RESUMING WORK (when you reconnect)
+================================================================================
 
-
-STEP 4: Create virtual environment
---------------------------------------------------------------------------------
-    python3 -m venv venv
+    cd ~/preference_destillation
     source venv/bin/activate
 
-Your prompt should now show (venv) at the beginning.
+
+================================================================================
+RUNNING THE PROJECT
+================================================================================
+
+Data generation (generates training data from Gemma):
+    cd ~/preference_destillation/data_generation
+    python main.py
+
+Training (trains student model):
+    cd ~/preference_destillation/training
+    python main.py
+
+Press '%' during either for graceful exit (saves checkpoint).
 
 
-STEP 5: Install PyTorch with CUDA
---------------------------------------------------------------------------------
-    pip install torch --index-url https://download.pytorch.org/whl/cu121
-
-This downloads ~2GB. Wait for it to finish.
-
-
-STEP 6: Install HuggingFace Transformers
---------------------------------------------------------------------------------
-    pip install transformers
+================================================================================
+GPU INFO (managed by professor)
+================================================================================
+- GPU: GRID A100-20C (20GB vGPU)
+- Model: google/gemma-3-4b-it (~8GB in bfloat16)
+- Should fit comfortably with room for batch processing
 
 
-STEP 7: Verify GPU is working
---------------------------------------------------------------------------------
-    python3 -c "import torch; print('CUDA:', torch.cuda.is_available())"
-
-Expected output: CUDA: True
-If it says False, there's a driver/CUDA issue.
-
-
-STEP 8: Run the training
---------------------------------------------------------------------------------
-    cd training
-    python3 main.py
-
-Training will start. Press % to gracefully exit and save checkpoint.
+================================================================================
+SAFE OPERATIONS (these won't break the server)
+================================================================================
+- git clone, git pull, git push
+- sudo apt install python3.10 (just adds Python, doesn't touch drivers)
+- python3 -m venv, source venv/bin/activate
+- pip install (inside venv)
+- Running python scripts
+- Creating/editing files in your home directory
+- scp to transfer files
 
 
 ================================================================================
 TROUBLESHOOTING
 ================================================================================
 
-Problem: "nvidia-smi" not found or no GPU shown
-Solution: NVIDIA drivers not installed. Contact your professor.
+"CUDA not available" after setup:
+    -> Email professor, don't touch nvidia folder
 
-Problem: torch.cuda.is_available() returns False
-Solution: Try different PyTorch CUDA version:
-    pip uninstall torch
-    pip install torch --index-url https://download.pytorch.org/whl/cu118
+"Access denied" for Gemma model:
+    -> Run: huggingface-cli login
+    -> Accept license at huggingface.co/google/gemma-3-4b-it
 
-Problem: "No module named transformers"
-Solution: Make sure venv is activated, then: pip install transformers
-
-Problem: Permission denied
-Solution: Add sudo before the command
-
-Problem: Connection timeout during git clone
-Solution: Check VPN connection, try again
-
-
-================================================================================
-RESUMING WORK (when you reconnect later)
-================================================================================
-    cd ~/preference_destillation
-    source venv/bin/activate
-    cd training
-    python3 main.py
+Out of memory:
+    -> Reduce BATCH_SIZE in shared/config.py
