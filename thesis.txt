@@ -155,7 +155,16 @@ Teacher kimenet (ground truth):
 A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált. Érdemes megjegyezni, hogy a teacher klasszifikációja is vitatható, kontextus nélkül a mondat inkább frusztrált/játékos, mint toxic.
 4.2 Korábbi pilot
 Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanítottam a modellt. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 4.1-ben leírt eredményeket kaptam.
-4.3 Korai becslés
+4.3 Pilot teszt elemzés
+A pilot teszt összesen ~9 órát vett igénybe: 2,63 óra adatgenerálás (101 batch, 3232 mondat) és 6,25 óra tanítás (347 batch, 3 epoch). A 2. képen láthatók a tanítás metrikái.
+A loss az első batcheknél élesen csökken (~25-ről ~2-re), majd tovább csökken, de fluktuálva. A fluktuáció oka, hogy a tanítás előrehaladtával a CE loss egyre nagyobb súlyt kap, ami élesebb, kevésbé sima gradienst eredményez. Az accuracy folyamatosan emelkedik, 35%-ról 95% fölé (ez tanítás közbeni, teacher forced accuracy).
+Az aggregált train loss magasabb, mint az eval loss (epoch summary), tehát overfitting nem figyelhető meg, annak ellenére, hogy viszonylag kevés adaton tanult a modell.
+A teacher-forced és student-only accuracy párhuzamosan emelkedik. A teacher-forced accuracy magasabb (~97%), mert a modell ilyenkor mindig a helyes kontextust kapja. A student-only accuracy alacsonyabb (~88%), mert bizonyos tokeneket (elsősorban kategória értékeket: "aggressive", "neutral" stb.) nehezebben talál el a modell. Ráadásul az autoregresszív generálás miatt ha egy korai token hibás, az a teljes kimenet hibás predikciót okozhat.
+Mindezek ellenére a student-only módban is az esetek túlnyomó többségében koherens, valid JSON generálódik.
+
+2. kép
+
+4.4 Korai becslés
 Saját hardveren (felső középkategóriás gép, RTX 4070 12GB videokártya) a teljes training és adatelőállítási idő 2870 óra lenne.
 Az adatbázisban ~500 ezer Reddit komment van, ami megfelel minden kitételnek. Ezekből a példamondatokból saját hardveren (~62 másodperc / 32 példa) optimális esetben 270 óra alatt lehetne egy teljes tanító adatbázist létrehozni.
 A "Chinchilla scaling" [17] szerint minden egyes paraméterre 20 tokennyi példa kell a sikeres tanításhoz. Ez ~537 millió modell paraméter esetében ~11 milliárd tokent jelent, viszont az 500 ezer komment (kommentenként ~40 generálási lépéssel) összesen ~20 millió tanítási példát jelent. A desztillációból fakadó előnyök és a specifikus domain csökkentett tudásigénye mellett is több mint valószínű, hogy az összes példát fog kelleni használni.
