@@ -58,5 +58,10 @@ for i in range(logger.processed_sentence_count, sentence_handler.sentence_count)
 
     sleep(0.1)
 
+if batch_examples:
+    saving_handler.save_batch(batch_examples)
+    print(f"Saved final partial batch with {len(batch_examples)} examples")
+
+logger.save()
 exit_listener.stop()
 print("Bye!")
