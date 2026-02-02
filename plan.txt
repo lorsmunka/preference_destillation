@@ -1,61 +1,136 @@
 ================================================================================
-UBUNTU SERVER SETUP PLAN - Preference Distillation Project
+UBUNTU SERVER SETUP - Preference Distillation
 ================================================================================
 
 Server IP: 10.1.158.223
+Repo: https://github.com/lorsmunka/preference_destillation.git
 
-================================================================================
-IMPORTANT: DO NOT TOUCH DRIVERS
-================================================================================
-The professor manages GPU/CUDA/nvidia drivers. NEVER run anything in ~/nvidia
-or any driver-related commands. If GPU stops working, email the professor.
+CURRENT STATUS: Deadsnakes nem működik, pyenv telepítés folyamatban
 
 
 ================================================================================
-INITIAL SETUP (one-time)
+SZERVER INFÓ - AMIT MEGTUDTUNK
 ================================================================================
 
-1. Check Python version (need 3.8+, ideally 3.10+):
-    python3 --version
+- Ubuntu 20.04.6 LTS (focal) - 2020 áprilisi kiadás
+- Rendszer Python: 3.8 (ezt NE piszkáld, eltöri az Ubuntu-t)
+- Deadsnakes PPA: már nem támogatja a 20.04-et (üres a csomaglista)
+- GPU: GRID A100-20C (20GB vGPU)
 
-   If it's 3.7, install a newer version:
-    sudo apt update
-    sudo apt install python3.10 python3.10-venv python3.10-dev
-
-2. Clone the repository:
-    git clone <repo-url> ~/preference_destillation
-
-3. Create virtual environment (use python3.10 if installed):
-    cd ~/preference_destillation
-    python3.10 -m venv venv
-
-4. Activate and install dependencies:
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install torch transformers
-
-5. Verify GPU access:
-    python -c "import torch; print('CUDA:', torch.cuda.is_available())"
-
-6. HuggingFace login (required for Gemma model):
-    pip install huggingface_hub
-    huggingface-cli login
-
-   You need a HuggingFace account and access token from:
-   https://huggingface.co/settings/tokens
-
-   Also accept the Gemma license at:
-   https://huggingface.co/google/gemma-3-4b-it
-
-7. Upload data file (from local machine):
-    scp sentences/sentences.jsonl user@10.1.158.223:~/preference_destillation/data_generation/sentences/
+MEGOLDÁS: pyenv - a home mappádba telepít Python-t, nem kell sudo,
+          nem érinti a rendszer Python-t
 
 
 ================================================================================
-RESUMING WORK (when you reconnect)
+MEGOLDÁS: PYENV
 ================================================================================
 
-    cd ~/preference_destillation
+- ~/.pyenv mappába települ
+- Nem kell sudo, nem kell a profot zavarni
+- Nem érinti a rendszer Python-t (ami 3.8 és marad is az)
+
+
+================================================================================
+TODO - SETUP STEPS
+================================================================================
+
+[x] 1. SSH into server:
+       ssh ubuntu@10.1.158.223
+
+[x] 2. Deadsnakes próba (NEM MŰKÖDÖTT):
+       A PPA üres Ubuntu 20.04-re, nincs benne csomag.
+
+[ ] 3. Pyenv telepítése:
+
+       # Pyenv letöltése (W - ír a ~/.pyenv mappába)
+       curl https://pyenv.run | bash
+
+       # Bash konfigurálása (U - hozzáad a ~/.bashrc-hez)
+       echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+       echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+       echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+
+       # Újratöltés
+       source ~/.bashrc
+
+[ ] 4. Build dependencies telepítése (kell a Python fordításhoz):
+
+       # (W - sudo, de csak build toolok, nem Python)
+       sudo apt install -y build-essential libssl-dev zlib1g-dev \
+         libbz2-dev libreadline-dev libsqlite3-dev curl \
+         libncursesw5-dev xz-utils tk-dev libxml2-dev \
+         libxmlsec1-dev libffi-dev liblzma-dev
+
+[ ] 5. Python 3.10 telepítése pyenv-vel:
+
+       # (W - lefordítja és telepíti ~/.pyenv/versions/ alá)
+       pyenv install 3.10
+
+       # Ellenőrzés
+       pyenv versions
+
+[ ] 6. Clone repository:
+       git clone https://github.com/lorsmunka/preference_destillation.git ~/preference_distillation
+       cd ~/preference_distillation
+
+[ ] 7. Venv létrehozása pyenv Python-nal:
+
+       # Pyenv Python használata ebben a mappában
+       pyenv local 3.10
+
+       # Venv létrehozása
+       python -m venv venv
+       source venv/bin/activate
+
+       # Ellenőrzés (3.10.x kell legyen)
+       python --version
+
+[ ] 8. Dependencies telepítése:
+       pip install --upgrade pip
+       pip install -r requirements.txt
+       pip install -e .
+
+[ ] 9. GPU ellenőrzése:
+       python -c "import torch; print('CUDA:', torch.cuda.is_available())"
+
+       Ha False: EMAIL PROFESSOR (ne piszkáld a drivert)
+
+[ ] 10. HuggingFace login (Gemma-hoz kell):
+        pip install huggingface_hub
+        huggingface-cli login
+
+        Token: https://huggingface.co/settings/tokens
+        Gemma license: https://huggingface.co/google/gemma-3-4b-it
+
+[ ] 11. Adatok feltöltése (LOKÁL gépről):
+        Először szerveren: mkdir -p ~/preference_distillation/sentences
+
+        Majd lokálról:
+        scp sentences/sentences.jsonl ubuntu@10.1.158.223:~/preference_distillation/sentences/
+
+[ ] 12. Teszt futtatás:
+        cd ~/preference_distillation
+        python data_generation/main.py
+
+        '%' a graceful exithez
+
+
+================================================================================
+COMMAND TÍPUSOK (referencia)
+================================================================================
+
+R = Read   - csak olvas, biztonságos
+W = Write  - ír/létrehoz valamit
+U = Update - módosít meglévőt
+D = Delete - töröl
+
+
+================================================================================
+DAILY USE - RESUMING WORK
+================================================================================
+
+    ssh ubuntu@10.1.158.223
+    cd ~/preference_distillation
     source venv/bin/activate
 
 
@@ -63,47 +138,52 @@ RESUMING WORK (when you reconnect)
 RUNNING THE PROJECT
 ================================================================================
 
-Data generation (generates training data from Gemma):
-    cd ~/preference_destillation/data_generation
-    python main.py
+FONTOS: Mindig project rootból futtass (~/preference_distillation), NE submappából!
 
-Training (trains student model):
-    cd ~/preference_destillation/training
-    python main.py
+Data generation (Gemma-val generál training adatot):
+    cd ~/preference_distillation
+    python data_generation/main.py
 
-Press '%' during either for graceful exit (saves checkpoint).
+Training (student model tanítása):
+    cd ~/preference_distillation
+    python training/main.py
 
-
-================================================================================
-GPU INFO (managed by professor)
-================================================================================
-- GPU: GRID A100-20C (20GB vGPU)
-- Model: google/gemma-3-4b-it (~8GB in bfloat16)
-- Should fit comfortably with room for batch processing
+'%' graceful exithez (menti a checkpointot).
 
 
 ================================================================================
-SAFE OPERATIONS (these won't break the server)
+CRITICAL WARNINGS
 ================================================================================
-- git clone, git pull, git push
-- sudo apt install python3.10 (just adds Python, doesn't touch drivers)
-- python3 -m venv, source venv/bin/activate
-- pip install (inside venv)
-- Running python scripts
-- Creating/editing files in your home directory
-- scp to transfer files
+
+NE PISZKÁLD A DRIVERT
+    A prof kezeli a GPU/CUDA/nvidia drivert.
+    SOHA ne futtass semmit ~/nvidia-ban vagy driver-related parancsot.
+    Ha nem megy a GPU: EMAIL A PROFNAK
+
+NE PISZKÁLD A RENDSZER PYTHON-T
+    A python3 (3.8) az Ubuntu-hoz kell, ha lecseréled eltörik a rendszer.
+    Pyenv-vel a saját Python-od teljesen külön van.
+    Pip-et CSAK venv-ben használj.
 
 
 ================================================================================
 TROUBLESHOOTING
 ================================================================================
 
-"CUDA not available" after setup:
-    -> Email professor, don't touch nvidia folder
+"CUDA not available":
+    -> Email professor, ne piszkáld az nvidia mappát
 
 "Access denied" for Gemma model:
-    -> Run: huggingface-cli login
-    -> Accept license at huggingface.co/google/gemma-3-4b-it
+    -> huggingface-cli login
+    -> License elfogadása: huggingface.co/google/gemma-3-4b-it
 
 Out of memory:
-    -> Reduce BATCH_SIZE in shared/config.py
+    -> BATCH_SIZE csökkentése shared/config.py-ban
+
+Import errors ("No module named shared"):
+    -> pip install -e . lefutott?
+    -> Project rootból futtatod?
+
+Pyenv command not found:
+    -> source ~/.bashrc
+    -> Vagy nyiss új terminált
