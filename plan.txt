@@ -1,169 +1,95 @@
 ================================================================================
-UBUNTU SERVER SETUP - Preference Distillation
+PREFERENCE DISTILLATION - SERVER REFERENCE
+================================================================================
+
+PROJEKT KONTEXTUS (for AI assistants / future me):
+    Egyetemi szakdolgozat proof-of-concept. Gemma 3 4B-ből desztillálunk
+    tudást egy kis transformer-be. A feladat Reddit komment klasszifikáció
+    (tone, sentiment, safety, toxicity) -> determinisztikus JSON output.
+
+    Két fázis:
+    1. Data generation - Gemma 3 4B generál training adatot logitokkal
+    2. Training - kis student modell tanul a Gemma outputjából (KL + CE loss)
+
+    Konfiguráció: shared/config.py
+    - MAX_TRAINING_EXAMPLES = 120,000
+    - EPOCH_COUNT = 11
+    - ~38 nap összesen (data gen + training)
+
+
+================================================================================
+SZERVER KAPCSOLAT
 ================================================================================
 
 Server IP: 10.1.158.223
-Repo: https://github.com/lorsmunka/preference_destillation.git
+SSH kulcs: C:\Users\Ors\.ssh\Ors.pem
+User: ubuntu
 
-CURRENT STATUS: Deadsnakes nem működik, pyenv telepítés folyamatban
+BELÉPÉS:
+    ssh -i C:\Users\Ors\.ssh\Ors.pem ubuntu@10.1.158.223
 
-
-================================================================================
-SZERVER INFÓ - AMIT MEGTUDTUNK
-================================================================================
-
-- Ubuntu 20.04.6 LTS (focal) - 2020 áprilisi kiadás
-- Rendszer Python: 3.8 (ezt NE piszkáld, eltöri az Ubuntu-t)
-- Deadsnakes PPA: már nem támogatja a 20.04-et (üres a csomaglista)
-- GPU: GRID A100-20C (20GB vGPU)
-
-MEGOLDÁS: pyenv - a home mappádba telepít Python-t, nem kell sudo,
-          nem érinti a rendszer Python-t
+SCREEN VISSZACSATLAKOZÁS (ha fut valami):
+    screen -r datagen
 
 
 ================================================================================
-MEGOLDÁS: PYENV
+NAPI HASZNÁLAT
 ================================================================================
 
-- ~/.pyenv mappába települ
-- Nem kell sudo, nem kell a profot zavarni
-- Nem érinti a rendszer Python-t (ami 3.8 és marad is az)
+SCREEN-BEN FUTÓ PROCESS ELLENŐRZÉSE:
+    ssh -i C:\Users\Ors\.ssh\Ors.pem ubuntu@10.1.158.223
+    screen -r datagen
 
+KILÉPÉS (process tovább fut):
+    Ctrl+A, majd D
+    -- VAGY --
+    Simán zárd be a terminált (screen túléli)
 
-================================================================================
-TODO - SETUP STEPS
-================================================================================
+GRACEFUL STOP:
+    Ctrl+C (egyszer, megvárni amíg ment)
 
-[x] 1. SSH into server:
-       ssh ubuntu@10.1.158.223
-
-[x] 2. Deadsnakes próba (NEM MŰKÖDÖTT):
-       A PPA üres Ubuntu 20.04-re, nincs benne csomag.
-
-[ ] 3. Pyenv telepítése:
-
-       # Pyenv letöltése (W - ír a ~/.pyenv mappába)
-       curl https://pyenv.run | bash
-
-       # Bash konfigurálása (U - hozzáad a ~/.bashrc-hez)
-       echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-       echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-       echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-
-       # Újratöltés
-       source ~/.bashrc
-
-[ ] 4. Build dependencies telepítése (kell a Python fordításhoz):
-
-       # (W - sudo, de csak build toolok, nem Python)
-       sudo apt install -y build-essential libssl-dev zlib1g-dev \
-         libbz2-dev libreadline-dev libsqlite3-dev curl \
-         libncursesw5-dev xz-utils tk-dev libxml2-dev \
-         libxmlsec1-dev libffi-dev liblzma-dev
-
-[ ] 5. Python 3.10 telepítése pyenv-vel:
-
-       # (W - lefordítja és telepíti ~/.pyenv/versions/ alá)
-       pyenv install 3.10
-
-       # Ellenőrzés
-       pyenv versions
-
-[ ] 6. Clone repository:
-       git clone https://github.com/lorsmunka/preference_destillation.git ~/preference_distillation
-       cd ~/preference_distillation
-
-[ ] 7. Venv létrehozása pyenv Python-nal:
-
-       # Pyenv Python használata ebben a mappában
-       pyenv local 3.10
-
-       # Venv létrehozása
-       python -m venv venv
-       source venv/bin/activate
-
-       # Ellenőrzés (3.10.x kell legyen)
-       python --version
-
-[ ] 8. Dependencies telepítése:
-       pip install --upgrade pip
-       pip install -r requirements.txt
-       pip install -e .
-
-[ ] 9. GPU ellenőrzése:
-       python -c "import torch; print('CUDA:', torch.cuda.is_available())"
-
-       Ha False: EMAIL PROFESSOR (ne piszkáld a drivert)
-
-[ ] 10. HuggingFace login (Gemma-hoz kell):
-        pip install huggingface_hub
-        huggingface-cli login
-
-        Token: https://huggingface.co/settings/tokens
-        Gemma license: https://huggingface.co/google/gemma-3-4b-it
-
-[ ] 11. Adatok feltöltése (LOKÁL gépről):
-        Először szerveren: mkdir -p ~/preference_distillation/sentences
-
-        Majd lokálról:
-        scp sentences/sentences.jsonl ubuntu@10.1.158.223:~/preference_distillation/sentences/
-
-[ ] 12. Teszt futtatás:
-        cd ~/preference_distillation
-        python data_generation/main.py
-
-        '%' a graceful exithez
-
-
-================================================================================
-COMMAND TÍPUSOK (referencia)
-================================================================================
-
-R = Read   - csak olvas, biztonságos
-W = Write  - ír/létrehoz valamit
-U = Update - módosít meglévőt
-D = Delete - töröl
-
-
-================================================================================
-DAILY USE - RESUMING WORK
-================================================================================
-
-    ssh ubuntu@10.1.158.223
+ÚJ FUTTATÁS INDÍTÁSA:
+    screen -S datagen
     cd ~/preference_distillation
     source venv/bin/activate
-
-
-================================================================================
-RUNNING THE PROJECT
-================================================================================
-
-FONTOS: Mindig project rootból futtass (~/preference_distillation), NE submappából!
-
-Data generation (Gemma-val generál training adatot):
-    cd ~/preference_distillation
-    python data_generation/main.py
-
-Training (student model tanítása):
-    cd ~/preference_distillation
+    python data_generation/main.py     # VAGY
     python training/main.py
 
-'%' graceful exithez (menti a checkpointot).
+GIT FRISSÍTÉS (ha lokálban módosítottál):
+    cd ~/preference_distillation
+    git pull
 
 
 ================================================================================
-CRITICAL WARNINGS
+ADATOK LETÖLTÉSE (MIELŐTT LEJÁR A SZERVER)
 ================================================================================
 
-NE PISZKÁLD A DRIVERT
-    A prof kezeli a GPU/CUDA/nvidia drivert.
-    SOHA ne futtass semmit ~/nvidia-ban vagy driver-related parancsot.
-    Ha nem megy a GPU: EMAIL A PROFNAK
+Windows PowerShell-ből:
 
-NE PISZKÁLD A RENDSZER PYTHON-T
-    A python3 (3.8) az Ubuntu-hoz kell, ha lecseréled eltörik a rendszer.
-    Pyenv-vel a saját Python-od teljesen külön van.
-    Pip-et CSAK venv-ben használj.
+    scp -i C:\Users\Ors\.ssh\Ors.pem -r ubuntu@10.1.158.223:~/preference_distillation/batches C:\Users\Ors\preference_destillation\
+    scp -i C:\Users\Ors\.ssh\Ors.pem -r ubuntu@10.1.158.223:~/preference_distillation/checkpoints C:\Users\Ors\preference_destillation\
+    scp -i C:\Users\Ors\.ssh\Ors.pem -r ubuntu@10.1.158.223:~/preference_distillation/logs C:\Users\Ors\preference_destillation\
+
+Ezek gitignore-ban vannak, manuálisan kell letölteni!
+
+
+================================================================================
+LOKÁLIS FOLYTATÁS (HA LEJÁR A SZERVER)
+================================================================================
+
+A logger és checkpoint-ok alapján folytatható:
+    cd C:\Users\Ors\preference_destillation
+    python training/main.py
+
+A logs/state.json tárolja hol tartott, onnan folytatja.
+
+
+================================================================================
+TELJES RESET (ha újra kell kezdeni)
+================================================================================
+
+Szerveren:
+    rm -rf ~/preference_distillation/logs/*.json ~/preference_distillation/logs/*.jsonl ~/preference_distillation/logs/*.png ~/preference_distillation/checkpoints/* ~/preference_distillation/batches/*
 
 
 ================================================================================
@@ -173,17 +99,70 @@ TROUBLESHOOTING
 "CUDA not available":
     -> Email professor, ne piszkáld az nvidia mappát
 
-"Access denied" for Gemma model:
+"Access denied" for Gemma:
     -> huggingface-cli login
-    -> License elfogadása: huggingface.co/google/gemma-3-4b-it
+    -> License: huggingface.co/google/gemma-3-4b-it
 
 Out of memory:
     -> BATCH_SIZE csökkentése shared/config.py-ban
 
-Import errors ("No module named shared"):
-    -> pip install -e . lefutott?
-    -> Project rootból futtatod?
+"No module named shared":
+    -> pip install -e .
+    -> Project rootból futtasd!
 
-Pyenv command not found:
+"pyenv: command not found":
     -> source ~/.bashrc
-    -> Vagy nyiss új terminált
+
+
+================================================================================
+SZERVER RÉSZLETEK (referencia)
+================================================================================
+
+- Ubuntu 20.04.6 LTS
+- GPU: GRID A100-20C (20GB vGPU, ~2x lassabb mint lokál RTX 4070)
+- Python: 3.10.19 (pyenv-vel telepítve, ~/.pyenv)
+- Rendszer Python: 3.8 (NE PISZKÁLD)
+
+Deadsnakes PPA nem működik ezen az Ubuntu verzión - ezért kellett pyenv.
+
+
+================================================================================
+HA ÚJRA KELL TELEPÍTENI A SZERVERT
+================================================================================
+
+1. SSH belépés
+2. Pyenv telepítés:
+       curl https://pyenv.run | bash
+       echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+       echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+       echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+       source ~/.bashrc
+
+3. Build dependencies:
+       sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
+           libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils \
+           tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+
+4. Python 3.10:
+       pyenv install 3.10
+
+5. Repo klónozás:
+       git clone https://github.com/lorsmunka/preference_destillation.git ~/preference_distillation
+       cd ~/preference_distillation
+       pyenv local 3.10
+       python -m venv venv
+       source venv/bin/activate
+       pip install --upgrade pip
+       pip install -r requirements.txt
+       pip install -e .
+       pip install huggingface_hub
+
+6. HuggingFace login:
+       python -c "from huggingface_hub import login; login()"
+
+7. Sentences feltöltése (lokálból):
+       scp -i C:\Users\Ors\.ssh\Ors.pem C:\Users\Ors\preference_destillation\sentences\sentences.jsonl ubuntu@10.1.158.223:~/preference_distillation/sentences/
+
+8. Futtatás:
+       screen -S datagen
+       python data_generation/main.py
