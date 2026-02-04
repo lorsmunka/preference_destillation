@@ -188,41 +188,51 @@ class Trainer:
     def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
         sentence_tokens = self._get_sentence_tokens(example)
         steps = example['steps']
+        num_steps = len(steps)
 
-        total_loss = 0.0
-        total_kl_loss = 0.0
-        total_ce_loss = 0.0
-        valid_steps = 0
-        correct_predictions = 0
-        generated_token_ids = []
+        if num_steps == 0:
+            return 0.0, 0.0, 0.0, 0, 0
+
+        all_token_ids = []
+        all_target_logits = []
+        all_target_indices = []
+        for step in steps:
+            token_id, target_logits, target_index = self._prepare_step_data(step)
+            all_token_ids.append(token_id)
+            all_target_logits.append(target_logits)
+            all_target_indices.append(target_index)
+
+        # Full input: sentence + all teacher tokens except last
+        # Causal mask ensures position i only sees tokens 0..i, matching per-step behavior
+        full_input_ids = sentence_tokens + all_token_ids[:-1]
+        input_tensor = torch.tensor([full_input_ids], dtype=torch.long, device=self.device)
+        target_logits_tensor = torch.tensor(all_target_logits, dtype=torch.float32, device=self.device)
+        target_indices_tensor = torch.tensor(all_target_indices, dtype=torch.long, device=self.device)
 
         self.optimizer.zero_grad(set_to_none=True)
+        model_logits = self.model(input_tensor)
 
-        for step in steps:
-            token_id, target_logits, target_index = self._prepare_step_data(
-                step)
+        # Logits at positions [sentence_len-1 .. sentence_len+num_steps-2] predict each output token
+        sentence_length = len(sentence_tokens)
+        prediction_logits = model_logits[0, sentence_length - 1:sentence_length - 1 + num_steps, :]
 
-            input_tensor, target_tensor = self._create_tensors(
-                sentence_tokens + generated_token_ids,
-                target_logits
-            )
+        # Losses summed across positions (matches per-step gradient accumulation)
+        temperature = DISTILLATION_TEMPERATURE
+        student_log_probs = F.log_softmax(prediction_logits / temperature, dim=-1)
+        teacher_probs = F.softmax(target_logits_tensor / temperature, dim=-1)
+        kl_loss = F.kl_div(student_log_probs, teacher_probs, reduction='sum') * (temperature ** 2)
+        ce_loss = F.cross_entropy(
+            prediction_logits / temperature, target_indices_tensor, reduction='sum') * (temperature ** 2)
 
-            loss, kl_loss, ce_loss, is_correct = self._compute_step_loss(
-                input_tensor, target_tensor, target_index)
+        kl_ratio = self._get_current_kl_ratio()
+        total_loss = kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss
 
-            loss.backward()
-
-            total_loss += loss.item()
-            total_kl_loss += kl_loss.item()
-            total_ce_loss += ce_loss.item()
-            valid_steps += 1
-            if is_correct:
-                correct_predictions += 1
-            generated_token_ids.append(token_id)
-
+        total_loss.backward()
         self.optimizer.step()
 
-        return total_loss, total_kl_loss, total_ce_loss, valid_steps, correct_predictions
+        correct_predictions = (torch.argmax(prediction_logits, dim=-1) == target_indices_tensor).sum().item()
+
+        return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
     def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float, float]:
         self.model.eval()
