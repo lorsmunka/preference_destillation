@@ -150,7 +150,7 @@ class Trainer:
         avg_ce_loss = ce_loss_sum / num_steps if num_steps > 0 else 0.0
         accuracy = correct / num_steps if num_steps > 0 else 0.0
         example_elapsed = time() - example_start_time
-        print(f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={avg_loss:.4f}, kl={avg_kl_loss:.4f}, ce={avg_ce_loss:.4f}, acc={accuracy:.4f} -> took {example_elapsed:.2f}s")
+        # print(f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={avg_loss:.4f}, kl={avg_kl_loss:.4f}, ce={avg_ce_loss:.4f}, acc={accuracy:.4f} -> took {example_elapsed:.2f}s")
 
         return loss_sum, kl_loss_sum, ce_loss_sum, num_steps, correct
 
@@ -197,7 +197,8 @@ class Trainer:
         all_target_logits = []
         all_target_indices = []
         for step in steps:
-            token_id, target_logits, target_index = self._prepare_step_data(step)
+            token_id, target_logits, target_index = self._prepare_step_data(
+                step)
             all_token_ids.append(token_id)
             all_target_logits.append(target_logits)
             all_target_indices.append(target_index)
@@ -205,22 +206,28 @@ class Trainer:
         # Full input: sentence + all teacher tokens except last
         # Causal mask ensures position i only sees tokens 0..i, matching per-step behavior
         full_input_ids = sentence_tokens + all_token_ids[:-1]
-        input_tensor = torch.tensor([full_input_ids], dtype=torch.long, device=self.device)
-        target_logits_tensor = torch.tensor(all_target_logits, dtype=torch.float32, device=self.device)
-        target_indices_tensor = torch.tensor(all_target_indices, dtype=torch.long, device=self.device)
+        input_tensor = torch.tensor(
+            [full_input_ids], dtype=torch.long, device=self.device)
+        target_logits_tensor = torch.tensor(
+            all_target_logits, dtype=torch.float32, device=self.device)
+        target_indices_tensor = torch.tensor(
+            all_target_indices, dtype=torch.long, device=self.device)
 
         self.optimizer.zero_grad(set_to_none=True)
         model_logits = self.model(input_tensor)
 
         # Logits at positions [sentence_len-1 .. sentence_len+num_steps-2] predict each output token
         sentence_length = len(sentence_tokens)
-        prediction_logits = model_logits[0, sentence_length - 1:sentence_length - 1 + num_steps, :]
+        prediction_logits = model_logits[0, sentence_length -
+                                         1:sentence_length - 1 + num_steps, :]
 
         # Losses summed across positions (matches per-step gradient accumulation)
         temperature = DISTILLATION_TEMPERATURE
-        student_log_probs = F.log_softmax(prediction_logits / temperature, dim=-1)
+        student_log_probs = F.log_softmax(
+            prediction_logits / temperature, dim=-1)
         teacher_probs = F.softmax(target_logits_tensor / temperature, dim=-1)
-        kl_loss = F.kl_div(student_log_probs, teacher_probs, reduction='sum') * (temperature ** 2)
+        kl_loss = F.kl_div(student_log_probs, teacher_probs,
+                           reduction='sum') * (temperature ** 2)
         ce_loss = F.cross_entropy(
             prediction_logits / temperature, target_indices_tensor, reduction='sum') * (temperature ** 2)
 
@@ -230,7 +237,8 @@ class Trainer:
         total_loss.backward()
         self.optimizer.step()
 
-        correct_predictions = (torch.argmax(prediction_logits, dim=-1) == target_indices_tensor).sum().item()
+        correct_predictions = (torch.argmax(
+            prediction_logits, dim=-1) == target_indices_tensor).sum().item()
 
         return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
