@@ -23,6 +23,7 @@ from shared import (
 )
 from model import Transformer
 from batch_handler import BatchHandler
+from analysis.visualize_logs import update_training_plot
 
 
 class Trainer:
@@ -177,6 +178,12 @@ class Trainer:
             kl_ratio=current_kl_ratio,
             time_seconds=batch_elapsed
         )
+
+        if (batch_idx + 1) % 100 == 0:
+            update_training_plot()
+        else:
+            print(f"{100 - ((batch_idx + 1) % 100)} until next update\n")
+
         self.logger.update_progress(epoch, batch_idx + 1)
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
