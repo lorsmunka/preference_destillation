@@ -79,6 +79,21 @@ class LogVisualizer:
                 print("Invalid option")
 
 
+def update_training_plot():
+    from time import time
+    start_time = time()
+
+    print("Updating training_progress.png...")
+    training_data = load_jsonl(TRAINING_LOG_FILE)
+    if not training_data:
+        return
+
+    analyzer = TrainingAnalyzer(training_data)
+    analyzer.plot(moving_average, exponential_moving_average, show=False)
+    elapsed = time() - start_time
+    print(f"training_progress.png updated -> took {elapsed:.2f}s\n")
+
+
 def main():
     visualizer = LogVisualizer()
     visualizer.run()
