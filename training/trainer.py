@@ -18,6 +18,7 @@ from shared import (
     DISTILLATION_TEMPERATURE,
     KL_RATIO_START,
     KL_RATIO_END,
+    LR_WARMUP_RATIO,
     TEMP_CHECKPOINT_PATH,
     PROMPT_DELIMITER,
 )
@@ -41,10 +42,11 @@ class Trainer:
         batch_count = batch_handler.get_training_batches_radius()[1]
         self.total_training_steps = EPOCH_COUNT * batch_count
         self.current_step = 0
+        self.warmup_steps = int(self.total_training_steps * LR_WARMUP_RATIO)
 
         self.scheduler = CosineAnnealingLR(
             self.optimizer,
-            T_max=self.total_training_steps,
+            T_max=self.total_training_steps - self.warmup_steps,
             eta_min=1e-5
         )
 
@@ -56,7 +58,8 @@ class Trainer:
 
         elapsed_time = time() - start_time
         print(
-            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={self.total_training_steps})\n")
+            f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={self.total_training_steps})")
+        print(f"LR Warmup Steps: {self.warmup_steps}\n")
 
         if self.logger.should_resume():
             if os.path.exists(TEMP_CHECKPOINT_PATH):
@@ -125,8 +128,8 @@ class Trainer:
             batch_steps += example_steps
             batch_correct += example_correct
 
-        self.scheduler.step()
         self.current_step += 1
+        self._update_learning_rate()
         current_lr = self.optimizer.param_groups[0]['lr']
         current_kl_ratio = self._get_current_kl_ratio()
         print(
@@ -210,8 +213,6 @@ class Trainer:
             all_target_logits.append(target_logits)
             all_target_indices.append(target_index)
 
-        # Full input: sentence + all teacher tokens except last
-        # Causal mask ensures position i only sees tokens 0..i, matching per-step behavior
         full_input_ids = sentence_tokens + all_token_ids[:-1]
         input_tensor = torch.tensor(
             [full_input_ids], dtype=torch.long, device=self.device)
@@ -223,18 +224,18 @@ class Trainer:
         self.optimizer.zero_grad(set_to_none=True)
         model_logits = self.model(input_tensor)
 
-        # Logits at positions [sentence_len-1 .. sentence_len+num_steps-2] predict each output token
         sentence_length = len(sentence_tokens)
         prediction_logits = model_logits[0, sentence_length -
                                          1:sentence_length - 1 + num_steps, :]
 
-        # Losses summed across positions (matches per-step gradient accumulation)
         temperature = DISTILLATION_TEMPERATURE
         student_log_probs = F.log_softmax(
             prediction_logits / temperature, dim=-1)
         teacher_probs = F.softmax(target_logits_tensor / temperature, dim=-1)
+
         kl_loss = F.kl_div(student_log_probs, teacher_probs,
                            reduction='sum') * (temperature ** 2)
+
         ce_loss = F.cross_entropy(
             prediction_logits / temperature, target_indices_tensor, reduction='sum') * (temperature ** 2)
 
@@ -380,6 +381,16 @@ class Trainer:
         cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
         return KL_RATIO_END + (KL_RATIO_START - KL_RATIO_END) * cosine_decay
 
+    def _update_learning_rate(self):
+        if self.current_step <= self.warmup_steps:
+            # Linear warmup
+            warmup_factor = self.current_step / self.warmup_steps
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = LEARNING_RATE * warmup_factor
+        else:
+            # Cosine decay after warmup
+            self.scheduler.step()
+
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
         text = example['sentence'] + PROMPT_DELIMITER
         return self.tokenizer.encode(text, add_special_tokens=False)
@@ -473,7 +484,7 @@ class Trainer:
 
         batch_count = self.batch_handler.get_training_batches_radius()[1]
         self.scheduler = CosineAnnealingLR(
-            self.optimizer, T_max=self.total_training_steps, eta_min=1e-5)
+            self.optimizer, T_max=self.total_training_steps - self.warmup_steps, eta_min=1e-5)
 
         epoch = checkpoint['epoch']
 
@@ -482,8 +493,15 @@ class Trainer:
         else:
             self.current_step = epoch * batch_count
 
-        for _ in range(self.current_step):
+        scheduler_steps = max(0, self.current_step - self.warmup_steps)
+        for _ in range(scheduler_steps):
             self.scheduler.step()
+
+        if self.current_step <= self.warmup_steps:
+            warmup_factor = self.current_step / \
+                self.warmup_steps if self.warmup_steps > 0 else 1.0
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = LEARNING_RATE * warmup_factor
 
         elapsed_time = time() - start_time
         print(
