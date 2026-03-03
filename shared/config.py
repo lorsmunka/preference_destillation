@@ -12,7 +12,7 @@ def get_device() -> str:
 
 
 # Model identification
-MODEL_NAME = "google/gemma-3-4b-it"
+MODEL_NAME = "google/gemma-3-12b-it"
 
 # Sentence filtering (for data preparation)
 MIN_SENTENCE_LENGTH = 3
@@ -45,8 +45,8 @@ DISTILLATION_TEMPERATURE = 3.0
 INFERENCE_TEMPERATURE = 0
 
 # Directories
-BATCHES_DIR = "./batches"
-LOGS_DIR = "./logs"
+BATCHES_DIR = "./batches12b"
+LOGS_DIR = "./logs12b"
 CHECKPOINTS_DIR = "./checkpoints"
 
 # File paths

@@ -22,7 +22,8 @@ for i in range(logger.processed_sentence_count, sentence_handler.sentence_count)
         break
 
     sentence = sentence_handler.get_sentence(i)
-    training_example, skip_reason = model_handler.generate_training_example(sentence)
+    training_example, skip_reason = model_handler.generate_training_example(
+        sentence)
 
     logger.processed_sentence_count += 1
     batch_processed += 1
@@ -31,12 +32,15 @@ for i in range(logger.processed_sentence_count, sentence_handler.sentence_count)
         batch_examples.append(training_example)
         logger.successful_sentence_count += 1
     else:
-        batch_skip_reasons[skip_reason] = batch_skip_reasons.get(skip_reason, 0) + 1
+        batch_skip_reasons[skip_reason] = batch_skip_reasons.get(
+            skip_reason, 0) + 1
 
     if len(batch_examples) == BATCH_SIZE:
         batch_time = time() - batch_start_time
-        target_examples = min(MAX_TRAINING_EXAMPLES, sentence_handler.sentence_count)
-        progress_percent = (logger.successful_sentence_count / target_examples) * 100
+        target_examples = min(MAX_TRAINING_EXAMPLES,
+                              sentence_handler.sentence_count)
+        progress_percent = (
+            logger.successful_sentence_count / target_examples) * 100
 
         print(f"Saving batch {logger.batch_count}, progress: {progress_percent:.2f}% ({logger.successful_sentence_count}/{target_examples}), "
               f"batch time: {batch_time:.2f}s, avg per sentence: {batch_time / batch_processed:.2f}s")
