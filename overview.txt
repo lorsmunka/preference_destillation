@@ -9,10 +9,10 @@ Reddit comment classification -> deterministic JSON. KL+CE loss, reduced output 
 BUGS
 ====
 
-[HIGH] Optimizer state not loaded on resume (trainer.py:493)
-  save_checkpoint saves optimizer_state_dict, but load_checkpoint creates a fresh
-  AdamW instead of loading it. Adam momentum/adaptive rates are lost on every resume.
-  This causes a training quality dip after each resume.
+[HIGH] Optimizer state not loaded on resume (trainer.py:493) [FIXED]
+  save_checkpoint saves optimizer_state_dict, but load_checkpoint created a fresh
+  AdamW instead of loading it. Adam momentum/adaptive rates were lost on every resume.
+  Now loads both optimizer and scheduler state dicts from checkpoint when available.
 
 [MED] Config vs documentation mismatch
   config.py: HIDDEN_DIM=384, NUM_LAYERS=18, NUM_HEADS=8 (~143M params)

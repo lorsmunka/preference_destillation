@@ -493,11 +493,10 @@ class Trainer:
         self.model.load_state_dict(checkpoint['model_state_dict'])
 
         self.optimizer = AdamW(self.model.parameters(), lr=LEARNING_RATE)
+        if 'optimizer_state_dict' in checkpoint:
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         batch_count = self.batch_handler.get_training_batches_radius()[1]
-        self.scheduler = CosineAnnealingLR(
-            self.optimizer, T_max=self.total_training_steps - self.warmup_steps, eta_min=1e-5)
-
         epoch = checkpoint['epoch']
 
         if 'current_step' in checkpoint:
@@ -505,15 +504,22 @@ class Trainer:
         else:
             self.current_step = epoch * batch_count
 
-        scheduler_steps = max(0, self.current_step - self.warmup_steps)
-        for _ in range(scheduler_steps):
-            self.scheduler.step()
+        if 'scheduler_state_dict' in checkpoint:
+            self.scheduler = CosineAnnealingLR(
+                self.optimizer, T_max=self.total_training_steps - self.warmup_steps, eta_min=1e-5)
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        else:
+            self.scheduler = CosineAnnealingLR(
+                self.optimizer, T_max=self.total_training_steps - self.warmup_steps, eta_min=1e-5)
+            scheduler_steps = max(0, self.current_step - self.warmup_steps)
+            for _ in range(scheduler_steps):
+                self.scheduler.step()
 
-        if self.current_step <= self.warmup_steps:
-            warmup_factor = self.current_step / \
-                self.warmup_steps if self.warmup_steps > 0 else 1.0
-            for param_group in self.optimizer.param_groups:
-                param_group['lr'] = LEARNING_RATE * warmup_factor
+            if self.current_step <= self.warmup_steps:
+                warmup_factor = self.current_step / \
+                    self.warmup_steps if self.warmup_steps > 0 else 1.0
+                for param_group in self.optimizer.param_groups:
+                    param_group['lr'] = LEARNING_RATE * warmup_factor
 
         elapsed_time = time() - start_time
         print(
