@@ -20,12 +20,9 @@ BUGS
   CLAUDE.md: "KL: 0.9->0.1" but config has KL_RATIO_START=1, KL_RATIO_END=1
   These are all out of sync. Anyone reading the thesis/CLAUDE.md gets wrong numbers.
 
-[LOW] Duplicate loss computation (trainer.py)
-  train_single_example (line 232-241) computes KL+CE inline for training.
-  _compute_Kullback_Leibler_Divergence_Loss + _compute_Cross_Entropy_Loss do
-  the same thing for eval. But training uses reduction='sum', eval uses
-  reduction='batchmean'. They produce the same result here (batch=1 per step
-  in eval), but it's confusing and fragile.
+[LOW] Duplicate loss computation (trainer.py) [FIXED]
+  train_single_example and eval used separate loss implementations.
+  Now both use a single _compute_loss() method with a reduction parameter.
 
 
 OVER-ENGINEERING

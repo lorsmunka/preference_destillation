@@ -229,19 +229,8 @@ class Trainer:
         prediction_logits = model_logits[0, sentence_length -
                                          1:sentence_length - 1 + num_steps, :]
 
-        temperature = DISTILLATION_TEMPERATURE
-        student_log_probs = F.log_softmax(
-            prediction_logits / temperature, dim=-1)
-        teacher_probs = F.softmax(target_logits_tensor / temperature, dim=-1)
-
-        kl_loss = F.kl_div(student_log_probs, teacher_probs,
-                           reduction='sum') * (temperature ** 2)
-
-        ce_loss = F.cross_entropy(
-            prediction_logits / temperature, target_indices_tensor, reduction='sum') * (temperature ** 2)
-
-        kl_ratio = self._get_current_kl_ratio()
-        total_loss = kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss
+        kl_loss, ce_loss, total_loss = self._compute_loss(
+            prediction_logits, target_logits_tensor, target_indices_tensor, reduction='sum')
 
         total_loss.backward()
         self.optimizer.step()
@@ -372,14 +361,8 @@ class Trainer:
         model_logits = self.model(input_tensor)
         last_token_logits = model_logits[:, -1, :]
 
-        kl_loss = self._compute_Kullback_Leibler_Divergence_Loss(
-            last_token_logits, target_tensor)
-
-        ce_loss = self._compute_Cross_Entropy_Loss(
-            last_token_logits, target_index)
-
-        kl_ratio = self._get_current_kl_ratio()
-        combined_loss = kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss
+        kl_loss, ce_loss, combined_loss = self._compute_loss(
+            last_token_logits, target_tensor, torch.tensor([target_index], device=self.device))
 
         predicted_idx = torch.argmax(last_token_logits[0]).item()
         is_correct = predicted_idx == target_index
@@ -424,24 +407,21 @@ class Trainer:
             [target_logits], dtype=torch.float32, device=self.device)
         return input_tensor, target_tensor
 
-    def _compute_Kullback_Leibler_Divergence_Loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor) -> torch.Tensor:
+    def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
+                       target_indices: torch.Tensor, reduction: str = 'batchmean'):
         temperature = DISTILLATION_TEMPERATURE
         student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
         teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
 
         kl_loss = F.kl_div(student_log_probs, teacher_probs,
-                           reduction='batchmean') * (temperature ** 2)
-
-        return kl_loss
-
-    def _compute_Cross_Entropy_Loss(self, student_logits: torch.Tensor, target_index: int) -> torch.Tensor:
-        temperature = DISTILLATION_TEMPERATURE
-        target_tensor = torch.tensor(
-            [target_index], device=student_logits.device)
+                           reduction=reduction) * (temperature ** 2)
         ce_loss = F.cross_entropy(
-            student_logits / temperature, target_tensor) * (temperature ** 2)
+            student_logits / temperature, target_indices, reduction=reduction) * (temperature ** 2)
 
-        return ce_loss
+        kl_ratio = self._get_current_kl_ratio()
+        combined_loss = kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss
+
+        return kl_loss, ce_loss, combined_loss
 
     def save_checkpoint(self, epoch: int, train_loss: float):
         start_time = time()
