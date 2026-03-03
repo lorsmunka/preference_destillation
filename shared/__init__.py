@@ -1,6 +1,7 @@
 from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 from .exit_listener import ExitListener
 from .logger import Logger
+from .classification_accuracy import ClassificationAccuracyCalculator
 from .config import (
     get_device,
     MODEL_NAME,
@@ -34,6 +35,7 @@ __all__ = [
     'DEBUG_TOKEN_MAP_PATH',
     'ExitListener',
     'Logger',
+    'ClassificationAccuracyCalculator',
     'get_device',
     'MODEL_NAME',
     'MIN_SENTENCE_LENGTH',

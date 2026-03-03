@@ -1,6 +1,7 @@
 sentences/*
 probabilities/*
 logs/*
+logs2/*
 batches/*
 checkpoints/*
 __pycache__/*

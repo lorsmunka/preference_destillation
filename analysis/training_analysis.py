@@ -5,6 +5,7 @@ from typing import List, Dict
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+from matplotlib.colors import LinearSegmentedColormap
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from shared import LOGS_DIR
@@ -51,8 +52,22 @@ class TrainingAnalyzer:
             print(f"  Loss: {latest_eval['avg_loss']:.4f}")
             teacher_forced_acc = latest_eval.get('teacher_forced_accuracy', latest_eval.get('accuracy', 0))
             student_acc = latest_eval.get('student_accuracy', 0)
+            classification_acc = latest_eval.get('classification_accuracy', 0)
             print(f"  Teacher-Forced Accuracy: {teacher_forced_acc * 100:.1f}%")
             print(f"  Student Accuracy: {student_acc * 100:.1f}%")
+            print(f"  Classification Accuracy: {classification_acc * 100:.1f}%")
+
+            confusion = latest_eval.get('confusion_matrices')
+            if confusion:
+                print(f"\n  Confusion Matrices:")
+                for category, matrix in confusion.items():
+                    labels = list(matrix.keys())
+                    print(f"\n    {category.upper()}")
+                    header = "    " + f"{'':>12s}" + "".join(f"{l:>12s}" for l in labels)
+                    print(header)
+                    for true_label in labels:
+                        row_counts = [str(matrix[true_label].get(pred, 0)) for pred in labels]
+                        print(f"    {true_label:>12s}" + "".join(f"{c:>12s}" for c in row_counts))
 
         if len(self.train_batches) >= 100:
             recent = self.train_batches[-100:]
@@ -75,8 +90,8 @@ class TrainingAnalyzer:
             print("No training data to plot.")
             return
 
-        fig = plt.figure(figsize=(16, 52))
-        gs = GridSpec(9, 2, figure=fig, hspace=0.35, wspace=0.25, height_ratios=[0.6, 1, 1, 1, 1, 1, 1, 1, 1])
+        fig = plt.figure(figsize=(16, 62))
+        gs = GridSpec(11, 2, figure=fig, hspace=0.35, wspace=0.25, height_ratios=[0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
         losses = [b['loss'] for b in self.train_batches]
         kl_losses = [b.get('kl_loss', 0) for b in self.train_batches]
@@ -315,9 +330,11 @@ class TrainingAnalyzer:
             eval_ep = [d['epoch'] for d in self.eval_epochs]
             teacher_forced_acc = [d.get('teacher_forced_accuracy', d.get('accuracy', 0)) * 100 for d in self.eval_epochs]
             student_acc = [d.get('student_accuracy', 0) * 100 for d in self.eval_epochs]
+            classification_acc = [d.get('classification_accuracy', 0) * 100 for d in self.eval_epochs]
             ax.plot(eval_ep, teacher_forced_acc, marker='o', color='green', linewidth=2, label='Teacher-Forced')
             ax.plot(eval_ep, student_acc, marker='s', color='blue', linewidth=2, label='Student')
-            all_acc = teacher_forced_acc + student_acc
+            ax.plot(eval_ep, classification_acc, marker='^', color='orange', linewidth=2, label='Classification')
+            all_acc = teacher_forced_acc + student_acc + classification_acc
             min_acc = min(all_acc)
             max_acc = max(all_acc)
             padding = (max_acc - min_acc) * 0.1 if max_acc > min_acc else 5
@@ -419,6 +436,46 @@ class TrainingAnalyzer:
         ax.set_ylim([max(0, min_kl_full - padding), max_kl_full + padding])
         ax.legend()
         ax.grid(True, alpha=0.3)
+
+        # ========== CONFUSION MATRICES (latest eval epoch) ==========
+
+        confusion_categories = [
+            (9, 0, 'tone'), (9, 1, 'sentiment'),
+            (10, 0, 'safety'), (10, 1, 'toxicity'),
+        ]
+
+        latest_confusion = None
+        if self.eval_epochs:
+            latest_confusion = self.eval_epochs[-1].get('confusion_matrices')
+
+        cmap = LinearSegmentedColormap.from_list('white_blue', ['white', '#4285f4'])
+
+        for row, col, category in confusion_categories:
+            ax = fig.add_subplot(gs[row, col])
+            if latest_confusion and category in latest_confusion:
+                matrix_data = latest_confusion[category]
+                labels = list(matrix_data.keys())
+                values = np.array([[matrix_data[true_val].get(pred_val, 0)
+                                    for pred_val in labels] for true_val in labels])
+
+                ax.imshow(values, cmap=cmap, aspect='auto')
+                ax.set_xticks(range(len(labels)))
+                ax.set_yticks(range(len(labels)))
+                ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=9)
+                ax.set_yticklabels(labels, fontsize=9)
+                ax.set_xlabel('Predicted')
+                ax.set_ylabel('Ground Truth')
+
+                for i in range(len(labels)):
+                    for j in range(len(labels)):
+                        count = values[i, j]
+                        if count > 0:
+                            color = 'white' if count > values.max() * 0.6 else 'black'
+                            ax.text(j, i, str(int(count)), ha='center', va='center',
+                                    fontsize=10, fontweight='bold', color=color)
+            else:
+                ax.text(0.5, 0.5, 'No confusion data yet', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title(f'Confusion Matrix - {category.capitalize()} (Epoch {self.eval_epochs[-1]["epoch"] if self.eval_epochs else "?"})')
 
         save_path = Path(LOGS_DIR) / 'training_progress.png'
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
