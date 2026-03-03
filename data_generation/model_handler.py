@@ -24,7 +24,7 @@ class ModelHandler:
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
-            quantization_config=BitsAndBytesConfig(load_in_8bit=True)
+            quantization_config=BitsAndBytesConfig(load_in_4bit=True)
         )
         elapsed_time = time() - start_time
         print(
