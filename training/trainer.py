@@ -29,14 +29,14 @@ from analysis.visualize_logs import update_training_plot
 
 
 class Trainer:
-    def __init__(self, model: Transformer, vocabulary: dict, tokenizer, logger: Logger, exit_listener: ExitListener, batch_handler: BatchHandler):
+    def __init__(self, model: Transformer, logger: Logger, exit_listener: ExitListener, batch_handler: BatchHandler):
         start_time = time()
         print("Initializing Trainer...")
 
         self.device = get_device()
         self.model = model.to(self.device)
-        self.vocabulary = vocabulary
-        self.tokenizer = tokenizer
+        self.vocabulary = model.vocabulary
+        self.tokenizer = model.tokenizer
         self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
 
         self.batch_handler = batch_handler
@@ -191,7 +191,7 @@ class Trainer:
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
         print("Exit requested. Saving progress...")
-        self.save_temp_checkpoint(epoch, avg_batch_loss)
+        self.save_checkpoint(epoch, avg_batch_loss, filepath=TEMP_CHECKPOINT_PATH)
         self.logger.save()
         return None
 
@@ -422,8 +422,11 @@ class Trainer:
 
         return kl_loss, ce_loss, combined_loss
 
-    def save_checkpoint(self, epoch: int, train_loss: float):
+    def save_checkpoint(self, epoch: int, train_loss: float, filepath: str = None):
         start_time = time()
+
+        if filepath is None:
+            filepath = os.path.join('checkpoints', f'checkpoint_epoch_{epoch}.pt')
 
         checkpoint = {
             'epoch': epoch,
@@ -437,32 +440,10 @@ class Trainer:
         if not os.path.exists('checkpoints'):
             os.makedirs('checkpoints')
 
-        filepath = os.path.join('checkpoints', f'checkpoint_epoch_{epoch}.pt')
         torch.save(checkpoint, filepath)
 
         elapsed_time = time() - start_time
         print(f"Checkpoint saved: {filepath} -> took {elapsed_time:.2f}s\n")
-
-    def save_temp_checkpoint(self, epoch: int, train_loss: float):
-        start_time = time()
-
-        checkpoint = {
-            'epoch': epoch,
-            'current_step': self.current_step,
-            'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
-            'scheduler_state_dict': self.scheduler.state_dict(),
-            'train_loss': train_loss,
-        }
-
-        if not os.path.exists('checkpoints'):
-            os.makedirs('checkpoints')
-
-        torch.save(checkpoint, TEMP_CHECKPOINT_PATH)
-
-        elapsed_time = time() - start_time
-        print(
-            f"Temp checkpoint saved: {TEMP_CHECKPOINT_PATH} -> took {elapsed_time:.2f}s\n")
 
     def load_checkpoint(self, filepath: str) -> int:
         start_time = time()

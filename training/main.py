@@ -9,8 +9,7 @@ logger = Logger()
 exit_listener = ExitListener()
 batch_handler = BatchHandler()
 
-trainer = Trainer(
-    transformer, transformer.vocabulary, transformer.tokenizer, logger, exit_listener, batch_handler)
+trainer = Trainer(transformer, logger, exit_listener, batch_handler)
 
 batch_start, batch_end = batch_handler.get_training_batches_radius()
 test_start, test_end = batch_handler.get_test_batches_radius()

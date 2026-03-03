@@ -35,10 +35,8 @@ OVER-ENGINEERING
   are never called externally. The only callsite uses .update() and .get_accuracy().
   Lots of docstrings on internal-only methods.
 
-[LOW] Redundant Trainer constructor params
-  Trainer.__init__ takes vocabulary and tokenizer separately, but both come from
-  model (main.py:13 passes transformer.vocabulary, transformer.tokenizer).
-  Just read them from self.model inside Trainer.
+[LOW] Redundant Trainer constructor params [FIXED]
+  Trainer now reads vocabulary and tokenizer from model directly.
 
 [LOW] Unused code [FIXED]
   Deleted: BatchHandler.get_batch_size, vocabulary['token_to_index'] and
@@ -46,8 +44,8 @@ OVER-ENGINEERING
   Kept: get_section_positions (consolidated from 4 getters) and
   get_label_size_for_softness (needed for future soft label experiments).
 
-[LOW] save_checkpoint and save_temp_checkpoint are near-identical
-  Only difference is the filepath. Could be one function with a path param.
+[LOW] save_checkpoint and save_temp_checkpoint are near-identical [FIXED]
+  Merged into save_checkpoint with optional filepath param.
 
 
 INCONSISTENCIES & ODDITIES
