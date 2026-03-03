@@ -2,7 +2,7 @@ from time import time
 from typing import Dict, List, Tuple, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 from shared import Utilities, MODEL_NAME, MAX_GENERATION_STEPS, get_device
 
@@ -24,7 +24,7 @@ class ModelHandler:
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             device_map="auto",
-            dtype=torch.bfloat16
+            quantization_config=BitsAndBytesConfig(load_in_8bit=True)
         )
         elapsed_time = time() - start_time
         print(
