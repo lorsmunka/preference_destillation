@@ -85,7 +85,7 @@ class TrainingAnalyzer:
         if any(kl_ratios):
             print(f"KL ratio - Start: {kl_ratios[0]:.4f}, Current: {kl_ratios[-1]:.4f}")
 
-    def plot(self, moving_average_func, exponential_moving_average_func, show=True):
+    def plot(self, moving_average_func, show=True):
         if not self.train_batches:
             print("No training data to plot.")
             return

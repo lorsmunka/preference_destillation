@@ -52,7 +52,6 @@ class Trainer:
         )
 
         self.vocab_size = vocabulary['vocab_size']
-        self.token_to_index = vocabulary['token_to_index']
 
         self.logger = logger
         self.exit_listener = exit_listener

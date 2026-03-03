@@ -1,7 +1,7 @@
 import json
 from time import time
 
-from shared import BATCHES_DIR, BATCH_SIZE, TRAINING_TEST_RATIO
+from shared import BATCHES_DIR, TRAINING_TEST_RATIO
 
 
 class BatchHandler:
@@ -19,9 +19,6 @@ class BatchHandler:
             f"Loaded batch {batch_index} -> took {elapsed_time:.2f} seconds.")
 
         return batch
-
-    def get_batch_size(self):
-        return BATCH_SIZE
 
     def get_batch_count(self):
         import os

@@ -199,15 +199,10 @@ JSON:
             section_boundaries[section_name][1] = len(token_list)
 
         token_to_id = {}
-        token_to_index = {}
-        id_to_index = {}
 
         for idx, token in enumerate(token_list):
             token_ids = tokenizer.convert_tokens_to_ids([token])
-            token_id = token_ids[0]
-            token_to_id[token] = token_id
-            token_to_index[token] = idx
-            id_to_index[token_id] = idx
+            token_to_id[token] = token_ids[0]
 
         positions = {
             section_name: (start_end[0], start_end[1])
@@ -218,8 +213,6 @@ JSON:
         vocabulary = {
             'token_list': token_list,
             'token_to_id': token_to_id,
-            'token_to_index': token_to_index,
-            'id_to_index': id_to_index,
             'positions': positions,
             'vocab_size': len(token_list),
         }

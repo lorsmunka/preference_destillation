@@ -14,11 +14,7 @@ BUGS
   AdamW instead of loading it. Adam momentum/adaptive rates were lost on every resume.
   Now loads both optimizer and scheduler state dicts from checkpoint when available.
 
-[MED] Config vs documentation mismatch
-  config.py: HIDDEN_DIM=384, NUM_LAYERS=18, NUM_HEADS=8 (~143M params)
-  thesis.txt: hidden_dim=1024, 16 layers, 16 heads (~537M params)
-  CLAUDE.md: "KL: 0.9->0.1" but config has KL_RATIO_START=1, KL_RATIO_END=1
-  These are all out of sync. Anyone reading the thesis/CLAUDE.md gets wrong numbers.
+[MED] Config vs documentation mismatch [SKIP - will update thesis separately]
 
 [LOW] Duplicate loss computation (trainer.py) [FIXED]
   train_single_example and eval used separate loss implementations.
@@ -32,9 +28,7 @@ OVER-ENGINEERING
   Extracted _plot_timeseries helper, loop over metrics list.
   ~485 lines -> ~250 lines, same output.
 
-[MED] Utilities is a class with only @classmethod methods
-  No state, no instances. It's a module pretending to be a class.
-  build_vocabulary, create_evaluation_prompt, etc. should just be functions.
+[MED] Utilities is a class with only @classmethod methods [KEEP - intentional style choice]
 
 [MED] ClassificationAccuracyCalculator has unused public methods
   compare_classifications, get_category_accuracies, get_stats, parse_json_from_response
@@ -46,13 +40,11 @@ OVER-ENGINEERING
   model (main.py:13 passes transformer.vocabulary, transformer.tokenizer).
   Just read them from self.model inside Trainer.
 
-[LOW] Unused code
-  - BatchHandler.get_batch_size() - never called
-  - Utilities position getters (get_example_token_positions, etc.) - never called
-  - Utilities.get_label_size_for_softness - never called
-  - vocabulary['token_to_index'] assigned in trainer but never read
-  - vocabulary['id_to_index'] built but never used
-  - exponential_moving_average defined, passed to plot(), but plot() never uses it
+[LOW] Unused code [FIXED]
+  Deleted: BatchHandler.get_batch_size, vocabulary['token_to_index'] and
+  ['id_to_index'], exponential_moving_average.
+  Kept: get_section_positions (consolidated from 4 getters) and
+  get_label_size_for_softness (needed for future soft label experiments).
 
 [LOW] save_checkpoint and save_temp_checkpoint are near-identical
   Only difference is the filepath. Could be one function with a path param.

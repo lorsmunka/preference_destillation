@@ -26,14 +26,6 @@ def moving_average(values: List[float], window: int) -> np.ndarray:
     return np.convolve(values, np.ones(window) / window, mode='valid')
 
 
-def exponential_moving_average(values: List[float], alpha: float = 0.1) -> np.ndarray:
-    ema = np.zeros(len(values))
-    ema[0] = values[0]
-    for i in range(1, len(values)):
-        ema[i] = alpha * values[i] + (1 - alpha) * ema[i - 1]
-    return ema
-
-
 class LogVisualizer:
     def __init__(self):
         generation_data = load_jsonl(GENERATION_LOG_FILE)
@@ -65,13 +57,13 @@ class LogVisualizer:
                 self.generation_analyzer.plot(moving_average)
             elif choice == '4':
                 self.training_analyzer.plot(
-                    moving_average, exponential_moving_average)
+                    moving_average)
             elif choice == '5':
                 self.generation_analyzer.print_summary()
                 self.training_analyzer.print_summary()
                 self.generation_analyzer.plot(moving_average)
                 self.training_analyzer.plot(
-                    moving_average, exponential_moving_average)
+                    moving_average)
             elif choice == 'q':
                 print("Bye!")
                 break
@@ -89,7 +81,7 @@ def update_training_plot():
         return
 
     analyzer = TrainingAnalyzer(training_data)
-    analyzer.plot(moving_average, exponential_moving_average, show=False)
+    analyzer.plot(moving_average, show=False)
     elapsed = time() - start_time
     print(f"training_progress.png updated -> took {elapsed:.2f}s\n")
 
