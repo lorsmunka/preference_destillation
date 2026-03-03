@@ -91,7 +91,8 @@ class TrainingAnalyzer:
             return
 
         fig = plt.figure(figsize=(16, 62))
-        gs = GridSpec(11, 2, figure=fig, hspace=0.35, wspace=0.25, height_ratios=[0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        gs = GridSpec(11, 2, figure=fig, hspace=0.35, wspace=0.25,
+                      height_ratios=[0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
         losses = [b['loss'] for b in self.train_batches]
         kl_losses = [b.get('kl_loss', 0) for b in self.train_batches]
@@ -100,254 +101,48 @@ class TrainingAnalyzer:
         lrs = [b['learning_rate'] for b in self.train_batches]
         batch_indices = list(range(1, len(self.train_batches) + 1))
 
-        # Calculate summary stats (using 200 batch windows)
-        current_acc = np.mean(accuracies[-200:]) if len(accuracies) >= 200 else accuracies[-1] if accuracies else 0
-        previous_acc = np.mean(accuracies[-400:-200]) if len(accuracies) >= 400 else (accuracies[0] if accuracies else 0)
-        acc_diff = current_acc - previous_acc
-        acc_trend = f"↑ +{acc_diff:.1f}%" if acc_diff > 0 else f"↓ {acc_diff:.1f}%" if acc_diff < 0 else "→"
+        # --- Summary panel ---
+        self._plot_summary_panel(fig.add_subplot(gs[0, :]), accuracies, losses, ce_losses, kl_losses)
 
-        current_loss = np.mean(losses[-200:]) if len(losses) >= 200 else losses[-1] if losses else 0
-        previous_loss = np.mean(losses[-400:-200]) if len(losses) >= 400 else (losses[0] if losses else 0)
-        loss_diff = current_loss - previous_loss
-        loss_trend = f"↓ {loss_diff:.4f}" if loss_diff < 0 else f"↑ +{loss_diff:.4f}" if loss_diff > 0 else "→"
+        # --- Metric time-series (rows 1-4: 90%-ylim left, recent-1000 right) ---
+        metrics = [
+            ('Accuracy', accuracies, 'lightgreen', 'green', '%'),
+            ('Loss', losses, 'lightcoral', 'red', ''),
+            ('CE Loss', ce_losses, 'lightskyblue', 'blue', ''),
+            ('KL Loss', kl_losses, 'plum', 'purple', ''),
+        ]
 
-        current_ce = np.mean(ce_losses[-200:]) if len(ce_losses) >= 200 else ce_losses[-1] if ce_losses else 0
-        current_kl = np.mean(kl_losses[-200:]) if len(kl_losses) >= 200 else kl_losses[-1] if kl_losses else 0
-
-        epochs_done = len(self.train_epochs)
-
-        # Summary panel
-        ax_summary = fig.add_subplot(gs[0, :])
-        ax_summary.axis('off')
-
-        summary_text = (
-            f"Accuracy: {current_acc:.1f}% ({acc_trend})        "
-            f"Loss: {current_loss:.4f} ({loss_trend})        "
-            f"CE: {current_ce:.4f}        "
-            f"KL: {current_kl:.4f}        "
-            f"Batches: {len(self.train_batches):,}        "
-            f"Epochs: {epochs_done}"
-        )
-        ax_summary.text(0.5, 0.5, summary_text, transform=ax_summary.transAxes,
-                       fontsize=14, fontweight='bold', ha='center', va='center',
-                       bbox=dict(boxstyle='round', facecolor='white', edgecolor='gray', alpha=0.9))
-
-        # Prepare recent 1000 window data (left side)
-        window_1000 = min(1000, len(losses))
-        if len(losses) > window_1000:
-            losses_1000 = losses[-window_1000:]
-            kl_losses_1000 = kl_losses[-window_1000:]
-            ce_losses_1000 = ce_losses[-window_1000:]
-            accuracies_1000 = accuracies[-window_1000:]
-            indices_1000 = batch_indices[-window_1000:]
-        else:
-            losses_1000 = losses
-            kl_losses_1000 = kl_losses
-            ce_losses_1000 = ce_losses
-            accuracies_1000 = accuracies
-            indices_1000 = batch_indices
-
-        # All data (right side) - y-axis will be constrained based on last 90% of data
-        losses_all = losses
-        kl_losses_all = kl_losses
-        ce_losses_all = ce_losses
-        accuracies_all = accuracies
-        indices_all = batch_indices
-
-        # Calculate start index for last 90% of data (ignore first 10%)
+        ma_window = max(40, int(len(losses) * 0.03))
         last_90_start = int(len(losses) * 0.1)
-        accuracies_last_90 = accuracies[last_90_start:] if last_90_start < len(accuracies) else accuracies
-        losses_last_90 = losses[last_90_start:] if last_90_start < len(losses) else losses
-        ce_losses_last_90 = ce_losses[last_90_start:] if last_90_start < len(ce_losses) else ce_losses
-        kl_losses_last_90 = kl_losses[last_90_start:] if last_90_start < len(kl_losses) else kl_losses
+        window_1000 = min(1000, len(losses))
 
-        # Accuracy - All (y-axis based on last 90% of data)
-        ax = fig.add_subplot(gs[1, 0])
-        ax.plot(indices_all, accuracies_all, color='lightgreen', alpha=0.5, linewidth=0.7)
-        ma_window_all = max(40, int(len(accuracies_all) * 0.03))
-        if len(accuracies_all) >= ma_window_all:
-            ma_acc = moving_average_func(accuracies_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_acc, color='green', linewidth=2, label=f'MA({ma_window_all})')
-        if len(accuracies_all) >= 200:
-            last_200_avg = np.mean(accuracies_all[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.1f}%')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('Accuracy (%)')
-        ax.set_title(f'Accuracy - All ({len(accuracies_all)} batches, y-axis: last 90%)')
-        min_acc_90 = min(accuracies_last_90)
-        max_acc_90 = max(accuracies_last_90)
-        padding = (max_acc_90 - min_acc_90) * 0.1 if max_acc_90 > min_acc_90 else 5
-        ax.set_ylim([max(0, min_acc_90 - padding), min(100, max_acc_90 + padding)])
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+        for row_offset, (name, data, light_color, dark_color, unit) in enumerate(metrics):
+            row = row_offset + 1
+            default_padding = 5 if name == 'Accuracy' else 0.1
+            is_percent = name == 'Accuracy'
+            data_90 = data[last_90_start:] if last_90_start < len(data) else data
 
-        # Accuracy - Recent 1000
-        ax = fig.add_subplot(gs[1, 1])
-        ax.plot(indices_1000, accuracies_1000, color='lightgreen', alpha=0.5, linewidth=0.7)
-        if len(accuracies_1000) >= 40:
-            ma40_acc = moving_average_func(accuracies_1000, 40)
-            ax.plot(indices_1000[39:], ma40_acc, color='green', linewidth=2, label='MA(40)')
-        if len(accuracies_1000) >= 200:
-            last_200_avg = np.mean(accuracies_1000[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.1f}%')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('Accuracy (%)')
-        ax.set_title(f'Accuracy - Recent ({window_1000} batches)')
-        min_acc = min(accuracies_1000)
-        max_acc = max(accuracies_1000)
-        padding = (max_acc - min_acc) * 0.1 if max_acc > min_acc else 5
-        ax.set_ylim([max(0, min_acc - padding), min(100, max_acc + padding)])
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+            # Left: all data, y-axis from last 90%
+            self._plot_timeseries(
+                fig.add_subplot(gs[row, 0]), batch_indices, data, moving_average_func,
+                light_color, dark_color, name, f'{name} - All ({len(data)} batches, y-axis: last 90%)',
+                ma_window=ma_window, ylim_data=data_90, default_padding=default_padding,
+                is_percent=is_percent, show_last_200_avg=True)
 
-        # Loss - All (y-axis based on last 90% of data)
-        ax = fig.add_subplot(gs[2, 0])
-        ax.plot(indices_all, losses_all, color='lightcoral', alpha=0.5, linewidth=0.7)
-        if len(losses_all) >= ma_window_all:
-            ma_loss = moving_average_func(losses_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_loss, color='red', linewidth=2, label=f'MA({ma_window_all})')
-        if len(losses_all) >= 200:
-            last_200_avg = np.mean(losses_all[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.4f}')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('Loss')
-        ax.set_title(f'Loss - All ({len(losses_all)} batches, y-axis: last 90%)')
-        min_loss_90 = min(losses_last_90)
-        max_loss_90 = max(losses_last_90)
-        padding = (max_loss_90 - min_loss_90) * 0.1 if max_loss_90 > min_loss_90 else 0.1
-        ax.set_ylim([max(0, min_loss_90 - padding), max_loss_90 + padding])
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+            # Right: recent window
+            recent_data = data[-window_1000:]
+            recent_indices = batch_indices[-window_1000:]
+            self._plot_timeseries(
+                fig.add_subplot(gs[row, 1]), recent_indices, recent_data, moving_average_func,
+                light_color, dark_color, name, f'{name} - Recent ({window_1000} batches)',
+                ma_window=40, ylim_data=recent_data, default_padding=default_padding,
+                is_percent=is_percent, show_last_200_avg=True)
 
-        # Loss - Recent 1000
-        ax = fig.add_subplot(gs[2, 1])
-        ax.plot(indices_1000, losses_1000, color='lightcoral', alpha=0.5, linewidth=0.7)
-        if len(losses_1000) >= 40:
-            ma40_loss = moving_average_func(losses_1000, 40)
-            ax.plot(indices_1000[39:], ma40_loss, color='red', linewidth=2, label='MA(40)')
-        if len(losses_1000) >= 200:
-            last_200_avg = np.mean(losses_1000[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.4f}')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('Loss')
-        ax.set_title(f'Loss - Recent ({window_1000} batches)')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
+        # --- Epoch summaries (row 5) ---
+        self._plot_epoch_loss(fig.add_subplot(gs[5, 0]))
+        self._plot_epoch_accuracy(fig.add_subplot(gs[5, 1]))
 
-        # CE Loss - All (y-axis based on last 90% of data)
-        ax = fig.add_subplot(gs[3, 0])
-        ax.plot(indices_all, ce_losses_all, color='lightskyblue', alpha=0.5, linewidth=0.7)
-        if len(ce_losses_all) >= ma_window_all:
-            ma_ce = moving_average_func(ce_losses_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_ce, color='blue', linewidth=2, label=f'MA({ma_window_all})')
-        if len(ce_losses_all) >= 200:
-            last_200_avg = np.mean(ce_losses_all[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.4f}')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('CE Loss')
-        ax.set_title(f'CE Loss - All ({len(ce_losses_all)} batches, y-axis: last 90%)')
-        min_ce_90 = min(ce_losses_last_90)
-        max_ce_90 = max(ce_losses_last_90)
-        padding = (max_ce_90 - min_ce_90) * 0.1 if max_ce_90 > min_ce_90 else 0.1
-        ax.set_ylim([max(0, min_ce_90 - padding), max_ce_90 + padding])
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        # CE Loss - Recent 1000
-        ax = fig.add_subplot(gs[3, 1])
-        ax.plot(indices_1000, ce_losses_1000, color='lightskyblue', alpha=0.5, linewidth=0.7)
-        if len(ce_losses_1000) >= 40:
-            ma40_ce = moving_average_func(ce_losses_1000, 40)
-            ax.plot(indices_1000[39:], ma40_ce, color='blue', linewidth=2, label='MA(40)')
-        if len(ce_losses_1000) >= 200:
-            last_200_avg = np.mean(ce_losses_1000[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.4f}')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('CE Loss')
-        ax.set_title(f'CE Loss - Recent ({window_1000} batches)')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        # KL Loss - All (y-axis based on last 90% of data)
-        ax = fig.add_subplot(gs[4, 0])
-        ax.plot(indices_all, kl_losses_all, color='plum', alpha=0.5, linewidth=0.7)
-        if len(kl_losses_all) >= ma_window_all:
-            ma_kl = moving_average_func(kl_losses_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_kl, color='purple', linewidth=2, label=f'MA({ma_window_all})')
-        if len(kl_losses_all) >= 200:
-            last_200_avg = np.mean(kl_losses_all[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.4f}')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('KL Loss')
-        ax.set_title(f'KL Loss - All ({len(kl_losses_all)} batches, y-axis: last 90%)')
-        min_kl_90 = min(kl_losses_last_90)
-        max_kl_90 = max(kl_losses_last_90)
-        padding = (max_kl_90 - min_kl_90) * 0.1 if max_kl_90 > min_kl_90 else 0.1
-        ax.set_ylim([max(0, min_kl_90 - padding), max_kl_90 + padding])
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        # KL Loss - Recent 1000
-        ax = fig.add_subplot(gs[4, 1])
-        ax.plot(indices_1000, kl_losses_1000, color='plum', alpha=0.5, linewidth=0.7)
-        if len(kl_losses_1000) >= 40:
-            ma40_kl = moving_average_func(kl_losses_1000, 40)
-            ax.plot(indices_1000[39:], ma40_kl, color='purple', linewidth=2, label='MA(40)')
-        if len(kl_losses_1000) >= 200:
-            last_200_avg = np.mean(kl_losses_1000[-200:])
-            ax.axhline(y=last_200_avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {last_200_avg:.4f}')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('KL Loss')
-        ax.set_title(f'KL Loss - Recent ({window_1000} batches)')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        # Epoch Summary - Loss
-        ax = fig.add_subplot(gs[5, 0])
-        if self.train_epochs and self.eval_epochs:
-            train_ep = [d['epoch'] for d in self.train_epochs]
-            train_loss = [d['avg_loss'] for d in self.train_epochs]
-            eval_ep = [d['epoch'] for d in self.eval_epochs]
-            eval_loss = [d['avg_loss'] for d in self.eval_epochs]
-            ax.plot(train_ep, train_loss, marker='o', color='red', linewidth=2, label='Train')
-            ax.plot(eval_ep, eval_loss, marker='s', color='blue', linewidth=2, label='Eval')
-            ax.legend()
-        elif self.train_epochs:
-            train_ep = [d['epoch'] for d in self.train_epochs]
-            train_loss = [d['avg_loss'] for d in self.train_epochs]
-            ax.plot(train_ep, train_loss, marker='o', color='red', linewidth=2, label='Train')
-            ax.legend()
-        else:
-            ax.text(0.5, 0.5, 'No epoch data yet', ha='center', va='center', transform=ax.transAxes)
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel('Loss')
-        ax.set_title('Epoch Summary - Loss')
-        ax.grid(True, alpha=0.3)
-
-        # Epoch Summary - Eval Accuracy
-        ax = fig.add_subplot(gs[5, 1])
-        if self.eval_epochs:
-            eval_ep = [d['epoch'] for d in self.eval_epochs]
-            teacher_forced_acc = [d.get('teacher_forced_accuracy', d.get('accuracy', 0)) * 100 for d in self.eval_epochs]
-            student_acc = [d.get('student_accuracy', 0) * 100 for d in self.eval_epochs]
-            classification_acc = [d.get('classification_accuracy', 0) * 100 for d in self.eval_epochs]
-            ax.plot(eval_ep, teacher_forced_acc, marker='o', color='green', linewidth=2, label='Teacher-Forced')
-            ax.plot(eval_ep, student_acc, marker='s', color='blue', linewidth=2, label='Student')
-            ax.plot(eval_ep, classification_acc, marker='^', color='orange', linewidth=2, label='Classification')
-            all_acc = teacher_forced_acc + student_acc + classification_acc
-            min_acc = min(all_acc)
-            max_acc = max(all_acc)
-            padding = (max_acc - min_acc) * 0.1 if max_acc > min_acc else 5
-            ax.set_ylim([max(0, min_acc - padding), min(100, max_acc + padding)])
-            ax.legend()
-        else:
-            ax.text(0.5, 0.5, 'No evaluation data yet', ha='center', va='center', transform=ax.transAxes)
-        ax.set_xlabel('Epoch')
-        ax.set_ylabel('Accuracy (%)')
-        ax.set_title('Epoch Summary - Eval Accuracy')
-        ax.grid(True, alpha=0.3)
-
-        # Learning Rate Schedule
+        # --- LR and KL ratio schedules (row 6) ---
         ax = fig.add_subplot(gs[6, 0])
         ax.plot(batch_indices, lrs, color='orange', linewidth=2, label='Learning Rate')
         ax.set_xlabel('Batch')
@@ -357,7 +152,6 @@ class TrainingAnalyzer:
         ax.legend()
         ax.grid(True, alpha=0.3)
 
-        # KL Ratio Schedule
         ax = fig.add_subplot(gs[6, 1])
         kl_ratios = [b.get('kl_ratio', 0) for b in self.train_batches]
         if any(kl_ratios):
@@ -371,78 +165,128 @@ class TrainingAnalyzer:
         ax.set_title('KL Ratio Schedule')
         ax.grid(True, alpha=0.3)
 
-        # ========== FULL RANGE CHARTS (all data for y-axis limits) ==========
+        # --- Full range charts (rows 7-8) ---
+        for row_offset, (name, data, light_color, dark_color, unit) in enumerate(metrics):
+            row = 7 + row_offset // 2
+            col = row_offset % 2
+            default_padding = 5 if name == 'Accuracy' else 0.1
+            is_percent = name == 'Accuracy'
 
-        # Accuracy - Full Range
-        ax = fig.add_subplot(gs[7, 0])
-        ax.plot(indices_all, accuracies_all, color='lightgreen', alpha=0.5, linewidth=0.7)
-        if len(accuracies_all) >= ma_window_all:
-            ma_acc = moving_average_func(accuracies_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_acc, color='green', linewidth=2, label=f'MA({ma_window_all})')
+            self._plot_timeseries(
+                fig.add_subplot(gs[row, col]), batch_indices, data, moving_average_func,
+                light_color, dark_color, name, f'{name} - Full Range ({len(data)} batches)',
+                ma_window=ma_window, ylim_data=data, default_padding=default_padding,
+                is_percent=is_percent, show_last_200_avg=False, ylim_padding_ratio=0.05)
+
+        # --- Confusion matrices (rows 9-10) ---
+        self._plot_confusion_matrices(fig, gs)
+
+        save_path = Path(LOGS_DIR) / 'training_progress.png'
+        plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        if show:
+            print(f"Saved: {save_path}")
+
+    def _plot_timeseries(self, ax, indices, data, moving_average_func,
+                         light_color, dark_color, ylabel, title,
+                         ma_window=40, ylim_data=None, default_padding=0.1,
+                         is_percent=False, show_last_200_avg=True, ylim_padding_ratio=0.1):
+        ax.plot(indices, data, color=light_color, alpha=0.5, linewidth=0.7)
+
+        if len(data) >= ma_window:
+            ma = moving_average_func(data, ma_window)
+            ax.plot(indices[ma_window - 1:], ma, color=dark_color, linewidth=2, label=f'MA({ma_window})')
+
+        if show_last_200_avg and len(data) >= 200:
+            avg = np.mean(data[-200:])
+            fmt = f'{avg:.1f}%' if is_percent else f'{avg:.4f}'
+            ax.axhline(y=avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {fmt}')
+
+        if ylim_data is not None and len(ylim_data) > 0:
+            min_val = min(ylim_data)
+            max_val = max(ylim_data)
+            padding = (max_val - min_val) * ylim_padding_ratio if max_val > min_val else default_padding
+            low = max(0, min_val - padding)
+            high = min(100, max_val + padding) if is_percent else max_val + padding
+            ax.set_ylim([low, high])
+
         ax.set_xlabel('Batch')
-        ax.set_ylabel('Accuracy (%)')
-        ax.set_title(f'Accuracy - Full Range ({len(accuracies_all)} batches)')
-        min_acc_full = min(accuracies_all)
-        max_acc_full = max(accuracies_all)
-        padding = (max_acc_full - min_acc_full) * 0.05 if max_acc_full > min_acc_full else 5
-        ax.set_ylim([max(0, min_acc_full - padding), min(100, max_acc_full + padding)])
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
         ax.legend()
         ax.grid(True, alpha=0.3)
 
-        # Loss - Full Range
-        ax = fig.add_subplot(gs[7, 1])
-        ax.plot(indices_all, losses_all, color='lightcoral', alpha=0.5, linewidth=0.7)
-        if len(losses_all) >= ma_window_all:
-            ma_loss = moving_average_func(losses_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_loss, color='red', linewidth=2, label=f'MA({ma_window_all})')
-        ax.set_xlabel('Batch')
+    def _plot_summary_panel(self, ax, accuracies, losses, ce_losses, kl_losses):
+        ax.axis('off')
+
+        current_acc = np.mean(accuracies[-200:]) if len(accuracies) >= 200 else accuracies[-1] if accuracies else 0
+        previous_acc = np.mean(accuracies[-400:-200]) if len(accuracies) >= 400 else (accuracies[0] if accuracies else 0)
+        acc_diff = current_acc - previous_acc
+        acc_trend = f"+{acc_diff:.1f}%" if acc_diff > 0 else f"{acc_diff:.1f}%" if acc_diff < 0 else "="
+
+        current_loss = np.mean(losses[-200:]) if len(losses) >= 200 else losses[-1] if losses else 0
+        previous_loss = np.mean(losses[-400:-200]) if len(losses) >= 400 else (losses[0] if losses else 0)
+        loss_diff = current_loss - previous_loss
+        loss_trend = f"{loss_diff:.4f}" if loss_diff < 0 else f"+{loss_diff:.4f}" if loss_diff > 0 else "="
+
+        current_ce = np.mean(ce_losses[-200:]) if len(ce_losses) >= 200 else ce_losses[-1] if ce_losses else 0
+        current_kl = np.mean(kl_losses[-200:]) if len(kl_losses) >= 200 else kl_losses[-1] if kl_losses else 0
+
+        text = (
+            f"Accuracy: {current_acc:.1f}% ({acc_trend})        "
+            f"Loss: {current_loss:.4f} ({loss_trend})        "
+            f"CE: {current_ce:.4f}        "
+            f"KL: {current_kl:.4f}        "
+            f"Batches: {len(self.train_batches):,}        "
+            f"Epochs: {len(self.train_epochs)}"
+        )
+        ax.text(0.5, 0.5, text, transform=ax.transAxes, fontsize=14, fontweight='bold',
+                ha='center', va='center',
+                bbox=dict(boxstyle='round', facecolor='white', edgecolor='gray', alpha=0.9))
+
+    def _plot_epoch_loss(self, ax):
+        if self.train_epochs:
+            train_ep = [d['epoch'] for d in self.train_epochs]
+            train_loss = [d['avg_loss'] for d in self.train_epochs]
+            ax.plot(train_ep, train_loss, marker='o', color='red', linewidth=2, label='Train')
+        if self.eval_epochs:
+            eval_ep = [d['epoch'] for d in self.eval_epochs]
+            eval_loss = [d['avg_loss'] for d in self.eval_epochs]
+            ax.plot(eval_ep, eval_loss, marker='s', color='blue', linewidth=2, label='Eval')
+        if not self.train_epochs and not self.eval_epochs:
+            ax.text(0.5, 0.5, 'No epoch data yet', ha='center', va='center', transform=ax.transAxes)
+        ax.set_xlabel('Epoch')
         ax.set_ylabel('Loss')
-        ax.set_title(f'Loss - Full Range ({len(losses_all)} batches)')
-        min_loss_full = min(losses_all)
-        max_loss_full = max(losses_all)
-        padding = (max_loss_full - min_loss_full) * 0.05 if max_loss_full > min_loss_full else 0.1
-        ax.set_ylim([max(0, min_loss_full - padding), max_loss_full + padding])
+        ax.set_title('Epoch Summary - Loss')
         ax.legend()
         ax.grid(True, alpha=0.3)
 
-        # CE Loss - Full Range
-        ax = fig.add_subplot(gs[8, 0])
-        ax.plot(indices_all, ce_losses_all, color='lightskyblue', alpha=0.5, linewidth=0.7)
-        if len(ce_losses_all) >= ma_window_all:
-            ma_ce = moving_average_func(ce_losses_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_ce, color='blue', linewidth=2, label=f'MA({ma_window_all})')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('CE Loss')
-        ax.set_title(f'CE Loss - Full Range ({len(ce_losses_all)} batches)')
-        min_ce_full = min(ce_losses_all)
-        max_ce_full = max(ce_losses_all)
-        padding = (max_ce_full - min_ce_full) * 0.05 if max_ce_full > min_ce_full else 0.1
-        ax.set_ylim([max(0, min_ce_full - padding), max_ce_full + padding])
-        ax.legend()
+    def _plot_epoch_accuracy(self, ax):
+        if self.eval_epochs:
+            eval_ep = [d['epoch'] for d in self.eval_epochs]
+            series = [
+                ('Teacher-Forced', 'green', 'o', lambda d: d.get('teacher_forced_accuracy', d.get('accuracy', 0))),
+                ('Student', 'blue', 's', lambda d: d.get('student_accuracy', 0)),
+                ('Classification', 'orange', '^', lambda d: d.get('classification_accuracy', 0)),
+            ]
+            all_values = []
+            for label, color, marker, getter in series:
+                values = [getter(d) * 100 for d in self.eval_epochs]
+                ax.plot(eval_ep, values, marker=marker, color=color, linewidth=2, label=label)
+                all_values.extend(values)
+            if all_values:
+                padding = (max(all_values) - min(all_values)) * 0.1 if max(all_values) > min(all_values) else 5
+                ax.set_ylim([max(0, min(all_values) - padding), min(100, max(all_values) + padding)])
+            ax.legend()
+        else:
+            ax.text(0.5, 0.5, 'No evaluation data yet', ha='center', va='center', transform=ax.transAxes)
+        ax.set_xlabel('Epoch')
+        ax.set_ylabel('Accuracy (%)')
+        ax.set_title('Epoch Summary - Eval Accuracy')
         ax.grid(True, alpha=0.3)
 
-        # KL Loss - Full Range
-        ax = fig.add_subplot(gs[8, 1])
-        ax.plot(indices_all, kl_losses_all, color='plum', alpha=0.5, linewidth=0.7)
-        if len(kl_losses_all) >= ma_window_all:
-            ma_kl = moving_average_func(kl_losses_all, ma_window_all)
-            ax.plot(indices_all[ma_window_all-1:], ma_kl, color='purple', linewidth=2, label=f'MA({ma_window_all})')
-        ax.set_xlabel('Batch')
-        ax.set_ylabel('KL Loss')
-        ax.set_title(f'KL Loss - Full Range ({len(kl_losses_all)} batches)')
-        min_kl_full = min(kl_losses_all)
-        max_kl_full = max(kl_losses_all)
-        padding = (max_kl_full - min_kl_full) * 0.05 if max_kl_full > min_kl_full else 0.1
-        ax.set_ylim([max(0, min_kl_full - padding), max_kl_full + padding])
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        # ========== CONFUSION MATRICES (latest eval epoch) ==========
-
-        confusion_categories = [
-            (9, 0, 'tone'), (9, 1, 'sentiment'),
-            (10, 0, 'safety'), (10, 1, 'toxicity'),
-        ]
+    def _plot_confusion_matrices(self, fig, gs):
+        layout = [(9, 0, 'tone'), (9, 1, 'sentiment'), (10, 0, 'safety'), (10, 1, 'toxicity')]
 
         latest_confusion = None
         if self.eval_epochs:
@@ -450,7 +294,7 @@ class TrainingAnalyzer:
 
         cmap = LinearSegmentedColormap.from_list('white_blue', ['white', '#4285f4'])
 
-        for row, col, category in confusion_categories:
+        for row, col, category in layout:
             ax = fig.add_subplot(gs[row, col])
             if latest_confusion and category in latest_confusion:
                 matrix_data = latest_confusion[category]
@@ -475,10 +319,6 @@ class TrainingAnalyzer:
                                     fontsize=10, fontweight='bold', color=color)
             else:
                 ax.text(0.5, 0.5, 'No confusion data yet', ha='center', va='center', transform=ax.transAxes)
-            ax.set_title(f'Confusion Matrix - {category.capitalize()} (Epoch {self.eval_epochs[-1]["epoch"] if self.eval_epochs else "?"})')
 
-        save_path = Path(LOGS_DIR) / 'training_progress.png'
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        plt.close(fig)
-        if show:
-            print(f"Saved: {save_path}")
+            epoch_label = self.eval_epochs[-1]['epoch'] if self.eval_epochs else '?'
+            ax.set_title(f'Confusion Matrix - {category.capitalize()} (Epoch {epoch_label})')

@@ -28,10 +28,9 @@ BUGS
 OVER-ENGINEERING
 ================
 
-[HIGH] training_analysis.py plot() is ~350 lines of copy-pasted matplotlib
-  18 near-identical subplot blocks. Each block: get data, plot raw, plot MA,
-  set labels, set limits. Could be a single loop over a config list.
-  This is the single most over-engineered file.
+[HIGH] training_analysis.py plot() is ~350 lines of copy-pasted matplotlib [FIXED]
+  Extracted _plot_timeseries helper, loop over metrics list.
+  ~485 lines -> ~250 lines, same output.
 
 [MED] Utilities is a class with only @classmethod methods
   No state, no instances. It's a module pretending to be a class.
