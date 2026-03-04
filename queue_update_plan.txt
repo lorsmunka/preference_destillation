@@ -1,254 +1,302 @@
-QUEUE-BASED PIPELINE UPGRADE PLAN
-==================================
+QUEUE-BASED PIPELINE UPGRADE PLAN (v3)
+=======================================
 
-GOAL: Replace single-run config with JSON queue configs for both data generation and training.
-      Enable multiple teacher models, multiple training runs, isolated outputs per model/run.
-
-
-1. NEW CONFIG FILES
--------------------
-
-A) data-generation-queue.json
-[
-  {
-    "model_name": "google/gemma-3-4b-it",
-    "max_training_examples": 500000,
-    "batch_size": 32
-  },
-  {
-    "model_name": "google/gemma-3-12b-it",
-    "max_training_examples": 200000,
-    "batch_size": 32
-  }
-]
-
-- output_dir derived automatically: sanitize model_name -> "google_gemma-3-4b-it"
-  (replace /:\<>|"?* and spaces with underscores)
-- Batches land in: batches/{sanitized_model_name}/batch_1.jsonl
-- Each entry is one "job". Runner processes them sequentially, skipping completed ones.
-
-B) training-queue.json
-[
-  {
-    "name": "baseline_kl_only",
-    "description": "KL-only loss, 4 epochs, gemma-3-4b data",
-    "data_source": "google_gemma-3-4b-it",
-    "epoch_count": 4,
-    "batch_size": 32,
-    "learning_rate": 6e-4,
-    "kl_ratio_start": 1.0,
-    "kl_ratio_end": 1.0,
-    "distillation_temperature": 3.0,
-    "lr_warmup_ratio": 0.03,
-    "hidden_dim": 384,
-    "num_layers": 18,
-    "num_heads": 8,
-    "dropout": 0.15,
-    "max_training_examples": 500000,
-    "training_test_ratio": 0.98
-  },
-  {
-    "name": "annealed_blend",
-    "description": "KL anneals to CE, same data",
-    "data_source": "google_gemma-3-4b-it",
-    "epoch_count": 4,
-    "batch_size": 32,
-    "learning_rate": 6e-4,
-    "kl_ratio_start": 0.9,
-    "kl_ratio_end": 0.1,
-    "distillation_temperature": 3.0,
-    "lr_warmup_ratio": 0.03,
-    "hidden_dim": 384,
-    "num_layers": 18,
-    "num_heads": 8,
-    "dropout": 0.15,
-    "max_training_examples": 500000,
-    "training_test_ratio": 0.98
-  }
-]
-
-- "name" = the distillation model name, used as directory key everywhere
-- "data_source" = sanitized model name, must match a dir in batches/
-- All hyperparams that are currently in config.py move here (per-run overrides)
+GOAL: Multi-domain distillation pipeline. Queue-based config for data generation,
+      distillation data generation (Gemma logits), and training. Two domains:
+      reddit comment sentiment classification + math word problem solving.
 
 
-2. DIRECTORY STRUCTURE CHANGE
------------------------------
+PIPELINE OVERVIEW (3 stages)
+------------------------------
+1. TEXT GENERATION     → Domain-specific input creation (Reddit extraction, math problem generation)
+2. DISTILLATION GEN    → Gemma processes inputs, autoregressively generates with logit capture per step
+3. TRAINING            → Student transformer learns from teacher logits
 
-BEFORE:
-  batches/batch_1.jsonl
-  logs/state.json, training.jsonl, generation.jsonl
-  checkpoints/checkpoint_epoch_0.pt, temp_checkpoint.pt
 
-AFTER:
-  batches/
+DIRECTORY STRUCTURE
+---------------------
+text_generation/
+  reddit_comment_sentiment/
+    get_reddit_comments.py     (moved+renamed from ./get_sentences.py)
+    reddit_comments.jsonl      (moved+renamed from ./sentences/sentences.jsonl)
+  math_word_problem/
+    operations.py              (add/sub/mul/div/comparison logic, number generation)
+    templates.py               (220+ problem templates with scaffolds, organized by operation)
+    names_and_items.py         (name lists, item lists, unit lists for variety)
+    generate_problems.py       (main script: produces 500k unique problems → math_word_problems.jsonl)
+    math_word_problems.jsonl   (output: one problem per line, same format as reddit_comments.jsonl)
+
+data_generation/               (distillation data generation — Gemma logit capture)
+  main.py                      (loops queue, handles both domains)
+  model_handler.py             (loads Gemma, autoregressively generates with logit capture)
+  sentence_handler.py          (loads inputs — reddit comments or math problems)
+  saving_handler.py            (writes batch JSONL files)
+
+batches/                        (distillation training data, organized by domain/model)
+  reddit_comment_sentiment/
     google_gemma-3-4b-it/
       batch_1.jsonl
-      batch_2.jsonl
-    google_gemma-3-12b-it/
+      info.json
+  math_word_problem/
+    google_gemma-3-4b-it/
       batch_1.jsonl
+      info.json
 
-  logs/
-    generation/
-      google_gemma-3-4b-it/
-        state.json
-        generation.jsonl
-    training/
-      baseline_kl_only/
-        state.json
-        training.jsonl
-      annealed_blend/
-        state.json
-        training.jsonl
-
-  checkpoints/
-    baseline_kl_only/
-      checkpoint_epoch_0.pt
-      temp_checkpoint.pt
-    annealed_blend/
-      checkpoint_epoch_0.pt
+shared/
+  config.py                    (universal constants only)
+  utilities.py                 (domain-aware vocabulary builder)
 
 
-3. WHAT CHANGES IN CODE
-------------------------
+JSONL FORMAT (same for both domains)
+--------------------------------------
+reddit_comments.jsonl:
+  {"text": "You think that 67 of Britons are unemployed?"}
+  {"text": "Black Power Mixtapes is another great documentary"}
 
-A) New file: shared/queue_config.py
-   - load_data_generation_queue() -> list of dicts from JSON
-   - load_training_queue() -> list of dicts from JSON
-   - sanitize_model_name(name) -> str (replace bad chars with _)
-   - TrainingRunConfig dataclass: holds all hyperparams for one training run
-   - DataGenerationConfig dataclass: holds all params for one generation job
+math_word_problems.jsonl:
+  {"text": "Problem: \"Alice has 5 bags with 3 apples each. How many apples in total?\"\nA=?\nB=?\nC=A*B=?\nSolution: ?"}
+  {"text": "Problem: \"Bob has $1231. He pays $299 for headphones. How much does he have left?\"\nA=?\nB=?\nC=A-B=?\nSolution: ?"}
 
-B) shared/config.py
-   - Keep: get_device(), MAX_SENTENCE_LENGTH, MAX_GENERATION_STEPS, PROMPT_DELIMITER,
-           MAX_SEQ_LENGTH, INFERENCE_TEMPERATURE (these are universal constants)
-   - Remove: All training hyperparams (BATCH_SIZE, EPOCH_COUNT, LEARNING_RATE, etc.)
-   - Remove: All directory paths (BATCHES_DIR, LOGS_DIR, CHECKPOINTS_DIR)
-   - Remove: MODEL_NAME
-   - These all move into the queue JSON configs
-
-C) shared/logger.py
-   - Constructor takes a base_dir parameter (e.g. "logs/training/baseline_kl_only")
-   - State file, log files all write into that base_dir
-   - No more global constants for file paths
-
-D) data_generation/saving_handler.py
-   - Constructor takes output_dir (e.g. "batches/google_gemma-3-4b-it")
-   - mkdir that dir
-
-E) data_generation/main.py
-   - Load data-generation-queue.json
-   - For each job:
-     - Check if already complete (state.json in logs/generation/{sanitized_name}/)
-     - If not, run generation with that model into batches/{sanitized_name}/
-     - On completion, mark done in state
-     - Graceful shutdown saves state, resumes at same job + same batch
-
-F) training/batch_handler.py
-   - Constructor takes batches_dir parameter (e.g. "batches/google_gemma-3-4b-it")
-   - All file paths use that dir
-
-G) training/trainer.py
-   - Constructor takes TrainingRunConfig instead of reading globals
-   - Checkpoints save to checkpoints/{run_name}/
-   - All hyperparams come from config object, not module-level constants
-
-H) training/main.py
-   - Load training-queue.json
-   - For each job:
-     - Check if already complete (all epochs done in state.json)
-     - Build TrainingRunConfig from JSON entry
-     - Create Logger with run-specific log dir
-     - Create BatchHandler with run-specific batch dir
-     - Create Trainer with config
-     - Run training loop
-     - On completion, move to next job
-     - Graceful shutdown: save temp checkpoint + state for current job, resume there
+Both are just {"text": "..."} — the distillation pipeline treats them identically.
+The teacher's logits ARE the ground truth. No answer field needed.
 
 
-4. QUEUE COMPLETION TRACKING
------------------------------
+MASTER PROMPT FOR MATH (sent to Gemma, student NEVER sees this)
+-----------------------------------------------------------------
+Follow this example exactly:
 
-Each queue entry's state.json tracks completion:
+Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
+A=3
+B=5
+C=2
+D=A*B=15
+E=D-C=13
+Solution: 13
 
-Generation state.json:
-{
-  "status": "completed" | "in_progress",
-  "processed_sentence_count": 50000,
-  "successful_sentence_count": 48000,
-  ...existing fields...
-}
+Problem: "Tom has 15 stickers. He gives away 7. Sarah has 12 stickers. Does Tom have more stickers than Sarah?"
+A=15
+B=7
+C=12
+D=A-B=8
+E=D>C=False
+Solution: False
 
-Training state.json:
-{
-  "status": "completed" | "in_progress",
-  "current_epoch": 2,
-  "current_batch": 150,
-  ...existing fields...
-}
+{generated problem text with scaffold}
 
-Queue runner checks status before starting each job. "completed" = skip.
-"in_progress" = resume. Missing state.json = start fresh.
-
-
-5. GRACEFUL SHUTDOWN
----------------------
-
-Same mechanism (% key / Ctrl+C), but scoped per-job:
-- Saves temp checkpoint to checkpoints/{run_name}/temp_checkpoint.pt
-- Saves state to logs/{type}/{run_name}/state.json
-- Exits entire queue (not just current job)
-- On restart: loads queue, finds first non-completed job, resumes from its state
+Gemma autoregressively generates the scaffold back with actual numbers.
+Each token captured with logits for distillation.
 
 
-6. IMPLEMENTATION ORDER
-------------------------
+MATH OUTPUT VOCABULARY (vs sentiment's ~525 tokens)
+----------------------------------------------------
+Tokens needed:
+  - Digits: 0-9 (individual digit tokens, plus multi-digit as tokenized by Gemma)
+  - Variables: A, B, C, D, E, F
+  - Operators: +, -, *, /
+  - Comparison: >, <
+  - Symbols: =, \n, space, :
+  - Words: Solution, True, False, Problem
+  - Auxiliary: extra tokens for soft labels (TBD after tokenizer analysis)
 
-Phase 1: Data generation pipeline
-  1. Create shared/queue_config.py with sanitize_model_name + DataGenerationConfig
-  2. Add data-generation-queue.json
-  3. Update saving_handler to take output_dir param
-  4. Update logger to take base_dir param (for generation logs)
-  5. Update data_generation/main.py to loop over queue
-
-Phase 2: Training pipeline
-  1. Add TrainingRunConfig to queue_config.py
-  2. Add training-queue.json
-  3. Update batch_handler to take batches_dir param
-  4. Update trainer to use TrainingRunConfig instead of globals
-  5. Update training/main.py to loop over queue
-  6. Update checkpoint paths to include run_name
-
-Phase 3: Analysis + Cleanup
-  1. Strip config.py down to universal constants only
-  2. Update visualize_logs.py + training_analysis.py to accept run-specific log dir
-     - update_training_plot() must work mid-training (called every 100 batches)
-     - Pass log dir from trainer -> update_training_plot(log_dir)
-     - training_progress.png saves into the run's log dir
-     - TrainingAnalyzer already takes data as constructor arg, just fix the caller
-     - LogVisualizer interactive mode: accept run_name arg or list available runs
-  3. evaluate_model.py, inference.py — skip for now, trivial disposable scripts,
-     retrofit later when needed
-  4. Test end-to-end: generate data -> train -> evaluate
+Output projection layer size differs per domain → must be configurable.
 
 
-7. MIGRATION
---------------
+MATH TEMPLATE DESIGN
+-----------------------
 
-Existing data is not lost. Two options:
-  A) Move existing batches/ into batches/google_gemma-3-4b-it/ manually
-  B) Add a migrate.py script that does it automatically
+Each template defines the problem text AND scaffold together as one unit:
+  {
+    "text": "{name} has {A} bags with {B} apples each. How many apples in total?",
+    "scaffold": "A=?\nB=?\nC=A*B=?\nSolution: ?",
+    "operation": "mul",
+    "ranges": {"A": [2, 15], "B": [2, 15]}
+  }
 
-Existing logs/checkpoints: same treatment, move into named subdirs.
+Generator fills template with random numbers+names → produces complete block:
+  Problem: "Alice has 5 bags with 3 apples each. How many apples in total?"
+  A=?
+  B=?
+  C=A*B=?
+  Solution: ?
+
+Operation types and their scaffolds:
+  add:      A=?, B=?, C=A+B=?, Solution: ?
+  sub:      A=?, B=?, C=A-B=?, Solution: ?        (constrain A > B)
+  mul:      A=?, B=?, C=A*B=?, Solution: ?
+  div:      A=?, B=?, C=A/B=?, Solution: ?        (generate B and result, derive A=B*result)
+  mul_add:  A=?, B=?, C=?, D=A*B=?, E=D+C=?, Solution: ?
+  mul_sub:  A=?, B=?, C=?, D=A*B=?, E=D-C=?, Solution: ?     (constrain C < A*B)
+  add_mul:  A=?, B=?, C=?, D=A+B=?, E=D*C=?, Solution: ?
+  sub_mul:  A=?, B=?, C=?, D=A-B=?, E=D*C=?, Solution: ?     (constrain A > B)
+  add_sub:  A=?, B=?, C=?, D=A+B=?, E=D-C=?, Solution: ?     (constrain C < A+B)
+  div_add:  A=?, B=?, C=?, D=A/B=?, E=D+C=?, Solution: ?     (clean division)
+  cmp:      A=?, B=?, C=A>B=?, Solution: ?                    (direct comparison)
+  cmp_sub:  A=?, B=?, C=?, D=A-B=?, E=D>C=?, Solution: ?     (arithmetic then compare, max 3 input vars)
+  cmp_mul:  A=?, B=?, C=?, D=A*B=?, E=D>C=?, Solution: ?     (arithmetic then compare, max 3 input vars)
+
+Comparison rules (Gemma 4B limitation):
+  - Max 3 input variables
+  - Max 1 arithmetic operation before comparison
+  - Comparison is always second-to-last step
+  - Solution is always True or False
+  - ~50% True / ~50% False in generated data
+
+Template count target (260+):
+  add:       40 templates
+  sub:       40 templates
+  mul:       40 templates
+  div:       30 templates
+  mul_add:   15 templates
+  mul_sub:   15 templates
+  add_mul:   10 templates
+  add_sub:   10 templates
+  sub_mul:   10 templates
+  div_add:   10 templates
+  cmp:       15 templates
+  cmp_sub:   15 templates
+  cmp_mul:   10 templates
+
+Number ranges — varied magnitudes with messy numbers:
+  ~30% single digits (1-9)
+  ~30% tens, round (10, 20, 30, ... 90)
+  ~10% tens, messy (13, 47, 68, ...)
+  ~15% hundreds, round (100, 200, ... 900)
+  ~10% hundreds, messy (137, 299, 483, ...)
+  ~5%  thousands (1000-2000, both round and messy)
+
+  Per operation constraints:
+    add:     A,B in full range
+    sub:     A > B always
+    mul:     keep factors small enough that result < 2000
+    div:     generate divisor and quotient, derive dividend = divisor*quotient
+    cmp:     ~50% True, ~50% False
+
+Template variety comes from:
+  - 60+ names (mixed gender, with pronoun mapping)
+  - 30+ item categories (fruits, school supplies, toys, animals, tools, food, ...)
+  - 15+ contexts (shopping, school, cooking, sports, travel, farming, building, ...)
+  - Varied phrasings per template
+
+500k unique problems from 260 templates:
+  ~1920 problems per template, easily achievable with random names/items/numbers.
+  Deduplication by hashing problem text.
 
 
-8. KEY DESIGN DECISIONS
--------------------------
+QUEUE CONFIG (data-generation-queue.json)
+-------------------------------------------
+[
+  {
+    "domain": "reddit_comment_sentiment",
+    "description": "500k Reddit comments classified by Gemma 4B",
+    "model_name": "google/gemma-3-4b-it",
+    "max_examples": 500000,
+    "batch_size": 32
+  },
+  {
+    "domain": "math_word_problem",
+    "description": "500k math word problems solved by Gemma 4B",
+    "model_name": "google/gemma-3-4b-it",
+    "max_examples": 500000,
+    "batch_size": 32
+  }
+]
 
-- Queue files are JSON (not Python) so non-programmers can edit them
-- One queue file per pipeline stage (generation vs training), not one mega-config
-- Training queue references data by sanitized model name, creating a clean dependency chain
-- All hyperparams in the training queue JSON = full reproducibility per run
-- No partial override system (no "inherit from defaults"). Each entry is self-contained.
-  This is intentional: explicit > implicit, no confusion about what ran with what params.
-- Sanitize function is deterministic: same model name always produces same dir name
+Input file derived from domain: text_generation/{domain}/{domain}s.jsonl
+Output dir: batches/{domain}/{sanitized_model_name}/
+info.json: written at start, updated on completion with final stats.
+
+sanitize_model_name("google/gemma-3-4b-it") → "google_gemma-3-4b-it"
+
+
+========================================================================
+PHASE 1: TEXT GENERATION RESTRUCTURE + MATH PROBLEM GENERATOR
+========================================================================
+
+COMMIT-LEVEL PLAN (each ~20-30 lines or pure structural moves)
+
+Commit 1: Create text_generation directory structure
+  - text_generation/__init__.py (empty)
+  - text_generation/reddit_comment_sentiment/__init__.py (empty)
+  - text_generation/math_word_problem/__init__.py (empty)
+  Files: 3 new empty files
+
+Commit 2: Move + rename reddit data files
+  - git mv sentences/sentences.jsonl text_generation/reddit_comment_sentiment/reddit_comments.jsonl
+  - git mv get_sentences.py text_generation/reddit_comment_sentiment/get_reddit_comments.py
+  - remove empty sentences/ dir
+  Files: 2 renames, 1 dir removal
+
+Commit 3: Update paths in moved get_reddit_comments.py
+  - update output path (sentences/ → text_generation/reddit_comment_sentiment/)
+  - update import path for shared config
+  ~5 line change
+
+Commit 4: Update sentence_handler.py path
+  - change "./sentences/sentences.jsonl" → "../text_generation/reddit_comment_sentiment/reddit_comments.jsonl"
+  ~2 line change
+
+Commit 5: Create math_word_problem/names_and_items.py
+  - NAMES list (60+ entries with gender: [("Alice", "she"), ("Bob", "he"), ...])
+  - ITEMS dict by category: {"fruit": ["apples", ...], "school": ["pencils", ...], ...}
+  - CONTAINERS: ["bags", "boxes", "baskets", ...]
+  - GROUPS: ["friends", "students", "children", ...]
+  ~30-40 lines
+
+Commit 6: Create math_word_problem/operations.py
+  - Operation constants: add, sub, mul, div, mul_add, mul_sub, etc.
+  - generate_numbers(operation, ranges) → dict of variable values
+  - compute_answer(operation, values) → int or bool
+  - build_scaffold(operation) → string with ?s
+  - Number generation with messy/round distribution
+  ~50-60 lines
+
+Commit 7: Create math_word_problem/templates.py — addition templates (40)
+  ~50 lines
+
+Commit 8: Add subtraction templates (40) to templates.py
+  ~50 lines
+
+Commit 9: Add multiplication templates (40) to templates.py
+  ~50 lines
+
+Commit 10: Add division templates (30) to templates.py
+  ~40 lines
+
+Commit 11: Add two-step templates (70) to templates.py
+  mul_add, mul_sub, add_mul, add_sub, sub_mul, div_add
+  ~80 lines
+
+Commit 12: Add comparison templates (40) to templates.py
+  cmp, cmp_sub, cmp_mul
+  ~50 lines
+
+Commit 13: Create math_word_problem/generate_problems.py
+  - Main script: loads templates, generates 500k problems
+  - For each: pick template, generate random values+names, fill text+scaffold
+  - Deduplicate by problem text hash
+  - Output: math_word_problems.jsonl with {"text": "Problem: ...\nA=?\n..."} format
+  ~40-50 lines
+
+
+========================================================================
+PHASE 2: DISTILLATION DATA GENERATION (queue system for data_generation/)
+========================================================================
+(Planned, not detailed at commit level yet)
+
+- Queue runner loops data-generation-queue.json
+- Domain-aware prompt construction (sentiment eval prompt vs math master prompt)
+- Domain-aware output vocabulary
+- Domain-aware validation + stop condition
+- Output: batches/{domain}/{sanitized_model_name}/
+- info.json per queue element (written at start, updated on completion)
+
+
+========================================================================
+PHASE 3: TRAINING (queue system for training/)
+========================================================================
+(Planned, not detailed at commit level yet)
+
+- Output projection size from domain vocab config → configurable
+- training-queue.json entries specify domain + all hyperparams
+- Utilities.build_vocabulary() becomes domain-dispatched
+- ClassificationAccuracyCalculator gets math equivalent

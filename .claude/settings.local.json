@@ -29,7 +29,8 @@
       "Bash(git push:*)",
       "Bash(C:\\\\Python313\\\\python.exe:*)",
       "Bash(python test_parsing.py:*)",
-      "Bash(/c/Python313/python:*)"
+      "Bash(/c/Python313/python:*)",
+      "Bash(python:*)"
     ]
   }
 }
