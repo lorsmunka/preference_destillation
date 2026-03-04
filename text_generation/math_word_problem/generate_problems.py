@@ -1,12 +1,17 @@
 import json
 import random
 import hashlib
+import re
 import os
 import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from word_problem_variables import NAMES, ITEMS, CONTAINERS, GROUPS
+from word_problem_variables import (
+    NAMES, ALL_ITEMS, BAKEABLES, CONSUMABLES, COLLECTIBLES, SCHOOL_SUPPLIES,
+    NATURE_ITEMS, ANIMALS, MANUFACTURED, CLOTHING, CONTAINERS, GROUPS,
+    singularize,
+)
 from operations import (
     ARITHMETIC_OPERATIONS, COMPARISON_OPERATIONS, LARGE_RANGE_ARITHMETIC,
     SCAFFOLDS, pick_distribution_bucket, generate_numbers,
@@ -46,21 +51,36 @@ def pick_names():
     return name1, name2, pronoun1.capitalize(), possessive1.capitalize()
 
 
+def fix_singular_grammar(text):
+    for word in ALL_ITEMS + CONTAINERS + GROUPS:
+        singular = singularize(word)
+        if singular != word:
+            text = re.sub(rf'\b1 {re.escape(word)}\b', f'1 {singular}', text)
+    return text
+
+
 def fill_template(template, operation, range_low, range_high, use_round):
     name, name2, pronoun, possessive = pick_names()
-    category = random.choice(list(ITEMS.keys()))
-    items = random.choice(ITEMS[category])
-    container = random.choice(CONTAINERS)
+    items = random.choice(ALL_ITEMS)
+    bakeables = random.choice(BAKEABLES)
+    consumables = random.choice(CONSUMABLES)
+    animals = random.choice(ANIMALS)
+    manufactured = random.choice(MANUFACTURED)
+    container_plural = random.choice(CONTAINERS)
+    container_singular = singularize(container_plural)
     group = random.choice(GROUPS)
     values = generate_numbers(operation, range_low, range_high, use_round)
 
     text = template.format(
         name=name, name2=name2, pronoun=pronoun, possessive=possessive,
-        items=items, containers=container, container=container,
+        items=items, bakeables=bakeables, consumables=consumables,
+        animals=animals, manufactured=manufactured,
+        containers=container_plural, container=container_singular,
         groups=group, A=values.get("A", ""), B=values.get("B", ""),
         C=values.get("C", ""),
     )
 
+    text = fix_singular_grammar(text)
     scaffold = SCAFFOLDS[operation]
     return f'Problem: "{text}"\n{scaffold}'
 

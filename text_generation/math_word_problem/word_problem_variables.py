@@ -22,17 +22,69 @@ NAMES = [
     ("Owen", "he", "his"), ("Rosa", "she", "her"), ("Sam", "he", "his"),
 ]
 
-ITEMS = {
-    "fruit": ["apples", "oranges", "bananas", "strawberries", "grapes", "peaches", "pears", "lemons"],
-    "school": ["pencils", "notebooks", "erasers", "crayons", "markers", "pens", "rulers", "folders"],
-    "toys": ["marbles", "stickers", "cards", "balloons", "toy cars", "dolls", "blocks", "puzzles"],
-    "food": ["cookies", "muffins", "sandwiches", "cupcakes", "donuts", "bagels", "rolls", "slices of pizza"],
-    "animals": ["chickens", "rabbits", "fish", "birds", "cats", "dogs", "hamsters", "turtles"],
-    "nature": ["flowers", "seeds", "leaves", "rocks", "shells", "pinecones", "acorns", "feathers"],
-    "tools": ["nails", "screws", "bolts", "batteries", "light bulbs", "buttons", "clips", "pins"],
-    "clothing": ["shirts", "socks", "hats", "scarves", "gloves", "shoes", "ties", "ribbons"],
-}
+BAKEABLES = [
+    "cookies", "muffins", "cupcakes", "brownies", "pies", "cakes",
+    "scones", "pastries", "bagels", "bread rolls", "croissants", "donuts",
+]
 
-CONTAINERS = ["bags", "boxes", "baskets", "crates", "jars", "packs", "trays", "buckets", "cartons", "shelves"]
+CONSUMABLES = [
+    "apples", "oranges", "bananas", "sandwiches", "grapes", "peaches",
+    "pears", "candies", "tacos", "pancakes", "strawberries", "pizzas",
+]
 
-GROUPS = ["friends", "students", "children", "people", "teams", "families", "classmates", "workers"]
+COLLECTIBLES = [
+    "stickers", "cards", "marbles", "stamps", "coins", "badges",
+    "postcards", "ribbons", "buttons", "pins", "patches", "tickets",
+]
+
+SCHOOL_SUPPLIES = [
+    "pencils", "notebooks", "erasers", "crayons", "markers", "pens",
+    "rulers", "folders", "books", "worksheets", "papers", "calculators",
+]
+
+NATURE_ITEMS = [
+    "flowers", "seeds", "leaves", "rocks", "shells", "pinecones",
+    "acorns", "feathers", "plants", "mushrooms", "berries", "pebbles",
+]
+
+ANIMALS = [
+    "chickens", "rabbits", "fish", "ducks", "cats", "dogs",
+    "hamsters", "turtles", "horses", "goats", "pigs", "sheep",
+]
+
+MANUFACTURED = [
+    "bottles", "parts", "widgets", "bolts", "screws", "batteries",
+    "light bulbs", "clips", "tubes", "plates", "bricks", "tiles",
+]
+
+CLOTHING = [
+    "shirts", "socks", "hats", "scarves", "gloves", "shoes",
+    "ties", "jackets", "belts", "caps", "sweaters", "coats",
+]
+
+ALL_ITEMS = (
+    BAKEABLES + CONSUMABLES + COLLECTIBLES + SCHOOL_SUPPLIES
+    + NATURE_ITEMS + MANUFACTURED + CLOTHING
+)
+
+CONTAINERS = [
+    "bags", "boxes", "baskets", "crates", "jars", "packs",
+    "trays", "buckets", "cartons", "bins",
+]
+
+GROUPS = [
+    "friends", "students", "children", "people", "teams",
+    "families", "classmates", "workers",
+]
+
+
+def singularize(word):
+    if word.endswith("ies"):
+        return word[:-3] + "y"
+    if word.endswith("ves"):
+        return word[:-3] + "f"
+    if word.endswith("ses") or word.endswith("shes") or word.endswith("ches"):
+        return word[:-2]
+    if word.endswith("s"):
+        return word[:-1]
+    return word

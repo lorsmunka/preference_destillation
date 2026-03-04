@@ -54,7 +54,7 @@ def generate_numbers(operation, range_low, range_high, use_round):
     for key in get_variable_keys(operation):
         values[key] = generator()
 
-    if operation in ("sub", "sub_mul"):
+    if operation in ("sub", "sub_mul", "cmp_sub"):
         if values["A"] <= values["B"]:
             values["A"], values["B"] = max(
                 values["A"], values["B"]), min(values["A"], values["B"])
@@ -75,11 +75,14 @@ def generate_numbers(operation, range_low, range_high, use_round):
 
 
 def generate_division_numbers(generator, range_low, range_high, use_round):
+    max_divisor = range_high // 2
     divisor = generator()
     if divisor == 0:
         divisor = 1
+    if divisor > max_divisor:
+        divisor = generate_number_in_range(max(1, range_low), max_divisor, use_round)
     max_quotient = range_high // divisor
-    min_quotient = max(1, range_low // divisor)
+    min_quotient = max(2, range_low // divisor)
     quotient = generate_number_in_range(
         min_quotient, max(min_quotient, max_quotient), use_round)
     dividend = divisor * quotient
