@@ -13,7 +13,7 @@ class SentenceHandler:
         start_time = time()
         print("Loading sentences...")
         sentences = []
-        with open("./sentences/sentences.jsonl", "r", encoding="utf-8") as file:
+        with open("./text_generation/reddit_comment_sentiment/reddit_comments.jsonl", "r", encoding="utf-8") as file:
             for line in file:
                 data = json.loads(line.strip())
                 sentences.append(data["text"])
