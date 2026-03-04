@@ -54,18 +54,18 @@ def filter_sentences(comments, tokenizer):
     return list(set(sentences))
 
 
-def save_sentences_jsonl(sentences):
-    os.makedirs("sentences", exist_ok=True)
+def save_reddit_comments_jsonl(sentences):
+    os.makedirs("text_generation/reddit_comment_sentiment", exist_ok=True)
 
-    with open("sentences/sentences.jsonl", 'w', encoding='utf-8') as f:
+    with open("text_generation/reddit_comment_sentiment/reddit_comments.jsonl", 'w', encoding='utf-8') as f:
         for sentence in sentences:
             json_line = {"text": sentence}
             f.write(json.dumps(json_line, ensure_ascii=False) + '\n')
 
-    print(f"Saved {len(sentences)} sentences to sentences/sentences.jsonl")
+    print(f"Saved {len(sentences)} sentences to text_generation/reddit_comment_sentiment/reddit_comments.jsonl")
 
 
 tokenizer = load_gemma_tokenizer()
 comments = download_reddit_data()
 sentences = filter_sentences(comments, tokenizer)
-save_sentences_jsonl(sentences)
+save_reddit_comments_jsonl(sentences)
