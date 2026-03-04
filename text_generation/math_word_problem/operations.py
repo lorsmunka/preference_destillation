@@ -90,3 +90,24 @@ def get_variable_keys(operation):
     if operation in ("add", "sub", "mul", "div", "cmp"):
         return ["A", "B"]
     return ["A", "B", "C"]
+
+
+SCAFFOLDS = {
+    "add": "A=?\nB=?\nC=A+B=?\nSolution: ?",
+    "sub": "A=?\nB=?\nC=A-B=?\nSolution: ?",
+    "mul": "A=?\nB=?\nC=A*B=?\nSolution: ?",
+    "div": "A=?\nB=?\nC=A/B=?\nSolution: ?",
+    "mul_add": "A=?\nB=?\nC=?\nD=A*B=?\nE=D+C=?\nSolution: ?",
+    "mul_sub": "A=?\nB=?\nC=?\nD=A*B=?\nE=D-C=?\nSolution: ?",
+    "add_mul": "A=?\nB=?\nC=?\nD=A+B=?\nE=D*C=?\nSolution: ?",
+    "sub_mul": "A=?\nB=?\nC=?\nD=A-B=?\nE=D*C=?\nSolution: ?",
+    "add_sub": "A=?\nB=?\nC=?\nD=A+B=?\nE=D-C=?\nSolution: ?",
+    "div_add": "A=?\nB=?\nC=?\nD=A/B=?\nE=D+C=?\nSolution: ?",
+    "cmp": "A=?\nB=?\nC=A>B=?\nSolution: ?",
+    "cmp_sub": "A=?\nB=?\nC=?\nD=A-B=?\nE=D>C=?\nSolution: ?",
+    "cmp_mul": "A=?\nB=?\nC=?\nD=A*B=?\nE=D>C=?\nSolution: ?",
+}
+
+# For hundreds/thousands ranges, avoid multiplication-heavy operations
+# (multiplying two 3-digit numbers gives unreasonably large results)
+LARGE_RANGE_ARITHMETIC = ["add", "sub", "div", "add_sub", "div_add"]
