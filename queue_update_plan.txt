@@ -212,6 +212,9 @@ sanitize_model_name("google/gemma-3-4b-it") → "google_gemma-3-4b-it"
 PHASE 1: TEXT GENERATION RESTRUCTURE + MATH PROBLEM GENERATOR
 ========================================================================
 
+WORKFLOW: Claude makes changes, user reviews, user stages+commits.
+Claude does NOT stage or commit. User controls git entirely.
+
 COMMIT-LEVEL PLAN (each ~20-30 lines or pure structural moves)
 
 Commit 1: Create text_generation directory structure
