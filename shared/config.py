@@ -45,8 +45,7 @@ def get_training_run_dir(run_name: str) -> str:
 DATA_GENERATION_QUEUE_PATH = "./distillation_data_generation/data_generation_queue.json"
 TRAINING_QUEUE_PATH = "./training/training_queue.json"
 
-
-# Model identification
+# Model identification (default teacher model)
 MODEL_NAME = "google/gemma-3-4b-it"
 
 # Sentence filtering (for data preparation)
@@ -60,36 +59,19 @@ DOMAIN_MAX_GENERATION_STEPS = {
 }
 PROMPT_DELIMITER = "\n\n"
 
-# Transformer architecture
+# Transformer architecture defaults (overridden by training queue)
 HIDDEN_DIM = 384
 NUM_LAYERS = 18
 NUM_HEADS = 8
-# Total sequence length limits (prompt + generation for student model)
 DOMAIN_MAX_SEQ_LENGTH = {
     "reddit_comment_sentiment": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["reddit_comment_sentiment"],
     "math_word_problem": DOMAIN_MAX_GENERATION_STEPS["math_word_problem"],
 }
 DROPOUT = 0.15
 
-# Training hyperparameters
+# Used by logger for batch counting
 BATCH_SIZE = 32
-EPOCH_COUNT = 4
-MAX_TRAINING_EXAMPLES = 500_000
-LEARNING_RATE = 6e-4
-TRAINING_TEST_RATIO = 0.98
 
-KL_RATIO_START = 1
-KL_RATIO_END = 1
-
-LR_WARMUP_RATIO = 0.03
-
-DISTILLATION_TEMPERATURE = 3.0
+# Used by analysis scripts
 INFERENCE_TEMPERATURE = 0
-
-# Directories
-BATCHES_DIR = "./batches12b"
 LOGS_DIR = "./logs12b"
-CHECKPOINTS_DIR = "./checkpoints"
-
-# File paths
-TEMP_CHECKPOINT_PATH = f"{CHECKPOINTS_DIR}/temp_checkpoint.pt"
