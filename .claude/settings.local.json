@@ -32,7 +32,9 @@
       "Bash(/c/Python313/python:*)",
       "Bash(python:*)",
       "Bash(echo exit: $?:*)",
-      "Bash(.venv/Scripts/python:*)"
+      "Bash(.venv/Scripts/python:*)",
+      "Bash(python3:*)",
+      "Bash(/c/python313/python.exe:*)"
     ]
   }
 }

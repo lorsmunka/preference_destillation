@@ -4,13 +4,14 @@ from typing import Dict, List, Tuple, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Utilities, MAX_GENERATION_STEPS, get_device
+from shared import Utilities, DOMAIN_MAX_GENERATION_STEPS, get_device
 
 
 class ModelHandler:
     def __init__(self, model_name: str, domain: str):
         self.model_name = model_name
         self.domain = domain
+        self.max_generation_steps = DOMAIN_self.max_generation_steps[domain]
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
@@ -65,7 +66,7 @@ class ModelHandler:
         current_sequence = inputs['input_ids']
 
         last_token_decoded = ""
-        while not self.is_stop_token(last_token_decoded) and len(steps) <= MAX_GENERATION_STEPS:
+        while not self.is_stop_token(last_token_decoded) and len(steps) <= self.max_generation_steps:
             token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
                 current_sequence)
 
@@ -92,7 +93,7 @@ class ModelHandler:
                 f"\tSkipped: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None, "unexpected_tokens"
 
-        if len(response_tokens) > MAX_GENERATION_STEPS:
+        if len(response_tokens) > self.max_generation_steps:
             print(
                 f"\tSkipped: Generated response is too long ({len(response_tokens)} tokens).")
             return None, "too_long"

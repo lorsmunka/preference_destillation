@@ -34,22 +34,32 @@ def get_output_dir(domain: str, model_name: str) -> str:
 
 
 # Queue
-DATA_GENERATION_QUEUE_PATH = "./data_generation/data-generation-queue.json"
+DATA_GENERATION_QUEUE_PATH = "./data_generation/data_generation_queue.json"
 
+
+# Model identification
+MODEL_NAME = "google/gemma-3-4b-it"
 
 # Sentence filtering (for data preparation)
 MIN_SENTENCE_LENGTH = 3
 MAX_SENTENCE_LENGTH = 25
 
-# Distillation
-MAX_GENERATION_STEPS = 50
+# Distillation — per-domain generation limits
+DOMAIN_MAX_GENERATION_STEPS = {
+    "reddit_comment_sentiment": 50,
+    "math_word_problem": 350,
+}
 PROMPT_DELIMITER = "\n\n"
 
 # Transformer architecture
 HIDDEN_DIM = 384
 NUM_LAYERS = 18
 NUM_HEADS = 8
-MAX_SEQ_LENGTH = MAX_SENTENCE_LENGTH + MAX_GENERATION_STEPS
+# Total sequence length limits (prompt + generation for student model)
+DOMAIN_MAX_SEQ_LENGTH = {
+    "reddit_comment_sentiment": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["reddit_comment_sentiment"],
+    "math_word_problem": DOMAIN_MAX_GENERATION_STEPS["math_word_problem"],
+}
 DROPOUT = 0.15
 
 # Training hyperparameters

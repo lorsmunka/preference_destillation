@@ -12,7 +12,7 @@ from shared import (
     HIDDEN_DIM,
     NUM_LAYERS,
     NUM_HEADS,
-    MAX_SEQ_LENGTH,
+    DOMAIN_MAX_SEQ_LENGTH,
     DROPOUT,
 )
 
@@ -32,7 +32,7 @@ class RMSNorm(nn.Module):
 
 
 class RotaryEmbedding(nn.Module):
-    def __init__(self, head_dim: int, max_seq_length: int = MAX_SEQ_LENGTH, base: int = 10000):
+    def __init__(self, head_dim: int, max_seq_length: int = DOMAIN_MAX_SEQ_LENGTH["reddit_comment_sentiment"], base: int = 10000):
         super().__init__()
         self.head_dim = head_dim
         self.max_seq_length = max_seq_length
@@ -74,7 +74,7 @@ class Transformer(nn.Module):
         hidden_dim: int = HIDDEN_DIM,
         num_layers: int = NUM_LAYERS,
         num_heads: int = NUM_HEADS,
-        max_seq_length: int = MAX_SEQ_LENGTH,
+        max_seq_length: int = DOMAIN_MAX_SEQ_LENGTH["reddit_comment_sentiment"],
         dropout: float = DROPOUT
     ):
         start_time = time()
