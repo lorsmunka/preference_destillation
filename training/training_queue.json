@@ -1,0 +1,42 @@
+[
+  {
+    "run_name": "math-deep-384h-24L",
+    "domain": "math_word_problem",
+    "description": "Math POC, deep model (384 hidden, 24 layers), KL 0.9->0.7",
+    "teacher_model": "google/gemma-3-4b-it",
+    "hidden_dim": 384,
+    "num_layers": 24,
+    "num_heads": 8,
+    "dropout": 0.15,
+    "epoch_count": 4,
+    "batch_size": 32,
+    "learning_rate": 6e-4,
+    "lr_warmup_ratio": 0.03,
+    "kl_ratio_start": 0.9,
+    "kl_ratio_end": 0.7,
+    "distillation_temperature": 3.0,
+    "max_training_examples": 500000,
+    "training_test_ratio": 0.98,
+    "auxiliary_token_percentage": 1.0
+  },
+  {
+    "run_name": "math-wide-512h-14L",
+    "domain": "math_word_problem",
+    "description": "Math POC, wide model (512 hidden, 14 layers), KL 0.9->0.7",
+    "teacher_model": "google/gemma-3-4b-it",
+    "hidden_dim": 512,
+    "num_layers": 14,
+    "num_heads": 8,
+    "dropout": 0.15,
+    "epoch_count": 4,
+    "batch_size": 32,
+    "learning_rate": 6e-4,
+    "lr_warmup_ratio": 0.03,
+    "kl_ratio_start": 0.9,
+    "kl_ratio_end": 0.7,
+    "distillation_temperature": 3.0,
+    "max_training_examples": 500000,
+    "training_test_ratio": 0.98,
+    "auxiliary_token_percentage": 1.0
+  }
+]

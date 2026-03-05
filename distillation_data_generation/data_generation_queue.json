@@ -1,0 +1,9 @@
+[
+  {
+    "domain": "math_word_problem",
+    "description": "500k math word problems solved by Gemma 4B",
+    "model_name": "google/gemma-3-4b-it",
+    "max_examples": 500000,
+    "batch_size": 32
+  }
+]

@@ -24,7 +24,7 @@ class QueueRunner:
 
         self.input_handler = InputHandler(input_path)
         self.model_handler = ModelHandler(self.model_name, self.domain)
-        self.logger = Logger()
+        self.logger = Logger(output_dir)
         self.saving_handler = SavingHandler(self.logger, output_dir)
 
     def run(self):
@@ -95,8 +95,8 @@ class QueueRunner:
         self.logger.log_generation_batch(
             batch_index=self.logger.batch_count,
             processed=batch_processed,
-            successful=self.batch_size,
-            skipped=batch_processed - self.batch_size,
+            successful=len(batch_examples),
+            skipped=batch_processed - len(batch_examples),
             time_seconds=batch_time,
             skip_reasons=batch_skip_reasons if batch_skip_reasons else None
         )

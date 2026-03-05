@@ -1,14 +1,26 @@
-sentences/*
-probabilities/*
-logs/*
-logs2/*
-batches/*
-checkpoints/*
-__pycache__/*
-data_generation/__pycache__/*
-training/__pycache__/*
+# Data files (generated on server, scp'd down)
+batches/
+runs/
+logs12b/
+inferences/
+evals/
 
-*.json
-*.jsonl
+# Input data
+text_generation/reddit_comment_sentiment/reddit_comments.jsonl
+text_generation/math_word_problem/math_word_problems.jsonl
+
+# Python
+__pycache__/
 *.pyc
+*.egg-info/
+
+# Model files
+checkpoints/
 *.pt
+
+# Misc
+test.json
+
+# OS
+.DS_Store
+Thumbs.db
