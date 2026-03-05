@@ -8,13 +8,13 @@ from pathlib import Path
 from .config import LOGS_DIR, BATCH_SIZE
 
 
-STATE_FILE = f"{LOGS_DIR}/state.json"
-GENERATION_LOG_FILE = f"{LOGS_DIR}/generation.jsonl"
-TRAINING_LOG_FILE = f"{LOGS_DIR}/training.jsonl"
-
-
 class Logger:
-    def __init__(self):
+    def __init__(self, logs_dir: str = LOGS_DIR):
+        self.logs_dir = logs_dir
+        self.state_file = os.path.join(logs_dir, "state.json")
+        self.generation_log_file = os.path.join(logs_dir, "generation.jsonl")
+        self.training_log_file = os.path.join(logs_dir, "training.jsonl")
+
         self.processed_sentence_count = 0
         self.successful_sentence_count = 0
 
@@ -27,7 +27,7 @@ class Logger:
         self.session_start_time = None
         self.session_id = None
 
-        Path(LOGS_DIR).mkdir(exist_ok=True)
+        Path(logs_dir).mkdir(parents=True, exist_ok=True)
         self._load()
 
     def _generate_session_id(self) -> str:
@@ -40,8 +40,8 @@ class Logger:
         start_time = time()
         print("Loading logger state...")
 
-        if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, "r", encoding="utf-8") as file:
+        if os.path.exists(self.state_file):
+            with open(self.state_file, "r", encoding="utf-8") as file:
                 data = json.load(file)
                 self.processed_sentence_count = data.get("processed_sentence_count", 0)
                 self.successful_sentence_count = data.get("successful_sentence_count", 0)
@@ -74,7 +74,7 @@ class Logger:
         self.total_runtime_seconds += time() - self.session_start_time
         self.session_start_time = time()
 
-        with open(STATE_FILE, "w", encoding="utf-8") as file:
+        with open(self.state_file, "w", encoding="utf-8") as file:
             json.dump({
                 "processed_sentence_count": self.processed_sentence_count,
                 "successful_sentence_count": self.successful_sentence_count,
@@ -111,7 +111,7 @@ class Logger:
         })
 
     def _write_generation_log(self, data: Dict):
-        with open(GENERATION_LOG_FILE, 'a', encoding='utf-8') as file:
+        with open(self.generation_log_file, 'a', encoding='utf-8') as file:
             file.write(json.dumps(data) + '\n')
 
     def update_progress(self, epoch: int, batch: int):
@@ -179,5 +179,5 @@ class Logger:
         })
 
     def _write_training_log(self, data: Dict):
-        with open(TRAINING_LOG_FILE, 'a', encoding='utf-8') as file:
+        with open(self.training_log_file, 'a', encoding='utf-8') as file:
             file.write(json.dumps(data) + '\n')
