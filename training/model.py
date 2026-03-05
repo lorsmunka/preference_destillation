@@ -179,6 +179,23 @@ class Transformer(nn.Module):
         return self.vocabulary['positions']
 
     def model_info(self):
+        info = self.get_model_info()
+
+        print("=== Model Parameter Overview ===")
+        print(f"Total trainable parameters: {info['total_parameters']:,}")
+        print(f"Input embeddings: {info['input_embedding_params']:,}")
+        print(f"Transformer Attention: {info['attention_params']:,}")
+        print(f"Transformer Feed-Forward: {info['feedforward_params']:,}")
+        print(f"RMSNorm layers: {info['norm_params']:,}")
+        print(f"Output projection: {info['output_projection_params']:,}")
+        print(f"\nSum of all above: {info['subtotal']:,}")
+        print(f"Difference (RoPE buffers, non-trainable): {info['non_trainable_params']:,}")
+        print(
+            f"\nHyperparameters: hidden_dim={self.hidden_dim}, heads={self.num_heads}, layers={len(self.transformer_layers)}, max_seq_length={self.max_seq_length}")
+        print(
+            f"Input vocab size={self.input_vocab_size}, Output vocab size={self.output_vocab_size}")
+
+    def get_model_info(self) -> dict:
         input_embedding_params = self.input_embedding.weight.numel()
 
         attention_total = sum(layer.attention.get_num_parameters()
@@ -199,23 +216,19 @@ class Transformer(nn.Module):
         subtotal = input_embedding_params + attention_total + feedforward_total + \
             block_norm_total + final_norm_total + output_projection_total
         total_parameters = self.get_num_parameters()
-        difference = total_parameters - subtotal
 
-        positions = self.vocabulary['positions']
-
-        print("=== Model Parameter Overview ===")
-        print(f"Total trainable parameters: {total_parameters:,}")
-        print(f"Input embeddings: {input_embedding_params:,}")
-        print(f"Transformer Attention: {attention_total:,}")
-        print(f"Transformer Feed-Forward: {feedforward_total:,}")
-        print(f"RMSNorm layers: {block_norm_total + final_norm_total:,}")
-        print(f"Output projection: {output_projection_total:,}")
-        print(f"\nSum of all above: {subtotal:,}")
-        print(f"Difference (RoPE buffers, non-trainable): {difference:,}")
-        print(
-            f"\nHyperparameters: hidden_dim={self.hidden_dim}, heads={self.num_heads}, layers={len(self.transformer_layers)}, max_seq_length={self.max_seq_length}")
-        print(
-            f"Input vocab size={self.input_vocab_size}, Output vocab size={self.output_vocab_size}")
+        return {
+            "total_parameters": total_parameters,
+            "input_embedding_params": input_embedding_params,
+            "attention_params": attention_total,
+            "feedforward_params": feedforward_total,
+            "norm_params": block_norm_total + final_norm_total,
+            "output_projection_params": output_projection_total,
+            "subtotal": subtotal,
+            "non_trainable_params": total_parameters - subtotal,
+            "input_vocab_size": self.input_vocab_size,
+            "output_vocab_size": self.output_vocab_size,
+        }
         print(f"\nOutput vocabulary sections:")
         print(f"  Example tokens: {positions['example'][0]}-{positions['example'][1]}")
         print(f"  Whitespace tokens: {positions['whitespace'][0]}-{positions['whitespace'][1]}")

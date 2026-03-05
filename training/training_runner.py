@@ -46,7 +46,6 @@ class TrainingRunner:
         print(f"{'=' * 60}\n")
 
         started_at = datetime.now().isoformat()
-        self._write_info("in_progress", started_at=started_at)
 
         batches_dir = get_batches_dir(self.domain, self.teacher_model)
         batch_handler = BatchHandler(batches_dir, self.config["training_test_ratio"])
@@ -61,6 +60,9 @@ class TrainingRunner:
             dropout=self.config["dropout"],
             auxiliary_token_percentage=self.config.get("auxiliary_token_percentage", 1.0),
         )
+
+        self.model_info = transformer.get_model_info()
+        self._write_info("in_progress", started_at=started_at)
 
         trainer = Trainer(transformer, logger, self.exit_listener, batch_handler, trainer_config)
 
@@ -93,6 +95,8 @@ class TrainingRunner:
         info["status"] = status
         info["started_at"] = started_at
         info["completed_at"] = completed_at
+        if hasattr(self, "model_info"):
+            info["model_info"] = self.model_info
         info_path = os.path.join(self.run_dir, "info.json")
         with open(info_path, "w", encoding="utf-8") as file:
             json.dump(info, file, indent=2)

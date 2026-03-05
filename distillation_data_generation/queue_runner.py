@@ -67,9 +67,14 @@ class QueueRunner:
             self.saving_handler.save_batch(batch_examples)
             print(f"Saved final partial batch with {len(batch_examples)} examples")
 
+        if self.logger.successful_sentence_count >= self.max_examples:
+            status = "completed"
+        else:
+            status = "incomplete"
+
         self.saving_handler.write_info(
             self.queue_element,
-            status="completed",
+            status=status,
             examples_generated=self.logger.successful_sentence_count,
             batches_written=self.logger.batch_count,
         )

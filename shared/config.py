@@ -65,7 +65,7 @@ NUM_LAYERS = 18
 NUM_HEADS = 8
 DOMAIN_MAX_SEQ_LENGTH = {
     "reddit_comment_sentiment": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["reddit_comment_sentiment"],
-    "math_word_problem": DOMAIN_MAX_GENERATION_STEPS["math_word_problem"],
+    "math_word_problem": 175,
 }
 DROPOUT = 0.15
 

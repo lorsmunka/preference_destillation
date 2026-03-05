@@ -1,4 +1,5 @@
 import sys
+import json
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent / "training"))
@@ -11,17 +12,39 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from training.model import Transformer
 from shared import (
     get_device,
-    MODEL_NAME,
+    get_training_run_dir,
     Utilities,
     INFERENCE_TEMPERATURE,
     MIN_SENTENCE_LENGTH,
     MAX_SENTENCE_LENGTH,
     PROMPT_DELIMITER,
+    DOMAIN_MAX_GENERATION_STEPS,
 )
 
+DOMAIN_STOP_TOKEN = {
+    "reddit_comment_sentiment": "}",
+    "math_word_problem": ";",
+}
 
-def get_checkpoints():
-    checkpoint_dir = Path(__file__).parent.parent / "checkpoints"
+
+def list_runs() -> list:
+    runs_dir = Path("runs")
+    if not runs_dir.exists():
+        return []
+    results = []
+    for run_dir in sorted(runs_dir.iterdir()):
+        info_path = run_dir / "info.json"
+        if info_path.exists():
+            with open(info_path, "r", encoding="utf-8") as file:
+                info = json.load(file)
+            results.append((run_dir.name, info))
+    return results
+
+
+def get_checkpoints(run_name: str) -> list:
+    checkpoint_dir = Path(get_training_run_dir(run_name)) / "checkpoints"
+    if not checkpoint_dir.exists():
+        return []
     result = []
     temp = checkpoint_dir / "temp_checkpoint.pt"
     if temp.exists():
@@ -31,18 +54,31 @@ def get_checkpoints():
     return result
 
 
-def validate_sentence(tokenizer, sentence):
+def create_teacher_prompt(domain: str, sentence: str) -> str:
+    if domain == "math_word_problem":
+        return Utilities.create_math_word_problem_prompt(sentence)
+    return Utilities.create_reddit_sentiment_prompt(sentence)
+
+
+DOMAIN_MAX_INPUT_TOKENS = {
+    "reddit_comment_sentiment": MAX_SENTENCE_LENGTH,
+    "math_word_problem": 500,
+}
+
+
+def validate_sentence(tokenizer, sentence, domain):
+    max_tokens = DOMAIN_MAX_INPUT_TOKENS.get(domain, MAX_SENTENCE_LENGTH)
     token_count = len(tokenizer.encode(sentence, add_special_tokens=False))
     if token_count < MIN_SENTENCE_LENGTH:
         return False, f"Too short: {token_count} tokens (min {MIN_SENTENCE_LENGTH})"
-    if token_count > MAX_SENTENCE_LENGTH:
-        return False, f"Too long: {token_count} tokens (max {MAX_SENTENCE_LENGTH})"
+    if token_count > max_tokens:
+        return False, f"Too long: {token_count} tokens (max {max_tokens})"
     return True, token_count
 
 
 class InferenceLogger:
-    def __init__(self, sentences, checkpoint_name):
-        self.log_dir = Path(__file__).parent.parent / "inferences"
+    def __init__(self, run_name, sentences, checkpoint_name):
+        self.log_dir = Path(get_training_run_dir(run_name)) / "inferences"
         self.log_dir.mkdir(exist_ok=True)
         self.log_path = self.log_dir / f"inference_{int(time() * 1000)}.txt"
         self.sentences = sentences
@@ -70,9 +106,11 @@ class InferenceLogger:
             f.flush()
 
 
-def generate_teacher(model, tokenizer, sentence, device, logger):
-    prompt = Utilities.create_reddit_sentiment_prompt(sentence)
+def generate_teacher(model, tokenizer, sentence, domain, device, logger):
+    prompt = create_teacher_prompt(domain, sentence)
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
+    stop_token = DOMAIN_STOP_TOKEN[domain]
+    max_tokens = DOMAIN_MAX_GENERATION_STEPS[domain]
 
     gen_start = time()
     generated_ids = []
@@ -81,7 +119,7 @@ def generate_teacher(model, tokenizer, sentence, device, logger):
         past_key_values = None
         current_input = inputs.input_ids
 
-        for _ in range(50):
+        for _ in range(max_tokens):
             outputs = model(current_input, past_key_values=past_key_values, use_cache=True)
             past_key_values = outputs.past_key_values
             logits = outputs.logits[:, -1, :]
@@ -92,7 +130,7 @@ def generate_teacher(model, tokenizer, sentence, device, logger):
             token_str = tokenizer.decode([next_token.item()])
             logger.append_token(token_str)
 
-            if next_token.item() == tokenizer.eos_token_id or token_str == "}":
+            if next_token.item() == tokenizer.eos_token_id or token_str == stop_token:
                 break
 
             current_input = next_token.unsqueeze(0)
@@ -106,15 +144,17 @@ def generate_teacher(model, tokenizer, sentence, device, logger):
     return {"gen_time": gen_time, "tokens": token_count, "tps": tps, "response": response}
 
 
-def generate_student(model, tokenizer, output_token_ids, sentence, device, logger):
+def generate_student(model, tokenizer, output_token_ids, sentence, domain, device, logger):
     prompt = sentence + PROMPT_DELIMITER
     input_ids = tokenizer.encode(prompt, add_special_tokens=False)
+    stop_token = DOMAIN_STOP_TOKEN[domain]
+    max_tokens = DOMAIN_MAX_GENERATION_STEPS[domain]
 
     generated_ids = []
     gen_start = time()
 
     with torch.no_grad():
-        for _ in range(50):
+        for _ in range(max_tokens):
             context = input_ids + generated_ids
             tensor = torch.tensor([context], dtype=torch.long, device=device)
             logits = model(tensor)[:, -1, :][0]
@@ -131,7 +171,7 @@ def generate_student(model, tokenizer, output_token_ids, sentence, device, logge
             token_str = tokenizer.decode([pred_token_id])
             logger.append_token(token_str)
 
-            if token_str == "}":
+            if token_str == stop_token:
                 break
 
     gen_time = time() - gen_start
@@ -146,10 +186,55 @@ def generate_student(model, tokenizer, output_token_ids, sentence, device, logge
 def main():
     print("=== Inference Comparison ===\n")
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    runs = list_runs()
+    if not runs:
+        print("No training runs found.")
+        return
+
+    print("Available runs:")
+    for i, (name, info) in enumerate(runs):
+        status = info.get("status", "unknown")
+        domain = info.get("domain", "?")
+        description = info.get("description", "")
+        print(f"  [{i + 1}] {name} ({domain}, {status})")
+        if description:
+            print(f"      {description}")
+
+    selection = input("\nSelect run number: ").strip()
+    try:
+        run_index = int(selection) - 1
+        run_name, run_config = runs[run_index]
+    except (ValueError, IndexError):
+        print("Invalid selection.")
+        return
+
+    domain = run_config["domain"]
+    teacher_model = run_config["teacher_model"]
+    print(f"\nSelected: {run_name} (domain: {domain})")
+
+    checkpoints = get_checkpoints(run_name)
+    if not checkpoints:
+        print("No checkpoints found for this run.")
+        return
+
+    print(f"Checkpoints: {', '.join(name for name, _ in checkpoints)}")
+    checkpoint_selection = input("Select: ").strip().lower()
+
+    checkpoint_path = None
+    for name, path in checkpoints:
+        if name == checkpoint_selection:
+            checkpoint_path = path
+            break
+
+    if not checkpoint_path:
+        print(f"'{checkpoint_selection}' not found.")
+        return
+
+    tokenizer = AutoTokenizer.from_pretrained(teacher_model)
 
     sentences = []
-    print(f"Enter sentences ({MIN_SENTENCE_LENGTH}-{MAX_SENTENCE_LENGTH} tokens). Empty line to finish.\n")
+    max_tokens = DOMAIN_MAX_INPUT_TOKENS.get(domain, MAX_SENTENCE_LENGTH)
+    print(f"\nEnter sentences ({MIN_SENTENCE_LENGTH}-{max_tokens} tokens, use \\n for newlines). Empty line to finish.\n")
 
     while True:
         sentence = input(f"[{len(sentences) + 1}] ").strip()
@@ -159,7 +244,9 @@ def main():
             print("Enter at least one sentence.")
             continue
 
-        valid, result = validate_sentence(tokenizer, sentence)
+        sentence = sentence.replace("\\n", "\n")
+
+        valid, result = validate_sentence(tokenizer, sentence, domain)
         if valid:
             sentences.append(sentence)
             print(f"    ({result} tokens)")
@@ -168,39 +255,21 @@ def main():
 
     print(f"\n{len(sentences)} sentence(s)")
 
-    checkpoints = get_checkpoints()
-    if not checkpoints:
-        print("No checkpoints found.")
-        return
-
-    print(f"\nCheckpoints: {', '.join(name for name, _ in checkpoints)}")
-    selection = input("Select: ").strip().lower()
-
-    checkpoint_path = None
-    for name, path in checkpoints:
-        if name == selection:
-            checkpoint_path = path
-            break
-
-    if not checkpoint_path:
-        print(f"'{selection}' not found.")
-        return
-
     device = get_device()
-    print(f"\nDevice: {device}")
+    print(f"Device: {device}")
 
-    logger = InferenceLogger(sentences, checkpoint_path.name)
+    logger = InferenceLogger(run_name, sentences, checkpoint_path.name)
     logger.create_file()
 
     # Teacher: all sentences
     logger.write("\n" + "=" * 60 + "\n")
-    logger.write("TEACHER: Gemma 3 4B\n")
+    logger.write(f"TEACHER: {teacher_model}\n")
     logger.write("=" * 60 + "\n")
 
-    print("\n[Teacher] Loading...")
+    print(f"\n[Teacher] Loading {teacher_model}...")
     load_start = time()
-    teacher_model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, device_map=device)
-    teacher_model.eval()
+    teacher_model_instance = AutoModelForCausalLM.from_pretrained(teacher_model, torch_dtype=torch.bfloat16, device_map=device)
+    teacher_model_instance.eval()
     teacher_load = time() - load_start
     print(f"[Teacher] Loaded in {teacher_load:.2f}s")
 
@@ -210,10 +279,10 @@ def main():
     for idx, sentence in enumerate(sentences):
         print(f"[Teacher] {idx + 1}/{len(sentences)}")
         logger.write(f"\n[{idx + 1}] {sentence}\n")
-        result = generate_teacher(teacher_model, tokenizer, sentence, device, logger)
+        result = generate_teacher(teacher_model_instance, tokenizer, sentence, domain, device, logger)
         teacher_results.append(result)
 
-    del teacher_model
+    del teacher_model_instance
     torch.cuda.empty_cache() if device == "cuda" else None
 
     # Student: all sentences
@@ -223,7 +292,15 @@ def main():
 
     print(f"\n[Student] Loading...")
     load_start = time()
-    student_model = Transformer().to(device)
+    student_model = Transformer(
+        domain=domain,
+        teacher_model=run_config["teacher_model"],
+        hidden_dim=run_config["hidden_dim"],
+        num_layers=run_config["num_layers"],
+        num_heads=run_config["num_heads"],
+        dropout=run_config.get("dropout", 0.15),
+        auxiliary_token_percentage=run_config.get("auxiliary_token_percentage", 1.0),
+    ).to(device)
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     student_model.load_state_dict(checkpoint["model_state_dict"])
     student_model.eval()
@@ -239,7 +316,7 @@ def main():
     for idx, sentence in enumerate(sentences):
         print(f"[Student] {idx + 1}/{len(sentences)}")
         logger.write(f"\n[{idx + 1}] {sentence}\n")
-        result = generate_student(student_model, student_tokenizer, output_token_ids, sentence, device, logger)
+        result = generate_student(student_model, student_tokenizer, output_token_ids, sentence, domain, device, logger)
         student_results.append(result)
 
     # Summary
