@@ -8,6 +8,15 @@ GOAL: Multi-domain distillation pipeline. Queue-based config for data generation
 WORKFLOW: Claude makes changes, user reviews, user stages+commits.
 Claude does NOT stage or commit. User controls git entirely.
 
+NAMING DOCTRINE:
+  The pipeline now supports multiple domains. All function names, constants,
+  and variables must be domain-qualified — no generic names that could apply
+  to any domain. If something is sentiment-specific, it says "reddit_sentiment".
+  If it's math-specific, it says "math_word_problem". Generic names like
+  "create_evaluation_prompt" or "EXAMPLE_RESPONSES" are not acceptable.
+  When adding a new domain or touching existing code, check for and fix any
+  ambiguous names. This prevents confusion as more domains are added.
+
 
 PIPELINE OVERVIEW (3 stages)
 ------------------------------
