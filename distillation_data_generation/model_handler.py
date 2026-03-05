@@ -11,7 +11,7 @@ class ModelHandler:
     def __init__(self, model_name: str, domain: str):
         self.model_name = model_name
         self.domain = domain
-        self.max_generation_steps = DOMAIN_self.max_generation_steps[domain]
+        self.max_generation_steps = DOMAIN_MAX_GENERATION_STEPS[domain]
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
