@@ -71,20 +71,27 @@ def rotate_half(x: torch.Tensor) -> torch.Tensor:
 class Transformer(nn.Module):
     def __init__(
         self,
+        domain: str = "reddit_comment_sentiment",
+        teacher_model: str = MODEL_NAME,
         hidden_dim: int = HIDDEN_DIM,
         num_layers: int = NUM_LAYERS,
         num_heads: int = NUM_HEADS,
-        max_seq_length: int = DOMAIN_MAX_SEQ_LENGTH["reddit_comment_sentiment"],
-        dropout: float = DROPOUT
+        max_seq_length: int = None,
+        dropout: float = DROPOUT,
+        auxiliary_token_percentage: float = 1.0
     ):
         start_time = time()
         print("Initializing Transformer model...")
         super().__init__()
 
-        self.tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        if max_seq_length is None:
+            max_seq_length = DOMAIN_MAX_SEQ_LENGTH[domain]
+
+        self.tokenizer = AutoTokenizer.from_pretrained(teacher_model)
         self.input_vocab_size = self.tokenizer.vocab_size
 
-        self.vocabulary = Utilities.build_vocabulary(self.tokenizer)
+        self.vocabulary = Utilities.build_vocabulary(
+            self.tokenizer, domain, auxiliary_token_percentage)
         self.output_vocab_size = self.vocabulary['vocab_size']
 
         self.output_token_ids = [
