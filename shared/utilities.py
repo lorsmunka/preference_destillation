@@ -53,7 +53,7 @@ class Utilities:
         "True", "False", "▁True", "▁False",
     ]
 
-    MATH_WORD_PROBLEM_AUXILIARY_TOKENS = [
+    MATH_WORD_PROBLEM_ADDITIONAL_AUXILIARY_TOKENS = [
         "F", "G", ".",
     ]
 
@@ -256,7 +256,7 @@ JSON:
 
         if domain == "math_word_problem":
             prompt_tokens = cls.MATH_WORD_PROBLEM_PROMPT_TOKENS
-            auxiliary_tokens = cls.MATH_WORD_PROBLEM_AUXILIARY_TOKENS
+            auxiliary_tokens = cls.MATH_WORD_PROBLEM_ADDITIONAL_AUXILIARY_TOKENS
         else:
             prompt_tokens = cls.PROMPT_TOKENS
             auxiliary_tokens = cls.AUXILIARY_TOKENS
@@ -311,10 +311,14 @@ JSON:
         cls._write_debug_file(vocabulary, tokenizer_name)
 
         print(f"Built vocabulary: {len(token_list)} tokens")
-        print(f"  Example tokens: {positions['example'][0]}-{positions['example'][1]} ({positions['example'][1] - positions['example'][0]} tokens)")
-        print(f"  Whitespace tokens: {positions['whitespace'][0]}-{positions['whitespace'][1]} ({positions['whitespace'][1] - positions['whitespace'][0]} tokens)")
-        print(f"  Prompt tokens: {positions['prompt'][0]}-{positions['prompt'][1]} ({positions['prompt'][1] - positions['prompt'][0]} tokens)")
-        print(f"  Auxiliary tokens: {positions['auxiliary'][0]}-{positions['auxiliary'][1]} ({positions['auxiliary'][1] - positions['auxiliary'][0]} tokens)")
+        print(
+            f"  Example tokens: {positions['example'][0]}-{positions['example'][1]} ({positions['example'][1] - positions['example'][0]} tokens)")
+        print(
+            f"  Whitespace tokens: {positions['whitespace'][0]}-{positions['whitespace'][1]} ({positions['whitespace'][1] - positions['whitespace'][0]} tokens)")
+        print(
+            f"  Prompt tokens: {positions['prompt'][0]}-{positions['prompt'][1]} ({positions['prompt'][1] - positions['prompt'][0]} tokens)")
+        print(
+            f"  Auxiliary tokens: {positions['auxiliary'][0]}-{positions['auxiliary'][1]} ({positions['auxiliary'][1] - positions['auxiliary'][0]} tokens)")
 
         return vocabulary
 

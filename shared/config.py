@@ -33,6 +33,14 @@ def get_output_dir(domain: str, model_name: str) -> str:
     return os.path.join("./batches", domain, sanitize_model_name(model_name))
 
 
+def get_batches_dir(domain: str, teacher_model: str) -> str:
+    return os.path.join("./batches", domain, sanitize_model_name(teacher_model))
+
+
+def get_training_run_dir(run_name: str) -> str:
+    return os.path.join("./runs", run_name)
+
+
 # Queue paths
 DATA_GENERATION_QUEUE_PATH = "./distillation_data_generation/data_generation_queue.json"
 TRAINING_QUEUE_PATH = "./training/training_queue.json"
