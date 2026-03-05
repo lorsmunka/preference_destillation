@@ -24,6 +24,25 @@ class Utilities:
         '```json\n{\n    "tone": "friendly",\n    "sentiment": "positive",\n    "safety": "harmful",\n    "toxicity": "toxic"\n}',
     ]
 
+    # TODO: Math vocabulary — populate after running empirical token test
+    #
+    # Plan:
+    #   1. Write temp script (data_generation/test_math_vocab.py) that:
+    #      - Loads Gemma model + tokenizer
+    #      - Runs inference on ~500-1000 math problems from math_word_problems.jsonl
+    #      - Uses MATH_MASTER_PROMPT + problem text as input
+    #      - For each generation, collects all unique output tokens
+    #      - Reports: full token set, token frequencies, max sequence length
+    #   2. Use results to populate MATH_EXAMPLE_RESPONSES with real Gemma outputs
+    #      (filled scaffolds like "A=3\nB=5\nC=A+B=8\nSolution: 8")
+    #   3. Populate MATH_PROMPT_TOKENS and MATH_AUXILIARY_TOKENS from observed tokens
+    #   4. Delete the temp script
+    #
+    # This must be done before running math distillation in the queue.
+    MATH_EXAMPLE_RESPONSES = []
+    MATH_PROMPT_TOKENS = []
+    MATH_AUXILIARY_TOKENS = []
+
     WHITESPACE_TOKENS = [
         "\n", "\n\n", "\n\n\n",
         "\u2581",
@@ -130,7 +149,31 @@ class Utilities:
         "definite", "indefinite", "unsure", "confident", "doubtful",
     ]
 
+    MATH_MASTER_PROMPT = """Follow this example exactly:
+
+Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
+A=3
+B=5
+C=2
+D=A*B=15
+E=D-C=13
+Solution: 13
+
+Problem: "Tom has 15 stickers. He gives away 7. Sarah has 12 stickers. Does Tom have more stickers than Sarah?"
+A=15
+B=7
+C=12
+D=A-B=8
+E=D>C=False
+Solution: False
+
+"""
+
     _vocabulary_cache: Dict[str, dict] = {}
+
+    @classmethod
+    def create_math_prompt(cls, text: str) -> str:
+        return cls.MATH_MASTER_PROMPT + text
 
     @classmethod
     def create_evaluation_prompt(cls, sentence: str) -> str:
@@ -150,9 +193,14 @@ JSON:
         return prompt
 
     @classmethod
-    def _get_example_tokens(cls, tokenizer) -> List[str]:
+    def _get_example_tokens(cls, tokenizer, domain: str = "reddit_comment_sentiment") -> List[str]:
+        if domain == "math_word_problem":
+            responses = cls.MATH_EXAMPLE_RESPONSES
+        else:
+            responses = cls.EXAMPLE_JSON_RESPONSES
+
         all_tokens = []
-        for response in cls.EXAMPLE_JSON_RESPONSES:
+        for response in responses:
             tokens = tokenizer.tokenize(response)
             all_tokens.extend(tokens)
         seen = set()
@@ -164,13 +212,21 @@ JSON:
         return unique
 
     @classmethod
-    def build_vocabulary(cls, tokenizer) -> dict:
+    def build_vocabulary(cls, tokenizer, domain: str = "reddit_comment_sentiment") -> dict:
         tokenizer_name = getattr(tokenizer, 'name_or_path', str(id(tokenizer)))
+        cache_key = f"{tokenizer_name}_{domain}"
 
-        if tokenizer_name in cls._vocabulary_cache:
-            return cls._vocabulary_cache[tokenizer_name]
+        if cache_key in cls._vocabulary_cache:
+            return cls._vocabulary_cache[cache_key]
 
-        example_tokens = cls._get_example_tokens(tokenizer)
+        example_tokens = cls._get_example_tokens(tokenizer, domain)
+
+        if domain == "math_word_problem":
+            prompt_tokens = cls.MATH_PROMPT_TOKENS
+            auxiliary_tokens = cls.MATH_AUXILIARY_TOKENS
+        else:
+            prompt_tokens = cls.PROMPT_TOKENS
+            auxiliary_tokens = cls.AUXILIARY_TOKENS
 
         seen = set()
         token_list = []
@@ -184,8 +240,8 @@ JSON:
         section_tokens = [
             ('example', example_tokens),
             ('whitespace', cls.WHITESPACE_TOKENS),
-            ('prompt', cls.PROMPT_TOKENS),
-            ('auxiliary', cls.AUXILIARY_TOKENS),
+            ('prompt', prompt_tokens),
+            ('auxiliary', auxiliary_tokens),
         ]
 
         for section_name, tokens in section_tokens:
@@ -217,7 +273,7 @@ JSON:
             'vocab_size': len(token_list),
         }
 
-        cls._vocabulary_cache[tokenizer_name] = vocabulary
+        cls._vocabulary_cache[cache_key] = vocabulary
 
         cls._write_debug_file(vocabulary, tokenizer_name)
 
@@ -303,8 +359,12 @@ JSON:
         return result
 
     @classmethod
-    def get_json_response_tokens(cls, tokenizer) -> List[str]:
-        vocabulary = cls.build_vocabulary(tokenizer)
+    def get_response_tokens(cls, tokenizer, domain: str = "reddit_comment_sentiment") -> List[str]:
+        vocabulary = cls.build_vocabulary(tokenizer, domain)
         positions = vocabulary['positions']
         example_end = positions['whitespace'][1]  # Include whitespace
         return vocabulary['token_list'][:example_end]
+
+    @classmethod
+    def get_json_response_tokens(cls, tokenizer) -> List[str]:
+        return cls.get_response_tokens(tokenizer, "reddit_comment_sentiment")

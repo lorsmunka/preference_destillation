@@ -1,5 +1,6 @@
 # Centralized configuration for preference distillation project
 
+import os
 import torch
 
 
@@ -11,8 +12,30 @@ def get_device() -> str:
     return "cpu"
 
 
-# Model identification
-MODEL_NAME = "google/gemma-3-12b-it"
+# Domain paths
+INPUT_PATHS = {
+    "reddit_comment_sentiment": "./text_generation/reddit_comment_sentiment/reddit_comments.jsonl",
+    "math_word_problem": "./text_generation/math_word_problem/math_word_problems.jsonl",
+}
+
+
+def sanitize_model_name(model_name: str) -> str:
+    return model_name.replace("/", "_")
+
+
+def get_input_path(domain: str) -> str:
+    if domain not in INPUT_PATHS:
+        raise ValueError(f"Unknown domain: {domain}")
+    return INPUT_PATHS[domain]
+
+
+def get_output_dir(domain: str, model_name: str) -> str:
+    return os.path.join("./batches", domain, sanitize_model_name(model_name))
+
+
+# Queue
+DATA_GENERATION_QUEUE_PATH = "./data_generation/data-generation-queue.json"
+
 
 # Sentence filtering (for data preparation)
 MIN_SENTENCE_LENGTH = 3

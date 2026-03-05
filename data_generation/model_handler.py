@@ -4,16 +4,17 @@ from typing import Dict, List, Tuple, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Utilities, MODEL_NAME, MAX_GENERATION_STEPS, get_device
+from shared import Utilities, MAX_GENERATION_STEPS, get_device
 
 
 class ModelHandler:
-    def __init__(self):
-        self.model_name = MODEL_NAME
+    def __init__(self, model_name: str, domain: str):
+        self.model_name = model_name
+        self.domain = domain
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
-        self.json_response_tokens: Optional[List[str]] = None
+        self.response_tokens: Optional[List[str]] = None
 
         self.load_tokenizer_and_model()
 
@@ -36,17 +37,32 @@ class ModelHandler:
         start_time = time()
         print("Creating vocabulary...")
 
-        self.vocabulary = Utilities.build_vocabulary(self.tokenizer)
-        self.json_response_tokens = Utilities.get_json_response_tokens(
-            self.tokenizer)
+        self.vocabulary = Utilities.build_vocabulary(self.tokenizer, self.domain)
+        self.response_tokens = Utilities.get_response_tokens(
+            self.tokenizer, self.domain)
 
         elapsed_time = time() - start_time
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
 
-    def generate_training_example(self, sentence: str) -> Tuple[Optional[Dict], Optional[str]]:
+    def build_prompt(self, text: str) -> str:
+        if self.domain == "math_word_problem":
+            return Utilities.create_math_prompt(text)
+        return Utilities.create_evaluation_prompt(text)
+
+    def is_stop_token(self, token_decoded: str, generated_text: str) -> bool:
+        if self.domain == "math_word_problem":
+            lines = generated_text.strip().split("\n")
+            if lines:
+                last_line = lines[-1].strip()
+                if last_line.startswith("Solution:") and len(last_line) > len("Solution:"):
+                    return True
+            return False
+        return token_decoded == "}"
+
+    def generate_training_example(self, text: str) -> Tuple[Optional[Dict], Optional[str]]:
         start_time = time()
 
-        prompt = Utilities.create_evaluation_prompt(sentence)
+        prompt = self.build_prompt(text)
         inputs = self.prepare_inputs_for_device(prompt)
 
         steps = []
@@ -54,7 +70,7 @@ class ModelHandler:
         current_sequence = inputs['input_ids']
 
         last_token_decoded = ""
-        while last_token_decoded != "}" and len(steps) <= MAX_GENERATION_STEPS:
+        while not self.is_stop_token(last_token_decoded, generated_text) and len(steps) <= MAX_GENERATION_STEPS:
             token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
                 current_sequence)
 
@@ -74,9 +90,9 @@ class ModelHandler:
         print(
             f"\tGenerated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
 
-        if not all(token in self.json_response_tokens for token in response_tokens):
+        if not all(token in self.response_tokens for token in response_tokens):
             unexpected_tokens = [
-                token for token in response_tokens if token not in self.json_response_tokens]
+                token for token in response_tokens if token not in self.response_tokens]
             print(
                 f"\tSkipped: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None, "unexpected_tokens"
@@ -87,7 +103,7 @@ class ModelHandler:
             return None, "too_long"
 
         return {
-            "sentence": sentence,
+            "sentence": text,
             "model_response": generated_text,
             "steps": steps
         }, None

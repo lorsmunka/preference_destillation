@@ -178,97 +178,97 @@ MATH OUTPUT VOCABULARY (needs tokenizer analysis):
 
 COMMIT-LEVEL PLAN (each ~20-30 lines changed)
 
-Commit 1: Create data-generation-queue.json
+Commit 1: Create data-generation-queue.json [DONE]
   - Queue config file with both domain entries
-  - ~20 lines
-  Files: 1 new
+  Files: data_generation/data-generation-queue.json (new)
 
-Commit 2: Add domain utility functions to shared
+Commit 2: Add domain utility functions to shared [DONE]
   - sanitize_model_name(model_name) -> str
   - get_input_path(domain) -> str
   - get_output_dir(domain, model_name) -> str
-  - ~20 lines
-  Files: shared/config.py or new shared/domain_utils.py
+  Files: shared/config.py
 
-Commit 3: Rename sentence_handler.py -> input_handler.py
+Commit 3: Rename sentence_handler.py -> input_handler.py [DONE]
   - Rename class SentenceHandler -> InputHandler
   - Make load method accept a file path parameter
   - Keep interface: get_input(index), input_count
-  - ~20 lines changed
-  Files: data_generation/input_handler.py (renamed)
+  Files: data_generation/input_handler.py (new, replaces sentence_handler.py)
 
-Commit 4: Update saving_handler.py for domain/model paths
+Commit 4: Update saving_handler.py for domain/model paths [DONE]
   - Constructor takes output_dir instead of using global BATCHES_DIR
   - Create output directory structure: batches/{domain}/{sanitized_model}/
-  - Write info.json at start
-  - ~25 lines changed
+  - Write info.json at start + update on completion
   Files: data_generation/saving_handler.py
 
-Commit 5: Add math prompt construction
-  - Function to build math master prompt + problem scaffold
-  - Separate from sentiment's create_evaluation_prompt
-  - Could live in shared/utilities.py or new domain-specific module
-  - ~25 lines
-  Files: shared/utilities.py or new file
-
-Commit 6: Add math vocabulary to shared/utilities.py
-  - MATH_EXAMPLE_RESPONSES (sample filled scaffolds for token discovery)
-  - MATH_PROMPT_TOKENS, MATH_AUXILIARY_TOKENS
-  - Requires tokenizer analysis first — run Gemma tokenizer on sample outputs
-  - ~40 lines
+Commit 5: Add math prompt construction [DONE]
+  - MATH_MASTER_PROMPT + create_math_prompt in shared/utilities.py
+  - Empty math vocab placeholders (to be filled after empirical test)
   Files: shared/utilities.py
 
-Commit 7: Make build_vocabulary domain-aware
+Commit 6: Make build_vocabulary domain-aware [DONE]
   - build_vocabulary(tokenizer, domain) dispatches to sentiment vs math token sets
-  - Keep backward compatibility for sentiment
-  - ~20 lines changed
+  - _get_example_tokens(tokenizer, domain) dispatches example responses
+  - Added get_response_tokens(tokenizer, domain), kept get_json_response_tokens for compat
   Files: shared/utilities.py
 
-Commit 8: Make model_handler.py domain-aware
+Commit 7: Make model_handler.py domain-aware [DONE]
   - Constructor takes model_name + domain
-  - create_vocabulary uses domain parameter
-  - generate_training_example uses domain-appropriate prompt
-  - Domain-appropriate stop condition ("}" vs scaffold completion)
-  - ~30 lines changed
+  - Domain-aware prompt building (build_prompt dispatches by domain)
+  - Domain-aware stop condition (is_stop_token: "}" vs Solution line)
+  - Domain-aware vocabulary creation
   Files: data_generation/model_handler.py
 
-Commit 9: Rewrite main.py as queue runner
-  - Load data-generation-queue.json
-  - Loop queue elements, skip completed (check info.json status)
-  - For each: create InputHandler, ModelHandler, SavingHandler with domain config
-  - Preserve existing batch loop logic
-  - ~40 lines changed
-  Files: data_generation/main.py
+Commit 8: Extract queue_runner.py from main.py [DONE]
+  - QueueRunner class encapsulates batch processing loop
+  - main.py stays thin: load queue, skip completed, call runner.run()
+  Files: data_generation/queue_runner.py (new), data_generation/main.py
 
-Commit 10: Update info.json on completion
-  - saving_handler or main.py updates info.json with final stats
-  - status: "completed", completed_at, examples_generated, batches_written
-  - ~15 lines
-  Files: data_generation/saving_handler.py or main.py
-
-Commit 11: Clean up shared/config.py
-  - Remove hardcoded MODEL_NAME (now from queue)
-  - Remove hardcoded BATCHES_DIR (now computed per domain/model)
-  - Keep universal constants (architecture, training hyperparams)
-  - ~10 lines removed/changed
-  Files: shared/config.py
-
-Commit 12: Update shared/__init__.py exports
-  - Export new domain utility functions
-  - Remove exports of deleted constants
-  - ~5 lines changed
+Commit 9: Update shared/__init__.py exports [DONE]
+  - Export sanitize_model_name, get_input_path, get_output_dir
+  - Kept MODEL_NAME + BATCHES_DIR (still used by training/analysis)
   Files: shared/__init__.py
 
+Commit 10: Rename domain-specific functions/constants for clarity
+  Now that the system is multi-domain, generic names are ambiguous.
+  Renames:
+    create_evaluation_prompt      -> create_reddit_sentiment_prompt
+    create_math_prompt            -> create_math_word_problem_prompt
+    EXAMPLE_JSON_RESPONSES        -> REDDIT_SENTIMENT_EXAMPLE_RESPONSES
+    MATH_EXAMPLE_RESPONSES        -> MATH_WORD_PROBLEM_EXAMPLE_RESPONSES
+    MATH_PROMPT_TOKENS            -> MATH_WORD_PROBLEM_PROMPT_TOKENS
+    MATH_AUXILIARY_TOKENS         -> MATH_WORD_PROBLEM_AUXILIARY_TOKENS
+    MATH_MASTER_PROMPT            -> MATH_WORD_PROBLEM_MASTER_PROMPT
+  Files: shared/utilities.py, data_generation/model_handler.py
 
-PREREQUISITE BEFORE COMMIT 6:
-  Need to run Gemma tokenizer on sample math scaffolds to discover exact tokens.
-  Example filled scaffolds to tokenize:
-    "A=3\nB=5\nC=2\nD=A*B=15\nE=D-C=13\nSolution: 13"
-    "A=15\nB=7\nC=12\nD=A-B=8\nE=D>C=False\nSolution: False"
-    "A=100\nB=50\nC=A+B=150\nSolution: 150"
-    "A=900\nB=300\nC=A/B=3\nSolution: 3"
-  This tells us which tokens Gemma uses for numbers (e.g., "15" might be one
-  token or "1"+"5"), operators, newlines, etc.
+Commit 11: Add ";" stop token to math scaffolds and prompts
+  - Append ";" after Solution value in all scaffolds (e.g. "Solution: ?;")
+  - Update MATH_MASTER_PROMPT examples (e.g. "Solution: 13;")
+  - Simplify is_stop_token for math: token_decoded == ";" (mirrors "}" for sentiment)
+  - Regenerate math_word_problems.jsonl (scaffolds now end with ";")
+  Files: text_generation/math_word_problem/operations.py (SCAFFOLDS)
+         shared/utilities.py (MATH_MASTER_PROMPT)
+         data_generation/model_handler.py (is_stop_token)
+         text_generation/math_word_problem/math_word_problems.jsonl (regenerate)
+
+Commit 12: Delete old sentence_handler.py
+  - No longer referenced anywhere
+  Files: data_generation/sentence_handler.py (delete)
+
+Commit 13: Write empirical math vocab test script
+  - data_generation/test_math_vocab.py (temp script, deleted after use)
+  - Loads Gemma model + tokenizer
+  - Runs inference on ~500-1000 math problems from math_word_problems.jsonl
+  - Uses MATH_WORD_PROBLEM_MASTER_PROMPT + problem text as input
+  - Collects all unique output tokens per generation
+  - Reports: full token set, token frequencies, max sequence length
+  Files: data_generation/test_math_vocab.py (new)
+
+Commit 14: Populate math vocabulary from empirical results
+  - Fill MATH_WORD_PROBLEM_EXAMPLE_RESPONSES with real Gemma outputs
+  - Fill MATH_WORD_PROBLEM_PROMPT_TOKENS from observed tokens
+  - Fill MATH_WORD_PROBLEM_AUXILIARY_TOKENS from observed tokens
+  - Delete test_math_vocab.py
+  Files: shared/utilities.py, data_generation/test_math_vocab.py (delete)
 
 
 ========================================================================

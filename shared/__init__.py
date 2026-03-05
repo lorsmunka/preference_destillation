@@ -4,6 +4,10 @@ from .logger import Logger
 from .classification_accuracy import ClassificationAccuracyCalculator
 from .config import (
     get_device,
+    sanitize_model_name,
+    get_input_path,
+    get_output_dir,
+    DATA_GENERATION_QUEUE_PATH,
     MODEL_NAME,
     MIN_SENTENCE_LENGTH,
     MAX_SENTENCE_LENGTH,
@@ -37,6 +41,10 @@ __all__ = [
     'Logger',
     'ClassificationAccuracyCalculator',
     'get_device',
+    'sanitize_model_name',
+    'get_input_path',
+    'get_output_dir',
+    'DATA_GENERATION_QUEUE_PATH',
     'MODEL_NAME',
     'MIN_SENTENCE_LENGTH',
     'MAX_SENTENCE_LENGTH',
