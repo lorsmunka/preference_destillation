@@ -16,7 +16,7 @@ class Utilities:
     4. AUXILIARY_TOKENS (n3 to n4): Common English words - "softest" label
     """
 
-    EXAMPLE_JSON_RESPONSES = [
+    REDDIT_SENTIMENT_EXAMPLE_RESPONSES = [
         '```json\n{\n    "tone": "aggressive",\n    "sentiment": "negative",\n    "safety": "harmful",\n    "toxicity": "toxic"\n}',
         '```json\n{\n    "tone": "rude",\n    "sentiment": "neutral",\n    "safety": "safe",\n    "toxicity": "respectful"\n}',
         '```json\n{\n    "tone": "neutral",\n    "sentiment": "positive",\n    "safety": "harmful",\n    "toxicity": "toxic"\n}',
@@ -30,18 +30,18 @@ class Utilities:
     #   1. Write temp script (data_generation/test_math_vocab.py) that:
     #      - Loads Gemma model + tokenizer
     #      - Runs inference on ~500-1000 math problems from math_word_problems.jsonl
-    #      - Uses MATH_MASTER_PROMPT + problem text as input
+    #      - Uses MATH_WORD_PROBLEM_MASTER_PROMPT + problem text as input
     #      - For each generation, collects all unique output tokens
     #      - Reports: full token set, token frequencies, max sequence length
-    #   2. Use results to populate MATH_EXAMPLE_RESPONSES with real Gemma outputs
+    #   2. Use results to populate MATH_WORD_PROBLEM_EXAMPLE_RESPONSES with real Gemma outputs
     #      (filled scaffolds like "A=3\nB=5\nC=A+B=8\nSolution: 8")
-    #   3. Populate MATH_PROMPT_TOKENS and MATH_AUXILIARY_TOKENS from observed tokens
+    #   3. Populate MATH_WORD_PROBLEM_PROMPT_TOKENS and MATH_WORD_PROBLEM_AUXILIARY_TOKENS from observed tokens
     #   4. Delete the temp script
     #
     # This must be done before running math distillation in the queue.
-    MATH_EXAMPLE_RESPONSES = []
-    MATH_PROMPT_TOKENS = []
-    MATH_AUXILIARY_TOKENS = []
+    MATH_WORD_PROBLEM_EXAMPLE_RESPONSES = []
+    MATH_WORD_PROBLEM_PROMPT_TOKENS = []
+    MATH_WORD_PROBLEM_AUXILIARY_TOKENS = []
 
     WHITESPACE_TOKENS = [
         "\n", "\n\n", "\n\n\n",
@@ -149,7 +149,7 @@ class Utilities:
         "definite", "indefinite", "unsure", "confident", "doubtful",
     ]
 
-    MATH_MASTER_PROMPT = """Follow this example exactly:
+    MATH_WORD_PROBLEM_MASTER_PROMPT = """Follow this example exactly:
 
 Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
 A=3
@@ -172,11 +172,11 @@ Solution: False
     _vocabulary_cache: Dict[str, dict] = {}
 
     @classmethod
-    def create_math_prompt(cls, text: str) -> str:
-        return cls.MATH_MASTER_PROMPT + text
+    def create_math_word_problem_prompt(cls, text: str) -> str:
+        return cls.MATH_WORD_PROBLEM_MASTER_PROMPT + text
 
     @classmethod
-    def create_evaluation_prompt(cls, sentence: str) -> str:
+    def create_reddit_sentiment_prompt(cls, sentence: str) -> str:
         prompt = f"""Analyze this sentence and return your evaluation as JSON:
 
 
@@ -195,9 +195,9 @@ JSON:
     @classmethod
     def _get_example_tokens(cls, tokenizer, domain: str = "reddit_comment_sentiment") -> List[str]:
         if domain == "math_word_problem":
-            responses = cls.MATH_EXAMPLE_RESPONSES
+            responses = cls.MATH_WORD_PROBLEM_EXAMPLE_RESPONSES
         else:
-            responses = cls.EXAMPLE_JSON_RESPONSES
+            responses = cls.REDDIT_SENTIMENT_EXAMPLE_RESPONSES
 
         all_tokens = []
         for response in responses:
@@ -222,8 +222,8 @@ JSON:
         example_tokens = cls._get_example_tokens(tokenizer, domain)
 
         if domain == "math_word_problem":
-            prompt_tokens = cls.MATH_PROMPT_TOKENS
-            auxiliary_tokens = cls.MATH_AUXILIARY_TOKENS
+            prompt_tokens = cls.MATH_WORD_PROBLEM_PROMPT_TOKENS
+            auxiliary_tokens = cls.MATH_WORD_PROBLEM_AUXILIARY_TOKENS
         else:
             prompt_tokens = cls.PROMPT_TOKENS
             auxiliary_tokens = cls.AUXILIARY_TOKENS

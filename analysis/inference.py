@@ -71,7 +71,7 @@ class InferenceLogger:
 
 
 def generate_teacher(model, tokenizer, sentence, device, logger):
-    prompt = Utilities.create_evaluation_prompt(sentence)
+    prompt = Utilities.create_reddit_sentiment_prompt(sentence)
     inputs = tokenizer(prompt, return_tensors="pt").to(device)
 
     gen_start = time()

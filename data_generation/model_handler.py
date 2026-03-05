@@ -46,8 +46,8 @@ class ModelHandler:
 
     def build_prompt(self, text: str) -> str:
         if self.domain == "math_word_problem":
-            return Utilities.create_math_prompt(text)
-        return Utilities.create_evaluation_prompt(text)
+            return Utilities.create_math_word_problem_prompt(text)
+        return Utilities.create_reddit_sentiment_prompt(text)
 
     def is_stop_token(self, token_decoded: str, generated_text: str) -> bool:
         if self.domain == "math_word_problem":
