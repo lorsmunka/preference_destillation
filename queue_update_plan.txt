@@ -521,3 +521,8 @@ NOTES / FUTURE IDEAS
   with more tokens without touching code). Changing vocab size requires
   regenerating distillation data (logit vectors are fixed-length per vocab)
   and retraining from scratch.
+
+- Remove default parameter values from Transformer, Trainer, BatchHandler, Logger
+  constructors. All values should come from the queue config exclusively.
+  Current defaults exist for backwards compat during migration but should be
+  cleaned up once training/main.py is fully queue-driven.
