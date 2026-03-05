@@ -414,13 +414,14 @@ class Trainer:
         return input_tensor, target_tensor
 
     def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
-                       target_indices: torch.Tensor, reduction: str = 'batchmean'):
+                       target_indices: torch.Tensor, reduction: str = 'mean'):
         temperature = self.distillation_temperature
         student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
         teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
 
+        kl_reduction = 'batchmean' if reduction == 'mean' else reduction
         kl_loss = F.kl_div(student_log_probs, teacher_probs,
-                           reduction=reduction) * (temperature ** 2)
+                           reduction=kl_reduction) * (temperature ** 2)
         ce_loss = F.cross_entropy(
             student_logits / temperature, target_indices, reduction=reduction) * (temperature ** 2)
 
