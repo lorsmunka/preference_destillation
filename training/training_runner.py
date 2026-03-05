@@ -33,9 +33,15 @@ class TrainingRunner:
         trainer_config["logs_dir"] = self.logs_dir
 
         print(f"\n{'=' * 60}")
-        print(f"Starting run: {self.run_name}")
-        print(f"  Domain: {self.domain}")
+        print(f"Run: {self.run_name}")
         print(f"  Description: {self.config.get('description', '')}")
+        print(f"  Domain: {self.domain}")
+        print(f"  Teacher: {self.teacher_model}")
+        print(f"  Architecture: {self.config['hidden_dim']}h, {self.config['num_layers']}L, {self.config['num_heads']} heads")
+        print(f"  KL annealing: {self.config['kl_ratio_start']} -> {self.config['kl_ratio_end']}")
+        print(f"  LR: {self.config['learning_rate']}, Epochs: {self.config['epoch_count']}")
+        print(f"  Auxiliary token %: {self.config.get('auxiliary_token_percentage', 1.0)}")
+        print(f"  Output: {self.run_dir}")
         print(f"{'=' * 60}\n")
 
         started_at = datetime.now().isoformat()

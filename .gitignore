@@ -11,3 +11,4 @@ training/__pycache__/*
 *.json
 *.jsonl
 *.pyc
+*.pt
