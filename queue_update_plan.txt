@@ -1,9 +1,14 @@
-QUEUE-BASED PIPELINE UPGRADE PLAN (v4)
+QUEUE-BASED PIPELINE UPGRADE PLAN (v5)
 =======================================
 
 GOAL: Multi-domain distillation pipeline. Queue-based config for data generation,
       distillation data generation (Gemma logits), and training. Two domains:
       reddit comment sentiment classification + math word problem solving.
+
+      The end goal: queue up many training runs with different hyperparameters,
+      domains, and architectures. Leave running for ~2 weeks. Come back, skim
+      through neatly organized results (logs, checkpoints, eval metrics), and
+      compare which configurations work best.
 
 WORKFLOW: Claude makes changes, user reviews, user stages+commits.
 Claude does NOT stage or commit. User controls git entirely.
@@ -51,7 +56,7 @@ Key decisions made:
   - Division: divisor capped at range_high//2, min quotient=2 to avoid trivial results
   - Gemma 4B limitation: max 3 input variables, 1 operation before comparison
 
-13 operation types with scaffolds:
+13 operation types with scaffolds (all end with ";"):
   add, sub, mul, div (2 vars)
   mul_add, mul_sub, add_mul, sub_mul, add_sub, div_add (3 vars, 2 steps)
   cmp, cmp_sub, cmp_mul (comparison, True/False output)
@@ -67,58 +72,52 @@ Number distribution (weighted random):
 
 For hundreds+ ranges, only add/sub/div/add_sub/div_add (no mul — too large results).
 
-Master prompt for math (sent to Gemma, student NEVER sees this):
-  Follow this example exactly:
-
-  Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
-  A=3
-  B=5
-  C=2
-  D=A*B=15
-  E=D-C=13
-  Solution: 13
-
-  Problem: "Tom has 15 stickers. He gives away 7. Sarah has 12 stickers. Does Tom have more stickers than Sarah?"
-  A=15
-  B=7
-  C=12
-  D=A-B=8
-  E=D>C=False
-  Solution: False
-
-  {generated problem text with scaffold}
-
 
 ========================================================================
-PHASE 2: DISTILLATION DATA GENERATION (queue system for distillation_data_generation/)
+PHASE 2: DISTILLATION DATA GENERATION [COMPLETE]
 ========================================================================
 
-OVERVIEW:
-  Current state: distillation_data_generation/ is hardcoded for reddit sentiment only.
-  - main.py loops through sentences, calls model_handler for each
-  - model_handler.py loads Gemma, creates sentiment vocabulary, generates autoregressively
-  - sentence_handler.py loads reddit_comments.jsonl
-  - saving_handler.py writes batches to BATCHES_DIR (hardcoded "./batches12b")
-  - shared/utilities.py has sentiment-specific vocabulary (EXAMPLE_JSON_RESPONSES, etc.)
-  - shared/config.py has hardcoded MODEL_NAME, BATCHES_DIR, MAX_TRAINING_EXAMPLES
-
-  Target state: queue-driven, domain-aware pipeline.
-  - data-generation-queue.json defines what to process
+WHAT WAS BUILT:
+  Queue-driven, domain-aware distillation data generation pipeline.
+  - distillation_data_generation/data_generation_queue.json defines what to process
   - Each queue element: domain, model_name, max_examples, batch_size, description
   - Domain determines: input file, prompt construction, output vocabulary, stop condition
   - Output: batches/{domain}/{sanitized_model_name}/batch_N.jsonl + info.json
+  - Skips queue elements whose info.json shows status: "completed"
 
-FILES THAT NEED CHANGES:
-  distillation_data_generation/main.py           -> queue loop, domain dispatch
-  distillation_data_generation/model_handler.py  -> domain-aware vocab + prompt, configurable model
-  distillation_data_generation/sentence_handler.py -> renamed to input_handler.py, loads by domain
-  distillation_data_generation/saving_handler.py -> domain/model output paths
-  shared/config.py                  -> remove hardcoded MODEL_NAME, BATCHES_DIR
-  shared/utilities.py               -> domain-dispatched vocabulary builder
-  NEW: data-generation-queue.json   -> queue config file
-  NEW: shared/math_vocabulary.py    -> math domain vocabulary (or section in utilities.py)
+FILES (final state):
+  distillation_data_generation/
+    main.py              Thin queue orchestrator (~37 lines). Loads queue from
+                         DATA_GENERATION_QUEUE_PATH (config), skips completed entries,
+                         creates QueueRunner per entry.
+    queue_runner.py      QueueRunner class. Takes queue_element + exit_listener.
+                         Creates InputHandler, ModelHandler, SavingHandler per domain.
+                         Handles batch accumulation, progress printing, skip tracking.
+    model_handler.py     Domain-aware model handler. Constructor takes model_name + domain.
+                         - build_prompt() dispatches by domain
+                         - is_stop_token(): "}" for sentiment, ";" for math
+                         - Vocabulary via build_vocabulary(tokenizer, domain)
+                         - max_generation_steps from DOMAIN_MAX_GENERATION_STEPS[domain]
+                         - Skips if generated tokens outside vocabulary or over limit
+    input_handler.py     Renamed from sentence_handler.py. InputHandler(file_path).
+                         get_input(index) returns {"text": "..."}, input_count property.
+    saving_handler.py    Constructor takes output_dir. Creates directory structure.
+                         Writes info.json at start, updates on completion.
+    data_generation_queue.json  Queue config (see format below).
 
-QUEUE CONFIG FORMAT (data-generation-queue.json):
+  shared/
+    config.py            Added: INPUT_PATHS dict, sanitize_model_name(), get_input_path(),
+                         get_output_dir(), DATA_GENERATION_QUEUE_PATH.
+                         Changed: MAX_GENERATION_STEPS -> DOMAIN_MAX_GENERATION_STEPS dict,
+                         MAX_SEQ_LENGTH -> DOMAIN_MAX_SEQ_LENGTH dict.
+                         Kept: MODEL_NAME, BATCHES_DIR (still used by old training/analysis).
+    utilities.py         Domain-dispatched vocabulary builder.
+                         build_vocabulary(tokenizer, domain) creates domain-specific vocab.
+                         get_response_tokens(tokenizer, domain) for validation.
+                         Domain-qualified constants and functions (see naming below).
+    __init__.py          Exports all new functions and constants.
+
+QUEUE CONFIG FORMAT (distillation_data_generation/data_generation_queue.json):
   [
     {
       "domain": "reddit_comment_sentiment",
@@ -136,157 +135,389 @@ QUEUE CONFIG FORMAT (data-generation-queue.json):
     }
   ]
 
-INPUT FILE RESOLUTION:
-  reddit_comment_sentiment -> text_generation/reddit_comment_sentiment/reddit_comments.jsonl
-  math_word_problem        -> text_generation/math_word_problem/math_word_problems.jsonl
+OUTPUT STRUCTURE:
+  batches/
+    reddit_comment_sentiment/
+      google_gemma-3-4b-it/
+        info.json                 (status, counts, timestamps)
+        batch_1.jsonl ... batch_15625.jsonl  (500k examples, 32 per batch)
+    math_word_problem/
+      google_gemma-3-4b-it/
+        info.json
+        batch_1.jsonl ... (generating)
 
-OUTPUT DIRECTORY:
-  batches/{domain}/{sanitized_model_name}/
-  sanitize_model_name("google/gemma-3-4b-it") -> "google_gemma-3-4b-it"
-
-INFO.JSON (per queue element, written at start, updated on completion):
-  {
-    "domain": "math_word_problem",
-    "model_name": "google/gemma-3-4b-it",
-    "description": "500k math word problems solved by Gemma 4B",
-    "max_examples": 500000,
-    "batch_size": 32,
-    "status": "in_progress",       // -> "completed"
-    "started_at": "2026-03-04T...",
-    "completed_at": null,          // -> timestamp
-    "examples_generated": 0,       // -> final count
-    "batches_written": 0           // -> final count
-  }
-
-DOMAIN-SPECIFIC BEHAVIOR:
+DOMAIN-SPECIFIC BEHAVIOR (final):
   reddit_comment_sentiment:
-    - Prompt: Utilities.create_evaluation_prompt(sentence) [existing]
-    - Vocabulary: existing ~525 tokens (JSON response + whitespace + prompt + auxiliary)
+    - Prompt: Utilities.create_reddit_sentiment_prompt(text)
+    - Vocabulary: ~525 tokens (JSON response + whitespace + prompt + auxiliary)
     - Stop condition: generated token == "}"
-    - Validation: all response tokens in vocabulary
     - Max generation steps: 50
+    - Max sequence length: 75 (25 sentence + 50 generation)
 
   math_word_problem:
-    - Prompt: master prompt (2 examples) + problem text with scaffold
-    - Vocabulary: TBD after tokenizer analysis — digits, operators, variables, etc.
-    - Stop condition: "Solution:" line completed (newline after final number/True/False)
-    - Validation: all response tokens in math vocabulary
-    - Max generation steps: TBD (scaffolds are longer than JSON responses)
-    - NOTE: student only sees the scaffold, NOT the master prompt examples
+    - Prompt: Utilities.create_math_word_problem_prompt(text)
+      Structure: MATH_WORD_PROBLEM_MASTER_PROMPT + problem_with_scaffold + "\n\nCalculations:\nA="
+      The master prompt has 2 worked examples. The problem text includes the full
+      scaffold with ?s (e.g. "A=?\nB=?\nC=A+B=?\nSolution: ?;"). Then "Calculations:\nA="
+      forces Gemma to start filling in values immediately.
+    - Vocabulary: ~31 tokens (digits 0-9, operators, variables A-G, True/False, etc.)
+      Empirically discovered by running Gemma on 200 problems — 0 failures.
+      Input vocab includes +2 letters beyond max scaffold variable for robustness.
+    - Stop condition: generated token == ";"
+    - Max generation steps: 350
+    - Max sequence length: 350 (total, not additive — prompt IS the sequence)
 
-MATH OUTPUT VOCABULARY (needs tokenizer analysis):
-  Tokens needed:
-    - Digits: 0-9 (individual + multi-digit as Gemma tokenizes them)
-    - Variables: A, B, C, D, E
-    - Operators: +, -, *, /, >
-    - Symbols: =, \n, space, :
-    - Words: Solution, True, False
-    - Whitespace tokens (same as sentiment domain)
-  Run tokenizer on sample scaffolds to discover exact token set.
+  Key difference in sequence length semantics:
+    Sentiment: additive (MAX_SENTENCE_LENGTH + MAX_GENERATION_STEPS = 25 + 50 = 75)
+    Math: total (350 covers the entire prompt + generation in one number)
 
+MATH PROMPT ENGINEERING (lessons learned):
+  - Raw prompt without structure: Gemma outputs <end_of_turn> tokens and bullet formatting
+  - Chat template (<start_of_turn>/<end_of_turn>): rejected, unnecessary complexity
+  - Ending prompt at "\nA=": scaffold was cut off, Gemma didn't know the structure
+  - SOLUTION: show full scaffold with ?s, then "\n\nCalculations:\nA=" — Gemma sees the
+    structure AND is cued to start filling values. 200/200 test cases passed, 0 failures.
 
-COMMIT-LEVEL PLAN (each ~20-30 lines changed)
+DOMAIN-QUALIFIED NAMES (renames done in commit 10):
+  create_evaluation_prompt      -> create_reddit_sentiment_prompt
+  create_math_prompt            -> create_math_word_problem_prompt
+  EXAMPLE_JSON_RESPONSES        -> REDDIT_SENTIMENT_EXAMPLE_RESPONSES
+  MATH_EXAMPLE_RESPONSES        -> MATH_WORD_PROBLEM_EXAMPLE_RESPONSES
+  MATH_PROMPT_TOKENS            -> MATH_WORD_PROBLEM_PROMPT_TOKENS
+  MATH_AUXILIARY_TOKENS         -> MATH_WORD_PROBLEM_AUXILIARY_TOKENS
+  MATH_MASTER_PROMPT            -> MATH_WORD_PROBLEM_MASTER_PROMPT
 
-Commit 1: Create data-generation-queue.json [DONE]
-  - Queue config file with both domain entries
-  Files: distillation_data_generation/data-generation-queue.json (new)
+COMMITS (all done):
+  1.  Create data_generation_queue.json [DONE]
+  2.  Add domain utility functions to shared/config.py [DONE]
+  3.  Rename sentence_handler.py -> input_handler.py [DONE]
+  4.  Update saving_handler.py for domain/model paths [DONE]
+  5.  Add math prompt construction to utilities.py [DONE]
+  6.  Make build_vocabulary domain-aware [DONE]
+  7.  Make model_handler.py domain-aware [DONE]
+  8.  Extract queue_runner.py from main.py [DONE]
+  9.  Update shared/__init__.py exports [DONE]
+  10. Rename domain-specific functions/constants [DONE]
+  11. Add ";" stop token to math scaffolds and prompts [DONE]
+  12. Delete old sentence_handler.py [DONE]
+  13. Write empirical math vocab test script [DONE]
+  14. Populate math vocabulary from empirical results, delete test script [DONE]
 
-Commit 2: Add domain utility functions to shared [DONE]
-  - sanitize_model_name(model_name) -> str
-  - get_input_path(domain) -> str
-  - get_output_dir(domain, model_name) -> str
-  Files: shared/config.py
-
-Commit 3: Rename sentence_handler.py -> input_handler.py [DONE]
-  - Rename class SentenceHandler -> InputHandler
-  - Make load method accept a file path parameter
-  - Keep interface: get_input(index), input_count
-  Files: distillation_data_generation/input_handler.py (new, replaces sentence_handler.py)
-
-Commit 4: Update saving_handler.py for domain/model paths [DONE]
-  - Constructor takes output_dir instead of using global BATCHES_DIR
-  - Create output directory structure: batches/{domain}/{sanitized_model}/
-  - Write info.json at start + update on completion
-  Files: distillation_data_generation/saving_handler.py
-
-Commit 5: Add math prompt construction [DONE]
-  - MATH_MASTER_PROMPT + create_math_prompt in shared/utilities.py
-  - Empty math vocab placeholders (to be filled after empirical test)
-  Files: shared/utilities.py
-
-Commit 6: Make build_vocabulary domain-aware [DONE]
-  - build_vocabulary(tokenizer, domain) dispatches to sentiment vs math token sets
-  - _get_example_tokens(tokenizer, domain) dispatches example responses
-  - Added get_response_tokens(tokenizer, domain), kept get_json_response_tokens for compat
-  Files: shared/utilities.py
-
-Commit 7: Make model_handler.py domain-aware [DONE]
-  - Constructor takes model_name + domain
-  - Domain-aware prompt building (build_prompt dispatches by domain)
-  - Domain-aware stop condition (is_stop_token: "}" vs Solution line)
-  - Domain-aware vocabulary creation
-  Files: distillation_data_generation/model_handler.py
-
-Commit 8: Extract queue_runner.py from main.py [DONE]
-  - QueueRunner class encapsulates batch processing loop
-  - main.py stays thin: load queue, skip completed, call runner.run()
-  Files: distillation_data_generation/queue_runner.py (new), distillation_data_generation/main.py
-
-Commit 9: Update shared/__init__.py exports [DONE]
-  - Export sanitize_model_name, get_input_path, get_output_dir
-  - Kept MODEL_NAME + BATCHES_DIR (still used by training/analysis)
-  Files: shared/__init__.py
-
-Commit 10: Rename domain-specific functions/constants for clarity
-  Now that the system is multi-domain, generic names are ambiguous.
-  Renames:
-    create_evaluation_prompt      -> create_reddit_sentiment_prompt
-    create_math_prompt            -> create_math_word_problem_prompt
-    EXAMPLE_JSON_RESPONSES        -> REDDIT_SENTIMENT_EXAMPLE_RESPONSES
-    MATH_EXAMPLE_RESPONSES        -> MATH_WORD_PROBLEM_EXAMPLE_RESPONSES
-    MATH_PROMPT_TOKENS            -> MATH_WORD_PROBLEM_PROMPT_TOKENS
-    MATH_AUXILIARY_TOKENS         -> MATH_WORD_PROBLEM_AUXILIARY_TOKENS
-    MATH_MASTER_PROMPT            -> MATH_WORD_PROBLEM_MASTER_PROMPT
-  Files: shared/utilities.py, distillation_data_generation/model_handler.py
-
-Commit 11: Add ";" stop token to math scaffolds and prompts
-  - Append ";" after Solution value in all scaffolds (e.g. "Solution: ?;")
-  - Update MATH_MASTER_PROMPT examples (e.g. "Solution: 13;")
-  - Simplify is_stop_token for math: token_decoded == ";" (mirrors "}" for sentiment)
-  - Regenerate math_word_problems.jsonl (scaffolds now end with ";")
-  Files: text_generation/math_word_problem/operations.py (SCAFFOLDS)
-         shared/utilities.py (MATH_MASTER_PROMPT)
-         distillation_data_generation/model_handler.py (is_stop_token)
-         text_generation/math_word_problem/math_word_problems.jsonl (regenerate)
-
-Commit 12: Delete old sentence_handler.py
-  - No longer referenced anywhere
-  Files: distillation_data_generation/sentence_handler.py (delete)
-
-Commit 13: Write empirical math vocab test script
-  - distillation_data_generation/test_math_vocab.py (temp script, deleted after use)
-  - Loads Gemma model + tokenizer
-  - Runs inference on ~500-1000 math problems from math_word_problems.jsonl
-  - Uses MATH_WORD_PROBLEM_MASTER_PROMPT + problem text as input
-  - Collects all unique output tokens per generation
-  - Reports: full token set, token frequencies, max sequence length
-  Files: distillation_data_generation/test_math_vocab.py (new)
-
-Commit 14: Populate math vocabulary from empirical results
-  - Fill MATH_WORD_PROBLEM_EXAMPLE_RESPONSES with real Gemma outputs
-  - Fill MATH_WORD_PROBLEM_PROMPT_TOKENS from observed tokens
-  - Fill MATH_WORD_PROBLEM_AUXILIARY_TOKENS from observed tokens
-  - Delete test_math_vocab.py
-  Files: shared/utilities.py, distillation_data_generation/test_math_vocab.py (delete)
+DATA STATUS:
+  - reddit_comment_sentiment: 500,000 examples COMPLETE (15,625 batches)
+    Moved from flat batches/ into batches/reddit_comment_sentiment/google_gemma-3-4b-it/
+    info.json created retroactively.
+  - math_word_problem: generation IN PROGRESS
+    Running via distillation_data_generation/main.py, auto-skips completed reddit entry.
 
 
 ========================================================================
 PHASE 3: TRAINING (queue system for training/)
 ========================================================================
-(Planned, not detailed at commit level yet)
 
-- training-queue.json entries specify domain + hyperparams
-- Output projection size configurable per domain (sentiment ~525, math TBD)
-- Utilities.build_vocabulary() already domain-dispatched from Phase 2
-- ClassificationAccuracyCalculator needs math equivalent (scaffold accuracy?)
-- Model checkpoint paths include domain
+OVERVIEW:
+  Current state: training/ is hardcoded for a single domain (reddit sentiment).
+  - main.py creates Transformer, Logger, BatchHandler, Trainer, runs epoch loop
+  - model.py hardcodes build_vocabulary(tokenizer) without domain param
+  - trainer.py reads all hyperparams from global constants (EPOCH_COUNT, LEARNING_RATE, etc.)
+  - batch_handler.py reads from hardcoded BATCHES_DIR ("./batches12b")
+  - logger.py writes to hardcoded LOGS_DIR ("./logs12b")
+  - Checkpoints go to flat checkpoints/ directory
+  - ClassificationAccuracyCalculator is sentiment-specific (parses JSON responses)
+  - analysis/visualize_logs.py reads from hardcoded LOGS_DIR
+
+  Target state: queue-driven training with fully configurable hyperparams.
+  - training/training_queue.json defines what to train
+  - Each queue element specifies domain, model architecture, loss params, and a run name
+  - Run name (e.g. "200m-text-distill-narrow") organizes all output
+  - Output structure mirrors distillation data generation: runs/{run_name}/
+  - Can queue many experiments, leave running for weeks, come back and compare
+
+QUEUE CONFIG FORMAT (training/training_queue.json):
+  [
+    {
+      "run_name": "sentiment-baseline-18L",
+      "domain": "reddit_comment_sentiment",
+      "description": "Baseline sentiment model, 18 layers, KL annealing 1.0->0.1",
+      "teacher_model": "google/gemma-3-4b-it",
+      "hidden_dim": 384,
+      "num_layers": 18,
+      "num_heads": 8,
+      "dropout": 0.15,
+      "epoch_count": 4,
+      "batch_size": 32,
+      "learning_rate": 6e-4,
+      "lr_warmup_ratio": 0.03,
+      "kl_ratio_start": 1.0,
+      "kl_ratio_end": 0.1,
+      "distillation_temperature": 3.0,
+      "max_training_examples": 500000,
+      "training_test_ratio": 0.98
+    },
+    {
+      "run_name": "sentiment-no-annealing-18L",
+      "domain": "reddit_comment_sentiment",
+      "description": "Same as baseline but no KL/CE annealing (constant 1.0)",
+      "teacher_model": "google/gemma-3-4b-it",
+      "hidden_dim": 384,
+      "num_layers": 18,
+      "num_heads": 8,
+      "dropout": 0.15,
+      "epoch_count": 4,
+      "batch_size": 32,
+      "learning_rate": 6e-4,
+      "lr_warmup_ratio": 0.03,
+      "kl_ratio_start": 1.0,
+      "kl_ratio_end": 1.0,
+      "distillation_temperature": 3.0,
+      "max_training_examples": 500000,
+      "training_test_ratio": 0.98
+    },
+    {
+      "run_name": "sentiment-wide-12L",
+      "domain": "reddit_comment_sentiment",
+      "description": "Wider model (512 hidden), fewer layers (12), same annealing",
+      "teacher_model": "google/gemma-3-4b-it",
+      "hidden_dim": 512,
+      "num_layers": 12,
+      "num_heads": 8,
+      "dropout": 0.15,
+      "epoch_count": 4,
+      "batch_size": 32,
+      "learning_rate": 6e-4,
+      "lr_warmup_ratio": 0.03,
+      "kl_ratio_start": 1.0,
+      "kl_ratio_end": 0.1,
+      "distillation_temperature": 3.0,
+      "max_training_examples": 500000,
+      "training_test_ratio": 0.98
+    },
+    {
+      "run_name": "math-baseline-18L",
+      "domain": "math_word_problem",
+      "description": "Baseline math model, 18 layers, KL annealing",
+      "teacher_model": "google/gemma-3-4b-it",
+      "hidden_dim": 384,
+      "num_layers": 18,
+      "num_heads": 8,
+      "dropout": 0.15,
+      "epoch_count": 4,
+      "batch_size": 32,
+      "learning_rate": 6e-4,
+      "lr_warmup_ratio": 0.03,
+      "kl_ratio_start": 1.0,
+      "kl_ratio_end": 0.1,
+      "distillation_temperature": 3.0,
+      "max_training_examples": 500000,
+      "training_test_ratio": 0.98
+    },
+    {
+      "run_name": "math-no-annealing-18L",
+      "domain": "math_word_problem",
+      "description": "Math model, no KL/CE annealing",
+      "teacher_model": "google/gemma-3-4b-it",
+      "hidden_dim": 384,
+      "num_layers": 18,
+      "num_heads": 8,
+      "dropout": 0.15,
+      "epoch_count": 4,
+      "batch_size": 32,
+      "learning_rate": 6e-4,
+      "lr_warmup_ratio": 0.03,
+      "kl_ratio_start": 1.0,
+      "kl_ratio_end": 1.0,
+      "distillation_temperature": 3.0,
+      "max_training_examples": 500000,
+      "training_test_ratio": 0.98
+    }
+  ]
+
+  run_name is the key organizer. User picks descriptive names like:
+    "200m-text-distill-narrow"
+    "sentiment-wide-12L"
+    "math-no-annealing-18L"
+  These become folder names for all output.
+
+OUTPUT DIRECTORY STRUCTURE:
+  runs/
+    sentiment-baseline-18L/
+      info.json               (queue element copy + status + timestamps)
+      checkpoints/
+        checkpoint_epoch_0.pt
+        checkpoint_epoch_1.pt
+        ...
+        temp_checkpoint.pt    (for graceful exit resume)
+      logs/
+        state.json            (logger state: epoch, batch, runtime)
+        training.jsonl        (per-batch and per-epoch training metrics)
+      eval/
+        training_progress.png (auto-updated every 100 batches)
+    sentiment-no-annealing-18L/
+      ...
+    math-baseline-18L/
+      ...
+
+  This mirrors how distillation data generation organizes into
+  batches/{domain}/{model}/ — clean, predictable, easy to browse.
+
+INPUT DATA RESOLUTION:
+  Determined by domain + teacher_model from queue element:
+    batches/{domain}/{sanitize_model_name(teacher_model)}/
+  e.g. batches/reddit_comment_sentiment/google_gemma-3-4b-it/
+
+CONFIGURABLE PARAMETERS (all from queue, none from globals):
+  Architecture:
+    - hidden_dim         (wider = more capacity, more params)
+    - num_layers         (deeper = more abstraction layers)
+    - num_heads          (more heads = more parallel attention patterns)
+    - dropout            (regularization strength)
+  Training:
+    - epoch_count        (how many full passes through data)
+    - batch_size         (examples per gradient step)
+    - learning_rate      (AdamW peak learning rate)
+    - lr_warmup_ratio    (fraction of steps for linear warmup)
+    - max_training_examples  (cap on data used)
+    - training_test_ratio    (train/eval split)
+  Distillation:
+    - kl_ratio_start     (KL weight at start, 1.0 = pure KL)
+    - kl_ratio_end       (KL weight at end, 0.1 = mostly CE)
+    - distillation_temperature  (softens teacher logits)
+  Domain-derived (automatic, not in queue):
+    - output_vocab_size  (from build_vocabulary(tokenizer, domain))
+    - max_seq_length     (from DOMAIN_MAX_SEQ_LENGTH[domain])
+
+  "No annealing" = kl_ratio_start == kl_ratio_end (e.g. both 1.0).
+
+DOMAIN-SPECIFIC EVALUATION:
+  reddit_comment_sentiment:
+    - ClassificationAccuracyCalculator (existing, parses JSON responses)
+    - Compares predicted tone/sentiment/safety/toxicity vs teacher labels
+    - Confusion matrices per category
+  math_word_problem:
+    - MathAccuracyCalculator (new)
+    - Parses scaffold output: extracts Solution value
+    - Compares numeric result (or True/False) vs teacher Solution
+    - Reports: exact match accuracy, variable assignment accuracy per step
+
+FILES THAT NEED CHANGES:
+  training/main.py              -> queue loop, pass config to all components
+  training/model.py             -> accept domain param for vocabulary, all arch params
+  training/trainer.py           -> accept all hyperparams from queue (not globals)
+  training/batch_handler.py     -> accept batches path (not hardcoded BATCHES_DIR)
+  shared/logger.py              -> accept logs_dir param (not hardcoded LOGS_DIR)
+  shared/classification_accuracy.py -> keep for sentiment, stays as-is
+  NEW: training/training_queue.json  -> queue config
+  NEW: shared/math_accuracy.py       -> MathAccuracyCalculator
+  analysis/visualize_logs.py    -> accept logs_dir param for run-specific analysis
+
+
+COMMIT-LEVEL PLAN (each ~20-30 lines changed)
+
+Commit 1: Create training_queue.json
+  - Queue config file with example entries (sentiment baseline + math baseline)
+  - Add TRAINING_QUEUE_PATH to shared/config.py
+  Files: training/training_queue.json (new), shared/config.py
+
+Commit 2: Add get_training_run_dir() and get_batches_dir() to config
+  - get_training_run_dir(run_name) -> "./runs/{run_name}"
+  - get_batches_dir(domain, teacher_model) -> "./batches/{domain}/{sanitized_model}"
+  Files: shared/config.py, shared/__init__.py
+
+Commit 3: Update batch_handler.py to accept batches path
+  - Constructor takes batches_dir instead of using global BATCHES_DIR
+  - All file paths use the passed batches_dir
+  Files: training/batch_handler.py
+
+Commit 4: Update logger.py to accept logs directory
+  - Constructor takes logs_dir parameter
+  - STATE_FILE, TRAINING_LOG_FILE use the passed logs_dir
+  - Remove hardcoded LOGS_DIR usage from instance methods
+  Files: shared/logger.py
+
+Commit 5: Update model.py to accept domain and all architecture params
+  - Transformer constructor takes domain parameter
+  - Passes domain to build_vocabulary(tokenizer, domain)
+  - All architecture params (hidden_dim, num_layers, num_heads, etc.) already
+    have defaults but will be overridden by queue values
+  - max_seq_length from DOMAIN_MAX_SEQ_LENGTH[domain]
+  Files: training/model.py
+
+Commit 6: Update trainer.py to accept hyperparams from config dict
+  - Constructor takes a config dict (the queue element) instead of globals
+  - Reads: learning_rate, epoch_count, kl_ratio_start, kl_ratio_end,
+    distillation_temperature, lr_warmup_ratio from config dict
+  - Checkpoint paths use run-specific directory
+  - save_checkpoint/load_checkpoint use run-specific checkpoints dir
+  Files: training/trainer.py
+
+Commit 7: Create MathAccuracyCalculator
+  - Parses scaffold output to extract Solution value
+  - Compares vs teacher output
+  - Reports exact match accuracy
+  Files: shared/math_accuracy.py (new)
+
+Commit 8: Make eval_epoch domain-aware
+  - Uses ClassificationAccuracyCalculator for sentiment
+  - Uses MathAccuracyCalculator for math
+  - Domain passed from queue config
+  Files: training/trainer.py
+
+Commit 9: Update analysis/visualize_logs.py for run-specific paths
+  - Accept logs_dir parameter instead of global LOGS_DIR
+  - update_training_plot() takes logs_dir, saves plot in run dir
+  Files: analysis/visualize_logs.py
+
+Commit 10: Rewrite training/main.py as queue orchestrator
+  - Load training_queue.json
+  - For each entry: check runs/{run_name}/info.json, skip if completed
+  - Create run output directories (checkpoints/, logs/, eval/)
+  - Write info.json at start, update on completion
+  - Pass all config from queue element to Transformer, BatchHandler, Logger, Trainer
+  - Graceful exit saves to run-specific temp checkpoint
+  Files: training/main.py
+
+Commit 11: Update shared/__init__.py exports
+  - Export new functions, MathAccuracyCalculator
+  - Keep old constants (BATCHES_DIR etc.) for backwards compat with analysis
+  Files: shared/__init__.py
+
+Commit 12: Clean up old global constant usage
+  - Remove BATCHES_DIR, LOGS_DIR, CHECKPOINTS_DIR from config.py if no longer needed
+  - Or keep them as fallbacks for standalone analysis scripts
+  - Verify no training code references global hyperparams anymore
+  Files: shared/config.py, shared/__init__.py
+
+
+WHY THIS WORKS:
+  - Output vocab is ALREADY domain-dynamic: build_vocabulary(tokenizer, domain)
+    returns ~525 tokens for sentiment, ~31 for math. Output projection auto-sizes.
+  - Architecture (hidden_dim, num_layers, num_heads) is already parameterized in
+    model.py constructor — just needs to receive values from queue instead of defaults.
+  - Same student architecture, different domains: just change domain in queue.
+    The output projection layer automatically adjusts to domain vocab size.
+  - "Wider" model: increase hidden_dim (e.g. 512). "Deeper": increase num_layers.
+  - "No annealing": set kl_ratio_start == kl_ratio_end (e.g. both 1.0).
+  - Resumability: each run has its own state.json and temp_checkpoint.pt.
+    If the process restarts, it skips completed runs and resumes the current one.
+
+
+========================================================================
+PHASE 4: ANALYSIS & COMPARISON (future, after Phase 3 runs complete)
+========================================================================
+(Not detailed at commit level yet)
+
+- Compare runs by reading runs/*/info.json + runs/*/logs/training.jsonl
+- Side-by-side plots: loss curves, accuracy curves across runs
+- Table: final metrics per run (loss, accuracy, classification accuracy)
+- Filter by domain, architecture size, annealing strategy
+- Identify best configuration per domain
+
+
+========================================================================
+NOTES / FUTURE IDEAS
+========================================================================
+
+- Make auxiliary token list configurable per domain (e.g. expand math vocab
+  with more tokens without touching code). Changing vocab size requires
+  regenerating distillation data (logit vectors are fixed-length per vocab)
+  and retraining from scratch.

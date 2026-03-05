@@ -33,8 +33,9 @@ def get_output_dir(domain: str, model_name: str) -> str:
     return os.path.join("./batches", domain, sanitize_model_name(model_name))
 
 
-# Queue
+# Queue paths
 DATA_GENERATION_QUEUE_PATH = "./distillation_data_generation/data_generation_queue.json"
+TRAINING_QUEUE_PATH = "./training/training_queue.json"
 
 
 # Model identification
