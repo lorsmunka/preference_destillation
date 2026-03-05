@@ -13,6 +13,7 @@ from shared import (
     ExitListener,
     Logger,
     ClassificationAccuracyCalculator,
+    MathAccuracyCalculator,
     get_device,
     PROMPT_DELIMITER,
 )
@@ -28,6 +29,7 @@ class Trainer:
         print("Initializing Trainer...")
 
         self.config = config
+        self.domain = config['domain']
         self.learning_rate = config['learning_rate']
         self.epoch_count_value = config['epoch_count']
         self.kl_ratio_start = config['kl_ratio_start']
@@ -251,7 +253,10 @@ class Trainer:
         total_student_correct = 0
         total_steps = 0
 
-        classification_calculator = ClassificationAccuracyCalculator()
+        if self.domain == "math_word_problem":
+            task_accuracy_calculator = MathAccuracyCalculator()
+        else:
+            task_accuracy_calculator = ClassificationAccuracyCalculator()
 
         with torch.no_grad():
             for batch_idx in range(batch_start, batch_end):
@@ -282,7 +287,7 @@ class Trainer:
                     total_steps += num_steps
 
                     ground_truth_response = example.get('model_response', '')
-                    classification_calculator.update(student_tokens, ground_truth_response)
+                    task_accuracy_calculator.update(student_tokens, ground_truth_response)
 
                 batch_elapsed = time() - batch_start_time
                 avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
@@ -302,8 +307,8 @@ class Trainer:
             total_steps if total_steps > 0 else 0.0
         student_accuracy = total_student_correct / \
             total_steps if total_steps > 0 else 0.0
-        classification_accuracy = classification_calculator.get_accuracy()
-        confusion_matrices = classification_calculator.get_confusion_matrices()
+        classification_accuracy = task_accuracy_calculator.get_accuracy()
+        confusion_matrices = task_accuracy_calculator.get_confusion_matrices()
 
         self.logger.log_eval_epoch(
             epoch, avg_loss, teacher_forced_accuracy, student_accuracy, classification_accuracy,
