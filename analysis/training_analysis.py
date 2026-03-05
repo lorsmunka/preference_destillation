@@ -12,7 +12,8 @@ from shared import LOGS_DIR
 
 
 class TrainingAnalyzer:
-    def __init__(self, data: List[Dict]):
+    def __init__(self, data: List[Dict], logs_dir: str = LOGS_DIR):
+        self.logs_dir = logs_dir
         self.train_batches = [d for d in data if d.get('type') == 'train_batch']
         self.train_epochs = [d for d in data if d.get('type') == 'train_epoch']
         self.eval_epochs = [d for d in data if d.get('type') == 'eval_epoch']
@@ -181,7 +182,7 @@ class TrainingAnalyzer:
         # --- Confusion matrices (rows 9-10) ---
         self._plot_confusion_matrices(fig, gs)
 
-        save_path = Path(LOGS_DIR) / 'training_progress.png'
+        save_path = Path(self.logs_dir) / 'training_progress.png'
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
         plt.close(fig)
         if show:

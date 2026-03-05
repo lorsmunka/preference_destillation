@@ -1,4 +1,4 @@
-from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
+from .utilities import Utilities
 from .exit_listener import ExitListener
 from .logger import Logger
 from .classification_accuracy import ClassificationAccuracyCalculator
@@ -29,7 +29,6 @@ from .config import (
 
 __all__ = [
     'Utilities',
-    'DEBUG_TOKEN_MAP_PATH',
     'ExitListener',
     'Logger',
     'ClassificationAccuracyCalculator',

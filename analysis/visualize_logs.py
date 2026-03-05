@@ -29,7 +29,7 @@ class LogVisualizer:
         generation_data = load_jsonl(generation_log_file)
         training_data = load_jsonl(training_log_file)
         self.generation_analyzer = GenerationAnalyzer(generation_data)
-        self.training_analyzer = TrainingAnalyzer(training_data)
+        self.training_analyzer = TrainingAnalyzer(training_data, logs_dir)
 
     def run(self):
         print("\n" + "=" * 50)
@@ -79,7 +79,7 @@ def update_training_plot(logs_dir: str = LOGS_DIR):
     if not training_data:
         return
 
-    analyzer = TrainingAnalyzer(training_data)
+    analyzer = TrainingAnalyzer(training_data, logs_dir)
     analyzer.plot(moving_average, show=False)
     elapsed = time() - start_time
     print(f"training_progress.png updated -> took {elapsed:.2f}s\n")

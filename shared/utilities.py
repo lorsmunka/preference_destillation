@@ -1,8 +1,5 @@
-import os
 import json
 from typing import Dict, List, Tuple, Optional
-
-DEBUG_TOKEN_MAP_PATH = "debug_token_map.json"
 
 
 class Utilities:
@@ -315,8 +312,6 @@ JSON:
 
         cls._vocabulary_cache[cache_key] = vocabulary
 
-        cls._write_debug_file(vocabulary, tokenizer_name)
-
         print(f"Built vocabulary: {len(token_list)} tokens")
         print(
             f"  Example tokens: {positions['example'][0]}-{positions['example'][1]} ({positions['example'][1] - positions['example'][0]} tokens)")
@@ -328,39 +323,6 @@ JSON:
             f"  Auxiliary tokens: {positions['auxiliary'][0]}-{positions['auxiliary'][1]} ({positions['auxiliary'][1] - positions['auxiliary'][0]} tokens)")
 
         return vocabulary
-
-    @classmethod
-    def _write_debug_file(cls, vocabulary: dict, tokenizer_name: str) -> None:
-        if os.path.exists(DEBUG_TOKEN_MAP_PATH):
-            return
-
-        debug_data = {
-            'tokenizer': tokenizer_name,
-            'vocab_size': vocabulary['vocab_size'],
-            'positions': vocabulary['positions'],
-            'tokens': [
-                {
-                    'index': idx,
-                    'token': token,
-                    'token_id': vocabulary['token_to_id'][token],
-                    'section': cls._get_section_for_index(idx, vocabulary['positions']),
-                }
-                for idx, token in enumerate(vocabulary['token_list'])
-            ],
-        }
-
-        with open(DEBUG_TOKEN_MAP_PATH, 'w', encoding='utf-8') as f:
-            json.dump(debug_data, f, indent=2, ensure_ascii=False)
-
-        print(f"Debug token map written to: {DEBUG_TOKEN_MAP_PATH}")
-
-    @classmethod
-    def _get_section_for_index(cls, idx: int, positions: dict) -> str:
-        for section in ['example', 'whitespace', 'prompt', 'auxiliary']:
-            start, end = positions[section]
-            if start <= idx < end:
-                return section
-        return 'unknown'
 
     @classmethod
     def get_example_token_positions(cls, vocabulary: dict) -> Tuple[int, int]:
