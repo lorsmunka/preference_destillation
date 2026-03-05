@@ -2,6 +2,7 @@ from .utilities import Utilities, DEBUG_TOKEN_MAP_PATH
 from .exit_listener import ExitListener
 from .logger import Logger
 from .classification_accuracy import ClassificationAccuracyCalculator
+from .math_accuracy import MathAccuracyCalculator
 from .config import (
     get_device,
     sanitize_model_name,
@@ -43,6 +44,7 @@ __all__ = [
     'ExitListener',
     'Logger',
     'ClassificationAccuracyCalculator',
+    'MathAccuracyCalculator',
     'get_device',
     'sanitize_model_name',
     'get_input_path',
