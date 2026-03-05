@@ -49,14 +49,9 @@ class ModelHandler:
             return Utilities.create_math_word_problem_prompt(text)
         return Utilities.create_reddit_sentiment_prompt(text)
 
-    def is_stop_token(self, token_decoded: str, generated_text: str) -> bool:
+    def is_stop_token(self, token_decoded: str) -> bool:
         if self.domain == "math_word_problem":
-            lines = generated_text.strip().split("\n")
-            if lines:
-                last_line = lines[-1].strip()
-                if last_line.startswith("Solution:") and len(last_line) > len("Solution:"):
-                    return True
-            return False
+            return token_decoded == ";"
         return token_decoded == "}"
 
     def generate_training_example(self, text: str) -> Tuple[Optional[Dict], Optional[str]]:
@@ -70,7 +65,7 @@ class ModelHandler:
         current_sequence = inputs['input_ids']
 
         last_token_decoded = ""
-        while not self.is_stop_token(last_token_decoded, generated_text) and len(steps) <= MAX_GENERATION_STEPS:
+        while not self.is_stop_token(last_token_decoded) and len(steps) <= MAX_GENERATION_STEPS:
             token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
                 current_sequence)
 

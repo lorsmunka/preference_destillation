@@ -31,7 +31,8 @@
       "Bash(python test_parsing.py:*)",
       "Bash(/c/Python313/python:*)",
       "Bash(python:*)",
-      "Bash(echo exit: $?:*)"
+      "Bash(echo exit: $?:*)",
+      "Bash(.venv/Scripts/python:*)"
     ]
   }
 }

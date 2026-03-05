@@ -157,7 +157,7 @@ B=5
 C=2
 D=A*B=15
 E=D-C=13
-Solution: 13
+Solution: 13;
 
 Problem: "Tom has 15 stickers. He gives away 7. Sarah has 12 stickers. Does Tom have more stickers than Sarah?"
 A=15
@@ -165,7 +165,7 @@ B=7
 C=12
 D=A-B=8
 E=D>C=False
-Solution: False
+Solution: False;
 
 """
 
