@@ -14,13 +14,6 @@ from shared import (
     Logger,
     ClassificationAccuracyCalculator,
     get_device,
-    EPOCH_COUNT,
-    LEARNING_RATE,
-    DISTILLATION_TEMPERATURE,
-    KL_RATIO_START,
-    KL_RATIO_END,
-    LR_WARMUP_RATIO,
-    TEMP_CHECKPOINT_PATH,
     PROMPT_DELIMITER,
 )
 from model import Transformer
@@ -29,29 +22,39 @@ from analysis.visualize_logs import update_training_plot
 
 
 class Trainer:
-    def __init__(self, model: Transformer, logger: Logger, exit_listener: ExitListener, batch_handler: BatchHandler):
+    def __init__(self, model: Transformer, logger: Logger, exit_listener: ExitListener,
+                 batch_handler: BatchHandler, config: dict):
         start_time = time()
         print("Initializing Trainer...")
+
+        self.config = config
+        self.learning_rate = config['learning_rate']
+        self.epoch_count_value = config['epoch_count']
+        self.kl_ratio_start = config['kl_ratio_start']
+        self.kl_ratio_end = config['kl_ratio_end']
+        self.distillation_temperature = config['distillation_temperature']
+        self.lr_warmup_ratio = config['lr_warmup_ratio']
+        self.checkpoints_dir = config.get('checkpoints_dir', './checkpoints')
+        self.temp_checkpoint_path = os.path.join(self.checkpoints_dir, 'temp_checkpoint.pt')
 
         self.device = get_device()
         self.model = model.to(self.device)
         self.vocabulary = model.vocabulary
+        self.vocab_size = model.vocabulary['vocab_size']
         self.tokenizer = model.tokenizer
-        self.optimizer = AdamW(model.parameters(), lr=LEARNING_RATE)
+        self.optimizer = AdamW(model.parameters(), lr=self.learning_rate)
 
         self.batch_handler = batch_handler
         batch_count = batch_handler.get_training_batches_radius()[1]
-        self.total_training_steps = EPOCH_COUNT * batch_count
+        self.total_training_steps = self.epoch_count_value * batch_count
         self.current_step = 0
-        self.warmup_steps = int(self.total_training_steps * LR_WARMUP_RATIO)
+        self.warmup_steps = int(self.total_training_steps * self.lr_warmup_ratio)
 
         self.scheduler = CosineAnnealingLR(
             self.optimizer,
             T_max=self.total_training_steps - self.warmup_steps,
             eta_min=1e-5
         )
-
-        self.vocab_size = vocabulary['vocab_size']
 
         self.logger = logger
         self.exit_listener = exit_listener
@@ -62,14 +65,14 @@ class Trainer:
         print(f"LR Warmup Steps: {self.warmup_steps}\n")
 
         if self.logger.should_resume():
-            if os.path.exists(TEMP_CHECKPOINT_PATH):
-                self.load_checkpoint(TEMP_CHECKPOINT_PATH)
+            if os.path.exists(self.temp_checkpoint_path):
+                self.load_checkpoint(self.temp_checkpoint_path)
                 print("Loaded temp checkpoint\n")
             else:
                 print("Warning: No temp checkpoint found, starting from scratch\n")
 
     def epoch_count(self):
-        return EPOCH_COUNT
+        return self.epoch_count_value
 
     def train_epoch(self, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> Optional[bool]:
         self.model.train()
@@ -191,7 +194,7 @@ class Trainer:
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
         print("Exit requested. Saving progress...")
-        self.save_checkpoint(epoch, avg_batch_loss, filepath=TEMP_CHECKPOINT_PATH)
+        self.save_checkpoint(epoch, avg_batch_loss, filepath=self.temp_checkpoint_path)
         self.logger.save()
         return None
 
@@ -370,19 +373,17 @@ class Trainer:
 
     def _get_current_kl_ratio(self) -> float:
         if self.total_training_steps <= 1:
-            return KL_RATIO_START
+            return self.kl_ratio_start
         progress = self.current_step / self.total_training_steps
         cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
-        return KL_RATIO_END + (KL_RATIO_START - KL_RATIO_END) * cosine_decay
+        return self.kl_ratio_end + (self.kl_ratio_start - self.kl_ratio_end) * cosine_decay
 
     def _update_learning_rate(self):
         if self.current_step <= self.warmup_steps:
-            # Linear warmup
             warmup_factor = self.current_step / self.warmup_steps
             for param_group in self.optimizer.param_groups:
-                param_group['lr'] = LEARNING_RATE * warmup_factor
+                param_group['lr'] = self.learning_rate * warmup_factor
         else:
-            # Cosine decay after warmup
             self.scheduler.step()
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
@@ -391,7 +392,7 @@ class Trainer:
 
     def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float], int]:
         token = step['token']
-        logit_vector = step['logits']
+        logit_vector = step['logits'][:self.vocab_size]
         target_index = step['predicted_token_index']
 
         token_ids = self.tokenizer.encode(token, add_special_tokens=False)
@@ -408,7 +409,7 @@ class Trainer:
 
     def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
                        target_indices: torch.Tensor, reduction: str = 'batchmean'):
-        temperature = DISTILLATION_TEMPERATURE
+        temperature = self.distillation_temperature
         student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
         teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
 
@@ -426,7 +427,7 @@ class Trainer:
         start_time = time()
 
         if filepath is None:
-            filepath = os.path.join('checkpoints', f'checkpoint_epoch_{epoch}.pt')
+            filepath = os.path.join(self.checkpoints_dir, f'checkpoint_epoch_{epoch}.pt')
 
         checkpoint = {
             'epoch': epoch,
@@ -437,8 +438,7 @@ class Trainer:
             'train_loss': train_loss,
         }
 
-        if not os.path.exists('checkpoints'):
-            os.makedirs('checkpoints')
+        os.makedirs(self.checkpoints_dir, exist_ok=True)
 
         torch.save(checkpoint, filepath)
 
@@ -452,7 +452,7 @@ class Trainer:
 
         self.model.load_state_dict(checkpoint['model_state_dict'])
 
-        self.optimizer = AdamW(self.model.parameters(), lr=LEARNING_RATE)
+        self.optimizer = AdamW(self.model.parameters(), lr=self.learning_rate)
         if 'optimizer_state_dict' in checkpoint:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -479,7 +479,7 @@ class Trainer:
                 warmup_factor = self.current_step / \
                     self.warmup_steps if self.warmup_steps > 0 else 1.0
                 for param_group in self.optimizer.param_groups:
-                    param_group['lr'] = LEARNING_RATE * warmup_factor
+                    param_group['lr'] = self.learning_rate * warmup_factor
 
         elapsed_time = time() - start_time
         print(
