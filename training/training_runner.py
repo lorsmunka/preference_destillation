@@ -5,6 +5,7 @@ from datetime import datetime
 from batch_handler import BatchHandler
 from model import Transformer
 from trainer import Trainer
+from analysis.visualize_logs import update_training_plot
 from shared import (
     ExitListener,
     Logger,
@@ -79,6 +80,7 @@ class TrainingRunner:
                 return False
 
             trainer.eval_epoch(test_start, test_end, epoch)
+            update_training_plot(self.logs_dir)
             logger.save()
 
         completed_at = datetime.now().isoformat()
