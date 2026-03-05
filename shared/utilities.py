@@ -54,7 +54,7 @@ class Utilities:
     ]
 
     MATH_WORD_PROBLEM_ADDITIONAL_AUXILIARY_TOKENS = [
-        "F", "G", ".",
+        "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", ".",
     ]
 
     WHITESPACE_TOKENS = [
@@ -245,9 +245,10 @@ JSON:
         return unique
 
     @classmethod
-    def build_vocabulary(cls, tokenizer, domain: str = "reddit_comment_sentiment") -> dict:
+    def build_vocabulary(cls, tokenizer, domain: str = "reddit_comment_sentiment",
+                         auxiliary_token_percentage: float = 1.0) -> dict:
         tokenizer_name = getattr(tokenizer, 'name_or_path', str(id(tokenizer)))
-        cache_key = f"{tokenizer_name}_{domain}"
+        cache_key = f"{tokenizer_name}_{domain}_{auxiliary_token_percentage}"
 
         if cache_key in cls._vocabulary_cache:
             return cls._vocabulary_cache[cache_key]
@@ -260,6 +261,9 @@ JSON:
         else:
             prompt_tokens = cls.PROMPT_TOKENS
             auxiliary_tokens = cls.AUXILIARY_TOKENS
+
+        auxiliary_count = int(len(auxiliary_tokens) * auxiliary_token_percentage)
+        auxiliary_tokens = auxiliary_tokens[:auxiliary_count]
 
         seen = set()
         token_list = []
