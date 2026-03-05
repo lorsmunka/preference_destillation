@@ -1,34 +1,32 @@
-from batch_handler import BatchHandler
-from model import Transformer
-from trainer import Trainer
-from shared import ExitListener, Logger
+import json
+import os
+
+from training_runner import TrainingRunner
+from shared import ExitListener, TRAINING_QUEUE_PATH, get_training_run_dir
 
 
-transformer = Transformer()
-logger = Logger()
+with open(TRAINING_QUEUE_PATH, "r", encoding="utf-8") as file:
+    queue = json.load(file)
+
 exit_listener = ExitListener()
-batch_handler = BatchHandler()
 
-trainer = Trainer(transformer, logger, exit_listener, batch_handler)
+for queue_element in queue:
+    run_name = queue_element["run_name"]
+    run_dir = get_training_run_dir(run_name)
+    info_path = os.path.join(run_dir, "info.json")
 
-batch_start, batch_end = batch_handler.get_training_batches_radius()
-test_start, test_end = batch_handler.get_test_batches_radius()
-start_epoch = logger.current_epoch
-resume_batch = logger.current_batch
+    if os.path.exists(info_path):
+        with open(info_path, "r", encoding="utf-8") as file:
+            info = json.load(file)
+        if info.get("status") == "completed":
+            print(f"Skipping completed run: {run_name}")
+            continue
 
-for epoch in range(start_epoch, trainer.epoch_count()):
-    resume_from = resume_batch if epoch == start_epoch else 0
-    print(f"\nEpoch {epoch + 1}/{trainer.epoch_count()}\n")
-
-    should_continue = trainer.train_epoch(
-        batch_start, batch_end, epoch, resume_from)
+    runner = TrainingRunner(queue_element, exit_listener)
+    should_continue = runner.run()
 
     if not should_continue:
         break
-
-    trainer.eval_epoch(test_start, test_end, epoch)
-
-    logger.save()
 
 exit_listener.stop()
 print("Bye!")
