@@ -37,6 +37,7 @@ class Trainer:
         self.distillation_temperature = config['distillation_temperature']
         self.lr_warmup_ratio = config['lr_warmup_ratio']
         self.checkpoints_dir = config.get('checkpoints_dir', './checkpoints')
+        self.logs_dir = config.get('logs_dir', './logs')
         self.temp_checkpoint_path = os.path.join(self.checkpoints_dir, 'temp_checkpoint.pt')
 
         self.device = get_device()
@@ -188,7 +189,7 @@ class Trainer:
         )
 
         if (batch_idx + 1) % 100 == 0:
-            update_training_plot()
+            update_training_plot(self.logs_dir)
         else:
             print(f"{100 - ((batch_idx + 1) % 100)} until next update\n")
 

@@ -257,10 +257,13 @@ JSON:
 
         if domain == "math_word_problem":
             prompt_tokens = cls.MATH_WORD_PROBLEM_PROMPT_TOKENS
-            auxiliary_tokens = cls.MATH_WORD_PROBLEM_ADDITIONAL_AUXILIARY_TOKENS
+            math_auxiliary = list(cls.MATH_WORD_PROBLEM_ADDITIONAL_AUXILIARY_TOKENS)
+            seen_auxiliary = set(math_auxiliary)
+            combined = math_auxiliary + [t for t in cls.AUXILIARY_TOKENS if t not in seen_auxiliary]
+            auxiliary_tokens = combined
         else:
             prompt_tokens = cls.PROMPT_TOKENS
-            auxiliary_tokens = cls.AUXILIARY_TOKENS
+            auxiliary_tokens = list(cls.AUXILIARY_TOKENS)
 
         auxiliary_count = int(len(auxiliary_tokens) * auxiliary_token_percentage)
         auxiliary_tokens = auxiliary_tokens[:auxiliary_count]

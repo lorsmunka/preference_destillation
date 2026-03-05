@@ -9,10 +9,6 @@ from analysis.training_analysis import TrainingAnalyzer
 from shared import LOGS_DIR
 
 
-GENERATION_LOG_FILE = Path(LOGS_DIR) / "generation.jsonl"
-TRAINING_LOG_FILE = Path(LOGS_DIR) / "training.jsonl"
-
-
 def load_jsonl(path: Path) -> List[Dict]:
     if not path.exists():
         return []
@@ -27,9 +23,11 @@ def moving_average(values: List[float], window: int) -> np.ndarray:
 
 
 class LogVisualizer:
-    def __init__(self):
-        generation_data = load_jsonl(GENERATION_LOG_FILE)
-        training_data = load_jsonl(TRAINING_LOG_FILE)
+    def __init__(self, logs_dir: str = LOGS_DIR):
+        generation_log_file = Path(logs_dir) / "generation.jsonl"
+        training_log_file = Path(logs_dir) / "training.jsonl"
+        generation_data = load_jsonl(generation_log_file)
+        training_data = load_jsonl(training_log_file)
         self.generation_analyzer = GenerationAnalyzer(generation_data)
         self.training_analyzer = TrainingAnalyzer(training_data)
 
@@ -71,12 +69,13 @@ class LogVisualizer:
                 print("Invalid option")
 
 
-def update_training_plot():
+def update_training_plot(logs_dir: str = LOGS_DIR):
     from time import time
     start_time = time()
 
+    training_log_file = Path(logs_dir) / "training.jsonl"
     print("Updating training_progress.png...")
-    training_data = load_jsonl(TRAINING_LOG_FILE)
+    training_data = load_jsonl(training_log_file)
     if not training_data:
         return
 
