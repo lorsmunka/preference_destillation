@@ -34,7 +34,7 @@ def get_output_dir(domain: str, model_name: str) -> str:
 
 
 # Queue
-DATA_GENERATION_QUEUE_PATH = "./data_generation/data_generation_queue.json"
+DATA_GENERATION_QUEUE_PATH = "./distillation_data_generation/data_generation_queue.json"
 
 
 # Model identification

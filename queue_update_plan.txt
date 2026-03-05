@@ -90,11 +90,11 @@ Master prompt for math (sent to Gemma, student NEVER sees this):
 
 
 ========================================================================
-PHASE 2: DISTILLATION DATA GENERATION (queue system for data_generation/)
+PHASE 2: DISTILLATION DATA GENERATION (queue system for distillation_data_generation/)
 ========================================================================
 
 OVERVIEW:
-  Current state: data_generation/ is hardcoded for reddit sentiment only.
+  Current state: distillation_data_generation/ is hardcoded for reddit sentiment only.
   - main.py loops through sentences, calls model_handler for each
   - model_handler.py loads Gemma, creates sentiment vocabulary, generates autoregressively
   - sentence_handler.py loads reddit_comments.jsonl
@@ -109,10 +109,10 @@ OVERVIEW:
   - Output: batches/{domain}/{sanitized_model_name}/batch_N.jsonl + info.json
 
 FILES THAT NEED CHANGES:
-  data_generation/main.py           -> queue loop, domain dispatch
-  data_generation/model_handler.py  -> domain-aware vocab + prompt, configurable model
-  data_generation/sentence_handler.py -> renamed to input_handler.py, loads by domain
-  data_generation/saving_handler.py -> domain/model output paths
+  distillation_data_generation/main.py           -> queue loop, domain dispatch
+  distillation_data_generation/model_handler.py  -> domain-aware vocab + prompt, configurable model
+  distillation_data_generation/sentence_handler.py -> renamed to input_handler.py, loads by domain
+  distillation_data_generation/saving_handler.py -> domain/model output paths
   shared/config.py                  -> remove hardcoded MODEL_NAME, BATCHES_DIR
   shared/utilities.py               -> domain-dispatched vocabulary builder
   NEW: data-generation-queue.json   -> queue config file
@@ -189,7 +189,7 @@ COMMIT-LEVEL PLAN (each ~20-30 lines changed)
 
 Commit 1: Create data-generation-queue.json [DONE]
   - Queue config file with both domain entries
-  Files: data_generation/data-generation-queue.json (new)
+  Files: distillation_data_generation/data-generation-queue.json (new)
 
 Commit 2: Add domain utility functions to shared [DONE]
   - sanitize_model_name(model_name) -> str
@@ -201,13 +201,13 @@ Commit 3: Rename sentence_handler.py -> input_handler.py [DONE]
   - Rename class SentenceHandler -> InputHandler
   - Make load method accept a file path parameter
   - Keep interface: get_input(index), input_count
-  Files: data_generation/input_handler.py (new, replaces sentence_handler.py)
+  Files: distillation_data_generation/input_handler.py (new, replaces sentence_handler.py)
 
 Commit 4: Update saving_handler.py for domain/model paths [DONE]
   - Constructor takes output_dir instead of using global BATCHES_DIR
   - Create output directory structure: batches/{domain}/{sanitized_model}/
   - Write info.json at start + update on completion
-  Files: data_generation/saving_handler.py
+  Files: distillation_data_generation/saving_handler.py
 
 Commit 5: Add math prompt construction [DONE]
   - MATH_MASTER_PROMPT + create_math_prompt in shared/utilities.py
@@ -225,12 +225,12 @@ Commit 7: Make model_handler.py domain-aware [DONE]
   - Domain-aware prompt building (build_prompt dispatches by domain)
   - Domain-aware stop condition (is_stop_token: "}" vs Solution line)
   - Domain-aware vocabulary creation
-  Files: data_generation/model_handler.py
+  Files: distillation_data_generation/model_handler.py
 
 Commit 8: Extract queue_runner.py from main.py [DONE]
   - QueueRunner class encapsulates batch processing loop
   - main.py stays thin: load queue, skip completed, call runner.run()
-  Files: data_generation/queue_runner.py (new), data_generation/main.py
+  Files: distillation_data_generation/queue_runner.py (new), distillation_data_generation/main.py
 
 Commit 9: Update shared/__init__.py exports [DONE]
   - Export sanitize_model_name, get_input_path, get_output_dir
@@ -247,7 +247,7 @@ Commit 10: Rename domain-specific functions/constants for clarity
     MATH_PROMPT_TOKENS            -> MATH_WORD_PROBLEM_PROMPT_TOKENS
     MATH_AUXILIARY_TOKENS         -> MATH_WORD_PROBLEM_AUXILIARY_TOKENS
     MATH_MASTER_PROMPT            -> MATH_WORD_PROBLEM_MASTER_PROMPT
-  Files: shared/utilities.py, data_generation/model_handler.py
+  Files: shared/utilities.py, distillation_data_generation/model_handler.py
 
 Commit 11: Add ";" stop token to math scaffolds and prompts
   - Append ";" after Solution value in all scaffolds (e.g. "Solution: ?;")
@@ -256,28 +256,28 @@ Commit 11: Add ";" stop token to math scaffolds and prompts
   - Regenerate math_word_problems.jsonl (scaffolds now end with ";")
   Files: text_generation/math_word_problem/operations.py (SCAFFOLDS)
          shared/utilities.py (MATH_MASTER_PROMPT)
-         data_generation/model_handler.py (is_stop_token)
+         distillation_data_generation/model_handler.py (is_stop_token)
          text_generation/math_word_problem/math_word_problems.jsonl (regenerate)
 
 Commit 12: Delete old sentence_handler.py
   - No longer referenced anywhere
-  Files: data_generation/sentence_handler.py (delete)
+  Files: distillation_data_generation/sentence_handler.py (delete)
 
 Commit 13: Write empirical math vocab test script
-  - data_generation/test_math_vocab.py (temp script, deleted after use)
+  - distillation_data_generation/test_math_vocab.py (temp script, deleted after use)
   - Loads Gemma model + tokenizer
   - Runs inference on ~500-1000 math problems from math_word_problems.jsonl
   - Uses MATH_WORD_PROBLEM_MASTER_PROMPT + problem text as input
   - Collects all unique output tokens per generation
   - Reports: full token set, token frequencies, max sequence length
-  Files: data_generation/test_math_vocab.py (new)
+  Files: distillation_data_generation/test_math_vocab.py (new)
 
 Commit 14: Populate math vocabulary from empirical results
   - Fill MATH_WORD_PROBLEM_EXAMPLE_RESPONSES with real Gemma outputs
   - Fill MATH_WORD_PROBLEM_PROMPT_TOKENS from observed tokens
   - Fill MATH_WORD_PROBLEM_AUXILIARY_TOKENS from observed tokens
   - Delete test_math_vocab.py
-  Files: shared/utilities.py, data_generation/test_math_vocab.py (delete)
+  Files: shared/utilities.py, distillation_data_generation/test_math_vocab.py (delete)
 
 
 ========================================================================
