@@ -1,297 +1,274 @@
-QUEUE-BASED PIPELINE UPGRADE PLAN (v3)
+QUEUE-BASED PIPELINE UPGRADE PLAN (v4)
 =======================================
 
 GOAL: Multi-domain distillation pipeline. Queue-based config for data generation,
       distillation data generation (Gemma logits), and training. Two domains:
       reddit comment sentiment classification + math word problem solving.
 
-
-PIPELINE OVERVIEW (3 stages)
-------------------------------
-1. TEXT GENERATION     → Domain-specific input creation (Reddit extraction, math problem generation)
-2. DISTILLATION GEN    → Gemma processes inputs, autoregressively generates with logit capture per step
-3. TRAINING            → Student transformer learns from teacher logits
-
-
-DIRECTORY STRUCTURE
----------------------
-text_generation/
-  reddit_comment_sentiment/
-    get_reddit_comments.py     (moved+renamed from ./get_sentences.py)
-    reddit_comments.jsonl      (moved+renamed from ./sentences/sentences.jsonl)
-  math_word_problem/
-    operations.py              (add/sub/mul/div/comparison logic, number generation)
-    templates.py               (220+ problem templates with scaffolds, organized by operation)
-    names_and_items.py         (name lists, item lists, unit lists for variety)
-    generate_problems.py       (main script: produces 500k unique problems → math_word_problems.jsonl)
-    math_word_problems.jsonl   (output: one problem per line, same format as reddit_comments.jsonl)
-
-data_generation/               (distillation data generation — Gemma logit capture)
-  main.py                      (loops queue, handles both domains)
-  model_handler.py             (loads Gemma, autoregressively generates with logit capture)
-  sentence_handler.py          (loads inputs — reddit comments or math problems)
-  saving_handler.py            (writes batch JSONL files)
-
-batches/                        (distillation training data, organized by domain/model)
-  reddit_comment_sentiment/
-    google_gemma-3-4b-it/
-      batch_1.jsonl
-      info.json
-  math_word_problem/
-    google_gemma-3-4b-it/
-      batch_1.jsonl
-      info.json
-
-shared/
-  config.py                    (universal constants only)
-  utilities.py                 (domain-aware vocabulary builder)
-
-
-JSONL FORMAT (same for both domains)
---------------------------------------
-reddit_comments.jsonl:
-  {"text": "You think that 67 of Britons are unemployed?"}
-  {"text": "Black Power Mixtapes is another great documentary"}
-
-math_word_problems.jsonl:
-  {"text": "Problem: \"Alice has 5 bags with 3 apples each. How many apples in total?\"\nA=?\nB=?\nC=A*B=?\nSolution: ?"}
-  {"text": "Problem: \"Bob has $1231. He pays $299 for headphones. How much does he have left?\"\nA=?\nB=?\nC=A-B=?\nSolution: ?"}
-
-Both are just {"text": "..."} — the distillation pipeline treats them identically.
-The teacher's logits ARE the ground truth. No answer field needed.
-
-
-MASTER PROMPT FOR MATH (sent to Gemma, student NEVER sees this)
------------------------------------------------------------------
-Follow this example exactly:
-
-Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
-A=3
-B=5
-C=2
-D=A*B=15
-E=D-C=13
-Solution: 13
-
-Problem: "Tom has 15 stickers. He gives away 7. Sarah has 12 stickers. Does Tom have more stickers than Sarah?"
-A=15
-B=7
-C=12
-D=A-B=8
-E=D>C=False
-Solution: False
-
-{generated problem text with scaffold}
-
-Gemma autoregressively generates the scaffold back with actual numbers.
-Each token captured with logits for distillation.
-
-
-MATH OUTPUT VOCABULARY (vs sentiment's ~525 tokens)
-----------------------------------------------------
-Tokens needed:
-  - Digits: 0-9 (individual digit tokens, plus multi-digit as tokenized by Gemma)
-  - Variables: A, B, C, D, E, F
-  - Operators: +, -, *, /
-  - Comparison: >, <
-  - Symbols: =, \n, space, :
-  - Words: Solution, True, False, Problem
-  - Auxiliary: extra tokens for soft labels (TBD after tokenizer analysis)
-
-Output projection layer size differs per domain → must be configurable.
-
-
-MATH TEMPLATE DESIGN
------------------------
-
-Each template defines the problem text AND scaffold together as one unit:
-  {
-    "text": "{name} has {A} bags with {B} apples each. How many apples in total?",
-    "scaffold": "A=?\nB=?\nC=A*B=?\nSolution: ?",
-    "operation": "mul",
-    "ranges": {"A": [2, 15], "B": [2, 15]}
-  }
-
-Generator fills template with random numbers+names → produces complete block:
-  Problem: "Alice has 5 bags with 3 apples each. How many apples in total?"
-  A=?
-  B=?
-  C=A*B=?
-  Solution: ?
-
-Operation types and their scaffolds:
-  add:      A=?, B=?, C=A+B=?, Solution: ?
-  sub:      A=?, B=?, C=A-B=?, Solution: ?        (constrain A > B)
-  mul:      A=?, B=?, C=A*B=?, Solution: ?
-  div:      A=?, B=?, C=A/B=?, Solution: ?        (generate B and result, derive A=B*result)
-  mul_add:  A=?, B=?, C=?, D=A*B=?, E=D+C=?, Solution: ?
-  mul_sub:  A=?, B=?, C=?, D=A*B=?, E=D-C=?, Solution: ?     (constrain C < A*B)
-  add_mul:  A=?, B=?, C=?, D=A+B=?, E=D*C=?, Solution: ?
-  sub_mul:  A=?, B=?, C=?, D=A-B=?, E=D*C=?, Solution: ?     (constrain A > B)
-  add_sub:  A=?, B=?, C=?, D=A+B=?, E=D-C=?, Solution: ?     (constrain C < A+B)
-  div_add:  A=?, B=?, C=?, D=A/B=?, E=D+C=?, Solution: ?     (clean division)
-  cmp:      A=?, B=?, C=A>B=?, Solution: ?                    (direct comparison)
-  cmp_sub:  A=?, B=?, C=?, D=A-B=?, E=D>C=?, Solution: ?     (arithmetic then compare, max 3 input vars)
-  cmp_mul:  A=?, B=?, C=?, D=A*B=?, E=D>C=?, Solution: ?     (arithmetic then compare, max 3 input vars)
-
-Comparison rules (Gemma 4B limitation):
-  - Max 3 input variables
-  - Max 1 arithmetic operation before comparison
-  - Comparison is always second-to-last step
-  - Solution is always True or False
-  - ~50% True / ~50% False in generated data
-
-Template count target (260+):
-  add:       40 templates
-  sub:       40 templates
-  mul:       40 templates
-  div:       30 templates
-  mul_add:   15 templates
-  mul_sub:   15 templates
-  add_mul:   10 templates
-  add_sub:   10 templates
-  sub_mul:   10 templates
-  div_add:   10 templates
-  cmp:       15 templates
-  cmp_sub:   15 templates
-  cmp_mul:   10 templates
-
-Number ranges — varied magnitudes with messy numbers:
-  ~30% single digits (1-9)
-  ~30% tens, round (10, 20, 30, ... 90)
-  ~10% tens, messy (13, 47, 68, ...)
-  ~15% hundreds, round (100, 200, ... 900)
-  ~10% hundreds, messy (137, 299, 483, ...)
-  ~5%  thousands (1000-2000, both round and messy)
-
-  Per operation constraints:
-    add:     A,B in full range
-    sub:     A > B always
-    mul:     keep factors small enough that result < 2000
-    div:     generate divisor and quotient, derive dividend = divisor*quotient
-    cmp:     ~50% True, ~50% False
-
-Template variety comes from:
-  - 60+ names (mixed gender, with pronoun mapping)
-  - 30+ item categories (fruits, school supplies, toys, animals, tools, food, ...)
-  - 15+ contexts (shopping, school, cooking, sports, travel, farming, building, ...)
-  - Varied phrasings per template
-
-500k unique problems from 260 templates:
-  ~1920 problems per template, easily achievable with random names/items/numbers.
-  Deduplication by hashing problem text.
-
-
-QUEUE CONFIG (data-generation-queue.json)
--------------------------------------------
-[
-  {
-    "domain": "reddit_comment_sentiment",
-    "description": "500k Reddit comments classified by Gemma 4B",
-    "model_name": "google/gemma-3-4b-it",
-    "max_examples": 500000,
-    "batch_size": 32
-  },
-  {
-    "domain": "math_word_problem",
-    "description": "500k math word problems solved by Gemma 4B",
-    "model_name": "google/gemma-3-4b-it",
-    "max_examples": 500000,
-    "batch_size": 32
-  }
-]
-
-Input file derived from domain: text_generation/{domain}/{domain}s.jsonl
-Output dir: batches/{domain}/{sanitized_model_name}/
-info.json: written at start, updated on completion with final stats.
-
-sanitize_model_name("google/gemma-3-4b-it") → "google_gemma-3-4b-it"
-
-
-========================================================================
-PHASE 1: TEXT GENERATION RESTRUCTURE + MATH PROBLEM GENERATOR
-========================================================================
-
 WORKFLOW: Claude makes changes, user reviews, user stages+commits.
 Claude does NOT stage or commit. User controls git entirely.
 
-COMMIT-LEVEL PLAN (each ~20-30 lines or pure structural moves)
 
-Commit 1: Create text_generation directory structure
-  - text_generation/__init__.py (empty)
-  - text_generation/reddit_comment_sentiment/__init__.py (empty)
-  - text_generation/math_word_problem/__init__.py (empty)
-  Files: 3 new empty files
+PIPELINE OVERVIEW (3 stages)
+------------------------------
+1. TEXT GENERATION     -> Domain-specific input creation (Reddit extraction, math problem generation)
+2. DISTILLATION GEN   -> Gemma processes inputs, autoregressively generates with logit capture per step
+3. TRAINING           -> Student transformer learns from teacher logits
 
-Commit 2: Move + rename reddit data files
-  - git mv sentences/sentences.jsonl text_generation/reddit_comment_sentiment/reddit_comments.jsonl
-  - git mv get_sentences.py text_generation/reddit_comment_sentiment/get_reddit_comments.py
-  - remove empty sentences/ dir
-  Files: 2 renames, 1 dir removal
 
-Commit 3: Update paths in moved get_reddit_comments.py
-  - update output path (sentences/ → text_generation/reddit_comment_sentiment/)
-  - update import path for shared config
-  ~5 line change
+========================================================================
+PHASE 1: TEXT GENERATION RESTRUCTURE + MATH PROBLEM GENERATOR [COMPLETE]
+========================================================================
 
-Commit 4: Update sentence_handler.py path
-  - change "./sentences/sentences.jsonl" → "../text_generation/reddit_comment_sentiment/reddit_comments.jsonl"
-  ~2 line change
+Directory structure created:
+  text_generation/
+    reddit_comment_sentiment/
+      get_reddit_comments.py    (moved+renamed from ./get_sentences.py)
+      reddit_comments.jsonl     (moved+renamed from ./sentences/sentences.jsonl)
+    math_word_problem/
+      word_problem_variables.py (names, semantic item categories, singularize)
+      operations.py             (operation types, number generation, scaffolds, distribution)
+      templates.py              (260+ templates across 13 operation types)
+      generate_problems.py      (generates 500k unique problems -> math_word_problems.jsonl)
 
-Commit 5: Create math_word_problem/names_and_items.py
-  - NAMES list (60+ entries with gender: [("Alice", "she"), ("Bob", "he"), ...])
-  - ITEMS dict by category: {"fruit": ["apples", ...], "school": ["pencils", ...], ...}
-  - CONTAINERS: ["bags", "boxes", "baskets", ...]
-  - GROUPS: ["friends", "students", "children", ...]
-  ~30-40 lines
+Key decisions made:
+  - JSONL format identical for both domains: {"text": "..."}
+  - No answer field needed — teacher logits ARE the ground truth
+  - Semantic item categories (BAKEABLES, CONSUMABLES, ANIMALS, MANUFACTURED, etc.)
+    prevent nonsense like "bakes 80 cats" or "factory makes strawberries"
+  - ANIMALS excluded from ALL_ITEMS, only used via {animals} in farm/zoo templates
+  - {container} = singular, {containers} = plural for grammar correctness
+  - fix_singular_grammar uses regex word boundaries to avoid substring bugs
+  - Division: divisor capped at range_high//2, min quotient=2 to avoid trivial results
+  - Gemma 4B limitation: max 3 input variables, 1 operation before comparison
 
-Commit 6: Create math_word_problem/operations.py
-  - Operation constants: add, sub, mul, div, mul_add, mul_sub, etc.
-  - generate_numbers(operation, ranges) → dict of variable values
-  - compute_answer(operation, values) → int or bool
-  - build_scaffold(operation) → string with ?s
-  - Number generation with messy/round distribution
-  ~50-60 lines
+13 operation types with scaffolds:
+  add, sub, mul, div (2 vars)
+  mul_add, mul_sub, add_mul, sub_mul, add_sub, div_add (3 vars, 2 steps)
+  cmp, cmp_sub, cmp_mul (comparison, True/False output)
 
-Commit 7: Create math_word_problem/templates.py — addition templates (40)
-  ~50 lines
+Number distribution (weighted random):
+  20% single digits (1-9, messy)
+  15% tens round (10,20,...90)
+  10% tens messy (13,47,68,...)
+  15% hundreds round (100,200,...900)
+  10% hundreds messy (137,299,483,...)
+  15% comparison tens round
+  15% comparison tens messy
 
-Commit 8: Add subtraction templates (40) to templates.py
-  ~50 lines
+For hundreds+ ranges, only add/sub/div/add_sub/div_add (no mul — too large results).
 
-Commit 9: Add multiplication templates (40) to templates.py
-  ~50 lines
+Master prompt for math (sent to Gemma, student NEVER sees this):
+  Follow this example exactly:
 
-Commit 10: Add division templates (30) to templates.py
-  ~40 lines
+  Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
+  A=3
+  B=5
+  C=2
+  D=A*B=15
+  E=D-C=13
+  Solution: 13
 
-Commit 11: Add two-step templates (70) to templates.py
-  mul_add, mul_sub, add_mul, add_sub, sub_mul, div_add
-  ~80 lines
+  Problem: "Tom has 15 stickers. He gives away 7. Sarah has 12 stickers. Does Tom have more stickers than Sarah?"
+  A=15
+  B=7
+  C=12
+  D=A-B=8
+  E=D>C=False
+  Solution: False
 
-Commit 12: Add comparison templates (40) to templates.py
-  cmp, cmp_sub, cmp_mul
-  ~50 lines
-
-Commit 13: Create math_word_problem/generate_problems.py
-  - Main script: loads templates, generates 500k problems
-  - For each: pick template, generate random values+names, fill text+scaffold
-  - Deduplicate by problem text hash
-  - Output: math_word_problems.jsonl with {"text": "Problem: ...\nA=?\n..."} format
-  ~40-50 lines
+  {generated problem text with scaffold}
 
 
 ========================================================================
 PHASE 2: DISTILLATION DATA GENERATION (queue system for data_generation/)
 ========================================================================
-(Planned, not detailed at commit level yet)
 
-- Queue runner loops data-generation-queue.json
-- Domain-aware prompt construction (sentiment eval prompt vs math master prompt)
-- Domain-aware output vocabulary
-- Domain-aware validation + stop condition
-- Output: batches/{domain}/{sanitized_model_name}/
-- info.json per queue element (written at start, updated on completion)
+OVERVIEW:
+  Current state: data_generation/ is hardcoded for reddit sentiment only.
+  - main.py loops through sentences, calls model_handler for each
+  - model_handler.py loads Gemma, creates sentiment vocabulary, generates autoregressively
+  - sentence_handler.py loads reddit_comments.jsonl
+  - saving_handler.py writes batches to BATCHES_DIR (hardcoded "./batches12b")
+  - shared/utilities.py has sentiment-specific vocabulary (EXAMPLE_JSON_RESPONSES, etc.)
+  - shared/config.py has hardcoded MODEL_NAME, BATCHES_DIR, MAX_TRAINING_EXAMPLES
+
+  Target state: queue-driven, domain-aware pipeline.
+  - data-generation-queue.json defines what to process
+  - Each queue element: domain, model_name, max_examples, batch_size, description
+  - Domain determines: input file, prompt construction, output vocabulary, stop condition
+  - Output: batches/{domain}/{sanitized_model_name}/batch_N.jsonl + info.json
+
+FILES THAT NEED CHANGES:
+  data_generation/main.py           -> queue loop, domain dispatch
+  data_generation/model_handler.py  -> domain-aware vocab + prompt, configurable model
+  data_generation/sentence_handler.py -> renamed to input_handler.py, loads by domain
+  data_generation/saving_handler.py -> domain/model output paths
+  shared/config.py                  -> remove hardcoded MODEL_NAME, BATCHES_DIR
+  shared/utilities.py               -> domain-dispatched vocabulary builder
+  NEW: data-generation-queue.json   -> queue config file
+  NEW: shared/math_vocabulary.py    -> math domain vocabulary (or section in utilities.py)
+
+QUEUE CONFIG FORMAT (data-generation-queue.json):
+  [
+    {
+      "domain": "reddit_comment_sentiment",
+      "description": "500k Reddit comments classified by Gemma 4B",
+      "model_name": "google/gemma-3-4b-it",
+      "max_examples": 500000,
+      "batch_size": 32
+    },
+    {
+      "domain": "math_word_problem",
+      "description": "500k math word problems solved by Gemma 4B",
+      "model_name": "google/gemma-3-4b-it",
+      "max_examples": 500000,
+      "batch_size": 32
+    }
+  ]
+
+INPUT FILE RESOLUTION:
+  reddit_comment_sentiment -> text_generation/reddit_comment_sentiment/reddit_comments.jsonl
+  math_word_problem        -> text_generation/math_word_problem/math_word_problems.jsonl
+
+OUTPUT DIRECTORY:
+  batches/{domain}/{sanitized_model_name}/
+  sanitize_model_name("google/gemma-3-4b-it") -> "google_gemma-3-4b-it"
+
+INFO.JSON (per queue element, written at start, updated on completion):
+  {
+    "domain": "math_word_problem",
+    "model_name": "google/gemma-3-4b-it",
+    "description": "500k math word problems solved by Gemma 4B",
+    "max_examples": 500000,
+    "batch_size": 32,
+    "status": "in_progress",       // -> "completed"
+    "started_at": "2026-03-04T...",
+    "completed_at": null,          // -> timestamp
+    "examples_generated": 0,       // -> final count
+    "batches_written": 0           // -> final count
+  }
+
+DOMAIN-SPECIFIC BEHAVIOR:
+  reddit_comment_sentiment:
+    - Prompt: Utilities.create_evaluation_prompt(sentence) [existing]
+    - Vocabulary: existing ~525 tokens (JSON response + whitespace + prompt + auxiliary)
+    - Stop condition: generated token == "}"
+    - Validation: all response tokens in vocabulary
+    - Max generation steps: 50
+
+  math_word_problem:
+    - Prompt: master prompt (2 examples) + problem text with scaffold
+    - Vocabulary: TBD after tokenizer analysis — digits, operators, variables, etc.
+    - Stop condition: "Solution:" line completed (newline after final number/True/False)
+    - Validation: all response tokens in math vocabulary
+    - Max generation steps: TBD (scaffolds are longer than JSON responses)
+    - NOTE: student only sees the scaffold, NOT the master prompt examples
+
+MATH OUTPUT VOCABULARY (needs tokenizer analysis):
+  Tokens needed:
+    - Digits: 0-9 (individual + multi-digit as Gemma tokenizes them)
+    - Variables: A, B, C, D, E
+    - Operators: +, -, *, /, >
+    - Symbols: =, \n, space, :
+    - Words: Solution, True, False
+    - Whitespace tokens (same as sentiment domain)
+  Run tokenizer on sample scaffolds to discover exact token set.
+
+
+COMMIT-LEVEL PLAN (each ~20-30 lines changed)
+
+Commit 1: Create data-generation-queue.json
+  - Queue config file with both domain entries
+  - ~20 lines
+  Files: 1 new
+
+Commit 2: Add domain utility functions to shared
+  - sanitize_model_name(model_name) -> str
+  - get_input_path(domain) -> str
+  - get_output_dir(domain, model_name) -> str
+  - ~20 lines
+  Files: shared/config.py or new shared/domain_utils.py
+
+Commit 3: Rename sentence_handler.py -> input_handler.py
+  - Rename class SentenceHandler -> InputHandler
+  - Make load method accept a file path parameter
+  - Keep interface: get_input(index), input_count
+  - ~20 lines changed
+  Files: data_generation/input_handler.py (renamed)
+
+Commit 4: Update saving_handler.py for domain/model paths
+  - Constructor takes output_dir instead of using global BATCHES_DIR
+  - Create output directory structure: batches/{domain}/{sanitized_model}/
+  - Write info.json at start
+  - ~25 lines changed
+  Files: data_generation/saving_handler.py
+
+Commit 5: Add math prompt construction
+  - Function to build math master prompt + problem scaffold
+  - Separate from sentiment's create_evaluation_prompt
+  - Could live in shared/utilities.py or new domain-specific module
+  - ~25 lines
+  Files: shared/utilities.py or new file
+
+Commit 6: Add math vocabulary to shared/utilities.py
+  - MATH_EXAMPLE_RESPONSES (sample filled scaffolds for token discovery)
+  - MATH_PROMPT_TOKENS, MATH_AUXILIARY_TOKENS
+  - Requires tokenizer analysis first — run Gemma tokenizer on sample outputs
+  - ~40 lines
+  Files: shared/utilities.py
+
+Commit 7: Make build_vocabulary domain-aware
+  - build_vocabulary(tokenizer, domain) dispatches to sentiment vs math token sets
+  - Keep backward compatibility for sentiment
+  - ~20 lines changed
+  Files: shared/utilities.py
+
+Commit 8: Make model_handler.py domain-aware
+  - Constructor takes model_name + domain
+  - create_vocabulary uses domain parameter
+  - generate_training_example uses domain-appropriate prompt
+  - Domain-appropriate stop condition ("}" vs scaffold completion)
+  - ~30 lines changed
+  Files: data_generation/model_handler.py
+
+Commit 9: Rewrite main.py as queue runner
+  - Load data-generation-queue.json
+  - Loop queue elements, skip completed (check info.json status)
+  - For each: create InputHandler, ModelHandler, SavingHandler with domain config
+  - Preserve existing batch loop logic
+  - ~40 lines changed
+  Files: data_generation/main.py
+
+Commit 10: Update info.json on completion
+  - saving_handler or main.py updates info.json with final stats
+  - status: "completed", completed_at, examples_generated, batches_written
+  - ~15 lines
+  Files: data_generation/saving_handler.py or main.py
+
+Commit 11: Clean up shared/config.py
+  - Remove hardcoded MODEL_NAME (now from queue)
+  - Remove hardcoded BATCHES_DIR (now computed per domain/model)
+  - Keep universal constants (architecture, training hyperparams)
+  - ~10 lines removed/changed
+  Files: shared/config.py
+
+Commit 12: Update shared/__init__.py exports
+  - Export new domain utility functions
+  - Remove exports of deleted constants
+  - ~5 lines changed
+  Files: shared/__init__.py
+
+
+PREREQUISITE BEFORE COMMIT 6:
+  Need to run Gemma tokenizer on sample math scaffolds to discover exact tokens.
+  Example filled scaffolds to tokenize:
+    "A=3\nB=5\nC=2\nD=A*B=15\nE=D-C=13\nSolution: 13"
+    "A=15\nB=7\nC=12\nD=A-B=8\nE=D>C=False\nSolution: False"
+    "A=100\nB=50\nC=A+B=150\nSolution: 150"
+    "A=900\nB=300\nC=A/B=3\nSolution: 3"
+  This tells us which tokens Gemma uses for numbers (e.g., "15" might be one
+  token or "1"+"5"), operators, newlines, etc.
 
 
 ========================================================================
@@ -299,7 +276,8 @@ PHASE 3: TRAINING (queue system for training/)
 ========================================================================
 (Planned, not detailed at commit level yet)
 
-- Output projection size from domain vocab config → configurable
-- training-queue.json entries specify domain + all hyperparams
-- Utilities.build_vocabulary() becomes domain-dispatched
-- ClassificationAccuracyCalculator gets math equivalent
+- training-queue.json entries specify domain + hyperparams
+- Output projection size configurable per domain (sentiment ~525, math TBD)
+- Utilities.build_vocabulary() already domain-dispatched from Phase 2
+- ClassificationAccuracyCalculator needs math equivalent (scaffold accuracy?)
+- Model checkpoint paths include domain
