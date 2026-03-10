@@ -178,6 +178,21 @@ class Logger:
             "total_steps": total_steps,
         })
 
+    def log_mini_eval(self, epoch: int, batch: int, teacher_forced_accuracy: float,
+                      student_accuracy: float, classification_accuracy: float,
+                      total_steps: int):
+        self._write_training_log({
+            "timestamp": self._timestamp(),
+            "session_id": self.session_id,
+            "type": "mini_eval",
+            "epoch": epoch,
+            "batch": batch,
+            "teacher_forced_accuracy": round(teacher_forced_accuracy, 4),
+            "student_accuracy": round(student_accuracy, 4),
+            "classification_accuracy": round(classification_accuracy, 4),
+            "total_steps": total_steps,
+        })
+
     def _write_training_log(self, data: Dict):
         with open(self.training_log_file, 'a', encoding='utf-8') as file:
             file.write(json.dumps(data) + '\n')

@@ -91,9 +91,17 @@ class TrainingAnalyzer:
             print("No training data to plot.")
             return
 
-        fig = plt.figure(figsize=(16, 62))
-        gs = GridSpec(11, 2, figure=fig, hspace=0.35, wspace=0.25,
-                      height_ratios=[0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        confusion_epochs = [
+            epoch_data for epoch_data in self.eval_epochs
+            if epoch_data.get('confusion_matrices')
+        ]
+        confusion_row_count = len(confusion_epochs) * 2
+        total_rows = 9 + confusion_row_count
+        height_ratios = [0.6, 1, 1, 1, 1, 1, 1, 1, 1] + [1] * confusion_row_count
+        fig_height = 8 + (total_rows - 1) * 6
+        fig = plt.figure(figsize=(16, fig_height))
+        gs = GridSpec(total_rows, 2, figure=fig, hspace=0.35, wspace=0.25,
+                      height_ratios=height_ratios)
 
         losses = [b['loss'] for b in self.train_batches]
         kl_losses = [b.get('kl_loss', 0) for b in self.train_batches]
@@ -179,8 +187,9 @@ class TrainingAnalyzer:
                 ma_window=ma_window, ylim_data=data, default_padding=default_padding,
                 is_percent=is_percent, show_last_200_avg=False, ylim_padding_ratio=0.05)
 
-        # --- Confusion matrices (rows 9-10) ---
-        self._plot_confusion_matrices(fig, gs)
+        # --- Confusion matrices (rows 9+, 2 rows per epoch) ---
+        if confusion_epochs:
+            self._plot_confusion_matrices(fig, gs, confusion_epochs)
 
         save_path = Path(self.logs_dir) / 'training_progress.png'
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
@@ -286,40 +295,41 @@ class TrainingAnalyzer:
         ax.set_title('Epoch Summary - Eval Accuracy')
         ax.grid(True, alpha=0.3)
 
-    def _plot_confusion_matrices(self, fig, gs):
-        layout = [(9, 0, 'tone'), (9, 1, 'sentiment'), (10, 0, 'safety'), (10, 1, 'toxicity')]
-
-        latest_confusion = None
-        if self.eval_epochs:
-            latest_confusion = self.eval_epochs[-1].get('confusion_matrices')
-
+    def _plot_confusion_matrices(self, fig, gs, confusion_epochs):
+        categories = [('tone', 0), ('sentiment', 1), ('safety', 0), ('toxicity', 1)]
         cmap = LinearSegmentedColormap.from_list('white_blue', ['white', '#4285f4'])
 
-        for row, col, category in layout:
-            ax = fig.add_subplot(gs[row, col])
-            if latest_confusion and category in latest_confusion:
-                matrix_data = latest_confusion[category]
-                labels = list(matrix_data.keys())
-                values = np.array([[matrix_data[true_val].get(pred_val, 0)
-                                    for pred_val in labels] for true_val in labels])
+        for epoch_index, epoch_data in enumerate(confusion_epochs):
+            confusion = epoch_data['confusion_matrices']
+            epoch_label = epoch_data['epoch']
+            base_row = 9 + epoch_index * 2
 
-                ax.imshow(values, cmap=cmap, aspect='auto')
-                ax.set_xticks(range(len(labels)))
-                ax.set_yticks(range(len(labels)))
-                ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=9)
-                ax.set_yticklabels(labels, fontsize=9)
-                ax.set_xlabel('Predicted')
-                ax.set_ylabel('Ground Truth')
+            for category_index, (category, col) in enumerate(categories):
+                row = base_row + category_index // 2
+                ax = fig.add_subplot(gs[row, col])
 
-                for i in range(len(labels)):
-                    for j in range(len(labels)):
-                        count = values[i, j]
-                        if count > 0:
-                            color = 'white' if count > values.max() * 0.6 else 'black'
-                            ax.text(j, i, str(int(count)), ha='center', va='center',
-                                    fontsize=10, fontweight='bold', color=color)
-            else:
-                ax.text(0.5, 0.5, 'No confusion data yet', ha='center', va='center', transform=ax.transAxes)
+                if category in confusion:
+                    matrix_data = confusion[category]
+                    labels = list(matrix_data.keys())
+                    values = np.array([[matrix_data[true_val].get(pred_val, 0)
+                                        for pred_val in labels] for true_val in labels])
 
-            epoch_label = self.eval_epochs[-1]['epoch'] if self.eval_epochs else '?'
-            ax.set_title(f'Confusion Matrix - {category.capitalize()} (Epoch {epoch_label})')
+                    ax.imshow(values, cmap=cmap, aspect='auto')
+                    ax.set_xticks(range(len(labels)))
+                    ax.set_yticks(range(len(labels)))
+                    ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=9)
+                    ax.set_yticklabels(labels, fontsize=9)
+                    ax.set_xlabel('Predicted')
+                    ax.set_ylabel('Ground Truth')
+
+                    for i in range(len(labels)):
+                        for j in range(len(labels)):
+                            count = values[i, j]
+                            if count > 0:
+                                color = 'white' if count > values.max() * 0.6 else 'black'
+                                ax.text(j, i, str(int(count)), ha='center', va='center',
+                                        fontsize=10, fontweight='bold', color=color)
+                else:
+                    ax.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax.transAxes)
+
+                ax.set_title(f'Confusion Matrix - {category.capitalize()} (Epoch {epoch_label})')

@@ -25,6 +25,8 @@ from .config import (
     BATCH_SIZE,
     INFERENCE_TEMPERATURE,
     LOGS_DIR,
+    MINI_EVAL_FREQUENCY,
+    MINI_EVAL_BATCH_COUNT,
 )
 
 __all__ = [
@@ -54,4 +56,6 @@ __all__ = [
     'BATCH_SIZE',
     'INFERENCE_TEMPERATURE',
     'LOGS_DIR',
+    'MINI_EVAL_FREQUENCY',
+    'MINI_EVAL_BATCH_COUNT',
 ]

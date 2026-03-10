@@ -16,6 +16,8 @@ from shared import (
     MathAccuracyCalculator,
     get_device,
     PROMPT_DELIMITER,
+    MINI_EVAL_FREQUENCY,
+    MINI_EVAL_BATCH_COUNT,
 )
 from model import Transformer
 from batch_handler import BatchHandler
@@ -58,6 +60,9 @@ class Trainer:
             T_max=self.total_training_steps - self.warmup_steps,
             eta_min=1e-5
         )
+
+        self.mini_eval_frequency = config.get('mini_eval_frequency', MINI_EVAL_FREQUENCY)
+        self.mini_eval_batch_count = config.get('mini_eval_batch_count', MINI_EVAL_BATCH_COUNT)
 
         self.logger = logger
         self.exit_listener = exit_listener

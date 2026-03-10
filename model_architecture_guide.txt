@@ -118,23 +118,27 @@ Track all experiments here. Update after each batch of runs completes with resul
 ### SCALE: Parameter Count Scaling (sentiment domain) [QUEUED]
 Question: What's the minimum viable model size for sentiment distillation?
 Find the knee in the accuracy-vs-params curve before optimizing architecture shape.
-KL schedule: 0.99 -> 0.7 | All other hyperparams identical across runs.
+KL schedule: 0.99 -> 0.3 over 3 epochs | All other hyperparams identical across runs.
 Rationale: Run this FIRST — if small models suffice, all future experiments are cheaper.
+Note: Even the ~50M model is incredibly capable, so range starts at ~10M.
 
 | Run name               | h    | L  | Heads | h/head | ~Params | % of max | Status  | Result |
 |------------------------|------|----|-------|--------|---------|----------|---------|--------|
-| tsc-scale-192h-6L-53M      | 192  | 6  | 3     | 64     | 53M     | 13%      | queued  |        |
-| tsc-scale-256h-8L-74M      | 256  | 8  | 4     | 64     | 74M     | 17%      | queued  |        |
-| tsc-scale-384h-12L-127M    | 384  | 12 | 6     | 64     | 127M    | 30%      | queued  |        |
-| tsc-scale-512h-16L-198M    | 512  | 16 | 8     | 64     | 198M    | 47%      | queued  |        |
-| tsc-scale-640h-20L-295M    | 640  | 20 | 10    | 64     | 295M    | 70%      | queued  |        |
-| tsc-scale-768h-24L-423M    | 768  | 24 | 12    | 64     | 423M    | 100%     | queued  |        |
+| tsc-scale-20h-2L-5M        | 20   | 2  | 1     | 20     | 5M      | 3%       | queued  |        |
+| tsc-scale-40h-2L-10M       | 40   | 2  | 1     | 40     | 10M     | 5%       | queued  |        |
+| tsc-scale-64h-2L-17M       | 64   | 2  | 1     | 64     | 17M     | 8%       | queued  |        |
+| tsc-scale-128h-4L-36M      | 128  | 4  | 2     | 64     | 36M     | 18%      | queued  |        |
+| tsc-scale-192h-6L-53M      | 192  | 6  | 3     | 64     | 53M     | 26%      | queued  |        |
+| tsc-scale-256h-8L-74M      | 256  | 8  | 4     | 64     | 74M     | 37%      | queued  |        |
+| tsc-scale-384h-12L-127M    | 384  | 12 | 6     | 64     | 127M    | 63%      | queued  |        |
+| tsc-scale-512h-16L-198M    | 512  | 16 | 8     | 64     | 198M    | 100%     | queued  |        |
 
 Notes:
 - Both h and L scale together (balanced architectures)
-- ~1.5-1.9x param jumps between sizes
+- Range: ~17M to ~198M (even ~50M is very capable, so starting small)
+- 3 epochs per run, KL anneals from 0.99 to 0.3
 - Embedding (~256k * h) dominates at small h; transformer body dominates at large h
-- If knee is at e.g. 127M, run DVW and KL experiments at that size class
+- If knee is at e.g. 53M, run DVW and KL experiments at that size class
 
 ### DVW: Depth vs Width (sentiment domain) [SUGGESTED - after SCALE]
 Question: At the ideal size from SCALE, is depth or width more important?
