@@ -1,0 +1,154 @@
+MODEL ARCHITECTURE GUIDE
+========================
+Reference for designing training experiments. Contains architecture math,
+design constraints, magic strings, and experiment history.
+
+
+STUDENT MODEL ARCHITECTURE
+--------------------------
+Type: Decoder-only transformer (autoregressive)
+Attention: Multi-head self-attention, causal mask, RoPE (no learned pos embeddings)
+FFN: Gated linear unit (GELU), 3 projections (gate, up, down), 4x expansion
+Normalization: RMSNorm (pre-norm), no bias
+Linear layers: No bias (except output projection head which has bias)
+Input embedding: Full Gemma vocabulary (~256k tokens) -> hidden_dim
+Output projection: hidden_dim -> output_vocab_size (domain-dependent)
+
+Output vocab sizes (from build_vocabulary):
+  reddit_comment_sentiment: ~525 tokens (JSON + whitespace + prompt + auxiliary)
+  math_word_problem: ~31 tokens (digits, operators, variables, True/False)
+
+
+PARAMETER COUNT FORMULA
+-----------------------
+Per transformer layer (no bias terms):
+  Attention:  4 * hidden_dim^2          (Q, K, V, O projections)
+  FFN:        3 * hidden_dim * (4 * hidden_dim) = 12 * hidden_dim^2  (gate, up, down)
+  RMSNorm:    2 * hidden_dim            (negligible)
+  Total/layer: ~16 * hidden_dim^2
+
+Full model:
+  Input embedding:  gemma_vocab_size * hidden_dim  (~256,000 * h)
+  Transformer body: num_layers * 16 * hidden_dim^2
+  Output head:      hidden_dim * output_vocab_size + output_vocab_size  (negligible)
+  Final norm:       hidden_dim  (negligible)
+
+Simplified: total ≈ 256,000 * h + 16 * L * h^2
+
+Note: Input embedding dominates at small h, transformer body dominates at large h.
+At h=768 they're roughly equal (~197M embedding, ~227M body for 24L).
+
+
+DESIGN CONSTRAINTS
+------------------
+hidden_dim must be divisible by num_heads (gives head_dim = hidden_dim / num_heads).
+Prefer head_dim that's a power-of-2 friendly (32, 48, 64, 96, 128) for GPU efficiency.
+
+Clean combinations (hidden_dim / num_heads = head_dim):
+  384 / 6 = 64    384 / 8 = 48
+  512 / 8 = 64    512 / 16 = 32
+  576 / 12 = 48   576 / 8 = 72 (avoid)
+  640 / 10 = 64   640 / 8 = 80 (acceptable)
+  768 / 12 = 64   768 / 16 = 48
+  1024 / 16 = 64  1024 / 8 = 128
+
+Rule of thumb: head_dim=64 is the sweet spot. Pick hidden_dim as multiple of num_heads*64.
+
+
+DOMAIN MAGIC STRINGS
+--------------------
+Domain keys (used in queue configs, INPUT_PATHS, DOMAIN_MAX_GENERATION_STEPS, etc.):
+  "reddit_comment_sentiment"
+  "math_word_problem"
+
+Teacher model: "google/gemma-3-4b-it"
+Sanitized (for paths): "google_gemma-3-4b-it"
+
+Stop tokens:
+  reddit_comment_sentiment: "}"
+  math_word_problem: ";"
+
+Sequence lengths (DOMAIN_MAX_SEQ_LENGTH):
+  reddit_comment_sentiment: 75  (25 sentence + 50 generation, additive)
+  math_word_problem: 210  (total, prompt + generation combined)
+
+Max generation steps (DOMAIN_MAX_GENERATION_STEPS):
+  reddit_comment_sentiment: 50
+  math_word_problem: 350
+
+Input data location: batches/{domain}/{sanitized_teacher_model}/
+
+
+QUEUE CONFIG FIELDS
+-------------------
+Required fields for training_queue.json entries:
+  run_name                 string    Folder name under runs/, descriptive
+  domain                   string    One of the domain keys above
+  description              string    What this experiment tests
+  teacher_model            string    "google/gemma-3-4b-it"
+  hidden_dim               int       Must be divisible by num_heads
+  num_layers               int       Transformer depth
+  num_heads                int       Attention heads
+  dropout                  float     0.15 is default
+  epoch_count              int       Full passes through data
+  batch_size               int       Examples per gradient step (32 default)
+  learning_rate            float     AdamW peak LR (6e-4 default)
+  lr_warmup_ratio          float     Fraction of steps for linear warmup (0.03 default)
+  kl_ratio_start           float     KL weight at training start (1.0 = pure KL)
+  kl_ratio_end             float     KL weight at training end
+  distillation_temperature float     Softens teacher logits (3.0 default)
+  max_training_examples    int       Cap on training data used
+  training_test_ratio      float     Train/eval split (0.98 default)
+  auxiliary_token_percentage float   Extra tokens in output vocab (1.0 = all)
+
+Loss: weighted sum of KL divergence + cross-entropy.
+  kl_ratio anneals linearly from kl_ratio_start to kl_ratio_end over training.
+  ce_ratio = 1 - kl_ratio at each step.
+  "No annealing" = start == end.
+
+Run name convention: {domain_short}-{experiment_prefix}-{key_arch_params}-{param_count}
+  Domain shorts: tsc (text sentiment classification), math (math_word_problem)
+  Examples: tsc-scale-768h-24L-423M, tsc-dvw-narrow-576h-24L, math-scale-384h-12L-127M
+
+
+EXPERIMENT LOG
+--------------
+Track all experiments here. Update after each batch of runs completes with results.
+
+### SCALE: Parameter Count Scaling (sentiment domain) [QUEUED]
+Question: What's the minimum viable model size for sentiment distillation?
+Find the knee in the accuracy-vs-params curve before optimizing architecture shape.
+KL schedule: 0.99 -> 0.7 | All other hyperparams identical across runs.
+Rationale: Run this FIRST — if small models suffice, all future experiments are cheaper.
+
+| Run name               | h    | L  | Heads | h/head | ~Params | % of max | Status  | Result |
+|------------------------|------|----|-------|--------|---------|----------|---------|--------|
+| tsc-scale-192h-6L-53M      | 192  | 6  | 3     | 64     | 53M     | 13%      | queued  |        |
+| tsc-scale-256h-8L-74M      | 256  | 8  | 4     | 64     | 74M     | 17%      | queued  |        |
+| tsc-scale-384h-12L-127M    | 384  | 12 | 6     | 64     | 127M    | 30%      | queued  |        |
+| tsc-scale-512h-16L-198M    | 512  | 16 | 8     | 64     | 198M    | 47%      | queued  |        |
+| tsc-scale-640h-20L-295M    | 640  | 20 | 10    | 64     | 295M    | 70%      | queued  |        |
+| tsc-scale-768h-24L-423M    | 768  | 24 | 12    | 64     | 423M    | 100%     | queued  |        |
+
+Notes:
+- Both h and L scale together (balanced architectures)
+- ~1.5-1.9x param jumps between sizes
+- Embedding (~256k * h) dominates at small h; transformer body dominates at large h
+- If knee is at e.g. 127M, run DVW and KL experiments at that size class
+
+### DVW: Depth vs Width (sentiment domain) [SUGGESTED - after SCALE]
+Question: At the ideal size from SCALE, is depth or width more important?
+Design: Take the size where SCALE shows diminishing returns. Create 3 models:
+  - Balanced baseline at that size
+  - Narrow variant: same L, smaller h (-30% params)
+  - Shallow variant: same h, fewer L (-30% params)
+Interpretation:
+  - If shallow wins: task needs per-layer capacity more than compositional depth
+  - If narrow wins: task benefits from many processing stages even with less each
+  - If baseline barely beats both: 30% reduction is feasible, pick whichever is cheaper
+
+### Planned experiments (not yet queued):
+- KL-CE ratio exploration: test different annealing schedules
+  (pure KL, pure CE, aggressive anneal, no anneal, etc.)
+- Temperature sweep: effect of distillation_temperature on convergence
+- Cross-domain: same architecture on math vs sentiment

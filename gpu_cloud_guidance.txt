@@ -1,0 +1,288 @@
+GPU & CLOUD GUIDANCE FOR THESIS RESEARCH
+==========================================
+Created: 2026-03-08
+Context: Preference distillation thesis, RTX 4070 local, considering cloud rental.
+
+All estimates below are derived from YOUR measured baselines, not theoretical specs.
+
+
+YOUR MEASURED BASELINES (RTX 4070)
+-----------------------------------
+- Student model training (53M, smallest): 0.8 s/batch
+- Gemma 4B data generation: 2.0-2.4 s/example (both domains)
+- batch_size=32, 500k examples, 5 epochs -> 78,125 batches per training run
+
+RTX 4070 specs: ~29 FP16 TFLOPS, 504 GB/s memory bandwidth, 12GB VRAM
+
+
+FULL WORKLOAD
+--------------
+1. ~40 training runs (mostly 150-200M params, a few >300M)
+2. 2 domains x 500k examples = 1,000,000 examples of Gemma 12B distillation data
+
+
+SCALING FROM YOUR BASELINES
+-----------------------------
+
+### Training: s/batch scales roughly linearly with param count
+
+| Model size | s/batch (4070) | Derived from                     |
+|------------|----------------|----------------------------------|
+| 53M        | 0.8            | YOUR MEASUREMENT                 |
+| 100M       | ~1.5           | 0.8 x (100/53)                  |
+| 150M       | ~2.3           | 0.8 x (150/53)                  |
+| 175M       | ~2.6           | 0.8 x (175/53)                  |
+| 200M       | ~3.0           | 0.8 x (200/53)                  |
+| 300M       | ~4.5           | 0.8 x (300/53)                  |
+| 423M       | ~6.4           | 0.8 x (423/53)                  |
+
+### Data gen: s/example scales with model size, inversely with GPU bandwidth
+
+Your 4B model at 2.2 s/example (midpoint) on 504 GB/s bandwidth.
+12B = 3x larger model -> 3x more memory reads per token.
+Faster GPU bandwidth directly reduces time proportionally.
+
+| GPU      | Bandwidth | 4B s/example | 12B s/example | Derived from            |
+|----------|-----------|--------------|---------------|-------------------------|
+| RTX 4070 | 504 GB/s  | 2.2 (measured)| ~6.6         | 2.2 x 3 (model 3x)     |
+| RTX 4090 | 1,008     | ~1.1         | ~3.3          | scales with bandwidth   |
+| RTX 5090 | 1,792     | ~0.6         | ~1.9          | 504/1792 = 0.28x        |
+| A100 80G | 2,039     | ~0.5         | ~1.6          | 504/2039 = 0.25x        |
+| H100     | 3,350     | ~0.3         | ~1.0          | 504/3350 = 0.15x        |
+
+Note: These assume bandwidth-bound autoregressive generation, which is correct
+for single-example generation of models this size. Batched generation can
+improve GPU utilization but needs more VRAM.
+
+
+TIME ESTIMATES ON YOUR RTX 4070
+---------------------------------
+
+### Training (40 runs)
+
+Breakdown (estimated):
+  ~30 runs at 150-200M: avg ~2.7 s/batch -> 78,125 batches -> ~58 hrs/run -> ~1,740 hrs
+  ~6 runs at 53-127M:   avg ~1.2 s/batch -> 78,125 batches -> ~26 hrs/run -> ~156 hrs
+  ~4 runs at 300M+:     avg ~5.0 s/batch -> 78,125 batches -> ~109 hrs/run -> ~436 hrs
+
+  TOTAL TRAINING: ~2,330 hours = ~97 days on RTX 4070
+
+### Data generation (12B, 1M examples)
+
+  12B on RTX 4070: ~6.6 s/example (INT4 QAT, tight on 12GB VRAM)
+  1,000,000 x 6.6s = 6,600,000s = ~1,833 hours = ~76 days
+
+  Note: 12B at BF16 does NOT fit on your 4070 (24GB weights > 12GB VRAM).
+  INT4 QAT fits (~6.6GB) but logit quality is reduced vs BF16/INT8.
+
+### TOTAL ON RTX 4070: ~4,163 hours = ~173 days
+
+
+GPU COMPARISON
+---------------
+
+| GPU          | VRAM  | FP16 TFLOPS | Bandwidth | Training speedup | Inference speedup |
+|--------------|-------|-------------|-----------|------------------|-------------------|
+| RTX 4070     | 12 GB | 29          | 504 GB/s  | 1.0x             | 1.0x              |
+| RTX 4090     | 24 GB | 165         | 1,008     | ~4-5x            | ~2x               |
+| RTX 5090     | 32 GB | 209         | 1,792     | ~5-6x            | ~3.5x             |
+| A100 80GB    | 80 GB | 312         | 2,039     | ~7-9x            | ~4x               |
+| H100 80GB    | 80 GB | 495 (dense) | 3,350     | ~10-14x          | ~6.6x             |
+
+Training: compute-bound -> scales with TFLOPS (models 150-200M underutilize
+the biggest GPUs somewhat, so real speedup is toward the lower end of range).
+Inference: bandwidth-bound -> scales with memory bandwidth.
+
+
+CLOUD TIME & COST ESTIMATES
+-----------------------------
+
+### Training (40 runs, ~2,330 RTX-4070-hours)
+
+| GPU      | Speedup | Cloud hrs | Vast.ai $/hr | Vast.ai cost | RunPod $/hr | RunPod cost |
+|----------|---------|-----------|--------------|--------------|-------------|-------------|
+| RTX 4090 | ~4x     | ~583      | $0.20-0.34   | $117-198     | $0.59       | $344        |
+| RTX 5090 | ~5x     | ~466      | $0.40-0.55   | $186-256     | $0.69       | $322        |
+| A100 80G | ~8x     | ~291      | $0.50-0.80   | $146-233     | $1.79       | $521        |
+| H100     | ~10x    | ~233      | $1.49-2.00   | $347-466     | $2.49       | $580        |
+
+### Data generation: 12B model, 1,000,000 examples (2 domains)
+
+12B VRAM requirements:
+  BF16:  ~24 GB weights -> needs 32GB+ (RTX 5090 or A100/H100)
+  INT8:  ~12 GB weights -> fits 24GB (RTX 4090)
+  INT4:  ~6.6 GB weights -> fits anything
+
+For distillation: BF16 logits are ideal. INT8 is very close. INT4 loses some
+distribution detail. Recommendation: use BF16 if VRAM allows, else INT8.
+
+| GPU      | Precision | s/example | Hours (1M ex) | Vast.ai cost | RunPod cost |
+|----------|-----------|-----------|---------------|--------------|-------------|
+| RTX 4090 | INT8      | ~3.3      | ~917          | $183-312     | $541        |
+| RTX 5090 | BF16      | ~1.9      | ~528          | $211-290     | $364        |
+| RTX 5090 | INT8      | ~1.3*     | ~361          | $144-199     | $249        |
+| A100 80G | BF16      | ~1.6      | ~444          | $222-356     | $795        |
+| H100     | BF16      | ~1.0      | ~278          | $414-556     | $692        |
+
+*INT8 reads half the weight bytes -> roughly 1.5x faster than BF16 at same bandwidth.
+
+### TOTAL COST (training + data gen)
+
+| Strategy                          | Training  | Data gen  | TOTAL       | Wall-clock** |
+|-----------------------------------|-----------|-----------|-------------|--------------|
+| Vast.ai RTX 4090 (INT8 data)     | $117-198  | $183-312  | $300-510    | ~1,500 hrs   |
+| Vast.ai RTX 5090 (BF16 data)     | $186-256  | $211-290  | $397-546    | ~994 hrs     |
+| Vast.ai RTX 5090 (INT8 data)     | $186-256  | $144-199  | $330-455    | ~827 hrs     |
+| Vast.ai A100 (BF16 data)         | $146-233  | $222-356  | $368-589    | ~735 hrs     |
+| RunPod RTX 5090 (BF16 data)      | $322      | $364      | $686        | ~994 hrs     |
+| RunPod RTX 5090 (INT8 data)      | $322      | $249      | $571        | ~827 hrs     |
+
+**Sequential. With 2 parallel pods, divide wall-clock by ~1.7x (overlap training & data gen).
+
+
+CHEAPEST OPTION: ~$300-510
+---------------------------
+Vast.ai RTX 4090 for everything.
+  Training: RTX 4090 ~4x speedup, $0.25/hr avg -> $117-198
+  Data gen: RTX 4090 INT8 12B (fits 24GB), $0.25/hr avg -> $183-312
+  Wall-clock: ~1,500 hrs sequential (~63 days), ~35-40 days with 2 pods
+  Downside: INT8 logits (very close to BF16, but not identical)
+  Downside: Vast.ai requires SSH (but simple copy-paste commands)
+
+BEST VALUE: ~$330-455
+----------------------
+Vast.ai RTX 5090 for training + INT8 for data gen.
+  Training: 5x faster, $0.45/hr avg -> $186-256
+  Data gen: 12B INT8 on 5090, $0.45/hr avg -> $144-199
+  Wall-clock: ~827 hrs sequential (~34 days), ~20-25 days with 2 pods
+
+BEST QUALITY: ~$397-546
+-------------------------
+Vast.ai RTX 5090 for training + BF16 for data gen.
+  Training: 5x faster -> $186-256
+  Data gen: 12B BF16 on 5090 (32GB fits with your short sequences) -> $211-290
+  Wall-clock: ~994 hrs sequential (~41 days), ~25-30 days with 2 pods
+  Upside: Full-precision logits for distillation
+
+EASIEST: ~$571-686
+--------------------
+RunPod RTX 5090 for everything.
+  No SSH, click-to-deploy, Jupyter in browser.
+  Wall-clock: same as Vast.ai 5090 options above
+  Premium: ~$130-240 more than Vast.ai for the convenience
+
+
+SPEEDRUN STRATEGY (2 parallel pods)
+--------------------------------------
+Pod A (RTX 5090): Data generation — 12B, 1M examples
+  ~528 hrs (BF16) or ~361 hrs (INT8)
+  Start this FIRST, it's the longest job.
+
+Pod B (RTX 5090): Training — 40 experiments
+  ~466 hrs
+  Start simultaneously.
+
+Total wall-clock: ~max(528, 466) = ~528 hrs = ~22 days (BF16)
+                  ~max(361, 466) = ~466 hrs = ~19 days (INT8)
+
+Cost: same as single-pod (you're just overlapping, not adding hours).
+
+With 3 pods (split data gen by domain):
+  Pod A: Domain 1 12B gen (500k) -> ~264 hrs
+  Pod B: Domain 2 12B gen (500k) -> ~264 hrs
+  Pod C: Training (40 runs) -> ~466 hrs
+  Wall-clock: ~466 hrs = ~19 days
+  Cost: same total hours, just faster.
+
+
+CAN RTX 5090 RUN GEMMA 12B?
+------------------------------
+YES. 32GB VRAM is enough.
+
+BF16 (24GB weights + ~6-8GB overhead):
+  Fits on 32GB for your short sequences (max 75 tokens for sentiment,
+  210 for math). KV cache is small at these lengths (~1-2GB).
+
+INT8 (12GB weights + overhead):
+  Fits easily with ~18GB headroom.
+
+INT4 QAT (6.6GB weights):
+  Fits trivially. Google has official QAT weights.
+
+
+CLOUD PRICING REFERENCE (March 2026, $/hr)
+---------------------------------------------
+
+| GPU          | Vast.ai       | RunPod  | Lambda Labs | Paperspace |
+|--------------|---------------|---------|-------------|------------|
+| RTX 4090     | $0.20-0.34    | $0.59   | N/A         | N/A        |
+| RTX 5090     | $0.40-0.55    | $0.69   | N/A         | N/A        |
+| A100 80GB    | $0.50-0.80    | $1.79   | $1.39-1.69  | $3.09      |
+| H100 80GB    | $1.49-2.00    | $2.39   | $2.49-2.99  | $5.95      |
+
+Vast.ai: Marketplace, prices fluctuate. Cheapest. Requires SSH.
+RunPod: Managed, consistent pricing. Easiest. Templates + Jupyter.
+Lambda: Good for datacenter GPUs. SSH-based. Often out of stock.
+Paperspace: Expensive. Skip.
+
+
+EASE OF USE RANKING
+--------------------
+1. RunPod — Click deploy, click Jupyter. No SSH/Docker/networking needed.
+2. Lambda Labs — SSH into pre-configured machines. Needs terminal comfort.
+3. Vast.ai — Cheapest but SSH + Docker. Variable hardware quality.
+
+Given you said "I'd pay a bit extra for ease of use": RunPod is the obvious choice
+at ~$130-240 premium over Vast.ai. BUT: I can walk you through Vast.ai SSH setup
+in 5 minutes if you want to save that money.
+
+
+SETUP GUIDE: RUNPOD (step by step)
+-------------------------------------
+
+1. Go to runpod.io, create account
+2. Add credits via credit card ($100 to start)
+3. Click "GPU Cloud" in left sidebar
+4. Find RTX 5090, click "Deploy"
+5. Template: "RunPod Pytorch 2.x" (pre-installed CUDA + PyTorch)
+6. Container disk: 50GB. Volume disk: 200GB (persistent storage for data/checkpoints)
+7. Click "Deploy On-Demand" ($0.69/hr)
+8. Wait ~30 seconds, click "Connect" -> "Jupyter Lab"
+9. Open terminal in Jupyter
+10. git clone <your-repo-url>
+11. pip install -r requirements.txt (if needed)
+12. cd preference_destillation/training && python main.py
+13. STOP the pod when not running (billing stops, volume persists)
+
+
+SETUP GUIDE: VAST.AI (step by step)
+--------------------------------------
+
+1. Go to vast.ai, create account, add $50 credits
+2. "Search" tab -> filter: RTX 5090, sort by $/hr
+3. Pick machine with >98% reliability, good internet speed
+4. Docker image: "pytorch/pytorch:latest"
+5. Click "Rent"
+6. "Instances" tab -> click SSH button -> copy the command
+7. Open PowerShell (Windows 11 has SSH built-in), paste command, type "yes"
+8. Inside the machine:
+     apt update && apt install -y git tmux
+     git clone <your-repo-url>
+     cd preference_destillation && pip install -r requirements.txt
+     tmux new -s training
+     cd training && python main.py
+     # Ctrl+B then D to detach (keeps running if you close terminal)
+     # tmux attach -t training   (to reconnect later)
+9. "Destroy" instance on vast.ai when done to stop billing
+
+
+QUICK DECISION TABLE
+---------------------
+
+| Priority          | Choice                           | Cost      | Time (2 pods) |
+|-------------------|----------------------------------|-----------|---------------|
+| Cheapest          | Vast.ai RTX 4090, INT8 data      | $300-510  | ~35-40 days   |
+| Best value        | Vast.ai RTX 5090, INT8 data      | $330-455  | ~19-25 days   |
+| Best quality      | Vast.ai RTX 5090, BF16 data      | $397-546  | ~22-30 days   |
+| Easiest           | RunPod RTX 5090, BF16 data       | $571-686  | ~22-30 days   |
+| Local (RTX 4070)  | No cloud                         | electricity| ~173 days    |

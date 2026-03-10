@@ -457,7 +457,10 @@ class Trainer:
         checkpoint = torch.load(
             filepath, map_location=self.device, weights_only=True)
 
-        self.model.load_state_dict(checkpoint['model_state_dict'])
+        model_state = checkpoint['model_state_dict']
+        model_state.pop('rotary_embedding.cos_cached', None)
+        model_state.pop('rotary_embedding.sin_cached', None)
+        self.model.load_state_dict(model_state, strict=False)
 
         self.optimizer = AdamW(self.model.parameters(), lr=self.learning_rate)
         if 'optimizer_state_dict' in checkpoint:
