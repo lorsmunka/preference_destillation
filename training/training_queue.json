@@ -14,7 +14,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -34,7 +35,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -54,7 +56,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -74,7 +77,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -94,7 +98,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -114,7 +119,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -134,7 +140,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0
@@ -154,7 +161,8 @@
     "lr_warmup_ratio": 0.03,
     "kl_ratio_start": 0.99,
     "kl_ratio_end": 0.3,
-    "distillation_temperature": 3.0,
+    "distillation_temperature_start": 3.0,
+    "distillation_temperature_end": 3.0,
     "max_training_examples": 500000,
     "training_test_ratio": 0.98,
     "auxiliary_token_percentage": 1.0

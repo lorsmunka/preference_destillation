@@ -36,7 +36,8 @@ class Trainer:
         self.epoch_count_value = config['epoch_count']
         self.kl_ratio_start = config['kl_ratio_start']
         self.kl_ratio_end = config['kl_ratio_end']
-        self.distillation_temperature = config['distillation_temperature']
+        self.distillation_temperature_start = config['distillation_temperature_start']
+        self.distillation_temperature_end = config['distillation_temperature_end']
         self.lr_warmup_ratio = config['lr_warmup_ratio']
         self.checkpoints_dir = config.get('checkpoints_dir', './checkpoints')
         self.logs_dir = config.get('logs_dir', './logs')
@@ -92,7 +93,7 @@ class Trainer:
 
         current_lr = self.optimizer.param_groups[0]['lr']
         print(
-            f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}\n ")
+            f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}, current temperature: {self._get_current_temperature():.6f}\n ")
 
         for batch_idx in range(start_batch, batch_end):
             batch_result = self._process_batch(batch_idx, epoch)
@@ -143,8 +144,9 @@ class Trainer:
         self._update_learning_rate()
         current_lr = self.optimizer.param_groups[0]['lr']
         current_kl_ratio = self._get_current_kl_ratio()
+        current_temperature = self._get_current_temperature()
         print(
-            f"Batch {batch_idx + 1} -> LR: {current_lr:.8f}, KL ratio: {current_kl_ratio:.3f}")
+            f"Batch {batch_idx + 1} -> LR: {current_lr:.8f}, KL ratio: {current_kl_ratio:.3f}, Temp: {current_temperature:.3f}")
 
         self._log_batch_completion(
             batch_idx, batch_steps, batch_loss, batch_kl_loss, batch_ce_loss, batch_correct, batch_start_time, epoch)
@@ -177,6 +179,7 @@ class Trainer:
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
         current_lr = self.optimizer.param_groups[0]['lr']
         current_kl_ratio = self._get_current_kl_ratio()
+        current_temperature = self._get_current_temperature()
 
         print(f"Batch {batch_idx + 1} (of Epoch {epoch}) processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
 
@@ -190,6 +193,7 @@ class Trainer:
             accuracy=batch_accuracy,
             learning_rate=current_lr,
             kl_ratio=current_kl_ratio,
+            temperature=current_temperature,
             time_seconds=batch_elapsed
         )
 
@@ -413,6 +417,13 @@ class Trainer:
 
         return total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct, student_correct, num_steps, student_tokens
 
+    def _get_current_temperature(self) -> float:
+        if self.total_training_steps <= 1:
+            return self.distillation_temperature_start
+        progress = self.current_step / self.total_training_steps
+        cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
+        return self.distillation_temperature_end + (self.distillation_temperature_start - self.distillation_temperature_end) * cosine_decay
+
     def _get_current_kl_ratio(self) -> float:
         if self.total_training_steps <= 1:
             return self.kl_ratio_start
@@ -451,7 +462,7 @@ class Trainer:
 
     def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
                        target_indices: torch.Tensor, reduction: str = 'mean'):
-        temperature = self.distillation_temperature
+        temperature = self._get_current_temperature()
         student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
         teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
 

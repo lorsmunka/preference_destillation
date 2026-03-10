@@ -94,6 +94,10 @@ class TrainingAnalyzer:
         if any(kl_ratios):
             print(f"KL ratio - Start: {kl_ratios[0]:.4f}, Current: {kl_ratios[-1]:.4f}")
 
+        temperatures = [b.get('temperature', 0) for b in self.train_batches]
+        if any(temperatures):
+            print(f"Temperature - Start: {temperatures[0]:.4f}, Current: {temperatures[-1]:.4f}")
+
     def plot(self, moving_average_func, show=True):
         if not self.train_batches:
             print("No training data to plot.")
@@ -106,8 +110,8 @@ class TrainingAnalyzer:
         has_mini_evals = len(self.mini_evals) > 0
         mini_eval_row_count = 1 if has_mini_evals else 0
         confusion_row_count = len(confusion_epochs) * 2
-        total_rows = 9 + mini_eval_row_count + confusion_row_count
-        height_ratios = [0.6, 1, 1, 1, 1, 1, 1, 1, 1] + [1] * mini_eval_row_count + [1] * confusion_row_count
+        total_rows = 10 + mini_eval_row_count + confusion_row_count
+        height_ratios = [0.6, 1, 1, 1, 1, 1, 1, 1, 1, 1] + [1] * mini_eval_row_count + [1] * confusion_row_count
         fig_height = 8 + (total_rows - 1) * 6
         fig = plt.figure(figsize=(16, fig_height))
         gs = GridSpec(total_rows, 2, figure=fig, hspace=0.35, wspace=0.25,
@@ -184,9 +188,26 @@ class TrainingAnalyzer:
         ax.set_title('KL Ratio Schedule')
         ax.grid(True, alpha=0.3)
 
-        # --- Full range charts (rows 7-8) ---
+        # --- Temperature schedule (row 7) ---
+        ax = fig.add_subplot(gs[7, 0])
+        temperatures = [b.get('temperature', 0) for b in self.train_batches]
+        if any(temperatures):
+            ax.plot(batch_indices, temperatures, color='teal', linewidth=2, label='Temperature')
+            temp_min = min(temperatures)
+            temp_max = max(temperatures)
+            padding = (temp_max - temp_min) * 0.1 if temp_max > temp_min else 0.5
+            ax.set_ylim([max(0, temp_min - padding), temp_max + padding])
+            ax.legend()
+        else:
+            ax.text(0.5, 0.5, 'No temperature data', ha='center', va='center', transform=ax.transAxes)
+        ax.set_xlabel('Batch')
+        ax.set_ylabel('Temperature')
+        ax.set_title('Temperature Schedule')
+        ax.grid(True, alpha=0.3)
+
+        # --- Full range charts (rows 8-9) ---
         for row_offset, (name, data, light_color, dark_color, unit) in enumerate(metrics):
-            row = 7 + row_offset // 2
+            row = 8 + row_offset // 2
             col = row_offset % 2
             default_padding = 5 if name == 'Accuracy' else 0.1
             is_percent = name == 'Accuracy'
@@ -197,12 +218,12 @@ class TrainingAnalyzer:
                 ma_window=ma_window, ylim_data=data, default_padding=default_padding,
                 is_percent=is_percent, show_last_200_avg=False, ylim_padding_ratio=0.05)
 
-        # --- Mini-eval accuracy (row 9 if present) ---
+        # --- Mini-eval accuracy (row 10 if present) ---
         if has_mini_evals:
-            self._plot_mini_eval_accuracy(fig.add_subplot(gs[9, :]))
+            self._plot_mini_eval_accuracy(fig.add_subplot(gs[10, :]))
 
         # --- Confusion matrices (after mini-eval rows) ---
-        confusion_base_row = 9 + mini_eval_row_count
+        confusion_base_row = 10 + mini_eval_row_count
         if confusion_epochs:
             self._plot_confusion_matrices(fig, gs, confusion_epochs, confusion_base_row)
 
