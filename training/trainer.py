@@ -196,7 +196,12 @@ class Trainer:
         if (batch_idx + 1) % 100 == 0:
             update_training_plot(self.logs_dir)
         else:
-            print(f"{100 - ((batch_idx + 1) % 100)} until next update\n")
+            until_update = 100 - ((batch_idx + 1) % 100)
+            mini_eval_part = ""
+            if self.mini_eval_frequency > 0:
+                until_mini_eval = self.mini_eval_frequency - ((batch_idx + 1) % self.mini_eval_frequency)
+                mini_eval_part = f", {until_mini_eval} until mini-eval"
+            print(f"{until_update} until next update{mini_eval_part}\n")
 
         if self.mini_eval_frequency > 0 and (batch_idx + 1) % self.mini_eval_frequency == 0:
             test_start, test_end = self.batch_handler.get_test_batches_radius()
@@ -321,7 +326,8 @@ class Trainer:
                     avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
                     batch_tf_accuracy = batch_teacher_forced_correct / batch_steps if batch_steps > 0 else 0.0
                     batch_student_accuracy = batch_student_correct / batch_steps if batch_steps > 0 else 0.0
-                    print(f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_tf_accuracy:.4f}, student_acc={batch_student_accuracy:.4f} -> took {batch_elapsed:.2f}s")
+                    running_classification_accuracy = task_accuracy_calculator.get_accuracy()
+                    print(f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_tf_accuracy:.4f}, student_acc={batch_student_accuracy:.4f}, class_acc={running_classification_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
         avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
         avg_kl_loss = total_kl_loss / total_steps if total_steps > 0 else 0.0
