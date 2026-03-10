@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from typing import Dict, List, Optional, Tuple
 from time import time
 
@@ -55,12 +54,7 @@ class Trainer:
         self.total_training_steps = self.epoch_count_value * batch_count
         self.current_step = 0
         self.warmup_steps = int(self.total_training_steps * self.lr_warmup_ratio)
-
-        self.scheduler = CosineAnnealingLR(
-            self.optimizer,
-            T_max=self.total_training_steps - self.warmup_steps,
-            eta_min=1e-5
-        )
+        self.lr_min = 1e-5
 
         self.mini_eval_frequency = config.get('mini_eval_frequency', MINI_EVAL_FREQUENCY)
         self.mini_eval_batch_count = config.get('mini_eval_batch_count', MINI_EVAL_BATCH_COUNT)
@@ -91,7 +85,7 @@ class Trainer:
         total_steps = 0
         start_batch = max(batch_start, resume_from_batch)
 
-        current_lr = self.optimizer.param_groups[0]['lr']
+        current_lr = self._get_current_learning_rate()
         print(
             f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}, current temperature: {self._get_current_temperature():.6f}\n ")
 
@@ -141,8 +135,8 @@ class Trainer:
             batch_correct += example_correct
 
         self.current_step += 1
-        self._update_learning_rate()
-        current_lr = self.optimizer.param_groups[0]['lr']
+        self._apply_learning_rate()
+        current_lr = self._get_current_learning_rate()
         current_kl_ratio = self._get_current_kl_ratio()
         current_temperature = self._get_current_temperature()
         print(
@@ -177,7 +171,7 @@ class Trainer:
         avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
         avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
-        current_lr = self.optimizer.param_groups[0]['lr']
+        current_lr = self._get_current_learning_rate()
         current_kl_ratio = self._get_current_kl_ratio()
         current_temperature = self._get_current_temperature()
 
@@ -431,13 +425,19 @@ class Trainer:
         cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
         return self.kl_ratio_end + (self.kl_ratio_start - self.kl_ratio_end) * cosine_decay
 
-    def _update_learning_rate(self):
-        if self.current_step <= self.warmup_steps:
-            warmup_factor = self.current_step / self.warmup_steps
-            for param_group in self.optimizer.param_groups:
-                param_group['lr'] = self.learning_rate * warmup_factor
-        else:
-            self.scheduler.step()
+    def _get_current_learning_rate(self) -> float:
+        if self.warmup_steps > 0 and self.current_step <= self.warmup_steps:
+            return self.learning_rate * (self.current_step / self.warmup_steps)
+        if self.total_training_steps <= self.warmup_steps:
+            return self.learning_rate
+        progress = (self.current_step - self.warmup_steps) / (self.total_training_steps - self.warmup_steps)
+        cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
+        return self.lr_min + (self.learning_rate - self.lr_min) * cosine_decay
+
+    def _apply_learning_rate(self):
+        current_lr = self._get_current_learning_rate()
+        for param_group in self.optimizer.param_groups:
+            param_group['lr'] = current_lr
 
     def _get_sentence_tokens(self, example: Dict) -> List[int]:
         text = example['sentence'] + PROMPT_DELIMITER
@@ -488,7 +488,6 @@ class Trainer:
             'current_step': self.current_step,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
-            'scheduler_state_dict': self.scheduler.state_dict(),
             'train_loss': train_loss,
         }
 
@@ -521,22 +520,7 @@ class Trainer:
         else:
             self.current_step = epoch * batch_count
 
-        if 'scheduler_state_dict' in checkpoint:
-            self.scheduler = CosineAnnealingLR(
-                self.optimizer, T_max=self.total_training_steps - self.warmup_steps, eta_min=1e-5)
-            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-        else:
-            self.scheduler = CosineAnnealingLR(
-                self.optimizer, T_max=self.total_training_steps - self.warmup_steps, eta_min=1e-5)
-            scheduler_steps = max(0, self.current_step - self.warmup_steps)
-            for _ in range(scheduler_steps):
-                self.scheduler.step()
-
-            if self.current_step <= self.warmup_steps:
-                warmup_factor = self.current_step / \
-                    self.warmup_steps if self.warmup_steps > 0 else 1.0
-                for param_group in self.optimizer.param_groups:
-                    param_group['lr'] = self.learning_rate * warmup_factor
+        self._apply_learning_rate()
 
         elapsed_time = time() - start_time
         print(
