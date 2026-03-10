@@ -69,9 +69,9 @@ DOMAIN_MAX_SEQ_LENGTH = {
 }
 DROPOUT = 0.15
 
-# Mini-eval: mid-epoch evaluation on recent batches
-MINI_EVAL_FREQUENCY = 1000  # Run mini-eval every N batches
-MINI_EVAL_BATCH_COUNT = 10  # Number of recent batches to evaluate
+# Mini-eval: mid-epoch evaluation on test batches
+MINI_EVAL_FREQUENCY = 1000  # Run mini-eval every N training batches
+MINI_EVAL_BATCH_COUNT = 10  # Number of test batches to evaluate (capped to available)
 
 # Used by logger for batch counting
 BATCH_SIZE = 32

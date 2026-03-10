@@ -198,7 +198,52 @@ class Trainer:
         else:
             print(f"{100 - ((batch_idx + 1) % 100)} until next update\n")
 
+        if self.mini_eval_frequency > 0 and (batch_idx + 1) % self.mini_eval_frequency == 0:
+            test_start, test_end = self.batch_handler.get_test_batches_radius()
+            total_test_batches = test_end - test_start
+            mini_eval_count = min(self.mini_eval_batch_count, total_test_batches)
+            self._run_mini_eval(test_start, test_start + mini_eval_count, epoch, batch_idx + 1)
+
         self.logger.update_progress(epoch, batch_idx + 1)
+
+    def _run_mini_eval(self, batch_start: int, batch_end: int, epoch: int, current_batch: int):
+        print(f"\n--- Mini-eval on test batches {batch_start + 1}-{batch_end} ---")
+        self.model.eval()
+
+        if self.domain == "math_word_problem":
+            task_accuracy_calculator = MathAccuracyCalculator()
+        else:
+            task_accuracy_calculator = ClassificationAccuracyCalculator()
+
+        total_teacher_forced_correct = 0
+        total_student_correct = 0
+        total_steps = 0
+
+        with torch.no_grad():
+            for batch_idx in range(batch_start, batch_end):
+                batch_data = self.batch_handler.get_batch(batch_idx)
+
+                for example in batch_data:
+                    _, _, _, teacher_forced_correct, student_correct, num_steps, student_tokens = self._eval_single_example(example)
+                    total_teacher_forced_correct += teacher_forced_correct
+                    total_student_correct += student_correct
+                    total_steps += num_steps
+
+                    ground_truth_response = example.get('model_response', '')
+                    task_accuracy_calculator.update(student_tokens, ground_truth_response)
+
+        teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
+        student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
+        classification_accuracy = task_accuracy_calculator.get_accuracy()
+
+        self.logger.log_mini_eval(
+            epoch, current_batch, teacher_forced_accuracy, student_accuracy,
+            classification_accuracy, total_steps)
+
+        print(f"Mini-eval: TF={teacher_forced_accuracy:.4f}, Student={student_accuracy:.4f}, Classification={classification_accuracy:.4f} ({total_steps} steps)")
+        print(f"--- Mini-eval done ---\n")
+
+        self.model.train()
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
         print("Exit requested. Saving progress...")

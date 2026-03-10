@@ -17,6 +17,7 @@ class TrainingAnalyzer:
         self.train_batches = [d for d in data if d.get('type') == 'train_batch']
         self.train_epochs = [d for d in data if d.get('type') == 'train_epoch']
         self.eval_epochs = [d for d in data if d.get('type') == 'eval_epoch']
+        self.mini_evals = [d for d in data if d.get('type') == 'mini_eval']
 
     def print_summary(self):
         print("\n" + "=" * 50)
@@ -70,6 +71,13 @@ class TrainingAnalyzer:
                         row_counts = [str(matrix[true_label].get(pred, 0)) for pred in labels]
                         print(f"    {true_label:>12s}" + "".join(f"{c:>12s}" for c in row_counts))
 
+        if self.mini_evals:
+            latest_mini = self.mini_evals[-1]
+            print(f"\nLatest mini-eval (batch {latest_mini['batch']}):")
+            print(f"  Teacher-Forced: {latest_mini.get('teacher_forced_accuracy', 0) * 100:.1f}%")
+            print(f"  Student: {latest_mini.get('student_accuracy', 0) * 100:.1f}%")
+            print(f"  Classification: {latest_mini.get('classification_accuracy', 0) * 100:.1f}%")
+
         if len(self.train_batches) >= 100:
             recent = self.train_batches[-100:]
             early = self.train_batches[:100]
@@ -95,9 +103,11 @@ class TrainingAnalyzer:
             epoch_data for epoch_data in self.eval_epochs
             if epoch_data.get('confusion_matrices')
         ]
+        has_mini_evals = len(self.mini_evals) > 0
+        mini_eval_row_count = 1 if has_mini_evals else 0
         confusion_row_count = len(confusion_epochs) * 2
-        total_rows = 9 + confusion_row_count
-        height_ratios = [0.6, 1, 1, 1, 1, 1, 1, 1, 1] + [1] * confusion_row_count
+        total_rows = 9 + mini_eval_row_count + confusion_row_count
+        height_ratios = [0.6, 1, 1, 1, 1, 1, 1, 1, 1] + [1] * mini_eval_row_count + [1] * confusion_row_count
         fig_height = 8 + (total_rows - 1) * 6
         fig = plt.figure(figsize=(16, fig_height))
         gs = GridSpec(total_rows, 2, figure=fig, hspace=0.35, wspace=0.25,
@@ -187,9 +197,14 @@ class TrainingAnalyzer:
                 ma_window=ma_window, ylim_data=data, default_padding=default_padding,
                 is_percent=is_percent, show_last_200_avg=False, ylim_padding_ratio=0.05)
 
-        # --- Confusion matrices (rows 9+, 2 rows per epoch) ---
+        # --- Mini-eval accuracy (row 9 if present) ---
+        if has_mini_evals:
+            self._plot_mini_eval_accuracy(fig.add_subplot(gs[9, :]))
+
+        # --- Confusion matrices (after mini-eval rows) ---
+        confusion_base_row = 9 + mini_eval_row_count
         if confusion_epochs:
-            self._plot_confusion_matrices(fig, gs, confusion_epochs)
+            self._plot_confusion_matrices(fig, gs, confusion_epochs, confusion_base_row)
 
         save_path = Path(self.logs_dir) / 'training_progress.png'
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
@@ -295,14 +310,35 @@ class TrainingAnalyzer:
         ax.set_title('Epoch Summary - Eval Accuracy')
         ax.grid(True, alpha=0.3)
 
-    def _plot_confusion_matrices(self, fig, gs, confusion_epochs):
+    def _plot_mini_eval_accuracy(self, ax):
+        batches = [d['batch'] for d in self.mini_evals]
+        series = [
+            ('Teacher-Forced', 'green', 'o', lambda d: d.get('teacher_forced_accuracy', 0)),
+            ('Student', 'blue', 's', lambda d: d.get('student_accuracy', 0)),
+            ('Classification', 'orange', '^', lambda d: d.get('classification_accuracy', 0)),
+        ]
+        all_values = []
+        for label, color, marker, getter in series:
+            values = [getter(d) * 100 for d in self.mini_evals]
+            ax.plot(batches, values, marker=marker, color=color, linewidth=2, label=label, markersize=4)
+            all_values.extend(values)
+        if all_values:
+            padding = (max(all_values) - min(all_values)) * 0.1 if max(all_values) > min(all_values) else 5
+            ax.set_ylim([max(0, min(all_values) - padding), min(100, max(all_values) + padding)])
+        ax.set_xlabel('Batch')
+        ax.set_ylabel('Accuracy (%)')
+        ax.set_title('Mini-Eval Accuracy (Mid-Epoch)')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+
+    def _plot_confusion_matrices(self, fig, gs, confusion_epochs, base_row_start):
         categories = [('tone', 0), ('sentiment', 1), ('safety', 0), ('toxicity', 1)]
         cmap = LinearSegmentedColormap.from_list('white_blue', ['white', '#4285f4'])
 
         for epoch_index, epoch_data in enumerate(confusion_epochs):
             confusion = epoch_data['confusion_matrices']
             epoch_label = epoch_data['epoch']
-            base_row = 9 + epoch_index * 2
+            base_row = base_row_start + epoch_index * 2
 
             for category_index, (category, col) in enumerate(categories):
                 row = base_row + category_index // 2
