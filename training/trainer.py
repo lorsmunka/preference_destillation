@@ -365,60 +365,53 @@ class Trainer:
     def _eval_single_example(self, example: Dict) -> Tuple[float, float, float, int, int, int, List[str]]:
         sentence_tokens = self._get_sentence_tokens(example)
         steps = example['steps']
+        num_steps = len(steps)
 
-        total_loss = 0.0
-        total_kl_loss = 0.0
-        total_ce_loss = 0.0
-        teacher_forced_correct = 0
+        if num_steps == 0:
+            return 0.0, 0.0, 0.0, 0, 0, 0, []
+
+        all_token_ids = []
+        all_target_logits = []
+        all_target_indices = []
+        for step in steps:
+            token_id, target_logits, target_index = self._prepare_step_data(step)
+            all_token_ids.append(token_id)
+            all_target_logits.append(target_logits)
+            all_target_indices.append(target_index)
+
+        # Teacher-forced: single forward pass (all ground truth tokens as input)
+        full_input_ids = sentence_tokens + all_token_ids[:-1]
+        input_tensor = torch.tensor([full_input_ids], dtype=torch.long, device=self.device)
+        target_logits_tensor = torch.tensor(all_target_logits, dtype=torch.float32, device=self.device)
+        target_indices_tensor = torch.tensor(all_target_indices, dtype=torch.long, device=self.device)
+
+        model_logits = self.model(input_tensor)
+        sentence_length = len(sentence_tokens)
+        prediction_logits = model_logits[0, sentence_length - 1:sentence_length - 1 + num_steps, :]
+
+        kl_loss, ce_loss, total_loss = self._compute_loss(
+            prediction_logits, target_logits_tensor, target_indices_tensor, reduction='sum')
+
+        teacher_forced_correct = (torch.argmax(prediction_logits, dim=-1) == target_indices_tensor).sum().item()
+
+        # Student: sequential forward passes (own predictions as input)
         student_correct = 0
-        valid_steps = 0
-        teacher_forced_token_ids = []
         student_token_ids = []
         student_tokens = []
 
-        for step in steps:
-            ground_truth_token_id, target_logits, target_index = self._prepare_step_data(
-                step)
-
-            teacher_input_tensor, target_tensor = self._create_tensors(
-                sentence_tokens + teacher_forced_token_ids,
-                target_logits
-            )
-            loss, kl_loss, ce_loss, teacher_is_correct = self._compute_step_loss(
-                teacher_input_tensor, target_tensor, target_index)
-            total_loss += loss.item()
-            total_kl_loss += kl_loss.item()
-            total_ce_loss += ce_loss.item()
-            if teacher_is_correct:
-                teacher_forced_correct += 1
-            teacher_forced_token_ids.append(ground_truth_token_id)
-
+        for step_index in range(num_steps):
             student_input_tensor = torch.tensor(
                 [sentence_tokens + student_token_ids], dtype=torch.long, device=self.device)
             student_logits = self.model(student_input_tensor)[:, -1, :]
             student_predicted_index = torch.argmax(student_logits[0]).item()
             student_predicted_token_id = self.model.output_token_ids[student_predicted_index]
             student_predicted_token = self.vocabulary['token_list'][student_predicted_index]
-            if student_predicted_index == target_index:
+            if student_predicted_index == all_target_indices[step_index]:
                 student_correct += 1
             student_token_ids.append(student_predicted_token_id)
             student_tokens.append(student_predicted_token)
 
-            valid_steps += 1
-
-        return total_loss, total_kl_loss, total_ce_loss, teacher_forced_correct, student_correct, valid_steps, student_tokens
-
-    def _compute_step_loss(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor, target_index: int):
-        model_logits = self.model(input_tensor)
-        last_token_logits = model_logits[:, -1, :]
-
-        kl_loss, ce_loss, combined_loss = self._compute_loss(
-            last_token_logits, target_tensor, torch.tensor([target_index], device=self.device))
-
-        predicted_idx = torch.argmax(last_token_logits[0]).item()
-        is_correct = predicted_idx == target_index
-
-        return combined_loss, kl_loss, ce_loss, is_correct
+        return total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct, student_correct, num_steps, student_tokens
 
     def _get_current_kl_ratio(self) -> float:
         if self.total_training_steps <= 1:
