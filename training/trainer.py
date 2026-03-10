@@ -209,38 +209,14 @@ class Trainer:
     def _run_mini_eval(self, batch_start: int, batch_end: int, epoch: int, current_batch: int):
         print(f"\n--- Mini-eval on test batches {batch_start + 1}-{batch_end} ---")
         self.model.eval()
-
-        if self.domain == "math_word_problem":
-            task_accuracy_calculator = MathAccuracyCalculator()
-        else:
-            task_accuracy_calculator = ClassificationAccuracyCalculator()
-
-        total_teacher_forced_correct = 0
-        total_student_correct = 0
-        total_steps = 0
-
-        with torch.no_grad():
-            for batch_idx in range(batch_start, batch_end):
-                batch_data = self.batch_handler.get_batch(batch_idx)
-
-                for example in batch_data:
-                    _, _, _, teacher_forced_correct, student_correct, num_steps, student_tokens = self._eval_single_example(example)
-                    total_teacher_forced_correct += teacher_forced_correct
-                    total_student_correct += student_correct
-                    total_steps += num_steps
-
-                    ground_truth_response = example.get('model_response', '')
-                    task_accuracy_calculator.update(student_tokens, ground_truth_response)
-
-        teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
-        student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
-        classification_accuracy = task_accuracy_calculator.get_accuracy()
+        results = self._evaluate_batches(batch_start, batch_end)
 
         self.logger.log_mini_eval(
-            epoch, current_batch, teacher_forced_accuracy, student_accuracy,
-            classification_accuracy, total_steps)
+            epoch, current_batch, results['teacher_forced_accuracy'],
+            results['student_accuracy'], results['classification_accuracy'],
+            results['total_steps'])
 
-        print(f"Mini-eval: TF={teacher_forced_accuracy:.4f}, Student={student_accuracy:.4f}, Classification={classification_accuracy:.4f} ({total_steps} steps)")
+        print(f"Mini-eval: TF={results['teacher_forced_accuracy']:.4f}, Student={results['student_accuracy']:.4f}, Classification={results['classification_accuracy']:.4f} ({results['total_steps']} steps)")
         print(f"--- Mini-eval done ---\n")
 
         self.model.train()
@@ -295,19 +271,18 @@ class Trainer:
 
         return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
-    def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float, float, float]:
-        self.model.eval()
+    def _evaluate_batches(self, batch_start: int, batch_end: int, verbose: bool = False):
+        if self.domain == "math_word_problem":
+            task_accuracy_calculator = MathAccuracyCalculator()
+        else:
+            task_accuracy_calculator = ClassificationAccuracyCalculator()
+
         total_loss = 0.0
         total_kl_loss = 0.0
         total_ce_loss = 0.0
         total_teacher_forced_correct = 0
         total_student_correct = 0
         total_steps = 0
-
-        if self.domain == "math_word_problem":
-            task_accuracy_calculator = MathAccuracyCalculator()
-        else:
-            task_accuracy_calculator = ClassificationAccuracyCalculator()
 
         with torch.no_grad():
             for batch_idx in range(batch_start, batch_end):
@@ -321,9 +296,8 @@ class Trainer:
                 batch_student_correct = 0
                 batch_steps = 0
 
-                for example_idx, example in enumerate(batch_data):
-                    loss_sum, kl_loss_sum, ce_loss_sum, teacher_forced_correct, student_correct, num_steps, student_tokens = self._eval_single_example(
-                        example)
+                for example in batch_data:
+                    loss_sum, kl_loss_sum, ce_loss_sum, teacher_forced_correct, student_correct, num_steps, student_tokens = self._eval_single_example(example)
                     batch_loss += loss_sum
                     batch_kl_loss += kl_loss_sum
                     batch_ce_loss += ce_loss_sum
@@ -340,34 +314,47 @@ class Trainer:
                     ground_truth_response = example.get('model_response', '')
                     task_accuracy_calculator.update(student_tokens, ground_truth_response)
 
-                batch_elapsed = time() - batch_start_time
-                avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
-                avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
-                avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
-                batch_teacher_forced_accuracy = batch_teacher_forced_correct / \
-                    batch_steps if batch_steps > 0 else 0.0
-                batch_student_accuracy = batch_student_correct / \
-                    batch_steps if batch_steps > 0 else 0.0
-                print(
-                    f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_teacher_forced_accuracy:.4f}, student_acc={batch_student_accuracy:.4f} -> took {batch_elapsed:.2f}s")
+                if verbose:
+                    batch_elapsed = time() - batch_start_time
+                    avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
+                    avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
+                    avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
+                    batch_tf_accuracy = batch_teacher_forced_correct / batch_steps if batch_steps > 0 else 0.0
+                    batch_student_accuracy = batch_student_correct / batch_steps if batch_steps > 0 else 0.0
+                    print(f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_tf_accuracy:.4f}, student_acc={batch_student_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
         avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
         avg_kl_loss = total_kl_loss / total_steps if total_steps > 0 else 0.0
         avg_ce_loss = total_ce_loss / total_steps if total_steps > 0 else 0.0
-        teacher_forced_accuracy = total_teacher_forced_correct / \
-            total_steps if total_steps > 0 else 0.0
-        student_accuracy = total_student_correct / \
-            total_steps if total_steps > 0 else 0.0
+        teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
+        student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
         classification_accuracy = task_accuracy_calculator.get_accuracy()
         confusion_matrices = task_accuracy_calculator.get_confusion_matrices()
 
+        return {
+            'avg_loss': avg_loss,
+            'avg_kl_loss': avg_kl_loss,
+            'avg_ce_loss': avg_ce_loss,
+            'teacher_forced_accuracy': teacher_forced_accuracy,
+            'student_accuracy': student_accuracy,
+            'classification_accuracy': classification_accuracy,
+            'confusion_matrices': confusion_matrices,
+            'total_steps': total_steps,
+        }
+
+    def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float, float, float]:
+        self.model.eval()
+        results = self._evaluate_batches(batch_start, batch_end, verbose=True)
+
         self.logger.log_eval_epoch(
-            epoch, avg_loss, teacher_forced_accuracy, student_accuracy, classification_accuracy,
-            confusion_matrices, total_steps, avg_kl_loss, avg_ce_loss)
+            epoch, results['avg_loss'], results['teacher_forced_accuracy'],
+            results['student_accuracy'], results['classification_accuracy'],
+            results['confusion_matrices'], results['total_steps'],
+            results['avg_kl_loss'], results['avg_ce_loss'])
 
         print(
-            f"Eval Loss: {avg_loss:.4f} | KL Loss: {avg_kl_loss:.4f} | CE Loss: {avg_ce_loss:.4f} | TF Accuracy: {teacher_forced_accuracy:.4f} | Student Accuracy: {student_accuracy:.4f} | Classification Accuracy: {classification_accuracy:.4f}")
-        return avg_loss, teacher_forced_accuracy, student_accuracy, classification_accuracy
+            f"Eval Loss: {results['avg_loss']:.4f} | KL Loss: {results['avg_kl_loss']:.4f} | CE Loss: {results['avg_ce_loss']:.4f} | TF Accuracy: {results['teacher_forced_accuracy']:.4f} | Student Accuracy: {results['student_accuracy']:.4f} | Classification Accuracy: {results['classification_accuracy']:.4f}")
+        return results['avg_loss'], results['teacher_forced_accuracy'], results['student_accuracy'], results['classification_accuracy']
 
     def _eval_single_example(self, example: Dict) -> Tuple[float, float, float, int, int, int, List[str]]:
         sentence_tokens = self._get_sentence_tokens(example)
