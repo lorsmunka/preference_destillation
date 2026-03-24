@@ -206,6 +206,7 @@ class Trainer:
             total_test_batches = test_end - test_start
             mini_eval_count = min(self.mini_eval_batch_count, total_test_batches)
             self._run_mini_eval(test_start, test_start + mini_eval_count, epoch, batch_idx + 1)
+            update_training_plot(self.logs_dir)
 
         self.logger.update_progress(epoch, batch_idx + 1)
 

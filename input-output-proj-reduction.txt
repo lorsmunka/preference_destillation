@@ -1,0 +1,171 @@
+INPUT VOCABULARY REDUCTION — FEASIBILITY REPORT
+=================================================
+
+Generated: 2026-03-15
+Status: FEASIBLE — high confidence, straightforward implementation
+
+
+PROBLEM
+-------
+The student model uses Gemma's full 262,144-token vocabulary for input embeddings.
+This is the single largest parameter block in the model:
+
+  Input embedding params = 262,144 * hidden_dim
+
+For small models, this DOMINATES total parameter count:
+
+  | hidden_dim | Embedding params | Transformer body (example) | Embedding % of total |
+  |------------|------------------|----------------------------|----------------------|
+  | 128        | 33.6M            | 2.1M  (4L)                 | 94%                  |
+  | 192        | 50.3M            | 7.1M  (6L)                 | 88%                  |
+  | 256        | 67.1M            | 16.8M (8L)                 | 80%                  |
+  | 384        | 100.7M           | 56.6M (12L)                | 64%                  |
+  | 512        | 134.2M           | 134.2M (16L)               | 50%                  |
+
+90%+ of input token embeddings never receive a single gradient update during training.
+They are pure dead weight.
+
+
+EMPIRICAL TOKEN COUNTS (from actual batch data)
+------------------------------------------------
+Sampled training batches and tokenized all input sentences + output tokens
+(output tokens feed back as input during autoregressive generation):
+
+  50-file sample (reddit sentiment):  ~5,000 unique tokens
+  500-file sample (reddit sentiment): ~20,000 unique tokens
+  50-file sample (math):              ~700 unique tokens
+
+Growth is sublinear (logarithmic). Conservative estimates for full dataset:
+
+  Reddit sentiment (full ~15k files): ~30,000-40,000 unique tokens
+  Math word problems (full ~670 files): ~1,000-2,000 unique tokens
+  Combined (both domains):             ~35,000-40,000 unique tokens
+
+Gemma vocab utilization: ~15% worst case (reddit), <1% (math)
+
+
+PARAMETER SAVINGS
+-----------------
+Using conservative estimate of 40,000 tokens (with safety buffer):
+
+  | hidden_dim | Old embedding | New embedding | Saved     | % reduction |
+  |------------|---------------|---------------|-----------|-------------|
+  | 128        | 33.6M         | 5.1M          | 28.5M     | 85%         |
+  | 192        | 50.3M         | 7.7M          | 42.6M     | 85%         |
+  | 256        | 67.1M         | 10.2M         | 56.9M     | 85%         |
+  | 384        | 100.7M        | 15.4M         | 85.3M     | 85%         |
+  | 512        | 134.2M        | 20.5M         | 113.7M    | 85%         |
+
+Total model parameter reduction (embedding + transformer body):
+
+  | Model config        | Old total | New total | Reduction |
+  |---------------------|-----------|-----------|-----------|
+  | 128h, 4L  (36M)     | 36M       | 7M        | -80%      |
+  | 192h, 6L  (57M)     | 57M       | 15M       | -74%      |
+  | 256h, 8L  (84M)     | 84M       | 27M       | -68%      |
+  | 384h, 12L (157M)    | 157M      | 72M       | -54%      |
+  | 512h, 16L (268M)    | 268M      | 155M      | -42%      |
+
+Impact is largest on small models (where embedding dominates).
+
+
+WHY THIS WON'T HURT PERFORMANCE
+--------------------------------
+1. Unused embeddings receive zero gradients — they literally do nothing
+2. The model only ever sees tokens present in training data
+3. At inference, input is domain-specific (short Reddit comments or math problems)
+   — same distribution as training data
+4. Output tokens feeding back as input are already a tiny known set (~525 or ~31)
+5. No "auxiliary token" concern for input — that's purely an output/KL-divergence issue
+   (soft targets need richer distribution for dark knowledge transfer;
+    input embeddings just need to represent what the model sees)
+
+
+IMPLEMENTATION APPROACH
+-----------------------
+1. SCAN PHASE (one-time, run before training):
+   - Iterate all batch JSONL files for the target domain
+   - Tokenize every sentence + "\n\n" delimiter using Gemma tokenizer
+   - Collect output token IDs (they feed back as input in autoregressive loop)
+   - Add prompt delimiter tokens ("\n", "\n\n")
+   - Result: set of all unique Gemma token IDs actually used
+
+2. BUILD MAPPING:
+   - Sort unique token IDs
+   - Create mapping: original_gemma_id -> compact_id (0, 1, 2, ...)
+   - Reserve compact_id 0 for UNK/PAD (tokens not in mapping)
+   - Optionally add a small buffer (~5-10%) of most common Gemma tokens
+     as safety margin for edge cases at inference
+   - Save mapping alongside model checkpoint
+
+3. MODEL CHANGES:
+   - Input embedding: nn.Embedding(compact_vocab_size, hidden_dim)
+     instead of nn.Embedding(262144, hidden_dim)
+   - Add a remap layer (simple lookup table, not a nn.Module):
+     gemma_token_ids -> compact_ids before embedding lookup
+   - Output projection: unchanged (already reduced)
+
+4. TRAINING CHANGES:
+   - After tokenizer.encode(), remap token IDs through the mapping
+   - Everything else stays the same
+
+5. INFERENCE CHANGES:
+   - After tokenizer.encode(sentence), remap to compact IDs
+   - Output tokens fed back: remap through same mapping
+   - If a token is not in mapping -> UNK token (should be extremely rare)
+
+Code footprint: ~30-50 lines total across model.py, trainer.py, inference.py.
+
+
+PER-DOMAIN VS COMBINED VOCABULARY
+----------------------------------
+Two approaches:
+
+A) Per-domain input vocabulary:
+   - Reddit: ~30-40k tokens, Math: ~1-2k tokens
+   - Maximum compression per domain
+   - Each domain gets its own mapping file
+   - Models are domain-specific anyway, so this is natural
+
+B) Combined vocabulary (both domains):
+   - ~35-40k tokens
+   - One mapping works for everything
+   - Slightly larger but simpler to manage
+
+Recommendation: Per-domain. The models are already domain-specific (different output
+vocab, different training data). No reason to bloat math's input vocab with Reddit tokens.
+
+Per-domain savings for math specifically:
+  h=128: 33.6M -> 0.26M (99.2% reduction!)
+  h=384: 100.7M -> 0.77M (99.2% reduction!)
+
+
+EDGE CASES & RISKS
+-------------------
+1. Unseen tokens at inference: A Reddit comment might contain a rare Unicode character
+   or token not in any training batch. Mitigation: UNK fallback token. Impact: minimal,
+   the model handles the rest of the context fine.
+
+2. Adding new training data later: If new batches contain new tokens, the mapping
+   needs rebuilding and the embedding layer needs resizing. Not a problem — just
+   re-scan and retrain. Or: add a buffer percentage upfront.
+
+3. Tokenizer subword behavior: Gemma's tokenizer might encode the same word
+   differently depending on context (e.g., word-initial vs mid-word). The scan
+   catches all variants that actually appear in training data.
+
+4. Domain transfer: A model trained with reddit input vocab can't be used for math.
+   But this is already true (different output vocab), so no new limitation.
+
+
+CONCLUSION
+----------
+This is a high-value, low-risk optimization. Implementation is ~30-50 lines of code.
+Expected savings: 42-80% total model parameters depending on model size, with zero
+performance impact (removing parameters that never receive gradients).
+
+The smaller the model, the bigger the relative win — which is exactly where it matters
+most for the scaling experiments.
+
+For the math domain specifically, input vocab reduction is even more dramatic (~99%),
+making tiny models viable that would otherwise be dominated by dead embedding weight.

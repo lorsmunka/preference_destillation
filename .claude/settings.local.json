@@ -36,7 +36,8 @@
       "Bash(python3:*)",
       "Bash(/c/python313/python.exe:*)",
       "Bash(ls:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(where python:*)"
     ]
   }
 }

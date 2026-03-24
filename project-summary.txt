@@ -1,0 +1,199 @@
+PROJECT SUMMARY — PREFERENCE DISTILLATION
+==========================================
+Generated: 2026-03-18
+
+
+WHAT IS THIS PROJECT?
+---------------------
+This is a university thesis proof-of-concept that distills domain-specific knowledge
+from a large language model (Google Gemma 3 4B, 4.3 billion parameters) into tiny
+custom-built transformer models (5M to 198M parameters). The student models use a
+dramatically reduced output vocabulary (~525 tokens instead of 262,144 — a 99.8%
+reduction) and learn to produce deterministic JSON output classifying Reddit comments
+by tone, sentiment, safety, and toxicity. The project intentionally uses autoregressive
+generation (not simpler classifiers) to prove the distillation technique works for
+generative tasks. A second domain, math word problems, is also supported to demonstrate
+the pipeline's generality.
+
+
+THE CORE IDEA
+-------------
+A big AI model ("teacher") classifies Reddit comments and saves not just its answers
+but its full probability distribution (logits) over every generation step. A much
+smaller model ("student") then trains on these rich signals. The student learns both
+HOW the teacher thinks (via KL divergence loss matching the probability distributions)
+and WHAT the right answer is (via cross-entropy loss on the correct token). The ratio
+between these two losses shifts over training: starting at 99% KL / 1% CE (learn the
+teacher's thinking) and annealing to 30% KL / 70% CE (focus on getting the right
+answer). This curriculum-style approach is grounded in distillation literature.
+
+
+THE PIPELINE (3 stages)
+------------------------
+1. TEXT GENERATION: Collect raw inputs (Reddit comments from a database, or generate
+   math word problems from 260+ templates with 13 operation types).
+
+2. DISTILLATION DATA GENERATION: Feed inputs to Gemma 3 4B. At each autoregressive
+   step, capture the teacher's logit distribution over the reduced vocabulary (~525
+   tokens for sentiment, ~31 for math). Save as JSONL batches. Queue-driven, supports
+   multiple domains. 500,000 examples generated for Reddit sentiment (complete).
+
+3. TRAINING: Train a small decoder-only transformer on the teacher's outputs using
+   the KL+CE curriculum loss. Queue-driven — define experiments in training_queue.json,
+   leave running, come back and compare results across runs.
+
+
+THE STUDENT MODEL
+-----------------
+Architecture: decoder-only transformer matching modern LLM design patterns.
+Components borrowed from Gemma: RMSNorm (faster normalization), RoPE (rotary position
+embeddings), GeGLU activation (gated feed-forward). Input vocabulary is full Gemma
+(262,144 tokens — the student can read any text). Output vocabulary is task-specific
+(~525 tokens for sentiment JSON, ~31 for math). The output projection layer is where
+the dramatic size reduction happens.
+
+
+WHAT HAS BEEN DONE (past)
+--------------------------
+- Built the full 3-stage pipeline from scratch (text generation, distillation data
+  generation, training) with queue systems for both data gen and training.
+- Generated 500,000 Reddit sentiment training examples with Gemma 3 4B logits.
+- Ran pilot tests proving the concept works: a 537M parameter model achieved ~88%
+  student-only accuracy and ~99% teacher-forced accuracy after just 3 epochs on
+  100 batches (~3,200 examples). Valid JSON was generated in nearly all cases.
+- Survived a 97-hour failed training run caused by an encoding bug — the two accuracy
+  metrics (teacher-forced vs student-only) were what revealed the problem.
+- Built a math word problem domain with 260+ templates, 13 operation types, semantic
+  variable categories, and a 31-token output vocabulary.
+- Designed and queued a scaling experiment: 8 model sizes from 5M to 198M parameters,
+  all with identical hyperparameters, to find the minimum viable model size.
+- Implemented temperature scheduling, mini-evaluations (every 1000 batches), confusion
+  matrices per category, and graceful shutdown (press '%' to save and exit).
+- Created detailed cloud GPU cost analysis ($300-686 estimated total for all experiments).
+- Wrote a full thesis draft (in Hungarian) with 25 academic references.
+- Prepared a TDK (scientific student conference) presentation outline.
+
+
+WHAT IS HAPPENING NOW (present)
+--------------------------------
+The scaling experiment is actively running. Four smaller models are complete (5M, 10M,
+17M, 36M). The 53M model (192 hidden dim, 6 layers, 3 heads) is finishing epoch 2 of 3,
+showing strong results: 93% student accuracy, 87% classification accuracy, loss at 0.37.
+The 74M and larger models are queued. Training runs on a university server (HUN-REN
+infrastructure) with an A100-20C vGPU — roughly 2x slower than the local RTX 4070.
+
+Current training metrics for the 53M model look healthy: loss steadily declined across
+all 3 epochs, KL ratio successfully annealed from 0.99 to 0.3, learning rate decayed
+to minimum, and the model generates valid JSON reliably.
+
+The thesis.txt is outdated — it describes a single 537M model while the project now
+runs 8 different model sizes. An updates.txt documents all known bugs, inconsistencies,
+and drift between the thesis and current code. A thesis-update-plan.txt outlines what
+sections need rewriting.
+
+There are uncommitted changes in trainer.py and training_analysis.py.
+
+
+WHAT COMES NEXT (future)
+--------------------------
+1. Complete the scaling experiment (all 8 sizes) and plot the accuracy-vs-parameters
+   curve to find the "knee" — the smallest model that still performs well.
+2. Run depth-vs-width ablation: at the ideal size from the scaling study, test whether
+   more layers or wider layers matter more for this task.
+3. Run KL annealing ablation: compare annealing vs constant KL ratio vs pure CE
+   (no distillation at all) to quantify the value of distillation.
+4. Temperature sweep: test different distillation temperatures (1, 2, 3, 5).
+5. Vocabulary size sweep: test 27 vs 100 vs 525 output tokens.
+6. Cross-domain experiments: run the same pipeline on math word problems.
+7. Input vocabulary reduction: cut unused input embeddings (85%+ parameter savings
+   for small models — feasibility report already written).
+8. Update the thesis to reflect the actual experimental methodology.
+9. Present at TDK (scientific student conference).
+
+
+KEY INNOVATION
+--------------
+The novel combination is: task-specific output vocabulary reduction (99.8%) + full
+input vocabulary retention + autoregressive structured output generation + dynamic
+KL/CE loss annealing as curriculum learning. Output vocabulary reduction in distillation
+is an underexplored area in the literature. The project demonstrates this works
+for generative (not just classification) tasks across multiple domains.
+
+
+PROJECT STRUCTURE
+-----------------
+  training/           Training loop, model architecture, queue runner, batch handler
+  shared/             Config, logger, utilities, accuracy calculators, exit listener
+  analysis/           Log visualization, model evaluation, inference
+  distillation_data_generation/   Teacher model data extraction pipeline
+  text_generation/    Domain-specific input generators (Reddit, math)
+  batches/            Training data (JSONL, organized by domain/teacher model)
+  runs/               Training outputs (per-run checkpoints, logs, eval)
+
+Key config files:
+  training/training_queue.json                  — defines training experiments
+  distillation_data_generation/data_generation_queue.json — defines data gen jobs
+  shared/config.py                              — centralized constants
+
+Run with: cd training && python main.py
+
+
+KNOWN ISSUES
+------------
+- thesis.txt describes a 537M model that no longer exists as the default config
+- Some dead code in model.py (unreachable lines after a return statement)
+- Learning rate warmup starts at zero on first step (first batch does nothing)
+- CE loss may be incorrectly scaled by temperature squared (standard practice only
+  scales KL loss by T^2)
+- CLAUDE.md project structure documentation is outdated
+- Uncommitted changes in trainer.py and training_analysis.py
+
+
+.TXT FILES IN THE PROJECT
+--------------------------
+thesis.txt              — Full thesis draft in Hungarian. Covers motivation, literature
+                          review (25 sources), implementation details, pilot results,
+                          and cost estimates. OUTDATED on specifics (describes a single
+                          537M model, not the current multi-size scaling study).
+
+updates.txt             — Bug report and inconsistency audit (2026-03-13). Lists 3 bugs,
+                          3 code inconsistencies, 7 thesis drift items, and 5 improvement
+                          suggestions. Essentially a health check of the entire project.
+
+thesis-update-plan.txt  — Section-by-section plan for updating the thesis to match
+                          current reality. Identifies new sections needed (experimental
+                          design, results, math domain, infrastructure) and what to keep.
+
+plan.txt                — Server reference guide. SSH commands, screen usage, data
+                          download instructions, troubleshooting, and full server
+                          reinstallation steps. The server is a HUN-REN Ubuntu machine
+                          with an A100-20C GPU.
+
+ptt.txt                 — Full TDK presentation prompt in Hungarian. 20+ slides planned
+                          for a ~30 minute talk. Covers motivation, technical details,
+                          scaling experiments, future work, with detailed visual element
+                          descriptions.
+
+input-output-proj-reduction.txt — Feasibility report for reducing the input vocabulary.
+                          Currently 262,144 tokens (Gemma's full vocab), but only
+                          ~30-40k are ever used for Reddit, ~1-2k for math. Cutting to
+                          40k would save 85% of embedding parameters. Implementation
+                          estimated at 30-50 lines of code. Conclusion: high value,
+                          low risk, zero performance impact.
+
+model_architecture_guide.txt — Technical reference: parameter count formulas, design
+                          constraints (head_dim divisibility), queue config field
+                          documentation, domain magic strings, and the full experiment
+                          log with all 8 scaling runs.
+
+gpu_cloud_guidance.txt  — Detailed cloud GPU cost analysis. Compares RTX 4070 (local),
+                          RTX 4090, RTX 5090, A100, H100. Estimates total cost at
+                          $300-686 depending on provider and strategy. Includes
+                          step-by-step setup guides for RunPod and Vast.ai.
+
+queue_update_plan.txt   — The master plan document for the queue-based pipeline upgrade.
+                          Covers all 3 phases (text generation, distillation data gen,
+                          training) with commit-level detail. Phases 1-2 are complete,
+                          Phase 3 (training queue) is implemented and running.
+
+requirements.txt        — Python dependencies (torch, transformers, numpy, etc.)

@@ -1,0 +1,140 @@
+THESIS.TXT UPDATE PLAN
+======================
+
+Generated: 2026-03-13
+Purpose: Track what's changed since thesis.txt was written, so it can be
+         updated section by section without losing anything.
+
+
+=== SCOPE EXPANSION (thesis describes ~10% of current project) ===
+
+The thesis was written around a single-domain, single-model pilot run.
+The project is now a multi-domain, multi-config experimental pipeline
+with ~40 planned training runs across 2 domains.
+
+Key additions not in thesis at all:
+  - Math word problem domain (260+ templates, 13 operation types, ~31 token vocab)
+  - Queue-based pipeline (data gen queue + training queue)
+  - Scaling experiments (8 model sizes, 5M to 198M params)
+  - Depth vs Width ablation (planned, after scaling results)
+  - KL annealing vs no-annealing ablation (queued)
+  - Distillation vs no distillation (pure CE baseline possible)
+  - Vocabulary size sweep (auxiliary_token_percentage control)
+  - Confusion matrices per category (implemented)
+  - Inference speed benchmarking (implemented in inference.py / evaluate_model)
+  - Cloud GPU cost analysis and scaling estimates
+  - Temperature scheduling (curriculum temperature)
+  - Mini-eval system (mid-epoch evaluation)
+
+
+=== SECTION-BY-SECTION DRIFT ===
+
+ABSTRACT
+  - Still says "Reddit comment classification" — now also math word problems
+  - Doesn't mention the experimental methodology (scaling, ablations)
+  - Should frame it as an experimental study, not just a pipeline
+
+1. BEVEZETES
+  - Fine as intro, but scope section (1.1) should mention both domains
+  - Cost analysis section should reference the GPU guidance work done
+
+2. IRODALOMKUTATAS
+  - Solid, 25 sources, mostly still relevant
+  - Add: curriculum temperature [9] is now implemented, not just cited
+  - Consider adding: any references for math word problem generation/evaluation
+
+3. IMPLEMENTACIO
+  3.1 Pelda
+    - Only shows Reddit example — add math example too
+  3.2 Data extraction pipeline
+    - Describes single-domain Gemma 4B pipeline
+    - Now: queue-driven, multi-domain, with domain-specific prompts/vocabs/stop tokens
+    - Math prompt engineering (scaffold structure, "Calculations:\nA=") is novel, worth describing
+    - Vocab sizes: ~525 (sentiment) vs ~31 (math) — show the contrast
+  3.3 Tanitas
+    - Loss description is still accurate (KL + CE annealing)
+    - Missing: temperature scheduling, mini-eval system
+    - Missing: queue system for batching experiments
+    - Cosine annealing LR: now custom implementation, not torch scheduler
+    - Missing: pure CE baseline as control experiment
+  3.4 Student modell
+    - MAJOR REWRITE NEEDED
+    - Thesis describes one 537M model (hidden=1024, 16L, 16H)
+    - Reality: 8 model sizes from 5M to 198M, scaling study
+    - Architecture section (3.4.1) needs to describe the range, not one model
+    - Optimizations (3.4.2) now include auxiliary_token_percentage control
+    - Model details (3.4.3) should become a table of configurations
+
+4. MODSZERTAN
+  4.1 Pilot run
+    - Pilot results are still valid history, keep as-is
+    - But the "main run" section needs to describe the actual experiments:
+      * Scaling curve (8 sizes)
+      * Cross-domain (sentiment vs math)
+      * Annealing ablation
+      * Distillation vs CE-only baseline
+      * Vocab size sweep
+  4.2 Korabbi pilot
+    - Fine, good to keep the encoding bug story
+  4.3 Pilot teszt elemzes
+    - Fine as historical context
+  4.4 Kiertkelesi peldak
+    - Add math examples alongside sentiment
+    - Reference confusion matrices
+    - Reference inference benchmarks
+  4.5 Korai becsles
+    - Completely outdated (2870 hrs on single RTX 4070)
+    - Now: ~40 runs on cloud GPUs, detailed cost analysis exists
+    - Rewrite with actual cloud estimates from gpu_cloud_guidance.txt
+
+5. FORRASOK
+  - 25 sources, solid foundation
+  - May need additions for math word problem related work
+
+
+=== NEW SECTIONS NEEDED ===
+
+These don't exist in thesis.txt but should be added:
+
+1. EXPERIMENTAL DESIGN
+   - Scaling study: what, why, how (8 sizes, controlled hyperparams)
+   - Ablations: annealing, distillation, vocab size, depth/width
+   - Cross-domain: same pipeline, different task complexity
+   - Controls: pure CE baseline, fixed KL ratio
+
+2. RESULTS (after runs complete)
+   - Scaling curve: accuracy vs parameter count (find the knee)
+   - Cross-domain comparison table
+   - Ablation results (does annealing help? does distillation help? does vocab size matter?)
+   - Confusion matrices per domain
+   - Inference speed table (student vs teacher, different hardware)
+
+3. MATH DOMAIN DETAILS
+   - Problem generation (templates, semantic categories, operation types)
+   - Scaffold structure and prompt engineering
+   - 31-token vocabulary (empirically validated)
+   - How it differs from sentiment (longer sequences, numeric output, different eval)
+
+4. INFRASTRUCTURE
+   - Queue system (data gen + training)
+   - Run organization (runs/{name}/ with checkpoints, logs, eval)
+   - Cloud deployment (optional, but shows practical thinking)
+   - Resumability and graceful shutdown
+
+
+=== WHAT TO KEEP AS-IS ===
+
+- Literature review (section 2) — solid, just minor additions
+- Pilot run history (4.1, 4.2, 4.3) — good narrative, shows iteration
+- Architecture component descriptions (RMSNorm, RoPE, GeGLU) — still accurate
+- The encoding bug story — examiners love honest debugging narratives
+
+
+=== RECOMMENDED REWRITE ORDER ===
+
+1. Section 3.4 (Student model) — most outdated, describes wrong model
+2. Section 4.5 (Cost estimates) — numbers are completely wrong now
+3. Section 3.2 (Data pipeline) — missing math domain, queue system
+4. Add new "Experimental Design" section — this is the thesis's backbone
+5. Abstract — rewrite last, once you know what the results are
+6. Results section — write after experiments complete

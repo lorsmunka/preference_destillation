@@ -332,7 +332,7 @@ class TrainingAnalyzer:
         ax.grid(True, alpha=0.3)
 
     def _plot_mini_eval_accuracy(self, ax):
-        batches = [d['batch'] for d in self.mini_evals]
+        batches = list(range(1, len(self.mini_evals) + 1))
         series = [
             ('Teacher-Forced', 'green', 'o', lambda d: d.get('teacher_forced_accuracy', 0)),
             ('Student', 'blue', 's', lambda d: d.get('student_accuracy', 0)),

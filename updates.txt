@@ -1,0 +1,108 @@
+UPDATES & FINDINGS
+==================
+
+Generated: 2026-03-13
+Scope: Full project scan — bugs, inconsistencies, thesis drift, improvement ideas
+
+
+=== BUGS ===
+
+1. DEAD CODE WITH UNDEFINED VARIABLE — training/model.py:232-236
+   After the `return` on line 231 in get_model_info(), there are 5 unreachable lines
+   that reference an undefined variable `positions`. If refactoring ever removes that
+   return, it would crash with NameError. Remove these lines or move them into model_info().
+
+2. LEARNING RATE WARMUP STARTS AT ZERO — training/trainer.py:430-431
+   When current_step == 0: learning_rate * (0 / warmup_steps) = 0.
+   A zero learning rate on the first step means the first batch does nothing.
+   Fix: start from step 1, or add a small epsilon floor.
+
+3. CE LOSS TEMPERATURE SCALING — training/trainer.py:473-474
+   Both KL and CE losses are scaled by temperature². Standard distillation only
+   applies temperature scaling to the KL term. The CE loss (against hard targets)
+   shouldn't need temperature² scaling — it artificially inflates the CE gradient
+   early in training when temperature is high. Worth verifying this is intentional.
+
+
+=== INCONSISTENCIES ===
+
+4. LOGS_DIR MISMATCH — shared/config.py:81
+   Config says: LOGS_DIR = "./logs12b"
+   CLAUDE.md says: "logs/ Training logs, state persistence"
+   Actual training code uses: runs/{run_name}/logs/
+   The analysis scripts using LOGS_DIR will look in the wrong place unless manually
+   adjusted. Should either match the documented structure or be configurable per-run.
+
+5. CLAUDE.md PROJECT STRUCTURE IS OUTDATED
+   Documentation says "checkpoints/" and "logs/" at project root.
+   Actual structure uses "runs/{run_name}/checkpoints/" and "runs/{run_name}/logs/".
+   Also missing: distillation_data_generation/, text_generation/, runs/ directories.
+
+6. MODEL.PY — INCOMPLETE REFACTOR between model_info() and get_model_info()
+   model_info() prints detailed info to stdout.
+   get_model_info() returns a dict but has orphaned print statements after the return.
+   These two methods should be consolidated — one returns data, one formats it.
+
+
+=== THESIS.TXT DRIFT ===
+
+7. ARCHITECTURE PARAMS OUTDATED
+   Thesis says: 537M params, hidden_dim=1024, 16 layers, 16 heads
+   Config defaults: hidden_dim=384, 18 layers, 8 heads (much smaller model)
+   The training queue may override these, but the thesis describes a specific model
+   that no longer matches the defaults.
+
+8. COSINE ANNEALING LR — REMOVED FROM CODE
+   Thesis section 3.3 and 2.7 describe Cosine Annealing as the LR scheduler.
+   Recent commit (c4face5) removed CosineAnnealingLR and replaced it with a manual
+   cosine decay implementation in _get_current_learning_rate(). The thesis should
+   reflect this is now a custom implementation, not torch's scheduler.
+
+9. TEMPERATURE SCHEDULING — NEW, NOT IN THESIS
+   Commit c08ed86 added temperature scheduling (temperature changes during training).
+   This is a meaningful addition to the methodology that the thesis doesn't cover.
+   Related to curriculum temperature [9] from the literature review — worth citing.
+
+10. MINI-EVAL SYSTEM — NEW, NOT IN THESIS
+    Mid-epoch evaluation on test batches was added (commits b8b1548, 75c03d6).
+    The thesis only mentions end-of-epoch evaluation. Mini-evals provide much better
+    visibility into training progress and should be documented.
+
+11. MULTIPLE DOMAINS — NOT IN THESIS
+    Config now supports math_word_problem domain alongside reddit_comment_sentiment.
+    The thesis only discusses Reddit comments. If math is being explored, it's worth
+    mentioning as future work or an additional experiment.
+
+12. TRAINING QUEUE SYSTEM — NOT IN THESIS
+    Training uses a queue (training_queue.json) for running multiple configs.
+    This is a practical infrastructure detail worth mentioning in the implementation.
+
+13. GRACEFUL EXIT — PARTIALLY DESCRIBED
+    Thesis mentions graceful shutdown between epochs, but the actual implementation
+    uses '%' key press and saves temp checkpoints mid-epoch too (not just between epochs).
+
+
+=== IMPROVEMENTS WORTH CONSIDERING ===
+
+14. EVAL MODE SAFETY — training/trainer.py:215-226
+    If _evaluate_batches() throws an exception during mini-eval, model stays in eval
+    mode. Wrap in try-finally to guarantee model.train() is called.
+
+15. CHECKPOINT LOADING — strict=False HIDES ISSUES
+    trainer.py uses load_state_dict(strict=False) for checkpoint loading. This is fine
+    for handling RoPE buffer changes, but could silently mask architecture mismatches
+    if the model changes. Consider logging which keys were missing/unexpected.
+
+16. SILENT JSON PARSING FAILURES — shared/classification_accuracy.py
+    When JSON extraction fails, it returns None with no logging. Makes debugging
+    classification accuracy drops very difficult. Add a warning log.
+
+17. BATCH LOADING — NO FILE EXISTENCE CHECK
+    training/batch_handler.py loads batches by index with no validation that the file
+    exists. A clear error message ("batch file not found: {path}") would save debugging
+    time vs a raw FileNotFoundError.
+
+18. UNCOMMITTED CHANGES
+    Git shows modified: analysis/training_analysis.py and training/trainer.py
+    The training_analysis.py change (line 335) fixes batch indexing — should be committed.
+    Review trainer.py changes and commit or stash.
