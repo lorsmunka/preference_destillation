@@ -37,7 +37,9 @@
       "Bash(/c/python313/python.exe:*)",
       "Bash(ls:*)",
       "Bash(xargs grep:*)",
-      "Bash(where python:*)"
+      "Bash(where python:*)",
+      "Bash(grep -E \"^d|\\\\.txt$|\\\\.json$\")",
+      "Bash(head -1 ~/preference_destillation/batches/reddit_comment_sentiment/*/batch_1.jsonl)"
     ]
   }
 }
