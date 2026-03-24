@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 from training.model import Transformer
 from training.batch_handler import BatchHandler
-from shared import get_device, get_batches_dir, get_training_run_dir, INFERENCE_TEMPERATURE, PROMPT_DELIMITER
+from shared import get_device, get_batches_dir, get_training_run_dir, load_input_vocabulary, INFERENCE_TEMPERATURE, PROMPT_DELIMITER
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -20,6 +20,8 @@ RESET = "\033[0m"
 class Evaluator:
     def __init__(self, run_config: dict):
         self.device = get_device()
+        input_vocabulary = load_input_vocabulary(run_config["domain"], run_config["teacher_model"])
+
         self.model = Transformer(
             domain=run_config["domain"],
             teacher_model=run_config["teacher_model"],
@@ -28,6 +30,7 @@ class Evaluator:
             num_heads=run_config["num_heads"],
             dropout=run_config.get("dropout", 0.15),
             auxiliary_token_percentage=run_config.get("auxiliary_token_percentage", 1.0),
+            input_vocabulary=input_vocabulary,
         ).to(self.device)
         self.tokenizer = self.model.tokenizer
         self.output_token_ids = self.model.output_token_ids
@@ -51,19 +54,22 @@ class Evaluator:
 
     def evaluate(self, example: dict) -> dict:
         prompt = self.tokenizer.encode(example["sentence"] + PROMPT_DELIMITER, add_special_tokens=False)
+        remapped_prompt = self.model.remap_input_tokens(prompt)
         steps = example["steps"]
 
-        student_ids, teacher_forced, ground_truth_ids = [], [], []
+        student_ids, remapped_student_ids, teacher_forced, ground_truth_ids = [], [], [], []
 
         for i, step in enumerate(steps):
             gt_id = self.token_to_id(step["token"])
             ground_truth_ids.append(gt_id)
 
-            student_pred = self.output_token_ids[self.predict(prompt + student_ids)]
+            student_pred = self.output_token_ids[self.predict(remapped_prompt + remapped_student_ids)]
             student_ids.append(student_pred)
+            remapped_student_ids.append(self.model.remap_input_tokens([student_pred])[0])
 
             teacher_context = [self.token_to_id(steps[j]["token"]) for j in range(i)]
-            teacher_pred_id = self.output_token_ids[self.predict(prompt + teacher_context)]
+            remapped_teacher_context = self.model.remap_input_tokens(teacher_context)
+            teacher_pred_id = self.output_token_ids[self.predict(remapped_prompt + remapped_teacher_context)]
             teacher_forced.append((self.tokenizer.decode([teacher_pred_id]), teacher_pred_id == gt_id))
 
         return {

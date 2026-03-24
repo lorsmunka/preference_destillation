@@ -1,5 +1,6 @@
 # Centralized configuration for preference distillation project
 
+import json
 import os
 import torch
 
@@ -39,6 +40,14 @@ def get_batches_dir(domain: str, teacher_model: str) -> str:
 
 def get_training_run_dir(run_name: str) -> str:
     return os.path.join("./runs", run_name)
+
+
+def load_input_vocabulary(domain: str, teacher_model: str):
+    path = os.path.join(get_batches_dir(domain, teacher_model), "input_vocabulary.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
 
 
 # Queue paths

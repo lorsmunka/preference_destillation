@@ -11,6 +11,7 @@ from shared import (
     Logger,
     get_batches_dir,
     get_training_run_dir,
+    load_input_vocabulary,
 )
 
 
@@ -52,6 +53,8 @@ class TrainingRunner:
         batch_handler = BatchHandler(batches_dir, self.config["training_test_ratio"])
         logger = Logger(self.logs_dir)
 
+        input_vocabulary = load_input_vocabulary(self.domain, self.teacher_model)
+
         transformer = Transformer(
             domain=self.domain,
             teacher_model=self.teacher_model,
@@ -60,6 +63,7 @@ class TrainingRunner:
             num_heads=self.config["num_heads"],
             dropout=self.config["dropout"],
             auxiliary_token_percentage=self.config.get("auxiliary_token_percentage", 1.0),
+            input_vocabulary=input_vocabulary,
         )
 
         self.model_info = transformer.get_model_info()

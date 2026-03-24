@@ -13,6 +13,7 @@ from training.model import Transformer
 from shared import (
     get_device,
     get_training_run_dir,
+    load_input_vocabulary,
     Utilities,
     INFERENCE_TEMPERATURE,
     MIN_SENTENCE_LENGTH,
@@ -295,6 +296,8 @@ def main():
 
     print(f"\n[Student] Loading...")
     load_start = time()
+    input_vocabulary = load_input_vocabulary(domain, run_config["teacher_model"])
+
     student_model = Transformer(
         domain=domain,
         teacher_model=run_config["teacher_model"],
@@ -303,6 +306,7 @@ def main():
         num_heads=run_config["num_heads"],
         dropout=run_config.get("dropout", 0.15),
         auxiliary_token_percentage=run_config.get("auxiliary_token_percentage", 1.0),
+        input_vocabulary=input_vocabulary,
     ).to(device)
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
     student_model.load_state_dict(checkpoint["model_state_dict"])
