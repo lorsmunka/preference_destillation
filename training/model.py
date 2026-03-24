@@ -78,7 +78,8 @@ class Transformer(nn.Module):
         num_heads: int = NUM_HEADS,
         max_seq_length: int = None,
         dropout: float = DROPOUT,
-        auxiliary_token_percentage: float = 1.0
+        auxiliary_token_percentage: float = 1.0,
+        input_vocabulary: dict = None
     ):
         start_time = time()
         print("Initializing Transformer model...")
@@ -88,7 +89,17 @@ class Transformer(nn.Module):
             max_seq_length = DOMAIN_MAX_SEQ_LENGTH[domain]
 
         self.tokenizer = AutoTokenizer.from_pretrained(teacher_model)
-        self.input_vocab_size = self.tokenizer.vocab_size
+        self.full_input_vocab_size = self.tokenizer.vocab_size
+
+        if input_vocabulary is not None:
+            self.input_vocab_size = input_vocabulary['compact_vocab_size']
+            self.input_token_mapping = {
+                int(gemma_id): compact_id
+                for gemma_id, compact_id in input_vocabulary['gemma_id_to_compact_id'].items()
+            }
+        else:
+            self.input_vocab_size = self.full_input_vocab_size
+            self.input_token_mapping = None
 
         self.vocabulary = Utilities.build_vocabulary(
             self.tokenizer, domain, auxiliary_token_percentage)
@@ -172,6 +183,11 @@ class Transformer(nn.Module):
     def get_num_parameters(self) -> int:
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
+    def remap_input_tokens(self, token_ids: list) -> list:
+        if self.input_token_mapping is None:
+            return token_ids
+        return [self.input_token_mapping.get(token_id, 0) for token_id in token_ids]
+
     def get_vocabulary(self) -> dict:
         return self.vocabulary
 
@@ -192,8 +208,12 @@ class Transformer(nn.Module):
         print(f"Difference (RoPE buffers, non-trainable): {info['non_trainable_params']:,}")
         print(
             f"\nHyperparameters: hidden_dim={self.hidden_dim}, heads={self.num_heads}, layers={len(self.transformer_layers)}, max_seq_length={self.max_seq_length}")
-        print(
-            f"Input vocab size={self.input_vocab_size}, Output vocab size={self.output_vocab_size}")
+        if self.input_token_mapping is not None:
+            print(
+                f"Input vocab size={self.input_vocab_size:,} (reduced from {self.full_input_vocab_size:,}), Output vocab size={self.output_vocab_size}")
+        else:
+            print(
+                f"Input vocab size={self.input_vocab_size:,} (full), Output vocab size={self.output_vocab_size}")
 
     def get_model_info(self) -> dict:
         input_embedding_params = self.input_embedding.weight.numel()
