@@ -147,15 +147,17 @@ def generate_teacher(model, tokenizer, sentence, domain, device, logger):
 def generate_student(model, tokenizer, output_token_ids, sentence, domain, device, logger):
     prompt = sentence + PROMPT_DELIMITER
     input_ids = tokenizer.encode(prompt, add_special_tokens=False)
+    remapped_input_ids = model.remap_input_tokens(input_ids)
     stop_token = DOMAIN_STOP_TOKEN[domain]
     max_tokens = DOMAIN_MAX_GENERATION_STEPS[domain]
 
     generated_ids = []
+    remapped_generated_ids = []
     gen_start = time()
 
     with torch.no_grad():
         for _ in range(max_tokens):
-            context = input_ids + generated_ids
+            context = remapped_input_ids + remapped_generated_ids
             tensor = torch.tensor([context], dtype=torch.long, device=device)
             logits = model(tensor)[:, -1, :][0]
 
@@ -167,6 +169,7 @@ def generate_student(model, tokenizer, output_token_ids, sentence, domain, devic
 
             pred_token_id = output_token_ids[pred_index]
             generated_ids.append(pred_token_id)
+            remapped_generated_ids.append(model.remap_input_tokens([pred_token_id])[0])
 
             token_str = tokenizer.decode([pred_token_id])
             logger.append_token(token_str)
