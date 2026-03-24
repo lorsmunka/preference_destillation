@@ -186,7 +186,16 @@ class Transformer(nn.Module):
     def remap_input_tokens(self, token_ids: list) -> list:
         if self.input_token_mapping is None:
             return token_ids
-        return [self.input_token_mapping.get(token_id, 0) for token_id in token_ids]
+        remapped = []
+        for token_id in token_ids:
+            if token_id in self.input_token_mapping:
+                remapped.append(self.input_token_mapping[token_id])
+            else:
+                raise ValueError(
+                    f"Token ID {token_id} not found in input vocabulary mapping. "
+                    f"Rebuild input vocabulary with: python shared/build_input_vocabulary.py"
+                )
+        return remapped
 
     def get_vocabulary(self) -> dict:
         return self.vocabulary

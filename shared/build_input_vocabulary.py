@@ -19,6 +19,7 @@ from transformers import AutoTokenizer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
+from shared.utilities import Utilities
 
 
 WORKER_COUNT = 8
@@ -101,6 +102,17 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
 
     batches_directory = get_batches_dir(domain, teacher_model)
     unique_token_ids = scan_batches(batches_directory, tokenizer)
+
+    # Include all output vocab token IDs (they feed back as input during autoregressive generation)
+    output_vocabulary = Utilities.build_vocabulary(tokenizer, domain)
+    output_token_ids = set(
+        output_vocabulary['token_to_id'][token]
+        for token in output_vocabulary['token_list']
+    )
+    added_from_output = output_token_ids - unique_token_ids
+    unique_token_ids.update(output_token_ids)
+    if added_from_output:
+        print(f"  Added {len(added_from_output)} output vocab tokens not found in batches")
 
     if not unique_token_ids:
         print("No tokens found. Check that batch files exist.")

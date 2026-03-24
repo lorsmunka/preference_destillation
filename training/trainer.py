@@ -250,6 +250,7 @@ class Trainer:
             all_target_indices.append(target_index)
 
         full_input_ids = sentence_tokens + all_token_ids[:-1]
+        full_input_ids = self.model.remap_input_tokens(full_input_ids)
         input_tensor = torch.tensor(
             [full_input_ids], dtype=torch.long, device=self.device)
         target_logits_tensor = torch.tensor(
@@ -380,6 +381,7 @@ class Trainer:
 
         # Teacher-forced: single forward pass (all ground truth tokens as input)
         full_input_ids = sentence_tokens + all_token_ids[:-1]
+        full_input_ids = self.model.remap_input_tokens(full_input_ids)
         input_tensor = torch.tensor([full_input_ids], dtype=torch.long, device=self.device)
         target_logits_tensor = torch.tensor(all_target_logits, dtype=torch.float32, device=self.device)
         target_indices_tensor = torch.tensor(all_target_indices, dtype=torch.long, device=self.device)
@@ -395,19 +397,20 @@ class Trainer:
 
         # Student: sequential forward passes (own predictions as input)
         student_correct = 0
+        remapped_sentence_tokens = self.model.remap_input_tokens(sentence_tokens)
         student_token_ids = []
         student_tokens = []
 
         for step_index in range(num_steps):
             student_input_tensor = torch.tensor(
-                [sentence_tokens + student_token_ids], dtype=torch.long, device=self.device)
+                [remapped_sentence_tokens + student_token_ids], dtype=torch.long, device=self.device)
             student_logits = self.model(student_input_tensor)[:, -1, :]
             student_predicted_index = torch.argmax(student_logits[0]).item()
             student_predicted_token_id = self.model.output_token_ids[student_predicted_index]
             student_predicted_token = self.vocabulary['token_list'][student_predicted_index]
             if student_predicted_index == all_target_indices[step_index]:
                 student_correct += 1
-            student_token_ids.append(student_predicted_token_id)
+            student_token_ids.append(self.model.remap_input_tokens([student_predicted_token_id])[0])
             student_tokens.append(student_predicted_token)
 
         return total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct, student_correct, num_steps, student_tokens
