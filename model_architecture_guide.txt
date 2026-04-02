@@ -3,6 +3,12 @@ MODEL ARCHITECTURE GUIDE
 Reference for designing training experiments. Contains architecture math,
 design constraints, magic strings, and experiment history.
 
+When asked for a model size, always confirm:
+  1. Embedding params (input_vocab_size * h)
+  2. Attention params (4 * h^2 per layer, total across layers)
+  3. FFN params (12 * h^2 per layer, total across layers)
+  4. Model total (embedding + attention total + FFN total)
+
 
 STUDENT MODEL ARCHITECTURE
 --------------------------
@@ -11,12 +17,16 @@ Attention: Multi-head self-attention, causal mask, RoPE (no learned pos embeddin
 FFN: Gated linear unit (GELU), 3 projections (gate, up, down), 4x expansion
 Normalization: RMSNorm (pre-norm), no bias
 Linear layers: No bias (except output projection head which has bias)
-Input embedding: Full Gemma vocabulary (~256k tokens) -> hidden_dim
+Input embedding: Reduced input vocabulary -> hidden_dim (reddit: ~68k, math: ~1.3k tokens)
 Output projection: hidden_dim -> output_vocab_size (domain-dependent)
 
 Output vocab sizes (from build_vocabulary):
   reddit_comment_sentiment: ~525 tokens (JSON + whitespace + prompt + auxiliary)
   math_word_problem: ~31 tokens (digits, operators, variables, True/False)
+
+Input vocab sizes (from build_input_vocabulary):
+  reddit_comment_sentiment: 68,328 tokens (73.9% reduction from 262,144)
+  math_word_problem: 1,282 tokens (99.5% reduction from 262,144)
 
 
 PARAMETER COUNT FORMULA
@@ -28,15 +38,53 @@ Per transformer layer (no bias terms):
   Total/layer: ~16 * hidden_dim^2
 
 Full model:
-  Input embedding:  gemma_vocab_size * hidden_dim  (~256,000 * h)
+  Input embedding:  input_vocab_size * hidden_dim  (domain-dependent, see vocab sizes above)
   Transformer body: num_layers * 16 * hidden_dim^2
   Output head:      hidden_dim * output_vocab_size + output_vocab_size  (negligible)
   Final norm:       hidden_dim  (negligible)
 
-Simplified: total ≈ 256,000 * h + 16 * L * h^2
+Simplified (reddit): total ≈ 68,328 * h + 16 * L * h^2
+Simplified (math):   total ≈ 1,282 * h + 16 * L * h^2
 
-Note: Input embedding dominates at small h, transformer body dominates at large h.
-At h=768 they're roughly equal (~197M embedding, ~227M body for 24L).
+Note: With reduced input vocab, embedding still dominates at small h but crossover
+happens much sooner. For reddit at h=384/12L they're roughly equal (~26M each).
+For math, embedding is negligible at all sizes — transformer body dominates.
+
+
+PARAMETER CALCULATIONS PER CONFIG (reddit_comment_sentiment, input_vocab=68,328)
+---------------------------------------------------------------------------------
+Embedding = 68,328 * h
+Attention per layer = 4 * h^2
+FFN per layer = 12 * h^2
+Body per layer = 16 * h^2
+Transformer body = L * 16 * h^2
+
+  | h    | L  | Embedding  | Attn/layer | FFN/layer  | Body/layer | Body total | Model total |
+  |------|----|------------|------------|------------|------------|------------|-------------|
+  | 20   | 2  | 1,366,560  | 1,600      | 4,800      | 6,400      | 12,800     | 1,379,360   |
+  | 40   | 2  | 2,733,120  | 6,400      | 19,200     | 25,600     | 51,200     | 2,784,320   |
+  | 64   | 2  | 4,372,992  | 16,384     | 49,152     | 65,536     | 131,072    | 4,504,064   |
+  | 128  | 4  | 8,745,984  | 65,536     | 196,608    | 262,144    | 1,048,576  | 9,794,560   |
+  | 192  | 6  | 13,118,976 | 147,456    | 442,368    | 589,824    | 3,538,944  | 16,657,920  |
+  | 256  | 8  | 17,491,968 | 262,144    | 786,432    | 1,048,576  | 8,388,608  | 25,880,576  |
+  | 384  | 12 | 26,237,952 | 589,824    | 1,769,472  | 2,359,296  | 28,311,552 | 54,549,504  |
+  | 512  | 16 | 34,983,936 | 1,048,576  | 3,145,728  | 4,194,304  | 67,108,864 | 102,092,800 |
+
+PARAMETER CALCULATIONS PER CONFIG (math_word_problem, input_vocab=1,282)
+------------------------------------------------------------------------
+Embedding = 1,282 * h
+Transformer body is identical (same formula). Only embedding changes.
+
+  | h    | L  | Embedding | Body total | Model total |
+  |------|----|-----------|------------|-------------|
+  | 20   | 2  | 25,640    | 12,800     | 38,440      |
+  | 40   | 2  | 51,280    | 51,200     | 102,480     |
+  | 64   | 2  | 82,048    | 131,072    | 213,120     |
+  | 128  | 4  | 164,096   | 1,048,576  | 1,212,672   |
+  | 192  | 6  | 246,144   | 3,538,944  | 3,785,088   |
+  | 256  | 8  | 328,192   | 8,388,608  | 8,716,800   |
+  | 384  | 12 | 492,288   | 28,311,552 | 28,803,840  |
+  | 512  | 16 | 656,384   | 67,108,864 | 67,765,248  |
 
 
 DESIGN CONSTRAINTS
@@ -124,21 +172,21 @@ Note: Even the ~50M model is incredibly capable, so range starts at ~10M.
 
 | Run name               | h    | L  | Heads | h/head | ~Params | % of max | Status  | Result |
 |------------------------|------|----|-------|--------|---------|----------|---------|--------|
-| tsc-scale-20h-2L-5M        | 20   | 2  | 1     | 20     | 5M      | 3%       | queued  |        |
-| tsc-scale-40h-2L-10M       | 40   | 2  | 1     | 40     | 10M     | 5%       | queued  |        |
-| tsc-scale-64h-2L-17M       | 64   | 2  | 1     | 64     | 17M     | 8%       | queued  |        |
-| tsc-scale-128h-4L-36M      | 128  | 4  | 2     | 64     | 36M     | 18%      | queued  |        |
-| tsc-scale-192h-6L-53M      | 192  | 6  | 3     | 64     | 53M     | 26%      | queued  |        |
-| tsc-scale-256h-8L-74M      | 256  | 8  | 4     | 64     | 74M     | 37%      | queued  |        |
-| tsc-scale-384h-12L-127M    | 384  | 12 | 6     | 64     | 127M    | 63%      | queued  |        |
-| tsc-scale-512h-16L-198M    | 512  | 16 | 8     | 64     | 198M    | 100%     | queued  |        |
+| tsc-scale-20h-2L-1M        | 20   | 2  | 1     | 20     | 1.4M    | 1%       | queued  |        |
+| tsc-scale-40h-2L-3M        | 40   | 2  | 1     | 40     | 2.8M    | 3%       | queued  |        |
+| tsc-scale-64h-2L-5M        | 64   | 2  | 1     | 64     | 4.5M    | 4%       | queued  |        |
+| tsc-scale-128h-4L-10M      | 128  | 4  | 2     | 64     | 9.8M    | 10%      | queued  |        |
+| tsc-scale-192h-6L-17M      | 192  | 6  | 3     | 64     | 16.7M   | 16%      | queued  |        |
+| tsc-scale-256h-8L-26M      | 256  | 8  | 4     | 64     | 25.9M   | 25%      | queued  |        |
+| tsc-scale-384h-12L-55M     | 384  | 12 | 6     | 64     | 54.5M   | 53%      | queued  |        |
+| tsc-scale-512h-16L-102M    | 512  | 16 | 8     | 64     | 102.1M  | 100%     | queued  |        |
 
 Notes:
 - Both h and L scale together (balanced architectures)
-- Range: ~17M to ~198M (even ~50M is very capable, so starting small)
+- Range: ~1.4M to ~102M (with reduced input vocab, models are much smaller)
 - 3 epochs per run, KL anneals from 0.99 to 0.3
-- Embedding (~256k * h) dominates at small h; transformer body dominates at large h
-- If knee is at e.g. 53M, run DVW and KL experiments at that size class
+- Embedding (~68k * h) dominates at small h; crossover with body around h=384/12L
+- If knee is at e.g. 17M, run DVW and KL experiments at that size class
 
 ### DVW: Depth vs Width (sentiment domain) [SUGGESTED - after SCALE]
 Question: At the ideal size from SCALE, is depth or width more important?
