@@ -102,6 +102,12 @@ Clean combinations (hidden_dim / num_heads = head_dim):
 
 Rule of thumb: head_dim=64 is the sweet spot. Pick hidden_dim as multiple of num_heads*64.
 
+Depth vs speed tradeoff: More layers (even with fewer total params) means slower
+inference, because layers execute sequentially — each depends on the previous layer's
+output. A wider-but-shallower model (e.g. 6L/768h vs 18L/384h) can have similar param
+count but run ~3x faster, since matrix multiplications parallelize well on GPU with
+increased width. Prefer fewer layers when inference speed matters.
+
 
 DOMAIN MAGIC STRINGS
 --------------------

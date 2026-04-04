@@ -39,7 +39,8 @@
       "Bash(xargs grep:*)",
       "Bash(where python:*)",
       "Bash(grep -E \"^d|\\\\.txt$|\\\\.json$\")",
-      "Bash(head -1 ~/preference_destillation/batches/reddit_comment_sentiment/*/batch_1.jsonl)"
+      "Bash(head -1 ~/preference_destillation/batches/reddit_comment_sentiment/*/batch_1.jsonl)",
+      "WebFetch(domain:www.semanticscholar.org)"
     ]
   }
 }
