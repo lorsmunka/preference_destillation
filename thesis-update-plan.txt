@@ -1,95 +1,172 @@
 THESIS.TXT UPDATE PLAN
 ======================
 
-Generated: 2026-03-13
+Updated: 2026-04-04
 Purpose: Track what's changed since thesis.txt was written, so it can be
          updated section by section without losing anything.
+
+
+=== CURRENT PROJECT STATE ===
+
+10 completed runs, 1 in progress, 3 more queued.
+Two domains fully implemented: reddit_comment_sentiment, math_word_problem.
+Reduced input vocabulary implemented and tested across both domains.
+Temperature annealing, KL annealing, mini-eval all implemented.
+
+Completed runs:
+  SCALE experiments (full input vocab, 7 runs):
+    tsc-scale-20h-2L-5M        (20h, 2L, 1 head, ~5M params)
+    tsc-scale-40h-2L-10M       (40h, 2L, 1 head, ~10M params)
+    tsc-scale-64h-2L-17M       (64h, 2L, 1 head, ~17M params)
+    tsc-scale-128h-4L-36M      (128h, 4L, 2 heads, ~36M params)
+    tsc-scale-192h-6L-53M      (192h, 6L, 3 heads, ~53M params)
+    tsc-scale-256h-8L-74M      (256h, 8L, 4 heads, ~74M params)
+    tsc-scale-384h-12L-127M    (384h, 12L, 6 heads, ~127M params)
+
+  REDUCED INPUT VOCAB experiments (3 runs):
+    tsc-reduced-input-proj-5M-64h-8L    (64h, 8L, 1 head, ~5M params)
+    tsc-reduced-input-proj-10M-128h-5L  (128h, 5L, 2 heads, ~10M params)
+    tsc-reduced-input-proj-36M-320h-9L  (320h, 9L, 5 heads, ~36M params)
+
+  In progress:
+    tsc-temp-anneal-mild-80h-5L-6M  (80h, 5L, 1 head, ~6M, temp 3->1)
+
+  Queued:
+    tsc-temp-anneal-80h-5L-6M       (80h, 5L, 1 head, ~6M, temp 5->1)
+    tsc-kl-anneal-80h-5L-6M         (80h, 5L, 1 head, ~6M, KL 0.99->0.4)
+    tsc-kl-anneal-wide-80h-5L-6M    (80h, 5L, 1 head, ~6M, KL 0.9->0.1)
 
 
 === SCOPE EXPANSION (thesis describes ~10% of current project) ===
 
 The thesis was written around a single-domain, single-model pilot run.
 The project is now a multi-domain, multi-config experimental pipeline
-with ~40 planned training runs across 2 domains.
+with completed scaling experiments and active ablation studies.
 
 Key additions not in thesis at all:
-  - Math word problem domain (260+ templates, 13 operation types, ~31 token vocab)
+  - Math word problem domain (14 operation types, 40+ templates per op, ~31 token vocab)
   - Queue-based pipeline (data gen queue + training queue)
-  - Scaling experiments (8 model sizes, 5M to 198M params)
-  - Depth vs Width ablation (planned, after scaling results)
-  - KL annealing vs no-annealing ablation (queued)
-  - Distillation vs no distillation (pure CE baseline possible)
-  - Vocabulary size sweep (auxiliary_token_percentage control)
+  - Scaling experiments: 7 completed runs (5M to 127M params) — RESULTS AVAILABLE
+  - Reduced input vocabulary: 3 completed runs — RESULTS AVAILABLE
+    (68k tokens for reddit = 73.9% reduction, 1.3k for math = 99.5% reduction)
+  - Temperature annealing experiments: 1 running, 1 queued (3->1 and 5->1)
+  - KL ratio annealing experiments: 2 queued (0.99->0.4 and 0.9->0.1)
+  - Mini-eval system (mid-epoch evaluation every 1000 batches)
+  - Inference speed benchmarking (implemented in analysis/inference.py)
   - Confusion matrices per category (implemented)
-  - Inference speed benchmarking (implemented in inference.py / evaluate_model)
   - Cloud GPU cost analysis and scaling estimates
-  - Temperature scheduling (curriculum temperature)
-  - Mini-eval system (mid-epoch evaluation)
+  - All annealing uses cosine decay schedule (not linear)
 
 
 === SECTION-BY-SECTION DRIFT ===
 
 ABSTRACT
+  Status: OUTDATED
   - Still says "Reddit comment classification" — now also math word problems
   - Doesn't mention the experimental methodology (scaling, ablations)
   - Should frame it as an experimental study, not just a pipeline
+  - Can now cite actual results from 10 completed runs
 
 1. BEVEZETES
+  Status: MOSTLY OK, EXPAND
   - Fine as intro, but scope section (1.1) should mention both domains
   - Cost analysis section should reference the GPU guidance work done
+  - Can now say "multiple model sizes tested" rather than planning it
 
 2. IRODALOMKUTATAS
-  - Solid, 25 sources, mostly still relevant
+  Status: SOLID, MINOR ADDITIONS
+  - 25 sources, mostly still relevant
   - Add: curriculum temperature [9] is now implemented, not just cited
-  - Consider adding: any references for math word problem generation/evaluation
+  - Add: temperature annealing literature (AKD [8] EACL 2021, CTKD [9] AAAI 2023,
+    DTKD 2024, Adaptive Temperature Distillation 2025) — project now tests this
+  - Consider adding: math word problem generation/evaluation references
+  - Note: Hinton's original work uses constant temperature (T=20 on MNIST),
+    temp annealing is a newer research direction (2021+)
 
 3. IMPLEMENTACIO
   3.1 Pelda
+    Status: NEEDS MATH EXAMPLE
     - Only shows Reddit example — add math example too
+    - Show the scaffold structure: "Problem: ...\nA=...\nB=...\nC=A+B=...\nSolution: ...;"
+
   3.2 Data extraction pipeline
+    Status: MAJOR UPDATE NEEDED
     - Describes single-domain Gemma 4B pipeline
     - Now: queue-driven, multi-domain, with domain-specific prompts/vocabs/stop tokens
-    - Math prompt engineering (scaffold structure, "Calculations:\nA=") is novel, worth describing
+    - Math prompt engineering (scaffold structure) is novel, worth describing
     - Vocab sizes: ~525 (sentiment) vs ~31 (math) — show the contrast
+    - Reduced input vocab: 68,328 tokens (reddit), 1,282 tokens (math) vs 262,144 full
+    - Data gen queue system with batch saving, info.json tracking, resume support
+    - 128 batch files generated for math domain (~500k examples)
+
   3.3 Tanitas
+    Status: UPDATE NEEDED
     - Loss description is still accurate (KL + CE annealing)
-    - Missing: temperature scheduling, mini-eval system
+    - Missing: temperature annealing (cosine decay schedule, configurable start/end)
+    - Missing: mini-eval system (every 1000 batches, configurable)
     - Missing: queue system for batching experiments
-    - Cosine annealing LR: now custom implementation, not torch scheduler
-    - Missing: pure CE baseline as control experiment
+    - Cosine annealing: now custom implementation, not torch scheduler
+    - Missing: learning rate warmup phase (linear warmup for first lr_warmup_ratio steps)
+    - All annealing (temp, KL ratio, LR) uses cosine decay, not linear
+    - Missing: run directory structure (runs/{name}/checkpoints/, logs/, info.json)
+    - Missing: structured logging (training.jsonl, mini_eval.jsonl, eval_epoch.jsonl)
+
   3.4 Student modell
-    - MAJOR REWRITE NEEDED
-    - Thesis describes one 537M model (hidden=1024, 16L, 16H)
-    - Reality: 8 model sizes from 5M to 198M, scaling study
+    Status: MAJOR REWRITE NEEDED
+    - Thesis describes one 537M model (hidden=1024, 16L, 16H, full input vocab 262k)
+    - Reality: 10 completed models from 5M to 127M params
+    - Reduced input vocab now implemented (68k for reddit, 1.3k for math)
+    - The 537M model no longer exists — was the original pilot, since replaced
     - Architecture section (3.4.1) needs to describe the range, not one model
-    - Optimizations (3.4.2) now include auxiliary_token_percentage control
+    - Optimizations (3.4.2) now include:
+      * auxiliary_token_percentage control
+      * reduced INPUT vocabulary (not just output)
+      * configurable architecture per queue entry
     - Model details (3.4.3) should become a table of configurations
+    - Parameter formula: total ~ input_vocab * h + 16 * L * h^2
+    - Key insight: with reduced input vocab, embedding no longer dominates at small h,
+      allowing much more compute to go to the transformer body
 
 4. MODSZERTAN
   4.1 Pilot run
+    Status: KEEP AS HISTORY, ADD NEW RESULTS
     - Pilot results are still valid history, keep as-is
-    - But the "main run" section needs to describe the actual experiments:
-      * Scaling curve (8 sizes)
-      * Cross-domain (sentiment vs math)
-      * Annealing ablation
-      * Distillation vs CE-only baseline
-      * Vocab size sweep
+    - But must add new sections for actual experiment results:
+      * Scaling curve results (7 sizes, accuracy vs params)
+      * Reduced input vocab results (3 runs, compare vs full vocab at same param budget)
+      * Temperature annealing results (when complete)
+      * KL annealing comparison results (when complete)
+
   4.2 Korabbi pilot
+    Status: KEEP AS-IS
     - Fine, good to keep the encoding bug story
+
   4.3 Pilot teszt elemzes
+    Status: KEEP AS HISTORY
     - Fine as historical context
+
   4.4 Kiertkelesi peldak
+    Status: EXPAND
     - Add math examples alongside sentiment
     - Reference confusion matrices
     - Reference inference benchmarks
+    - Show scaling comparison (small model vs large model outputs)
+
   4.5 Korai becsles
-    - Completely outdated (2870 hrs on single RTX 4070)
-    - Now: ~40 runs on cloud GPUs, detailed cost analysis exists
-    - Rewrite with actual cloud estimates from gpu_cloud_guidance.txt
+    Status: COMPLETELY OUTDATED
+    - Says 2870 hrs on single RTX 4070 for one 537M model
+    - Now: 10 runs completed on cloud GPUs, ranging 5M to 127M params
+    - Rewrite with actual cloud estimates and real training times
+    - Reference gpu_cloud_guidance.txt if it exists
+    - Show actual training times from completed runs (info.json has timestamps)
 
 5. FORRASOK
+  Status: NEEDS ADDITIONS
   - 25 sources, solid foundation
-  - May need additions for math word problem related work
+  - Add: DTKD (Wei et al., 2024) for dynamic temperature KD
+  - Add: Adaptive Temperature Distillation (2025) if cited
+  - May need math word problem generation references
+  - Consider: DTS (Dynamic Temperature Scheduler, 2025)
 
 
 === NEW SECTIONS NEEDED ===
@@ -97,29 +174,46 @@ ABSTRACT
 These don't exist in thesis.txt but should be added:
 
 1. EXPERIMENTAL DESIGN
-   - Scaling study: what, why, how (8 sizes, controlled hyperparams)
-   - Ablations: annealing, distillation, vocab size, depth/width
-   - Cross-domain: same pipeline, different task complexity
-   - Controls: pure CE baseline, fixed KL ratio
+   - Scaling study: 7 model sizes (5M to 127M), controlled hyperparams, COMPLETED
+   - Reduced input vocab: 3 runs at matched param budgets, COMPLETED
+   - Temperature annealing: 2 configs (3->1, 5->1), IN PROGRESS/QUEUED
+   - KL ratio annealing: 2 configs (0.99->0.4, 0.9->0.1), QUEUED
+   - All experiments use same domain (reddit_comment_sentiment) for fair comparison
+   - Architecture: same formula, balanced depth/width scaling
+   - Controls: identical hyperparams except the variable being tested
 
-2. RESULTS (after runs complete)
-   - Scaling curve: accuracy vs parameter count (find the knee)
-   - Cross-domain comparison table
-   - Ablation results (does annealing help? does distillation help? does vocab size matter?)
-   - Confusion matrices per domain
-   - Inference speed table (student vs teacher, different hardware)
+2. RESULTS
+   - Scaling curve: accuracy vs parameter count from 7 completed runs
+   - Reduced input vocab: compare 5M/10M/36M reduced vs full vocab equivalents
+   - Temperature annealing: compare 3->1 vs 5->1 vs KL-only baseline
+   - KL annealing: compare 0.99->0.4 vs 0.9->0.1 schedules
+   - Cross-run metrics: final eval accuracy, convergence speed, loss curves
+   - Key questions to answer:
+     * Where is the knee in the scaling curve?
+     * Does reduced input vocab help at same param budget?
+     * Is temp annealing better than KL annealing?
+     * How aggressive should KL annealing be?
 
 3. MATH DOMAIN DETAILS
-   - Problem generation (templates, semantic categories, operation types)
-   - Scaffold structure and prompt engineering
-   - 31-token vocabulary (empirically validated)
-   - How it differs from sentiment (longer sequences, numeric output, different eval)
+   - Problem generation (14 operation types, 40+ templates each)
+   - Semantic categories: arithmetic, compound, comparison
+   - Word problem variables (names, items, quantities)
+   - Scaffold structure: "Problem: ...\nA={val}\nB={val}\nC=A+B={result}\nSolution: {result};"
+   - 31-token output vocabulary (digits, operators, variable names, keywords)
+   - 1,282-token reduced input vocabulary (99.5% reduction)
+   - How it differs from sentiment:
+     * Longer sequences (210 vs 75 max)
+     * Numeric output vs categorical
+     * Different evaluation (exact match vs category match)
+     * Much smaller vocab (31 vs 525 output, 1.3k vs 68k input)
 
 4. INFRASTRUCTURE
-   - Queue system (data gen + training)
-   - Run organization (runs/{name}/ with checkpoints, logs, eval)
-   - Cloud deployment (optional, but shows practical thinking)
-   - Resumability and graceful shutdown
+   - Queue system (data gen queue + training queue, JSON-based)
+   - Run organization: runs/{name}/ with checkpoints/, logs/, info.json
+   - Structured logging: training.jsonl, mini_eval.jsonl, eval_epoch.jsonl
+   - Resumability: checkpoint save/load, graceful shutdown (% key)
+   - Mini-eval: periodic evaluation during training (every 1000 batches)
+   - Cloud deployment considerations
 
 
 === WHAT TO KEEP AS-IS ===
@@ -132,9 +226,12 @@ These don't exist in thesis.txt but should be added:
 
 === RECOMMENDED REWRITE ORDER ===
 
-1. Section 3.4 (Student model) — most outdated, describes wrong model
+1. Section 3.4 (Student model) — most outdated, describes wrong model size
 2. Section 4.5 (Cost estimates) — numbers are completely wrong now
-3. Section 3.2 (Data pipeline) — missing math domain, queue system
-4. Add new "Experimental Design" section — this is the thesis's backbone
-5. Abstract — rewrite last, once you know what the results are
-6. Results section — write after experiments complete
+3. Section 3.2 (Data pipeline) — missing math domain, queue system, reduced input vocab
+4. Section 3.3 (Training) — missing temp annealing, mini-eval, queue system
+5. Add new "Experimental Design" section — backbone of the thesis
+6. Add new "Results" section — populate with data from 10 completed runs
+7. Add new "Math Domain" section — fully implemented, worth documenting
+8. Abstract — rewrite last, once results sections are written
+9. Section 2 (Literature) — add temp annealing papers, math references
