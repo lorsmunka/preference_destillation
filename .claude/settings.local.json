@@ -5,7 +5,10 @@
       "Bash(git merge:*)",
       "Bash(git reset:*)",
       "Bash(git checkout:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebSearch",
+      "WebFetch(domain:apxml.com)",
+      "Bash(python3:*)"
     ]
   }
 }
