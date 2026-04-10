@@ -61,71 +61,63 @@ Key additions not in thesis at all:
 === SECTION-BY-SECTION DRIFT ===
 
 ABSTRACT
-  Status: OUTDATED
-  - Still says "Reddit comment classification" — now also math word problems
-  - Doesn't mention the experimental methodology (scaling, ablations)
-  - Should frame it as an experimental study, not just a pipeline
-  - Can now cite actual results from 10 completed runs
+  Status: UPDATED (2026-04-08)
+  - Now mentions both domains (sentiment + math)
+  - Mentions scaling experiments, temp annealing, KL-CE annealing
+  - Cites concrete results (87%+ classification, 93%+ student only, 98%+ teacher forced)
+  - Remaining: could be tightened further once all results sections exist
 
 1. BEVEZETES
-  Status: MOSTLY OK, EXPAND
-  - Fine as intro, but scope section (1.1) should mention both domains
-  - Cost analysis section should reference the GPU guidance work done
-  - Can now say "multiple model sizes tested" rather than planning it
+  Status: UPDATED (2026-04-08)
+  - 1.1 now mentions both domains (reddit sentiment + math word problem)
+  - "kutatási pipeline" framing, minimális módosítással új domain hozzáadható
+  - E/1 → általános alany
+  - Remaining: cost analysis section could reference GPU guidance work
 
 2. IRODALOMKUTATAS
-  Status: SOLID, MINOR ADDITIONS
-  - 25 sources, mostly still relevant
-  - Add: curriculum temperature [9] is now implemented, not just cited
-  - Add: temperature annealing literature (AKD [8] EACL 2021, CTKD [9] AAAI 2023,
-    DTKD 2024, Adaptive Temperature Distillation 2025) — project now tests this
-  - Consider adding: math word problem generation/evaluation references
-  - Note: Hinton's original work uses constant temperature (T=20 on MNIST),
-    temp annealing is a newer research direction (2021+)
+  Status: UPDATED (2026-04-08)
+  - 2.4: KL/CE arány és temp annealing now described as implemented, not just cited
+  - 2.5: input vocab reduction added (was "input vocabulary teljes marad")
+  - 2.8: 537M → 5M-127M model range
+  - 2.12: "teljes input vocabulary" → ki- és bemeneti redukció
+  - E/1 → általános alany
+  - Remaining: no new sources added (DTKD etc. not used/read)
 
 3. IMPLEMENTACIO
   3.1 Pelda
-    Status: NEEDS MATH EXAMPLE
+    Status: NEEDS MATH EXAMPLE (not yet done)
     - Only shows Reddit example — add math example too
-    - Show the scaffold structure: "Problem: ...\nA=...\nB=...\nC=A+B=...\nSolution: ...;"
 
   3.2 Data extraction pipeline
-    Status: MAJOR UPDATE NEEDED
-    - Describes single-domain Gemma 4B pipeline
-    - Now: queue-driven, multi-domain, with domain-specific prompts/vocabs/stop tokens
-    - Math prompt engineering (scaffold structure) is novel, worth describing
-    - Vocab sizes: ~525 (sentiment) vs ~31 (math) — show the contrast
-    - Reduced input vocab: 68,328 tokens (reddit), 1,282 tokens (math) vs 262,144 full
-    - Data gen queue system with batch saving, info.json tracking, resume support
-    - 128 batch files generated for math domain (~500k examples)
+    Status: UPDATED (2026-04-08)
+    - Now describes both domains (reddit + math with 13 operation types, scaffold structure)
+    - Vocab sizes corrected: ~525 reddit, ~528 math (both with auxiliary)
+    - Reduced input vocab mentioned
+    - E/1 → általános alany
+    - Remaining: queue system details not described (implementation detail)
 
   3.3 Tanitas
-    Status: UPDATE NEEDED
-    - Loss description is still accurate (KL + CE annealing)
-    - Missing: temperature annealing (cosine decay schedule, configurable start/end)
-    - Missing: mini-eval system (every 1000 batches, configurable)
-    - Missing: queue system for batching experiments
-    - Cosine annealing: now custom implementation, not torch scheduler
-    - Missing: learning rate warmup phase (linear warmup for first lr_warmup_ratio steps)
-    - All annealing (temp, KL ratio, LR) uses cosine decay, not linear
-    - Missing: run directory structure (runs/{name}/checkpoints/, logs/, info.json)
-    - Missing: structured logging (training.jsonl, mini_eval.jsonl, eval_epoch.jsonl)
+    Status: UPDATED (2026-04-08)
+    - Forward KL divergence explained with MiniLLM [6] context
+    - Temperature annealing added (cosine decay, configurable start→end)
+    - LR warmup + cosine decay added
+    - Mini-eval added (configurable frequency and batch count)
+    - KL/CE ratio now described as configurable, not fixed 90-10
+    - "kap" → "kaphat" (nem minden kísérlet használja)
+    - Test ratio corrected (10% → configurable, default 2%)
+    - E/1 → általános alany
+    - Remaining: queue system, run directory structure, structured logging not described
 
   3.4 Student modell
-    Status: MAJOR REWRITE NEEDED
-    - Thesis describes one 537M model (hidden=1024, 16L, 16H, full input vocab 262k)
-    - Reality: 10 completed models from 5M to 127M params
-    - Reduced input vocab now implemented (68k for reddit, 1.3k for math)
-    - The 537M model no longer exists — was the original pilot, since replaced
-    - Architecture section (3.4.1) needs to describe the range, not one model
-    - Optimizations (3.4.2) now include:
-      * auxiliary_token_percentage control
-      * reduced INPUT vocabulary (not just output)
-      * configurable architecture per queue entry
-    - Model details (3.4.3) should become a table of configurations
-    - Parameter formula: total ~ input_vocab * h + 16 * L * h^2
-    - Key insight: with reduced input vocab, embedding no longer dominates at small h,
-      allowing much more compute to go to the transformer body
+    Status: UPDATED (2026-04-08)
+    - 3.4: pilot framing kept, "később" → "a projekt bővült 5M-127M-ig"
+    - 3.4.1: paraméterezhető architektúra, formula, pilot vs reduced vocab kontraszt
+      * Gemma 3 4b embedding mérete (262,208 × 2560 = ~671M) hozzáadva
+      * Vocab csökkentés = lineáris embedding paramétercsökkentés kifejtve
+      * 384h/12L példa: 230M → 55M (76% csökkenés), body 12% → 52%
+    - 3.4.2: input+output vocab mindkét domainre, context lengths, 34x-860x méretcsökkentés
+    - 3.4.3: modellméret range-ek, 7 scale + 3 reduced input kísérlet
+    - E/1 → általános alany
 
 4. MODSZERTAN
   4.1 Pilot run
@@ -152,13 +144,12 @@ ABSTRACT
     - Reference inference benchmarks
     - Show scaling comparison (small model vs large model outputs)
 
-  4.5 Korai becsles
-    Status: COMPLETELY OUTDATED
-    - Says 2870 hrs on single RTX 4070 for one 537M model
-    - Now: 10 runs completed on cloud GPUs, ranging 5M to 127M params
-    - Rewrite with actual cloud estimates and real training times
-    - Reference gpu_cloud_guidance.txt if it exists
-    - Show actual training times from completed runs (info.json has timestamps)
+  4.5 Erőforrás becslés (renamed from "Korai becslés")
+    Status: UPDATED (2026-04-08)
+    - Data gen: ~3 mp/példa, A100 20GB szelet, ~417 óra / 500k példa
+    - Training: 0.5 mp/batch, RTX 4070, ~6.5 óra / modell / 3 epoch
+    - Forward pass optimization explained (40-50x → 1 pass per example)
+    - Bottleneck clearly identified: data gen, not training
 
 5. FORRASOK
   Status: NEEDS ADDITIONS
@@ -226,12 +217,20 @@ These don't exist in thesis.txt but should be added:
 
 === RECOMMENDED REWRITE ORDER ===
 
-1. Section 3.4 (Student model) — most outdated, describes wrong model size
-2. Section 4.5 (Cost estimates) — numbers are completely wrong now
-3. Section 3.2 (Data pipeline) — missing math domain, queue system, reduced input vocab
-4. Section 3.3 (Training) — missing temp annealing, mini-eval, queue system
+DONE (2026-04-08):
+1. Section 3.4 (Student model) ✓
+2. Section 4.5 (Cost estimates → Erőforrás becslés) ✓
+3. Section 3.2 (Data pipeline) ✓
+4. Section 3.3 (Training) ✓
+8. Abstract ✓
+9. Section 2 (Literature) ✓
++  Section 1.1 (Bevezetés scope) ✓
++  E/1 → általános alany (frissített szekciókban) ✓
+
+TODO (needs run results from other machine):
 5. Add new "Experimental Design" section — backbone of the thesis
 6. Add new "Results" section — populate with data from 10 completed runs
 7. Add new "Math Domain" section — fully implemented, worth documenting
-8. Abstract — rewrite last, once results sections are written
-9. Section 2 (Literature) — add temp annealing papers, math references
+
+TODO (minor):
+- 3.1 Példa: add math example alongside reddit
