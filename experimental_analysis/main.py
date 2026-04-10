@@ -23,6 +23,7 @@ from experimental_analysis.compare_plots import (
     plot_confusion_comparison,
 )
 from experimental_analysis.scaling_analysis import run_scaling_analysis
+from experimental_analysis.evaluate_runs import evaluate_runs
 
 
 def print_menu():
@@ -50,6 +51,8 @@ def print_menu():
     print()
     print("  ANALYSIS")
     print("   [15] Scaling analysis (fit + knee + summary)")
+    print("   [16] Evaluate all runs (report to txt)")
+    print("   [17] Evaluate completed runs (report to txt)")
     print()
     print("    [q] Quit")
     print()
@@ -70,9 +73,13 @@ def main():
         elif command == "scaling":
             from experimental_analysis.scaling_analysis import main as scaling_main
             scaling_main()
+        elif command == "evaluate":
+            from experimental_analysis.evaluate_runs import main as evaluate_main
+            sys.argv = sys.argv[1:]
+            evaluate_main()
         else:
             print(f"Unknown command: {command}")
-            print("Commands: compare, plots, scaling")
+            print("Commands: compare, plots, scaling, evaluate")
         return
 
     # Interactive menu mode
@@ -149,6 +156,12 @@ def main():
 
         elif choice == "15":
             run_scaling_analysis(runs=all_runs)
+
+        elif choice == "16":
+            evaluate_runs()
+
+        elif choice == "17":
+            evaluate_runs(completed_only=True)
 
         else:
             print("  Invalid option.")

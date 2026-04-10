@@ -1,0 +1,188 @@
+NEXT EXPERIMENTS — WHY AND HOW
+================================
+Created: 2026-04-10
+Context: After evaluating 19 runs, we found the task is saturated. Student
+accuracy spans only 0.9255–0.9325 across a 38x parameter sweep (3.4M to
+129M). The scaling curve is flat. Methods cannot be cleanly ranked at
+the current operating point.
+
+
+THE PROBLEM
+-----------
+1. All methods converge near the same ceiling. Pure CE vs pure KL gap on
+   macro F1 is ~0.018. That is small enough that single-seed runs cannot
+   tell us whether it is real or seed noise.
+2. Macro F1 is dominated by safety (~0.89) and toxicity (~0.90), which are
+   saturated. Tone sits at ~0.66 and is the actual bottleneck, but it gets
+   diluted in the average.
+3. We have no noise-floor measurement. Every current conclusion (including
+   "distillation beats CE") could be inside the error bars.
+
+We cannot write a credible thesis chapter on "which distillation method is
+best" without first showing that the gaps we measure are larger than the
+run-to-run variance.
+
+
+THE PLAN — TWO PHASES
+---------------------
+
+PHASE 1: MEASURE THE NOISE FLOOR  (highest priority)
+    Goal: Find out how much the same config varies across seeds. Until we
+    know this, every ranking we produce is suspect.
+
+    Setup:
+      - Configs: tsc-ss-purece-t1, tsc-ss-purekl-t5to1, tsc-ss-kl07-t5to1
+      - 3.4M params, 3 epochs, 500k examples (same as current small-scale)
+      - 3 seeds per config = 9 runs total
+      - Wall clock: ~5 hrs each = ~45 hrs on one GPU
+
+    Report:
+      - Mean +/- stdev on tone F1 and macro F1
+      - Decision rule:
+          stdev <= 0.003  -> current 0.018 gap is solid, phase 2 optional
+          stdev ~ 0.005–0.010 -> gap is marginal, phase 2 required
+          stdev >= 0.010  -> current ablation is inside noise, must redo
+
+
+PHASE 2: AMPLIFY THE SIGNAL  (the thesis chapter)
+    Goal: Put the methods in a regime where they actually diverge, so the
+    ranking is defensible and the distillation story has a measurable effect
+    to point at.
+
+    The four levers, ordered by how cleanly they isolate "method quality":
+
+    LEVER A — SCALE DOWN THE DATA  (strongly recommended)
+        Why: Distillation's theoretical pitch is sample efficiency. Soft
+        targets carry more bits per example than one-hot labels, so at
+        low data the distilled student should pull ahead sharply. If the
+        gap does not widen as data shrinks, distillation was not actually
+        helping — we were just burning compute on redundant examples.
+        How: Re-run the 3 configs at 10k, 50k, 500k training examples.
+        Output: F1 vs log(data size), one curve per method. This is
+        the most thesis-worthy plot we could produce.
+
+    LEVER B — MEASURE CONVERGENCE, NOT ENDPOINT
+        Why: Methods often tie at the endpoint but differ dramatically
+        in how fast they reach a target. Distillation is known to speed
+        up convergence even when final accuracy matches.
+        How: Cut training to 1 epoch (or half an epoch). Report the
+        convergence_speed_90 metric we already compute. Also report
+        mini-eval F1 at fixed wall-clock checkpoints (e.g. 15 min, 30 min,
+        1 hr) for each method.
+
+    LEVER C — REPORT TONE F1 AS THE HEADLINE
+        Why: Macro F1 hides effects because safety and toxicity are
+        saturated. Tone is the only class with headroom (~0.66). Method
+        differences are probably largest there and currently get averaged
+        out.
+        How: No new runs needed — recompute from existing JSON. Add tone
+        F1 as a primary winner metric in the leaderboard. If phase 1
+        shows the current gap widens on tone alone, that is already a
+        result.
+
+    LEVER D — SCALE DOWN THE MODEL  (cross-check only, not main axis)
+        Why: Tiny models hit capacity limits, so methods that use capacity
+        more efficiently should win. But this conflates "method is better"
+        with "method handles tiny capacity better," so it is a noisier
+        story than lever A.
+        How: One extra config at ~500k params (1 layer, 24 hidden).
+        Use as a sanity check on phase 2's conclusions.
+
+
+RECOMMENDED ORDER
+-----------------
+1. Phase 1 (9 runs, ~45 hrs) — MUST do first.
+2. Phase 2 lever A + C (9 runs for data sizes x 3 configs, tone F1 reported).
+3. Phase 2 lever B (re-run one config with short training to verify
+   convergence speed ranking).
+4. Phase 2 lever D only if we still need another data point.
+
+Total compute: roughly 20–30 runs. All at 3.4M params so each is ~1–6 hrs.
+Feasible in one work week on one GPU.
+
+
+WHAT WE ALREADY KNOW (DO NOT RE-LITIGATE)
+-----------------------------------------
+- Scaling beyond ~5M params is flat on this task. The "scale-384h-12L-127M"
+  run is evidence, not a result to chase. Use it as a negative finding in
+  the scaling chapter: "capacity is not the bottleneck on saturated tasks."
+- Reduced input projection works: tsc-reduced-input-proj-10M-128h-5L is the
+  current best macro F1 at 1/13 the size of the biggest model. Worth its
+  own chapter.
+- Tone is the hard class. Safety and toxicity are done. Sentiment is
+  nearly done. Any future modeling effort should target tone.
+
+
+CURRENT RESULTS SNAPSHOT (from run_evaluation.json, 2026-04-10)
+---------------------------------------------------------------
+19 runs total, 18 completed, 1 in_progress (tsc-ss-kl07-t3-48h-3L-3M).
+
+Accuracy range across ALL runs (3.4M to 129M params):
+    student accuracy:         0.9255 – 0.9325   (0.70 pp spread)
+    classification accuracy:  0.8600 – 0.8742   (1.42 pp spread)
+    macro F1:                 0.7619 – 0.7968   (3.49 pp spread)
+
+TOP 3 BY STUDENT ACCURACY
+    tsc-scale-384h-12L-127M              0.9325   129.2M
+    tsc-reduced-input-proj-10M-128h-5L   0.9322    10.1M
+    tsc-reduced-input-proj-36M-320h-9L   0.9316    36.8M
+
+TOP 3 BY CLASSIFICATION ACCURACY
+    tsc-scale-384h-12L-127M              0.8742   129.2M
+    tsc-reduced-input-proj-36M-320h-9L   0.8722    36.8M
+    tsc-reduced-input-proj-10M-128h-5L   0.8720    10.1M
+
+TOP 3 BY MACRO F1  (the headline metric)
+    tsc-reduced-input-proj-10M-128h-5L   0.7968    10.1M   <-- current best
+    tsc-scale-192h-6L-53M                0.7958    54.0M
+    tsc-scale-128h-4L-36M                0.7952    34.7M
+
+TOP 3 BY EFFICIENCY (accuracy / M params)
+    tsc-ss-kl07-t5to1-48h-3L-3M          27.21     3.4M
+    tsc-ss-purekl-t3to1-48h-3L-3M        27.20     3.4M
+    tsc-ss-purekl-t5to1-48h-3L-3M        27.20     3.4M
+
+PER-CATEGORY F1 CEILING (across all runs)
+    tone:      ~0.66   <-- bottleneck, nobody breaks 0.67
+    sentiment: ~0.73
+    safety:    ~0.89   (saturated)
+    toxicity:  ~0.90   (saturated)
+    -> Macro F1 is dragged down entirely by tone. Safety and toxicity
+       are done; any method comparison should report tone F1 separately.
+
+SMALL-SCALE ABLATION (all 3.42M, 3 layers, 48 hidden)
+    config                     student   class    macro F1   hrs
+    kl07-t5to1 (0.7 KL, 5->1)  0.9295    0.8670   0.7944     5.00
+    purekl-t5to1 (1.0 KL, 5->1) 0.9292   0.8674   0.7924     5.76
+    purekl-t3to1 (1.0 KL, 3->1) 0.9293   0.8655   0.7888     5.71
+    purece-t1  (baseline, CE)  0.9273    0.8626   0.7759     1.44
+
+    Reading:
+    - Distillation beats pure CE by ~0.018 F1 (but single seed — could be noise)
+    - Aggressive temp annealing (5->1) beats mild (3->1) by ~0.004 F1
+    - 0.7 KL edges pure KL by 0.002 F1 (basically a tie)
+    - Pure CE is ~4x faster, trades 0.018 F1 for compute
+    - The in-progress kl07-t3 run will complete the table
+
+KNOWN ARTIFACT — DO NOT RANK BY EVAL LOSS
+    final_eval_loss splits into two clusters (~0.37 vs ~0.028) that do not
+    track accuracy. This is a scaling artifact of the KL/temperature
+    definition, not a quality signal. Use accuracy and F1 metrics instead.
+
+CURRENT BEST MODEL FOR THE THESIS
+    tsc-reduced-input-proj-10M-128h-5L
+    - Best macro F1 (0.7968)
+    - Within 0.0003 of the 129M model on student accuracy
+    - 1/13 the size, 1.27 hours of training
+    - Uses reduced input projection (worth writing up as its own contribution)
+
+
+OPEN QUESTIONS FOR NEXT SESSION
+-------------------------------
+- Which seeds? Pick 3 fixed integers (e.g. 0, 1, 2) and commit to them so
+  future ablations are directly comparable.
+- Are we OK with 3 seeds or do we need 5? Depends on phase 1 stdev.
+- Should we add a "data efficiency" metric to evaluate_runs.py that
+  compares F1 at matched example counts?
+- The tsc-ss-kl07-t3-48h-3L-3M run was still in_progress at last eval.
+  Re-run the evaluator before phase 1 so that ablation table is complete.

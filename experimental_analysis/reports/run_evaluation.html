@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Run Evaluation Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4ef;
+    --bg-card: #faf9f5;
+    --bg-row-alt: #efeee8;
+    --bg-row-hover: #e8e6dc;
+    --bg-header: #ebe8dd;
+    --bg-header-deep: #e0dccc;
+    --border: #d8d3c4;
+    --border-soft: #e3ddcc;
+    --border-strong: #b8b09a;
+    --text: #1a1915;
+    --text-soft: #3d3a32;
+    --text-muted: #6f6a5c;
+    --text-subtle: #8a8473;
+    --accent: #cc785c;
+    --accent-deep: #a85738;
+    --accent-soft: #e8a98e;
+    --accent-bg: #f5e6dd;
+    --best: #5a7a3a;
+    --best-bg: #e8eedb;
+    --worst: #a85838;
+    --worst-bg: #f3e0d6;
+
+    --serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 64px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: var(--space-7) 0 var(--space-8);
+  }
+
+  /* ── Header ───────────────────────────────────────────────────── */
+
+  header {
+    margin-bottom: var(--space-7);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: 56px;
+    line-height: 1.05;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 var(--space-4) 0;
+    letter-spacing: -1.2px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    font-weight: 400;
+    max-width: 720px;
+    margin: 0;
+  }
+
+  .meta {
+    margin-top: var(--space-5);
+    color: var(--text-subtle);
+    font-size: 13px;
+    letter-spacing: 0.2px;
+  }
+
+  .meta .dot {
+    display: inline-block;
+    margin: 0 var(--space-3);
+    color: var(--border-strong);
+  }
+
+  /* ── Section headings ─────────────────────────────────────────── */
+
+  .section {
+    margin-top: var(--space-8);
+  }
+
+  .section-eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    line-height: 1.15;
+    font-weight: 500;
+    color: var(--text);
+    margin: 0 0 var(--space-2) 0;
+    letter-spacing: -0.5px;
+  }
+
+  .section-description {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin: 0 0 var(--space-5) 0;
+    max-width: 720px;
+  }
+
+  /* ── Table ────────────────────────────────────────────────────── */
+
+  .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-card);
+    box-shadow: 0 1px 3px rgba(26, 25, 21, 0.04), 0 8px 24px rgba(26, 25, 21, 0.04);
+  }
+
+  table {
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 13px;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  th, td {
+    padding: 10px 16px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-header);
+    color: var(--text);
+    font-weight: 600;
+    font-family: var(--sans);
+    z-index: 1;
+  }
+
+  thead tr.group-row th {
+    background: var(--bg-header-deep);
+    color: var(--accent-deep);
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-strong);
+    border-left: 1px solid var(--border);
+    padding: 10px 16px;
+    font-weight: 700;
+    font-family: var(--sans);
+  }
+  thead tr.group-row th:first-child {
+    border-left: none;
+  }
+
+  thead tr.column-row th {
+    border-bottom: 2px solid var(--accent);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s ease;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    padding: 12px 16px;
+  }
+  thead tr.column-row th:hover {
+    background: var(--bg-row-hover);
+    color: var(--accent-deep);
+  }
+  thead tr.column-row th.sorted-asc::after {
+    content: " \25B2";
+    color: var(--accent);
+    font-size: 9px;
+  }
+  thead tr.column-row th.sorted-desc::after {
+    content: " \25BC";
+    color: var(--accent);
+    font-size: 9px;
+  }
+
+  td.run-name, th.run-name {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    font-weight: 500;
+    font-family: var(--sans);
+    border-right: 1px solid var(--border);
+    z-index: 1;
+    color: var(--text);
+  }
+  thead th.run-name {
+    background: var(--bg-header);
+    z-index: 3;
+  }
+  thead tr.group-row th.run-name {
+    background: var(--bg-header-deep);
+  }
+  thead th.run-name-header {
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 2px solid var(--accent);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    padding: 12px 16px;
+  }
+  thead th.run-name-header:hover {
+    background: var(--bg-row-hover);
+    color: var(--accent-deep);
+  }
+  thead th.run-name-header.sorted-asc::after {
+    content: " \25B2";
+    color: var(--accent);
+    font-size: 9px;
+  }
+  thead th.run-name-header.sorted-desc::after {
+    content: " \25BC";
+    color: var(--accent);
+    font-size: 9px;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: var(--bg-row-alt);
+  }
+  tbody tr:nth-child(even) td.run-name {
+    background: var(--bg-row-alt);
+  }
+  tbody tr:hover td {
+    background: var(--bg-row-hover) !important;
+  }
+  tbody tr.hidden {
+    display: none;
+  }
+
+  .best {
+    color: var(--best);
+    font-weight: 700;
+  }
+  .worst {
+    color: var(--worst);
+  }
+
+  /* ── Cards ────────────────────────────────────────────────────── */
+
+  .card {
+    padding: var(--space-6) var(--space-6);
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  /* Winners */
+  .winners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-4);
+  }
+  .winner-card {
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+  .winner-label {
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+  }
+  .winner-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .winner-value {
+    font-family: var(--serif);
+    font-size: 24px;
+    color: var(--accent-deep);
+    font-weight: 600;
+    margin-top: var(--space-2);
+    letter-spacing: -0.3px;
+  }
+
+  /* Column docs */
+  details.docs {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  details.docs > summary {
+    padding: var(--space-5) var(--space-6);
+    cursor: pointer;
+    font-family: var(--serif);
+    font-weight: 500;
+    color: var(--text);
+    font-size: 22px;
+    list-style: none;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  details.docs > summary::-webkit-details-marker {
+    display: none;
+  }
+  details.docs > summary::before {
+    content: "\002B";
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 26px;
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+  details.docs[open] > summary::before {
+    content: "\2212";
+    transform: rotate(180deg);
+  }
+  details.docs > summary:hover {
+    background: var(--bg-row-hover);
+  }
+  details.docs .docs-body {
+    padding: 0 var(--space-6) var(--space-6) var(--space-6);
+    border-top: 1px solid var(--border-soft);
+  }
+  details.docs .docs-section {
+    margin-top: var(--space-5);
+  }
+  details.docs .docs-section-name {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  details.docs dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: var(--space-3) var(--space-5);
+    font-size: 14px;
+  }
+  details.docs dt {
+    color: var(--text);
+    font-weight: 600;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  details.docs dd {
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Filter panel */
+  .filter-controls {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .filter-controls button {
+    background: var(--bg);
+    color: var(--text-soft);
+    border: 1px solid var(--border-strong);
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--sans);
+    font-weight: 500;
+    transition: all 0.12s ease;
+  }
+  .filter-controls button:hover {
+    background: var(--accent);
+    color: var(--bg-card);
+    border-color: var(--accent);
+  }
+  .filter-controls .visible-count {
+    color: var(--text-subtle);
+    font-size: 13px;
+    margin-left: auto;
+    font-family: var(--mono);
+  }
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-1) var(--space-4);
+  }
+  .filter-grid label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--text-soft);
+    transition: background 0.1s ease;
+  }
+  .filter-grid label:hover {
+    background: var(--bg-row-hover);
+    color: var(--text);
+  }
+  .filter-grid input[type="checkbox"] {
+    accent-color: var(--accent);
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+  }
+
+  footer {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border);
+    color: var(--text-subtle);
+    font-size: 13px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="eyebrow">Preference Distillation</div>
+  <h1>Run <em>Evaluation</em> Report</h1>
+  <p class="subtitle">Comparative analysis of distillation runs across architecture, training dynamics, and downstream classification performance.</p>
+  <div class="meta">
+    Generated 2026-04-10 15:47
+    <span class="dot">&middot;</span>
+    19 runs
+    <span class="dot">&middot;</span>
+    Click any column header to sort
+  </div>
+</header>
+
+<section class="section">
+  <div class="section-eyebrow">Comparison</div>
+  <h2>All metrics</h2>
+  <p class="section-description">Each row is a single training run. Best values per column are highlighted; the worst is marked in red. Numeric columns sort numerically; missing values sink to the bottom.</p>
+
+  <div class="table-wrapper">
+  <table id="runs-table">
+  <thead>
+  <tr class="group-row">
+  <th class="run-name run-name-header" rowspan="2" data-column="0">Run</th>
+  <th colspan="1">Info</th>
+  <th colspan="4">Architecture</th>
+  <th colspan="4">Hyperparams</th>
+  <th colspan="4">Training</th>
+  <th colspan="6">Evaluation</th>
+  <th colspan="5">F1 Scores</th>
+  <th colspan="5">Curves</th>
+  <th colspan="4">Epoch deltas</th>
+  <th colspan="2">Efficiency</th>
+</tr>
+<tr class="column-row">
+  <th data-column="1" data-key="status">Status</th>
+  <th data-column="2" data-key="params_millions">Params (M)</th>
+  <th data-column="3" data-key="hidden_dim">Hidden</th>
+  <th data-column="4" data-key="num_layers">Layers</th>
+  <th data-column="5" data-key="num_heads">Heads</th>
+  <th data-column="6" data-key="kl_ratio">KL ratio</th>
+  <th data-column="7" data-key="temperature">Temp</th>
+  <th data-column="8" data-key="learning_rate">LR</th>
+  <th data-column="9" data-key="dropout">Dropout</th>
+  <th data-column="10" data-key="total_batches">Batches</th>
+  <th data-column="11" data-key="training_hours">Wall time</th>
+  <th data-column="12" data-key="final_train_loss">Train loss</th>
+  <th data-column="13" data-key="final_train_accuracy">Train acc</th>
+  <th data-column="14" data-key="final_eval_loss">Eval loss</th>
+  <th data-column="15" data-key="final_kl_loss">KL loss</th>
+  <th data-column="16" data-key="final_ce_loss">CE loss</th>
+  <th data-column="17" data-key="final_tf_accuracy">TF acc</th>
+  <th data-column="18" data-key="final_student_accuracy">Student acc</th>
+  <th data-column="19" data-key="final_classification_accuracy">Class acc</th>
+  <th data-column="20" data-key="f1_tone">Tone F1</th>
+  <th data-column="21" data-key="f1_sentiment">Sent F1</th>
+  <th data-column="22" data-key="f1_safety">Safety F1</th>
+  <th data-column="23" data-key="f1_toxicity">Toxic F1</th>
+  <th data-column="24" data-key="f1_macro_avg">Avg F1</th>
+  <th data-column="25" data-key="student_slope">Stu slope</th>
+  <th data-column="26" data-key="classification_slope">Cls slope</th>
+  <th data-column="27" data-key="early_vs_late_ratio">Early/late</th>
+  <th data-column="28" data-key="convergence_speed_90">Conv (0-1)</th>
+  <th data-column="29" data-key="last_epoch_stability">Stdev</th>
+  <th data-column="30" data-key="epoch1_student_delta">E1 stu Δ</th>
+  <th data-column="31" data-key="epoch1_class_delta">E1 cls Δ</th>
+  <th data-column="32" data-key="epoch2_student_delta">E2 stu Δ</th>
+  <th data-column="33" data-key="epoch2_class_delta">E2 cls Δ</th>
+  <th data-column="34" data-key="accuracy_per_million_params">Acc/M par</th>
+  <th data-column="35" data-key="accuracy_per_hour">Acc/hour</th>
+</tr>
+
+  </thead>
+  <tbody>
+  <tr data-run="tsc-kl-anneal-80h-5L-6M"><td class="run-name">tsc-kl-anneal-80h-5L-6M</td><td>completed</td><td data-sort="6.021645">6.0</td><td data-sort="80">80</td><td data-sort="5">5</td><td data-sort="1">1</td><td>0.99-&gt;0.4</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="0.9859735383333333">59m</td><td data-sort="0.33650596499999996">0.3365</td><td data-sort="0.9884609999999999">98.85%</td><td data-sort="0.369965">0.3700</td><td data-sort="0.320726">0.3207</td><td data-sort="0.402791">0.4028</td><td data-sort="0.9868">98.68%</td><td data-sort="0.9305">93.05%</td><td data-sort="0.8683">86.83%</td><td data-sort="0.6426270241071811">0.6426</td><td data-sort="0.7283227362683152">0.7283</td><td data-sort="0.8810246513191594">0.8810</td><td data-sort="0.8960263936445949">0.8960</td><td data-sort="0.7870002013348126">0.7870</td><td data-sort="0.0005770487483530961">+0.058pp/ev</td><td data-sort="0.001759341238471673">+0.176pp/ev</td><td data-sort="-26.62499999999922">-26.62</td><td data-sort="0.26666666666666666">0.27</td><td data-sort="0.0020780485351130796">0.0021</td><td data-sort="0.0040999999999999925">+0.41pp</td><td data-sort="0.00539999999999996">+0.54pp</td><td data-sort="0.0018000000000000238">+0.18pp</td><td data-sort="0.005299999999999971">+0.53pp</td><td data-sort="15.452588121684355">15.45</td><td data-sort="94.37372949916033">94.37</td></tr>
+<tr data-run="tsc-pure-kl-mild-temp-80h-5L-6M"><td class="run-name">tsc-pure-kl-mild-temp-80h-5L-6M</td><td>completed</td><td data-sort="6.021645">6.0</td><td data-sort="80">80</td><td data-sort="5">5</td><td data-sort="1">1</td><td>1.0</td><td>3.0-&gt;1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="6.892566949444444">6.9h</td><td class="best" data-sort="0.024322365000000002">0.0243</td><td data-sort="0.988416">98.84%</td><td data-sort="0.028014">0.0280</td><td data-sort="0.028014">0.0280</td><td data-sort="0.039831">0.0398</td><td data-sort="0.9867">98.67%</td><td data-sort="0.9312">93.12%</td><td data-sort="0.8671">86.71%</td><td data-sort="0.6521465755884815">0.6521</td><td data-sort="0.7299613954459616">0.7300</td><td data-sort="0.8792351281559705">0.8792</td><td data-sort="0.89458731040654">0.8946</td><td data-sort="0.7889826023992385">0.7890</td><td data-sort="0.0005989723320158103">+0.060pp/ev</td><td data-sort="0.0017875757575757582">+0.179pp/ev</td><td data-sort="3.1186440677966742">3.12</td><td data-sort="0.35555555555555557">0.36</td><td data-sort="0.003505071156128473">0.0035</td><td data-sort="0.005600000000000049">+0.56pp</td><td data-sort="0.01440000000000008">+1.44pp</td><td data-sort="0.0011999999999999789">+0.12pp</td><td data-sort="-0.000500000000000056">-0.05pp</td><td data-sort="15.464212852135919">15.46</td><td data-sort="13.51020609346503">13.51</td></tr>
+<tr data-run="tsc-reduced-input-proj-10M-128h-5L"><td class="run-name">tsc-reduced-input-proj-10M-128h-5L</td><td>completed</td><td data-sort="10.125837">10.1</td><td data-sort="128">128</td><td data-sort="5">5</td><td data-sort="2">2</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="1.2740058122222222">1.3h</td><td data-sort="0.334811565">0.3348</td><td data-sort="0.989126">98.91%</td><td data-sort="0.373601">0.3736</td><td data-sort="0.38491">0.3849</td><td data-sort="0.368754">0.3688</td><td data-sort="0.9868">98.68%</td><td data-sort="0.9322">93.22%</td><td data-sort="0.872">87.20%</td><td data-sort="0.6668951826762762">0.6669</td><td data-sort="0.730743318540409">0.7307</td><td data-sort="0.8869993579896216">0.8870</td><td data-sort="0.9025575430535442">0.9026</td><td class="best" data-sort="0.7967988505649628">0.7968</td><td data-sort="0.0006022266139657439">+0.060pp/ev</td><td data-sort="0.0019372332015810281">+0.194pp/ev</td><td data-sort="1.9215686274509889">1.92</td><td class="worst" data-sort="0.8222222222222222">0.82</td><td data-sort="0.00459796021027131">0.0046</td><td data-sort="0.005700000000000038">+0.57pp</td><td class="best" data-sort="0.023699999999999943">+2.37pp</td><td data-sort="0.0011999999999999789">+0.12pp</td><td data-sort="0.005600000000000049">+0.56pp</td><td data-sort="9.206152538303746">9.21</td><td data-sort="73.17078078113181">73.17</td></tr>
+<tr data-run="tsc-reduced-input-proj-36M-320h-9L"><td class="run-name">tsc-reduced-input-proj-36M-320h-9L</td><td>completed</td><td data-sort="36.785165">36.8</td><td data-sort="320">320</td><td data-sort="9">9</td><td data-sort="5">5</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="2.0475623127777776">2.0h</td><td data-sort="0.330546555">0.3305</td><td data-sort="0.9891605">98.92%</td><td data-sort="0.373549">0.3735</td><td data-sort="0.399774">0.3998</td><td data-sort="0.362309">0.3623</td><td data-sort="0.9869">98.69%</td><td data-sort="0.9316">93.16%</td><td data-sort="0.8722">87.22%</td><td data-sort="0.6484539474395489">0.6485</td><td class="best" data-sort="0.7346632943912811">0.7347</td><td data-sort="0.8859795694174719">0.8860</td><td data-sort="0.9015719487326219">0.9016</td><td data-sort="0.7926671899952309">0.7927</td><td data-sort="0.0008237549407114624">+0.082pp/ev</td><td data-sort="0.0034068906455862976">+0.341pp/ev</td><td data-sort="4.573333333333295">4.57</td><td data-sort="0.4888888888888889">0.49</td><td data-sort="0.00393050342104637">0.0039</td><td data-sort="0.0050000000000000044">+0.50pp</td><td data-sort="0.019299999999999984">+1.93pp</td><td data-sort="0.0010999999999999899">+0.11pp</td><td data-sort="0.00539999999999996">+0.54pp</td><td data-sort="2.5325426703944376">2.53</td><td data-sort="45.498004831714574">45.50</td></tr>
+<tr data-run="tsc-reduced-input-proj-5M-64h-8L"><td class="run-name">tsc-reduced-input-proj-5M-64h-8L</td><td>completed</td><td data-sort="4.932493">4.9</td><td data-sort="64">64</td><td data-sort="8">8</td><td data-sort="1">1</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="1.1356985061111111">1.1h</td><td data-sort="0.347806645">0.3478</td><td data-sort="0.9883395">98.83%</td><td data-sort="0.377593">0.3776</td><td data-sort="0.379091">0.3791</td><td data-sort="0.376952">0.3770</td><td data-sort="0.9866">98.66%</td><td data-sort="0.9287">92.87%</td><td data-sort="0.8633">86.33%</td><td data-sort="0.6322264989461588">0.6322</td><td data-sort="0.7226829890988578">0.7227</td><td data-sort="0.8756815297445557">0.8757</td><td data-sort="0.8911312974854766">0.8911</td><td data-sort="0.7804305788187622">0.7804</td><td data-sort="0.0005131225296442693">+0.051pp/ev</td><td data-sort="0.0017825428194993417">+0.178pp/ev</td><td data-sort="12.937499999999662">12.94</td><td data-sort="0.26666666666666666">0.27</td><td data-sort="0.001975155207885711">0.0020</td><td data-sort="0.0016000000000000458">+0.16pp</td><td data-sort="0.0041999999999999815">+0.42pp</td><td class="worst" data-sort="-0.00040000000000006697">-0.04pp</td><td data-sort="-0.000300000000000078">-0.03pp</td><td data-sort="18.82820715609733">18.83</td><td data-sort="81.77346320372288">81.77</td></tr>
+<tr data-run="tsc-scale-128h-4L-36M"><td class="run-name">tsc-scale-128h-4L-36M</td><td>completed</td><td data-sort="34.671885">34.7</td><td data-sort="128">128</td><td data-sort="4">4</td><td data-sort="2">2</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="4.764941755833333">4.8h</td><td data-sort="0.33418982999999997">0.3342</td><td data-sort="0.9891245000000001">98.91%</td><td data-sort="0.378275">0.3783</td><td data-sort="0.394259">0.3943</td><td data-sort="0.371425">0.3714</td><td data-sort="0.9866">98.66%</td><td data-sort="0.9309">93.09%</td><td data-sort="0.8684">86.84%</td><td class="best" data-sort="0.6725706017182194">0.6726</td><td data-sort="0.7284947796375167">0.7285</td><td data-sort="0.8818166847718502">0.8818</td><td data-sort="0.8979953718659486">0.8980</td><td data-sort="0.7952193594983837">0.7952</td><td data-sort="0.0005886824769433467">+0.059pp/ev</td><td data-sort="0.0019681159420289855">+0.197pp/ev</td><td data-sort="16.187499999999556">16.19</td><td class="best" data-sort="0.15555555555555556">0.16</td><td data-sort="0.0032374299036353467">0.0032</td><td data-sort="0.0052000000000000934">+0.52pp</td><td data-sort="0.01980000000000004">+1.98pp</td><td data-sort="-0.000200000000000089">-0.02pp</td><td data-sort="-0.000500000000000056">-0.05pp</td><td data-sort="2.6848843090013705">2.68</td><td data-sort="19.536440269398344">19.54</td></tr>
+<tr data-run="tsc-scale-192h-6L-53M"><td class="run-name">tsc-scale-192h-6L-53M</td><td>completed</td><td data-sort="53.974413">54.0</td><td data-sort="192">192</td><td data-sort="6">6</td><td data-sort="3">3</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="3.0176351380555557">3.0h</td><td data-sort="0.33189439">0.3319</td><td class="best" data-sort="0.9891755000000001">98.92%</td><td data-sort="0.373559">0.3736</td><td data-sort="0.391754">0.3918</td><td data-sort="0.365761">0.3658</td><td data-sort="0.9868">98.68%</td><td data-sort="0.9316">93.16%</td><td data-sort="0.8716">87.16%</td><td data-sort="0.6650359073349887">0.6650</td><td data-sort="0.7291350021197948">0.7291</td><td data-sort="0.8863744627208904">0.8864</td><td data-sort="0.9026188895095649">0.9026</td><td data-sort="0.7957910654213097">0.7958</td><td data-sort="0.0006081949934123844">+0.061pp/ev</td><td data-sort="0.0026363504611330696">+0.264pp/ev</td><td data-sort="2.4776119402984853">2.48</td><td data-sort="0.6">0.60</td><td data-sort="0.003269876945405633">0.0033</td><td data-sort="0.0048000000000000265">+0.48pp</td><td data-sort="0.01200000000000001">+1.20pp</td><td data-sort="0.0011999999999999789">+0.12pp</td><td data-sort="0.006500000000000061">+0.65pp</td><td data-sort="1.7260030229508934">1.73</td><td data-sort="30.87185684748773">30.87</td></tr>
+<tr data-run="tsc-scale-20h-2L-5M"><td class="run-name">tsc-scale-20h-2L-5M</td><td>completed</td><td data-sort="5.266805">5.3</td><td data-sort="20">20</td><td data-sort="2">2</td><td data-sort="1">1</td><td>0.99-&gt;0.3</td><td>0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="0.6814333827777778">41m</td><td class="worst" data-sort="0.401784285">0.4018</td><td data-sort="0.9863225">98.63%</td><td class="worst" data-sort="0.397758">0.3978</td><td data-sort="0.424167">0.4242</td><td data-sort="0.386439">0.3864</td><td data-sort="0.9861">98.61%</td><td data-sort="0.9255">92.55%</td><td data-sort="0.86">86.00%</td><td data-sort="0.5774101157398126">0.5774</td><td data-sort="0.7064543650939834">0.7065</td><td data-sort="0.8759774900472694">0.8760</td><td data-sort="0.8877178961565166">0.8877</td><td data-sort="0.7618899667593955">0.7619</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td data-sort="0.0029000000000000137">+0.29pp</td><td data-sort="0.0131">+1.31pp</td><td class="best" data-sort="0.0031999999999999806">+0.32pp</td><td data-sort="0.007499999999999951">+0.75pp</td><td data-sort="17.572323258597955">17.57</td><td data-sort="135.81665110495692">135.82</td></tr>
+<tr data-run="tsc-scale-256h-8L-74M"><td class="run-name">tsc-scale-256h-8L-74M</td><td>completed</td><td data-sort="75.636749">75.6</td><td data-sort="256">256</td><td data-sort="8">8</td><td data-sort="4">4</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="6.881764926388889">6.9h</td><td data-sort="0.331275445">0.3313</td><td data-sort="0.9891655">98.92%</td><td data-sort="0.371435">0.3714</td><td data-sort="0.392161">0.3922</td><td data-sort="0.362552">0.3626</td><td data-sort="0.9869">98.69%</td><td data-sort="0.9313">93.13%</td><td data-sort="0.8655">86.55%</td><td data-sort="0.6652455061941323">0.6652</td><td data-sort="0.7284192061551842">0.7284</td><td data-sort="0.8807010788624507">0.8807</td><td data-sort="0.8902502021845676">0.8903</td><td data-sort="0.7911539983490837">0.7912</td><td data-sort="0.0007800790513833993">+0.078pp/ev</td><td data-sort="0.003139380764163373">+0.314pp/ev</td><td data-sort="4.636363636363556">4.64</td><td data-sort="0.6">0.60</td><td data-sort="0.003321574497562437">0.0033</td><td data-sort="0.0035000000000000586">+0.35pp</td><td data-sort="0.0045999999999999375">+0.46pp</td><td data-sort="0.0022999999999999687">+0.23pp</td><td data-sort="0.006400000000000072">+0.64pp</td><td data-sort="1.2312797843810024">1.23</td><td data-sort="13.532865623305835">13.53</td></tr>
+<tr data-run="tsc-scale-384h-12L-127M"><td class="run-name">tsc-scale-384h-12L-127M</td><td>completed</td><td data-sort="129.186573">129.2</td><td data-sort="384">384</td><td data-sort="12">12</td><td data-sort="6">6</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="3.3378859436111115">3.3h</td><td data-sort="0.336514505">0.3365</td><td data-sort="0.9888185">98.88%</td><td data-sort="0.370865">0.3709</td><td data-sort="0.404879">0.4049</td><td data-sort="0.356287">0.3563</td><td class="best" data-sort="0.987">98.70%</td><td class="best" data-sort="0.9325">93.25%</td><td class="best" data-sort="0.8742">87.42%</td><td data-sort="0.6537590337266448">0.6538</td><td data-sort="0.7329340124672422">0.7329</td><td class="best" data-sort="0.8888813158228825">0.8889</td><td class="best" data-sort="0.9041366888218669">0.9041</td><td data-sort="0.7949277627096591">0.7949</td><td data-sort="0.0008157839262187087">+0.082pp/ev</td><td data-sort="0.003708247694334651">+0.371pp/ev</td><td data-sort="3.7058823529411455">3.71</td><td data-sort="0.4888888888888889">0.49</td><td data-sort="0.003018009435436042">0.0030</td><td class="best" data-sort="0.006800000000000028">+0.68pp</td><td data-sort="0.02100000000000002">+2.10pp</td><td data-sort="0.0023999999999999577">+0.24pp</td><td data-sort="0.010000000000000009">+1.00pp</td><td class="worst" data-sort="0.721824240975879">0.72</td><td data-sort="27.93684433061153">27.94</td></tr>
+<tr data-run="tsc-scale-40h-2L-10M"><td class="run-name">tsc-scale-40h-2L-10M</td><td>completed</td><td data-sort="10.558685">10.6</td><td data-sort="40">40</td><td data-sort="2">2</td><td data-sort="1">1</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="3.037475752222222">3.0h</td><td data-sort="0.36241081999999997">0.3624</td><td data-sort="0.9878305000000001">98.78%</td><td data-sort="0.384961">0.3850</td><td data-sort="0.412704">0.4127</td><td data-sort="0.373071">0.3731</td><td data-sort="0.9866">98.66%</td><td data-sort="0.9283">92.83%</td><td data-sort="0.8606">86.06%</td><td data-sort="0.6223643838432071">0.6224</td><td data-sort="0.7171087481564635">0.7171</td><td data-sort="0.8730157844137956">0.8730</td><td data-sort="0.888515929172288">0.8885</td><td data-sort="0.7752512113964386">0.7753</td><td data-sort="0.0003654150197628452">+0.037pp/ev</td><td data-sort="0.0013020289855072461">+0.130pp/ev</td><td data-sort="5.625000000000081">5.63</td><td data-sort="0.2222222222222222">0.22</td><td data-sort="0.003104021968503483">0.0031</td><td data-sort="0.0048000000000000265">+0.48pp</td><td data-sort="0.015699999999999936">+1.57pp</td><td data-sort="0.0010999999999999899">+0.11pp</td><td data-sort="0.0013000000000000789">+0.13pp</td><td data-sort="8.791814510992609">8.79</td><td data-sort="30.561560839485033">30.56</td></tr>
+<tr data-run="tsc-scale-64h-2L-17M"><td class="run-name">tsc-scale-64h-2L-17M</td><td>completed</td><td data-sort="16.942733">16.9</td><td data-sort="64">64</td><td data-sort="2">2</td><td data-sort="1">1</td><td>0.99-&gt;0.3</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="0.5256887630555556">32m</td><td data-sort="0.350032275">0.3500</td><td data-sort="0.9882095">98.82%</td><td data-sort="0.387518">0.3875</td><td class="worst" data-sort="0.429831">0.4298</td><td data-sort="0.369384">0.3694</td><td data-sort="0.9865">98.65%</td><td data-sort="0.929">92.90%</td><td data-sort="0.8664">86.64%</td><td data-sort="0.6400974820830949">0.6401</td><td data-sort="0.7225320728416519">0.7225</td><td data-sort="0.8801234969043255">0.8801</td><td data-sort="0.894982833732437">0.8950</td><td data-sort="0.7844339713903773">0.7844</td><td data-sort="0.00046797101449275386">+0.047pp/ev</td><td data-sort="0.0015566139657444003">+0.156pp/ev</td><td data-sort="7.399999999999992">7.40</td><td class="best" data-sort="0.15555555555555556">0.16</td><td data-sort="0.0035452584028328746">0.0035</td><td class="worst" data-sort="-0.0005999999999999339">-0.06pp</td><td data-sort="0.005900000000000016">+0.59pp</td><td data-sort="0.0027000000000000357">+0.27pp</td><td data-sort="0.0043999999999999595">+0.44pp</td><td data-sort="5.483176769651036">5.48</td><td class="best" data-sort="176.72053604497953">176.72</td></tr>
+<tr data-run="tsc-ss-kl07-t3-48h-3L-3M"><td class="run-name">tsc-ss-kl07-t3-48h-3L-3M</td><td>in_progress</td><td data-sort="3.416397">3.4</td><td data-sort="48">48</td><td data-sort="3">3</td><td data-sort="1">1</td><td>0.7</td><td>3.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="23580">23580</td><td data-sort="2.9962222222222223">3.0h</td><td data-sort="0.320095525">0.3201</td><td class="worst" data-sort="0.9858855">98.59%</td><td data-sort="0.324585">0.3246</td><td data-sort="0.24618">0.2462</td><td class="worst" data-sort="0.50753">0.5075</td><td class="worst" data-sort="0.9857">98.57%</td><td class="worst" data-sort="0.9252">92.52%</td><td class="worst" data-sort="0.8536">85.36%</td><td class="worst" data-sort="0.5638238149293274">0.5638</td><td class="worst" data-sort="0.6987031377198942">0.6987</td><td class="worst" data-sort="0.8600717257389423">0.8601</td><td class="worst" data-sort="0.8753113930234051">0.8753</td><td class="worst" data-sort="0.7494775178528923">0.7495</td><td class="best" data-sort="0.0010731225296442693">+0.107pp/ev</td><td class="best" data-sort="0.0038093873517786557">+0.381pp/ev</td><td data-sort="3.5918367346939597">3.59</td><td data-sort="0.30434782608695654">0.30</td><td class="worst" data-sort="0.00673656069519157">0.0067</td><td>-</td><td>-</td><td>-</td><td>-</td><td data-sort="27.081161820479295">27.08</td><td data-sort="30.878884521248978">30.88</td></tr>
+<tr data-run="tsc-ss-kl07-t5to1-48h-3L-3M"><td class="run-name">tsc-ss-kl07-t5to1-48h-3L-3M</td><td>completed</td><td data-sort="3.416397">3.4</td><td data-sort="48">48</td><td data-sort="3">3</td><td data-sort="1">1</td><td>0.7</td><td>5.0-&gt;1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="4.9998977713888895">5.0h</td><td data-sort="0.028350225">0.0284</td><td data-sort="0.9882555">98.83%</td><td data-sort="0.031445">0.0314</td><td data-sort="0.028632">0.0286</td><td data-sort="0.038009">0.0380</td><td data-sort="0.9867">98.67%</td><td data-sort="0.9295">92.95%</td><td data-sort="0.867">86.70%</td><td data-sort="0.6718091796972604">0.6718</td><td data-sort="0.7277488408272327">0.7277</td><td data-sort="0.8816549400832918">0.8817</td><td data-sort="0.8963834250519074">0.8964</td><td data-sort="0.794399096414923">0.7944</td><td data-sort="0.0004006455862977601">+0.040pp/ev</td><td data-sort="0.0020024110671936764">+0.200pp/ev</td><td data-sort="-3.60000000000002">-3.60</td><td data-sort="0.2222222222222222">0.22</td><td data-sort="0.0026796765974024996">0.0027</td><td data-sort="0.0014000000000000679">+0.14pp</td><td data-sort="0.015199999999999991">+1.52pp</td><td data-sort="0.0014999999999999458">+0.15pp</td><td data-sort="0.0039000000000000146">+0.39pp</td><td class="best" data-sort="27.207025413030163">27.21</td><td data-sort="18.590380093747402">18.59</td></tr>
+<tr data-run="tsc-ss-purece-t1-48h-3L-3M"><td class="run-name">tsc-ss-purece-t1-48h-3L-3M</td><td>completed</td><td data-sort="3.416397">3.4</td><td data-sort="48">48</td><td data-sort="3">3</td><td data-sort="1">1</td><td>0.0</td><td>1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="1.4422121741666665">1.4h</td><td data-sort="0.03032517">0.0303</td><td data-sort="0.9879045">98.79%</td><td data-sort="0.034344">0.0343</td><td data-sort="0.061365">0.0614</td><td class="best" data-sort="0.034344">0.0343</td><td data-sort="0.9864">98.64%</td><td data-sort="0.9273">92.73%</td><td data-sort="0.8626">86.26%</td><td data-sort="0.6187660227701685">0.6188</td><td data-sort="0.716205078215537">0.7162</td><td data-sort="0.8766903670713043">0.8767</td><td data-sort="0.8921368376965683">0.8921</td><td data-sort="0.7759495764383946">0.7759</td><td class="worst" data-sort="0.00029036890645586273">+0.029pp/ev</td><td class="worst" data-sort="0.0012596574440052704">+0.126pp/ev</td><td data-sort="-3.2115384615384603">-3.21</td><td class="best" data-sort="0.15555555555555556">0.16</td><td class="best" data-sort="0.0016972526820325541">0.0017</td><td data-sort="0.0008000000000000229">+0.08pp</td><td class="worst" data-sort="-0.0031999999999999806">-0.32pp</td><td data-sort="0.0010999999999999899">+0.11pp</td><td class="best" data-sort="0.010600000000000054">+1.06pp</td><td data-sort="27.14263008660879">27.14</td><td data-sort="64.29705813125652">64.30</td></tr>
+<tr data-run="tsc-ss-purekl-t3to1-48h-3L-3M"><td class="run-name">tsc-ss-purekl-t3to1-48h-3L-3M</td><td>completed</td><td data-sort="3.416397">3.4</td><td data-sort="48">48</td><td data-sort="3">3</td><td data-sort="1">1</td><td>1.0</td><td>3.0-&gt;1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="5.705447433055555">5.7h</td><td data-sort="0.02514431">0.0251</td><td data-sort="0.988104">98.81%</td><td data-sort="0.02802">0.0280</td><td data-sort="0.02802">0.0280</td><td data-sort="0.039782">0.0398</td><td data-sort="0.9867">98.67%</td><td data-sort="0.9293">92.93%</td><td data-sort="0.8655">86.55%</td><td data-sort="0.6595150866197096">0.6595</td><td data-sort="0.7235848649613258">0.7236</td><td data-sort="0.8773125152789435">0.8773</td><td data-sort="0.8946469082912923">0.8946</td><td data-sort="0.7887648437878179">0.7888</td><td data-sort="0.0005315283267457187">+0.053pp/ev</td><td data-sort="0.0019246376811594208">+0.192pp/ev</td><td data-sort="5.88095238095242">5.88</td><td data-sort="0.4888888888888889">0.49</td><td data-sort="0.003527740407251129">0.0035</td><td data-sort="0.0020999999999999908">+0.21pp</td><td data-sort="0.01079999999999992">+1.08pp</td><td data-sort="0.0025000000000000577">+0.25pp</td><td data-sort="0.0042000000000000925">+0.42pp</td><td data-sort="27.2011712924464">27.20</td><td data-sort="16.287942547957417">16.29</td></tr>
+<tr data-run="tsc-ss-purekl-t5to1-48h-3L-3M"><td class="run-name">tsc-ss-purekl-t5to1-48h-3L-3M</td><td>completed</td><td data-sort="3.416397">3.4</td><td data-sort="48">48</td><td data-sort="3">3</td><td data-sort="1">1</td><td>1.0</td><td>5.0-&gt;1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="5.764049912777778">5.8h</td><td data-sort="0.02533541">0.0253</td><td data-sort="0.9878669999999999">98.79%</td><td class="best" data-sort="0.027751">0.0278</td><td class="best" data-sort="0.027751">0.0278</td><td data-sort="0.039909">0.0399</td><td data-sort="0.9868">98.68%</td><td data-sort="0.9292">92.92%</td><td data-sort="0.8674">86.74%</td><td data-sort="0.6643229885824659">0.6643</td><td data-sort="0.726971167721325">0.7270</td><td data-sort="0.8832112462725952">0.8832</td><td data-sort="0.8951258140479692">0.8951</td><td data-sort="0.7924078041560888">0.7924</td><td data-sort="0.000569802371541502">+0.057pp/ev</td><td data-sort="0.0016714361001317524">+0.167pp/ev</td><td data-sort="5.266666666666584">5.27</td><td data-sort="0.5333333333333333">0.53</td><td data-sort="0.002375309503642671">0.0024</td><td data-sort="0.0029000000000000137">+0.29pp</td><td data-sort="0.015000000000000013">+1.50pp</td><td data-sort="0.0016000000000000458">+0.16pp</td><td data-sort="0.0023999999999999577">+0.24pp</td><td data-sort="27.19824423215452">27.20</td><td data-sort="16.12060988472956">16.12</td></tr>
+<tr data-run="tsc-temp-anneal-80h-5L-6M"><td class="run-name">tsc-temp-anneal-80h-5L-6M</td><td>completed</td><td data-sort="6.021645">6.0</td><td data-sort="80">80</td><td data-sort="5">5</td><td data-sort="1">1</td><td>0.7</td><td>5.0-&gt;1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="7.2069734525">7.2h</td><td data-sort="0.027228605">0.0272</td><td data-sort="0.988795">98.88%</td><td data-sort="0.031258">0.0313</td><td data-sort="0.028453">0.0285</td><td data-sort="0.037803">0.0378</td><td data-sort="0.9868">98.68%</td><td data-sort="0.9309">93.09%</td><td data-sort="0.871">87.10%</td><td data-sort="0.6566088985440262">0.6566</td><td data-sort="0.7308983200059606">0.7309</td><td data-sort="0.8844857010400335">0.8845</td><td data-sort="0.9000001513722753">0.9000</td><td data-sort="0.7929982677405739">0.7930</td><td data-sort="0.0004865349143610012">+0.049pp/ev</td><td data-sort="0.0016720026350461133">+0.167pp/ev</td><td data-sort="2.202020202020202">2.20</td><td data-sort="0.7333333333333333">0.73</td><td data-sort="0.0032576941889274143">0.0033</td><td data-sort="0.0029000000000000137">+0.29pp</td><td data-sort="0.01869999999999994">+1.87pp</td><td data-sort="0.0022999999999999687">+0.23pp</td><td data-sort="0.0039000000000000146">+0.39pp</td><td data-sort="15.459230824799533">15.46</td><td class="worst" data-sort="12.916656431932374">12.92</td></tr>
+<tr data-run="tsc-temp-anneal-mild-80h-5L-6M"><td class="run-name">tsc-temp-anneal-mild-80h-5L-6M</td><td>completed</td><td data-sort="6.021645">6.0</td><td data-sort="80">80</td><td data-sort="5">5</td><td data-sort="1">1</td><td>0.7</td><td>3.0-&gt;1.0</td><td data-sort="0.0006">6e-04</td><td data-sort="0.15">0.1500</td><td data-sort="45936">45936</td><td data-sort="5.227758658333333">5.2h</td><td data-sort="0.027497314999999998">0.0275</td><td data-sort="0.988495">98.85%</td><td data-sort="0.032064">0.0321</td><td data-sort="0.029469">0.0295</td><td data-sort="0.03812">0.0381</td><td data-sort="0.9865">98.65%</td><td data-sort="0.9305">93.05%</td><td data-sort="0.8653">86.53%</td><td data-sort="0.6418570094657393">0.6419</td><td data-sort="0.721430926347057">0.7214</td><td data-sort="0.8794969577152354">0.8795</td><td data-sort="0.8953537441089195">0.8954</td><td data-sort="0.7845346594092378">0.7845</td><td data-sort="0.000531897233201581">+0.053pp/ev</td><td data-sort="0.0014731357048748353">+0.147pp/ev</td><td data-sort="6.636363636363707">6.64</td><td data-sort="0.4888888888888889">0.49</td><td data-sort="0.0038297332991811743">0.0038</td><td data-sort="0.0039000000000000146">+0.39pp</td><td data-sort="0.01319999999999999">+1.32pp</td><td data-sort="0.0013999999999999568">+0.14pp</td><td class="worst" data-sort="-0.0020999999999999908">-0.21pp</td><td data-sort="15.452588121684355">15.45</td><td data-sort="17.79921493729884">17.80</td></tr>
+
+  </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-eyebrow">Leaderboard</div>
+  <h2>Best performers</h2>
+  <p class="section-description">Top run for each headline metric, computed across all currently-loaded runs.</p>
+  <div class="winners-grid">
+  <div class="winner-card">
+  <div class="winner-label">Student accuracy</div>
+  <div class="winner-name">tsc-scale-384h-12L-127M</div>
+  <div class="winner-value">93.25%</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Classification accuracy</div>
+  <div class="winner-name">tsc-scale-384h-12L-127M</div>
+  <div class="winner-value">87.42%</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Teacher-forced accuracy</div>
+  <div class="winner-name">tsc-scale-384h-12L-127M</div>
+  <div class="winner-value">98.70%</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Macro F1</div>
+  <div class="winner-name">tsc-reduced-input-proj-10M-128h-5L</div>
+  <div class="winner-value">0.7968</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Eval loss (lowest)</div>
+  <div class="winner-name">tsc-ss-purekl-t5to1-48h-3L-3M</div>
+  <div class="winner-value">0.0278</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Convergence (fastest)</div>
+  <div class="winner-name">tsc-scale-128h-4L-36M</div>
+  <div class="winner-value">0.16</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Stability (lowest stdev)</div>
+  <div class="winner-name">tsc-ss-purece-t1-48h-3L-3M</div>
+  <div class="winner-value">0.0017</div>
+</div>
+<div class="winner-card">
+  <div class="winner-label">Efficiency (acc/M params)</div>
+  <div class="winner-name">tsc-ss-kl07-t5to1-48h-3L-3M</div>
+  <div class="winner-value">27.21</div>
+</div>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-eyebrow">Reference</div>
+  <h2>Column glossary</h2>
+  <p class="section-description">What each column measures and how to interpret it.</p>
+  <details class="docs">
+    <summary>Show all column definitions</summary>
+    <div class="docs-body">
+    <div class="docs-section">
+  <div class="docs-section-name">Info</div>
+  <dl>
+    <dt>Status</dt><dd>Run status: completed or in_progress.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Architecture</div>
+  <dl>
+    <dt>Params (M)</dt><dd>Total trainable parameters in millions.</dd>
+    <dt>Hidden</dt><dd>Transformer hidden / embedding dimension.</dd>
+    <dt>Layers</dt><dd>Number of stacked transformer blocks.</dd>
+    <dt>Heads</dt><dd>Number of attention heads per layer.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Hyperparams</div>
+  <dl>
+    <dt>KL ratio</dt><dd>Loss blend: 1.0 = pure KL divergence (match teacher distribution), 0.0 = pure cross-entropy (match hard label). Shown as start-&gt;end if annealed.</dd>
+    <dt>Temp</dt><dd>Distillation temperature for softening teacher logits. Higher = softer distribution. Shown as start-&gt;end if annealed.</dd>
+    <dt>LR</dt><dd>Peak learning rate (cosine schedule with warmup).</dd>
+    <dt>Dropout</dt><dd>Dropout rate applied across all transformer dropout layers during training.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Training</div>
+  <dl>
+    <dt>Batches</dt><dd>Total number of training batches processed across all epochs.</dd>
+    <dt>Wall time</dt><dd>Wall-clock training duration.</dd>
+    <dt>Train loss</dt><dd>Average training loss over the last 200 batches.</dd>
+    <dt>Train acc</dt><dd>Average training token accuracy over the last 200 batches.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Evaluation</div>
+  <dl>
+    <dt>Eval loss</dt><dd>Total evaluation loss (KL + CE blend) on test set after the final epoch.</dd>
+    <dt>KL loss</dt><dd>KL divergence component of the final eval loss.</dd>
+    <dt>CE loss</dt><dd>Cross-entropy component of the final eval loss.</dd>
+    <dt>TF acc</dt><dd>Teacher-forced accuracy: ground truth tokens used as context. Optimistic upper bound.</dd>
+    <dt>Student acc</dt><dd>Student accuracy: model uses its own predictions as context (autoregressive). The realistic measure.</dd>
+    <dt>Class acc</dt><dd>End-task accuracy: parses generated JSON output and compares all category labels against ground truth.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">F1 Scores</div>
+  <dl>
+    <dt>Tone F1</dt><dd>Macro-averaged F1 across the 5 tone classes.</dd>
+    <dt>Sent F1</dt><dd>Macro-averaged F1 across the 3 sentiment classes.</dd>
+    <dt>Safety F1</dt><dd>Macro-averaged F1 across the 2 safety classes.</dd>
+    <dt>Toxic F1</dt><dd>Macro-averaged F1 across the 2 toxicity classes.</dd>
+    <dt>Avg F1</dt><dd>Average of all four per-category macro F1 scores.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Curves</div>
+  <dl>
+    <dt>Stu slope</dt><dd>Linear regression slope of student accuracy across mini-eval checkpoints, in percentage-points per mini-eval (~1000 batches). Indicates learning steepness.</dd>
+    <dt>Cls slope</dt><dd>Same slope but on classification accuracy. Often more sensitive than student accuracy.</dd>
+    <dt>Early/late</dt><dd>Ratio of accuracy gained in the first half of training vs the second half. &gt;1 = front-loaded learning, &lt;1 = back-loaded.</dd>
+    <dt>Conv (0-1)</dt><dd>Fraction of training (0-1) needed to reach 90% of total accuracy gain. Lower = faster convergence.</dd>
+    <dt>Stdev</dt><dd>Standard deviation of student accuracy across mini-evals in the final epoch. Lower = more stable convergence.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Epoch deltas</div>
+  <dl>
+    <dt>E1 stu Δ</dt><dd>Change in full-eval student accuracy from epoch 0 to epoch 1.</dd>
+    <dt>E1 cls Δ</dt><dd>Change in full-eval classification accuracy from epoch 0 to epoch 1.</dd>
+    <dt>E2 stu Δ</dt><dd>Change in full-eval student accuracy from epoch 1 to epoch 2.</dd>
+    <dt>E2 cls Δ</dt><dd>Change in full-eval classification accuracy from epoch 1 to epoch 2.</dd>
+  </dl>
+</div>
+<div class="docs-section">
+  <div class="docs-section-name">Efficiency</div>
+  <dl>
+    <dt>Acc/M par</dt><dd>Student accuracy (%) per million parameters. Parameter efficiency.</dd>
+    <dt>Acc/hour</dt><dd>Student accuracy (%) per training hour. Compute efficiency.</dd>
+  </dl>
+</div>
+
+    </div>
+  </details>
+</section>
+
+<section class="section">
+  <div class="section-eyebrow">Filter</div>
+  <h2>Visible runs</h2>
+  <p class="section-description">Toggle which runs appear in the comparison table above.</p>
+  <div class="card">
+    <div class="filter-controls">
+      <button id="select-all">Select all</button>
+      <button id="select-none">Select none</button>
+      <button id="select-completed">Completed only</button>
+      <span class="visible-count" id="visible-count"></span>
+    </div>
+    <div class="filter-grid" id="filter-grid">
+    <label><input type="checkbox" data-run="tsc-kl-anneal-80h-5L-6M" data-status="completed" checked> tsc-kl-anneal-80h-5L-6M</label>
+<label><input type="checkbox" data-run="tsc-pure-kl-mild-temp-80h-5L-6M" data-status="completed" checked> tsc-pure-kl-mild-temp-80h-5L-6M</label>
+<label><input type="checkbox" data-run="tsc-reduced-input-proj-10M-128h-5L" data-status="completed" checked> tsc-reduced-input-proj-10M-128h-5L</label>
+<label><input type="checkbox" data-run="tsc-reduced-input-proj-36M-320h-9L" data-status="completed" checked> tsc-reduced-input-proj-36M-320h-9L</label>
+<label><input type="checkbox" data-run="tsc-reduced-input-proj-5M-64h-8L" data-status="completed" checked> tsc-reduced-input-proj-5M-64h-8L</label>
+<label><input type="checkbox" data-run="tsc-scale-128h-4L-36M" data-status="completed" checked> tsc-scale-128h-4L-36M</label>
+<label><input type="checkbox" data-run="tsc-scale-192h-6L-53M" data-status="completed" checked> tsc-scale-192h-6L-53M</label>
+<label><input type="checkbox" data-run="tsc-scale-20h-2L-5M" data-status="completed" checked> tsc-scale-20h-2L-5M</label>
+<label><input type="checkbox" data-run="tsc-scale-256h-8L-74M" data-status="completed" checked> tsc-scale-256h-8L-74M</label>
+<label><input type="checkbox" data-run="tsc-scale-384h-12L-127M" data-status="completed" checked> tsc-scale-384h-12L-127M</label>
+<label><input type="checkbox" data-run="tsc-scale-40h-2L-10M" data-status="completed" checked> tsc-scale-40h-2L-10M</label>
+<label><input type="checkbox" data-run="tsc-scale-64h-2L-17M" data-status="completed" checked> tsc-scale-64h-2L-17M</label>
+<label><input type="checkbox" data-run="tsc-ss-kl07-t3-48h-3L-3M" data-status="in_progress" checked> tsc-ss-kl07-t3-48h-3L-3M</label>
+<label><input type="checkbox" data-run="tsc-ss-kl07-t5to1-48h-3L-3M" data-status="completed" checked> tsc-ss-kl07-t5to1-48h-3L-3M</label>
+<label><input type="checkbox" data-run="tsc-ss-purece-t1-48h-3L-3M" data-status="completed" checked> tsc-ss-purece-t1-48h-3L-3M</label>
+<label><input type="checkbox" data-run="tsc-ss-purekl-t3to1-48h-3L-3M" data-status="completed" checked> tsc-ss-purekl-t3to1-48h-3L-3M</label>
+<label><input type="checkbox" data-run="tsc-ss-purekl-t5to1-48h-3L-3M" data-status="completed" checked> tsc-ss-purekl-t5to1-48h-3L-3M</label>
+<label><input type="checkbox" data-run="tsc-temp-anneal-80h-5L-6M" data-status="completed" checked> tsc-temp-anneal-80h-5L-6M</label>
+<label><input type="checkbox" data-run="tsc-temp-anneal-mild-80h-5L-6M" data-status="completed" checked> tsc-temp-anneal-mild-80h-5L-6M</label>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  Preference Distillation &middot; thesis proof of concept
+</footer>
+
+</div><!-- /container -->
+
+<script>
+(function() {
+  // ── Sorting ───────────────────────────────────────────────────────────
+  const table = document.getElementById('runs-table');
+  const tbody = table.tBodies[0];
+  const headers = table.querySelectorAll('thead th[data-column]');
+  let sortState = { columnIndex: -1, direction: 'asc' };
+
+  headers.forEach((header) => {
+    header.addEventListener('click', () => {
+      const columnIndex = parseInt(header.getAttribute('data-column'), 10);
+
+      let direction;
+      if (sortState.columnIndex === columnIndex) {
+        direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        direction = 'asc';
+      }
+      sortState = { columnIndex, direction };
+
+      headers.forEach((other) => {
+        other.classList.remove('sorted-asc', 'sorted-desc');
+      });
+      header.classList.add(direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((rowA, rowB) => {
+        const cellA = rowA.children[columnIndex];
+        const cellB = rowB.children[columnIndex];
+        const rawA = cellA.getAttribute('data-sort');
+        const rawB = cellB.getAttribute('data-sort');
+        const hasNumberA = rawA !== null && rawA !== '';
+        const hasNumberB = rawB !== null && rawB !== '';
+
+        let comparison;
+        if (hasNumberA && hasNumberB) {
+          comparison = parseFloat(rawA) - parseFloat(rawB);
+        } else if (hasNumberA) {
+          comparison = -1;
+        } else if (hasNumberB) {
+          comparison = 1;
+        } else {
+          const textA = (cellA.textContent || '').trim();
+          const textB = (cellB.textContent || '').trim();
+          if (textA === '-' && textB !== '-') comparison = 1;
+          else if (textB === '-' && textA !== '-') comparison = -1;
+          else comparison = textA.localeCompare(textB);
+        }
+
+        return direction === 'asc' ? comparison : -comparison;
+      });
+
+      rows.forEach((row) => tbody.appendChild(row));
+    });
+  });
+
+  // ── Filtering ─────────────────────────────────────────────────────────
+  const filterGrid = document.getElementById('filter-grid');
+  const visibleCount = document.getElementById('visible-count');
+  const checkboxes = filterGrid.querySelectorAll('input[type="checkbox"]');
+
+  function updateVisibility() {
+    let visible = 0;
+    let total = 0;
+    checkboxes.forEach((checkbox) => {
+      total += 1;
+      const runName = checkbox.getAttribute('data-run');
+      const row = tbody.querySelector('tr[data-run="' + CSS.escape(runName) + '"]');
+      if (!row) return;
+      if (checkbox.checked) {
+        row.classList.remove('hidden');
+        visible += 1;
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+    visibleCount.textContent = visible + ' of ' + total + ' runs visible';
+  }
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', updateVisibility);
+  });
+
+  document.getElementById('select-all').addEventListener('click', () => {
+    checkboxes.forEach((checkbox) => { checkbox.checked = true; });
+    updateVisibility();
+  });
+  document.getElementById('select-none').addEventListener('click', () => {
+    checkboxes.forEach((checkbox) => { checkbox.checked = false; });
+    updateVisibility();
+  });
+  document.getElementById('select-completed').addEventListener('click', () => {
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = checkbox.getAttribute('data-status') === 'completed';
+    });
+    updateVisibility();
+  });
+
+  updateVisibility();
+})();
+</script>
+</body>
+</html>
