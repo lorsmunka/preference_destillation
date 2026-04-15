@@ -1,0 +1,71 @@
+PLANNED EXPERIMENT TYPES
+========================
+Updated: 2026-04-15
+
+
+COMPLETED / IN PROGRESS
+------------------------
+
+Batch 1: Noise floor (50k examples, 3.4M model, 10 seeds each)
+  Purpose: Measure run-to-run variance and compare training methods
+  Architecture: 48h, 3L, 1 head, dropout 0.15, LR 0.0006, warmup 0.3
+  Data: 50,000 examples, 90/10 train/test split, 3 epochs
+
+  1. exp-purece-t1       Pure CE, temp 1                    [COMPLETED x10]
+  2. exp-purekl-t1       Pure KL, temp 1                    [COMPLETED x10]
+  3. exp-kl99to50-t1     KL 0.99->0.5, temp 1               [IN PROGRESS]
+  4. exp-purekl-t5to1    Pure KL, temp 5->1                  [QUEUED]
+  5. exp-kl70-t5to1      KL 0.7, temp 5->1                   [QUEUED]
+  6. exp-kl99to50-t5to1  KL 0.99->0.5, temp 5->1             [QUEUED]
+  7. exp-kl70-t1         KL 0.7, temp 1                      [QUEUED]
+
+  Finding so far: All methods with temp 1 produce essentially identical
+  results. Student acc ~91.17% +/- 0.13%, class acc ~81.4% +/- 0.5%.
+  Methods are indistinguishable at 50k examples.
+
+
+PLANNED NEXT
+------------
+
+Batch 2: Data scarcity (8k examples + 2k test, 3.4M model, 10 seeds each)
+  Purpose: Test whether distillation helps when data is scarce. If methods
+  diverge here but not at 50k, that proves distillation is a data-efficiency
+  technique rather than a quality-ceiling technique.
+  Architecture: Same as batch 1
+  Data: 8,000 training examples, 2,000 test examples, 3 epochs
+
+  1. exp-8k-purece-t1       Pure CE, temp 1
+  2. exp-8k-kl99to50-t5to1  KL 0.99->0.5, temp 5->1
+
+  Only 2 configs: the baseline (pure CE) and the best distillation recipe
+  from the old runs (kl99to05-t5to1 was the previous winner — using
+  kl99to50-t5to1 as the closest available variant).
+
+
+FUTURE / CONDITIONAL
+--------------------
+
+Batch 3: Even scarcer data (2k examples, 500 test)
+  Only if batch 2 shows a gap opening up. Push into the regime where
+  the model really struggles and distillation should theoretically help
+  the most.
+  Configs: Same 2 as batch 2.
+
+Batch 4: Data scaling curve (multiple sizes)
+  If batch 2 and 3 both show effects, run a full sweep:
+  2k, 5k, 10k, 25k, 50k examples for pure CE and best KL.
+  Plot F1 vs log(data size) — the "distillation is worth N extra
+  examples" chart for the thesis.
+
+Batch 5: Tiny model (1L, 24h, ~500k params)
+  Cross-check only. If distillation helps at low data, does it also
+  help with a tiny model? This is a secondary finding, not the main axis.
+
+
+DECISION POINTS
+---------------
+- After batch 1 completes: Do temp-annealed methods separate from temp-1?
+  If not, temp annealing adds nothing and we can simplify the story.
+- After batch 2: Does the gap between CE and KL widen at 8k?
+  If yes -> batch 4 (full data curve). If no -> distillation doesn't
+  help on this task at any data size, and that's the thesis finding.

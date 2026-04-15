@@ -513,6 +513,54 @@
     font-size: 12px;
   }
 
+  /* Experiment summary table */
+  .experiment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+  .experiment-table th {
+    background: var(--bg-header);
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-strong);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+  }
+  .experiment-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    white-space: nowrap;
+  }
+  .experiment-table tr:nth-child(even) td {
+    background: var(--bg-row-alt);
+  }
+  .experiment-table tr:hover td {
+    background: var(--bg-row-hover);
+  }
+  .experiment-table .best {
+    color: var(--best);
+    font-weight: 600;
+  }
+  .experiment-table .worst {
+    color: var(--worst);
+  }
+  .experiment-table .stdev {
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+  .filter-controls .experiment-btn-active {
+    background: var(--accent);
+    color: var(--bg-card);
+    border-color: var(--accent);
+  }
+
   footer {
     margin-top: var(--space-8);
     padding-top: var(--space-5);
@@ -555,6 +603,27 @@
   <div class="winners-grid" id="winners-grid"></div>
 </section>
 
+<section class="section" id="section-experiments" style="display:none">
+  <div class="section-eyebrow">Experiments</div>
+  <h2>Experiment summary</h2>
+  <p class="section-description">Mean &plusmn; stdev across runs sharing the same experiment tag. Best mean per metric is highlighted.</p>
+  <div class="table-wrapper">
+    <table class="experiment-table" id="experiment-table">
+      <thead id="experiment-thead"></thead>
+      <tbody id="experiment-tbody"></tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top: var(--space-6);">Per-epoch progression</h3>
+  <p class="section-description">Student, classification, and teacher-forced accuracy at each epoch boundary.</p>
+  <div class="table-wrapper">
+    <table class="experiment-table" id="epoch-table">
+      <thead id="epoch-thead"></thead>
+      <tbody id="epoch-tbody"></tbody>
+    </table>
+  </div>
+</section>
+
 <section class="section" id="section-docs" style="display:none">
   <div class="section-eyebrow">Reference</div>
   <h2>Column glossary</h2>
@@ -576,6 +645,7 @@
       <button id="select-completed">Completed only</button>
       <span class="visible-count" id="visible-count"></span>
     </div>
+    <div class="filter-controls" id="experiment-buttons" style="display:none; margin-top: 8px;"></div>
     <div class="filter-grid" id="filter-grid"></div>
   </div>
 </section>
@@ -588,7 +658,10 @@
 
 <script>
 (function() {
-  const JSON_PATH = 'run_evaluation.json';
+  // Injected by evaluate_runs.py — replaced at build time
+  // DATA_PLACEHOLDER_START
+  const DATA = null;
+  // DATA_PLACEHOLDER_END
 
   // ── Formatters (mirror of evaluate_runs.format_value) ─────────────────
   function formatValue(value, fmt) {
@@ -771,19 +844,158 @@
     body.innerHTML = html;
   }
 
+  function getExperimentTags(payload) {
+    const tags = [];
+    payload.runs.forEach((run) => {
+      const tag = run.experiment || null;
+      if (tags.indexOf(tag) === -1) tags.push(tag);
+    });
+    return tags;
+  }
+
+  function renderExperimentSummary(payload) {
+    const tags = getExperimentTags(payload);
+    const section = document.getElementById('section-experiments');
+    if (tags.length < 2) {
+      section.style.display = 'none';
+      return;
+    }
+
+    var summaryMetrics = [
+      { label: 'Student acc', key: 'final_student_accuracy', fmt: 'pct', higher: true },
+      { label: 'Class acc', key: 'final_classification_accuracy', fmt: 'pct', higher: true },
+      { label: 'TF acc', key: 'final_tf_accuracy', fmt: 'pct', higher: true },
+      { label: 'Tone F1', key: 'f1_tone', fmt: 'f4', higher: true },
+      { label: 'Sent F1', key: 'f1_sentiment', fmt: 'f4', higher: true },
+      { label: 'Safety F1', key: 'f1_safety', fmt: 'f4', higher: true },
+      { label: 'Toxic F1', key: 'f1_toxicity', fmt: 'f4', higher: true },
+      { label: 'Avg F1', key: 'f1_macro_avg', fmt: 'f4', higher: true },
+      { label: 'Eval loss', key: 'final_eval_loss', fmt: 'f4', higher: false },
+      { label: 'Train loss', key: 'final_train_loss', fmt: 'f4', higher: false },
+    ];
+
+    var epochMetrics = [
+      { label: 'E1 stu', key: 'e1_student_acc', fmt: 'pct', higher: true },
+      { label: 'E1 cls', key: 'e1_class_acc', fmt: 'pct', higher: true },
+      { label: 'E1 tf', key: 'e1_tf_acc', fmt: 'pct', higher: true },
+      { label: 'E2 stu', key: 'e2_student_acc', fmt: 'pct', higher: true },
+      { label: 'E2 cls', key: 'e2_class_acc', fmt: 'pct', higher: true },
+      { label: 'E2 tf', key: 'e2_tf_acc', fmt: 'pct', higher: true },
+      { label: 'E3 stu', key: 'e3_student_acc', fmt: 'pct', higher: true },
+      { label: 'E3 cls', key: 'e3_class_acc', fmt: 'pct', higher: true },
+      { label: 'E3 tf', key: 'e3_tf_acc', fmt: 'pct', higher: true },
+    ];
+
+    // Group runs by tag
+    var groups = {};
+    tags.forEach(function(tag) { groups[tag === null ? '__none__' : tag] = []; });
+    payload.runs.forEach(function(run) {
+      var key = run.experiment || '__none__';
+      groups[key].push(run);
+    });
+
+    // Compute mean and stdev per group per metric
+    function computeStats(values) {
+      var nums = values.filter(function(v) { return typeof v === 'number' && !isNaN(v); });
+      if (nums.length === 0) return { mean: null, stdev: null, count: 0 };
+      var n = nums.length;
+      var mean = nums.reduce(function(a, b) { return a + b; }, 0) / n;
+      var variance = nums.reduce(function(a, b) { return a + (b - mean) * (b - mean); }, 0) / n;
+      return { mean: mean, stdev: Math.sqrt(variance), count: n };
+    }
+
+    var groupKeys = tags.map(function(t) { return t === null ? '__none__' : t; });
+
+    function buildStatsTable(metrics, theadEl, tbodyEl) {
+      var stats = {};
+      groupKeys.forEach(function(gk) {
+        stats[gk] = {};
+        metrics.forEach(function(m) {
+          var values = groups[gk].map(function(r) { return r[m.key]; });
+          stats[gk][m.key] = computeStats(values);
+        });
+      });
+
+      var bestMean = {};
+      metrics.forEach(function(m) {
+        var best = null;
+        groupKeys.forEach(function(gk) {
+          var s = stats[gk][m.key];
+          if (s.mean === null) return;
+          if (best === null) { best = s.mean; }
+          else if (m.higher && s.mean > best) { best = s.mean; }
+          else if (!m.higher && s.mean < best) { best = s.mean; }
+        });
+        bestMean[m.key] = best;
+      });
+
+      var headHtml = '<tr><th>Experiment</th><th>Runs</th>';
+      metrics.forEach(function(m) {
+        headHtml += '<th>' + escapeHtml(m.label) + '</th>';
+      });
+      headHtml += '</tr>';
+      theadEl.innerHTML = headHtml;
+
+      var bodyHtml = '';
+      groupKeys.forEach(function(gk) {
+        var label = gk === '__none__' ? '(no tag)' : gk;
+        var count = groups[gk].length;
+        bodyHtml += '<tr><td style="font-weight:600">' + escapeHtml(label) + '</td>';
+        bodyHtml += '<td>' + count + '</td>';
+        metrics.forEach(function(m) {
+          var s = stats[gk][m.key];
+          if (s.mean === null) {
+            bodyHtml += '<td>-</td>';
+            return;
+          }
+          var cls = (bestMean[m.key] !== null && s.mean === bestMean[m.key]) ? ' class="best"' : '';
+          bodyHtml += '<td' + cls + '>' +
+            formatValue(s.mean, m.fmt) +
+            ' <span class="stdev">&plusmn; ' + formatValue(s.stdev, m.fmt) + '</span>' +
+            '</td>';
+        });
+        bodyHtml += '</tr>';
+      });
+      tbodyEl.innerHTML = bodyHtml;
+    }
+
+    buildStatsTable(summaryMetrics,
+      document.getElementById('experiment-thead'),
+      document.getElementById('experiment-tbody'));
+
+    buildStatsTable(epochMetrics,
+      document.getElementById('epoch-thead'),
+      document.getElementById('epoch-tbody'));
+  }
+
   function renderFilter(payload) {
     const grid = document.getElementById('filter-grid');
+    const tags = getExperimentTags(payload);
     let html = '';
     payload.runs.forEach((run) => {
       const status = run.status || '';
+      const experiment = run.experiment || '';
       html +=
         '<label>' +
           '<input type="checkbox" data-run="' + escapeHtml(run.name) + '" ' +
-          'data-status="' + escapeHtml(status) + '" checked> ' +
+          'data-status="' + escapeHtml(status) + '" ' +
+          'data-experiment="' + escapeHtml(experiment) + '" checked> ' +
           escapeHtml(run.name) +
         '</label>';
     });
     grid.innerHTML = html;
+
+    if (tags.length > 1) {
+      const container = document.getElementById('experiment-buttons');
+      container.style.display = '';
+      let btns = '<span style="color:var(--text-muted); margin-right:6px;">By experiment:</span>';
+      tags.forEach((tag) => {
+        const label = tag === null ? 'No tag' : tag;
+        const dataVal = tag === null ? '' : tag;
+        btns += '<button class="experiment-btn" data-experiment="' + escapeHtml(dataVal) + '">' + escapeHtml(label) + '</button> ';
+      });
+      container.innerHTML = btns;
+    }
   }
 
   // ── Sorting ───────────────────────────────────────────────────────────
@@ -886,6 +1098,16 @@
       updateVisibility();
     });
 
+    document.querySelectorAll('.experiment-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tag = btn.getAttribute('data-experiment');
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = checkbox.getAttribute('data-experiment') === tag;
+        });
+        updateVisibility();
+      });
+    });
+
     updateVisibility();
   }
 
@@ -898,38 +1120,29 @@
   }
 
   function revealSections() {
-    ['section-table', 'section-winners', 'section-docs', 'section-filter'].forEach((id) => {
+    ['section-table', 'section-winners', 'section-experiments', 'section-docs', 'section-filter'].forEach((id) => {
       document.getElementById(id).style.display = '';
     });
   }
 
-  fetch(JSON_PATH, { cache: 'no-store' })
-    .then((response) => {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.json();
-    })
-    .then((payload) => {
-      renderHeader(payload);
-      renderTable(payload);
-      renderWinners(payload);
-      renderDocs(payload);
-      renderFilter(payload);
-      revealSections();
-      attachSorting();
-      attachFiltering();
-    })
-    .catch((error) => {
-      document.getElementById('meta-line').textContent = '';
-      showError(
-        '<strong>Could not load <code>' + JSON_PATH + '</code>.</strong><br><br>' +
-        'Run the evaluator to generate the JSON:<br>' +
-        '<code>python -m experimental_analysis.evaluate_runs --all</code><br><br>' +
-        'Then serve this folder over HTTP (browsers block <code>fetch()</code> on <code>file://</code>):<br>' +
-        '<code>python -m http.server --directory experimental_analysis/templates 8000</code><br>' +
-        'and open <code>http://localhost:8000/run_evaluation.html</code>.<br><br>' +
-        '<em>Error:</em> ' + escapeHtml(error.message)
-      );
-    });
+  if (!DATA) {
+    document.getElementById('meta-line').textContent = '';
+    showError(
+      '<strong>No data embedded.</strong><br><br>' +
+      'Run the evaluator to generate the report:<br>' +
+      '<code>python -m experimental_analysis.evaluate_runs --all</code>'
+    );
+  } else {
+    renderHeader(DATA);
+    renderTable(DATA);
+    renderWinners(DATA);
+    renderExperimentSummary(DATA);
+    renderDocs(DATA);
+    renderFilter(DATA);
+    revealSections();
+    attachSorting();
+    attachFiltering();
+  }
 })();
 </script>
 </body>

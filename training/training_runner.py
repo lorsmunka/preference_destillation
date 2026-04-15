@@ -50,7 +50,12 @@ class TrainingRunner:
         started_at = datetime.now().isoformat()
 
         batches_dir = get_batches_dir(self.domain, self.teacher_model)
-        batch_handler = BatchHandler(batches_dir, self.config["training_test_ratio"])
+        batch_handler = BatchHandler(
+            batches_dir,
+            self.config["training_test_ratio"],
+            max_training_examples=self.config.get("max_training_examples"),
+            batch_size=self.config["batch_size"],
+        )
         logger = Logger(self.logs_dir)
 
         input_vocabulary = load_input_vocabulary(self.domain, self.teacher_model)

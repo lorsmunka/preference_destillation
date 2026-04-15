@@ -141,6 +141,10 @@ class RunData:
         return self.info.get("dropout", 0)
 
     @property
+    def experiment(self) -> Optional[str]:
+        return self.info.get("experiment")
+
+    @property
     def started_at(self) -> Optional[str]:
         return self.info.get("started_at")
 

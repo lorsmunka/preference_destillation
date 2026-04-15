@@ -4,9 +4,11 @@ from time import time
 
 
 class BatchHandler:
-    def __init__(self, batches_dir: str, training_test_ratio: float):
+    def __init__(self, batches_dir: str, training_test_ratio: float, max_training_examples: int = None, batch_size: int = 32):
         self.batches_dir = batches_dir
         self.training_test_ratio = training_test_ratio
+        self.max_training_examples = max_training_examples
+        self.batch_size = batch_size
 
     def get_batch(self, index):
         batch_index = index + 1
@@ -28,10 +30,17 @@ class BatchHandler:
             "batch_") and f.endswith(".jsonl")]
         return len(batch_files)
 
-    def get_training_batches_radius(self):
+    def _effective_batch_count(self):
         total_batches = self.get_batch_count()
-        return 0, int(total_batches * self.training_test_ratio)
+        if self.max_training_examples is not None:
+            max_batches = self.max_training_examples // self.batch_size
+            return min(total_batches, max_batches)
+        return total_batches
+
+    def get_training_batches_radius(self):
+        effective = self._effective_batch_count()
+        return 0, int(effective * self.training_test_ratio)
 
     def get_test_batches_radius(self):
-        total_batches = self.get_batch_count()
-        return int(total_batches * self.training_test_ratio), total_batches
+        effective = self._effective_batch_count()
+        return int(effective * self.training_test_ratio), effective

@@ -1,9 +1,12 @@
 import sys
+import re
 import math
 import json
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from experimental_analysis.run_data import (
     RunData,
@@ -15,8 +18,10 @@ from experimental_analysis.run_data import (
 )
 
 
-VIEWER_DIR = Path(__file__).parent / "templates"
-JSON_OUTPUT_PATH = VIEWER_DIR / "run_evaluation.json"
+TEMPLATE_DIR = Path(__file__).parent / "templates"
+TEMPLATE_PATH = TEMPLATE_DIR / "run_evaluation.html"
+OUTPUT_DIR = Path(__file__).parent / "reports"
+OUTPUT_HTML_PATH = OUTPUT_DIR / "run_evaluation.html"
 
 
 # ── Metric helpers ──────────────────────────────────────────────────────────
@@ -141,6 +146,7 @@ def build_run_report(run: RunData) -> dict:
 
     # Identity
     report["name"] = run.name
+    report["experiment"] = run.experiment
     report["status"] = run.status
     report["params_millions"] = run.params_millions()
     report["hidden_dim"] = run.hidden_dim
@@ -188,6 +194,18 @@ def build_run_report(run: RunData) -> dict:
             if f1_scores:
                 report["f1_macro_avg"] = sum(f1_scores.values()) / len(f1_scores)
 
+    # Per-epoch absolute values
+    for epoch_index in range(1, 4):
+        report[f"e{epoch_index}_student_acc"] = None
+        report[f"e{epoch_index}_class_acc"] = None
+        report[f"e{epoch_index}_tf_acc"] = None
+    for eval_epoch in run.eval_epochs:
+        epoch_number = eval_epoch.epoch + 1  # 0-indexed -> 1-indexed
+        if 1 <= epoch_number <= 3:
+            report[f"e{epoch_number}_student_acc"] = eval_epoch.student_accuracy
+            report[f"e{epoch_number}_class_acc"] = eval_epoch.classification_accuracy
+            report[f"e{epoch_number}_tf_acc"] = eval_epoch.teacher_forced_accuracy
+
     # Per-epoch progression
     epoch_deltas = compute_epoch_deltas(run.eval_epochs)
     for index, delta in enumerate(epoch_deltas):
@@ -221,6 +239,7 @@ def build_run_report(run: RunData) -> dict:
 # (label, report_key, format, higher_is_better, group)
 # higher_is_better: True = best = max, False = best = min, None = no highlight
 COLUMN_DEFINITIONS = [
+    ("Experiment", "experiment", "auto", None, "Info"),
     ("Status", "status", "auto", None, "Info"),
     ("Params (M)", "params_millions", "f1", None, "Architecture"),
     ("Hidden", "hidden_dim", "int", None, "Architecture"),
@@ -245,6 +264,15 @@ COLUMN_DEFINITIONS = [
     ("Safety F1", "f1_safety", "f4", True, "F1 Scores"),
     ("Toxic F1", "f1_toxicity", "f4", True, "F1 Scores"),
     ("Avg F1", "f1_macro_avg", "f4", True, "F1 Scores"),
+    ("E1 stu", "e1_student_acc", "pct", None, "Per-epoch"),
+    ("E1 cls", "e1_class_acc", "pct", None, "Per-epoch"),
+    ("E1 tf", "e1_tf_acc", "pct", None, "Per-epoch"),
+    ("E2 stu", "e2_student_acc", "pct", None, "Per-epoch"),
+    ("E2 cls", "e2_class_acc", "pct", None, "Per-epoch"),
+    ("E2 tf", "e2_tf_acc", "pct", None, "Per-epoch"),
+    ("E3 stu", "e3_student_acc", "pct", None, "Per-epoch"),
+    ("E3 cls", "e3_class_acc", "pct", None, "Per-epoch"),
+    ("E3 tf", "e3_tf_acc", "pct", None, "Per-epoch"),
     ("Stu slope", "student_slope", "slope", True, "Curves"),
     ("Cls slope", "classification_slope", "slope", True, "Curves"),
     ("Early/late", "early_vs_late_ratio", "f2", None, "Curves"),
@@ -301,6 +329,15 @@ COLUMN_DESCRIPTIONS = {
     "early_vs_late_ratio": "Ratio of accuracy gained in the first half of training vs the second half. >1 = front-loaded learning, <1 = back-loaded.",
     "convergence_speed_90": "Fraction of training (0-1) needed to reach 90% of total accuracy gain. Lower = faster convergence.",
     "last_epoch_stability": "Standard deviation of student accuracy across mini-evals in the final epoch. Lower = more stable convergence.",
+    "e1_student_acc": "Student accuracy after epoch 1.",
+    "e1_class_acc": "Classification accuracy after epoch 1.",
+    "e1_tf_acc": "Teacher-forced accuracy after epoch 1.",
+    "e2_student_acc": "Student accuracy after epoch 2.",
+    "e2_class_acc": "Classification accuracy after epoch 2.",
+    "e2_tf_acc": "Teacher-forced accuracy after epoch 2.",
+    "e3_student_acc": "Student accuracy after epoch 3.",
+    "e3_class_acc": "Classification accuracy after epoch 3.",
+    "e3_tf_acc": "Teacher-forced accuracy after epoch 3.",
     "epoch1_student_delta": "Change in full-eval student accuracy from epoch 0 to epoch 1.",
     "epoch1_class_delta": "Change in full-eval classification accuracy from epoch 0 to epoch 1.",
     "epoch2_student_delta": "Change in full-eval student accuracy from epoch 1 to epoch 2.",
@@ -346,6 +383,20 @@ def build_json_payload(reports: List[dict]) -> dict:
 # ── Entry point ─────────────────────────────────────────────────────────────
 
 
+def build_html_report(payload: dict) -> str:
+    """Read the HTML template and inject the JSON payload inline."""
+    template = TEMPLATE_PATH.read_text(encoding="utf-8")
+    json_blob = json.dumps(payload, indent=2, ensure_ascii=False)
+    injected_line = f"  const DATA = {json_blob};"
+    result = re.sub(
+        r"  // DATA_PLACEHOLDER_START\n.*?\n  // DATA_PLACEHOLDER_END",
+        injected_line,
+        template,
+        flags=re.DOTALL,
+    )
+    return result
+
+
 def evaluate_runs(
     names: Optional[List[str]] = None,
     prefix: Optional[str] = None,
@@ -367,30 +418,29 @@ def evaluate_runs(
 
     reports = [build_run_report(run) for run in runs]
     payload = build_json_payload(reports)
+    html = build_html_report(payload)
 
-    destination = Path(output_path) if output_path else JSON_OUTPUT_PATH
+    destination = Path(output_path) if output_path else OUTPUT_HTML_PATH
     destination.parent.mkdir(parents=True, exist_ok=True)
     with open(destination, "w", encoding="utf-8") as file:
-        json.dump(payload, file, indent=2, ensure_ascii=False)
+        file.write(html)
 
-    viewer_html = VIEWER_DIR / "run_evaluation.html"
-    print(f"Wrote JSON: {destination}")
-    print(f"Open viewer: {viewer_html}")
-    print("(Serve the folder over HTTP so the viewer can fetch the JSON, e.g.")
-    print(f"   python -m http.server --directory {VIEWER_DIR} 8000 )")
+    print(f"Wrote report: {destination}")
+    print("Open the HTML file directly in your browser — no server needed.")
 
 
 def main():
     args = sys.argv[1:]
 
     if "--help" in args or "-h" in args:
-        print("Usage: python -m experimental_analysis.evaluate_runs [options]")
+        print("Usage: python -m experimental_analysis.evaluate_runs [options] [run_name ...]")
+        print()
+        print("Evaluates all runs by default. Options narrow the selection.")
         print()
         print("Options:")
-        print("  --all              Evaluate all runs")
         print("  --completed        Only completed runs")
         print("  --prefix PREFIX    Filter by run name prefix")
-        print("  --output FILE      JSON output path (default: templates/run_evaluation.json)")
+        print("  --output FILE      HTML output path (default: reports/run_evaluation.html)")
         print("  run_name ...       Specific run names to evaluate")
         print("  -h, --help         Show this help")
         return
@@ -403,9 +453,7 @@ def main():
     index = 0
     while index < len(args):
         arg = args[index]
-        if arg == "--all":
-            pass  # no filter
-        elif arg == "--completed":
+        if arg == "--completed":
             completed_only = True
         elif arg == "--prefix" and index + 1 < len(args):
             index += 1
