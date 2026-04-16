@@ -119,6 +119,8 @@ def compute_f1_per_category(confusion_matrices: dict) -> dict:
     """Compute macro F1 score per classification category from confusion matrices."""
     results = {}
     for category, matrix in confusion_matrices.items():
+        if not all(isinstance(row, dict) for row in matrix.values()):
+            continue
         f1_scores = []
         for label in matrix:
             true_positive = matrix[label].get(label, 0)
