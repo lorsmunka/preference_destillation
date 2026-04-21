@@ -1,6 +1,5 @@
 # Data files (generated on server, scp'd down)
 batches/
-runs/
 logs12b/
 inferences/
 evals/
@@ -8,8 +7,10 @@ evals/
 # Input data
 text_generation/reddit_comment_sentiment/reddit_comments.jsonl
 text_generation/math_word_problem/math_word_problems.jsonl
+sentences/sentences.jsonl
 
 # Python
+.venv/
 __pycache__/
 *.pyc
 *.egg-info/
@@ -17,6 +18,7 @@ __pycache__/
 # Model files
 checkpoints/
 *.pt
+runs/**/checkpoints/
 
 # Misc
 test.json

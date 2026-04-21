@@ -135,7 +135,7 @@ def plot_accuracy_over_training(runs: List[RunData], show: bool = False):
         accuracies = [batch.accuracy * 100 for batch in run.train_batches]
         batch_indices = list(range(1, len(accuracies) + 1))
 
-        window = max(50, len(accuracies) // 50)
+        window = min(max(50, len(accuracies) // 50), len(accuracies))
         smoothed = moving_average(accuracies, window)
 
         # Left: full training
@@ -147,7 +147,7 @@ def plot_accuracy_over_training(runs: List[RunData], show: bool = False):
         if cutoff < len(accuracies):
             late_accuracies = accuracies[cutoff:]
             late_indices = batch_indices[cutoff:]
-            late_window = max(20, len(late_accuracies) // 20)
+            late_window = min(max(20, len(late_accuracies) // 20), len(late_accuracies))
             late_smoothed = moving_average(late_accuracies, late_window)
             axes[1].plot(late_indices[late_window - 1:], late_smoothed, color=color,
                          linewidth=1.5, label=label, alpha=0.9)
@@ -192,7 +192,7 @@ def plot_loss_over_training(runs: List[RunData], show: bool = False):
             losses = [getter(batch) for batch in run.train_batches]
             batch_indices = list(range(1, len(losses) + 1))
 
-            window = max(50, len(losses) // 50)
+            window = min(max(50, len(losses) // 50), len(losses))
             smoothed = moving_average(losses, window)
 
             ax.plot(batch_indices[window - 1:], smoothed, color=color,
@@ -290,7 +290,7 @@ def plot_training_efficiency(runs: List[RunData], show: bool = False):
         cumulative_hours = []
         accuracies = []
         total_seconds = 0
-        window = max(50, len(run.train_batches) // 50)
+        window = min(max(50, len(run.train_batches) // 50), len(run.train_batches))
 
         for batch in run.train_batches:
             total_seconds += batch.time_seconds

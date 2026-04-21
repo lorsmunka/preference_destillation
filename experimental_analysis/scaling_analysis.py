@@ -49,7 +49,7 @@ def fit_scaling_curve(
         results["power_law"] = {
             "params": {"a": popt[0], "b": popt[1], "c": popt[2]},
             "r_squared": r_squared,
-            "predict": lambda x: power_law(x, *popt),
+            "predict": lambda x, fitted_params=popt: power_law(x, *fitted_params),
         }
     except Exception as error:
         print(f"  Power law fit failed: {error}")
@@ -71,7 +71,7 @@ def fit_scaling_curve(
         results["log"] = {
             "params": {"a": popt[0], "b": popt[1]},
             "r_squared": r_squared,
-            "predict": lambda x: log_curve(x, *popt),
+            "predict": lambda x, fitted_params=popt: log_curve(x, *fitted_params),
         }
     except Exception as error:
         print(f"  Log fit failed: {error}")
