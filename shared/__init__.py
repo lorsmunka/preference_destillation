@@ -3,6 +3,7 @@ from .exit_listener import ExitListener
 from .logger import Logger
 from .classification_accuracy import ClassificationAccuracyCalculator
 from .math_accuracy import MathAccuracyCalculator
+from .post_generation_accuracy import PostGenerationAccuracyCalculator
 from .config import (
     get_device,
     sanitize_model_name,
@@ -36,6 +37,7 @@ __all__ = [
     'Logger',
     'ClassificationAccuracyCalculator',
     'MathAccuracyCalculator',
+    'PostGenerationAccuracyCalculator',
     'get_device',
     'sanitize_model_name',
     'get_input_path',

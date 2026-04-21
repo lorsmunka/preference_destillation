@@ -25,6 +25,7 @@ from shared import (
 DOMAIN_STOP_TOKEN = {
     "reddit_comment_sentiment": "}",
     "math_word_problem": ";",
+    "post_generation": "<end>",
 }
 
 
@@ -58,6 +59,8 @@ def get_checkpoints(run_name: str) -> list:
 def create_teacher_prompt(domain: str, sentence: str) -> str:
     if domain == "math_word_problem":
         return Utilities.create_math_word_problem_prompt(sentence)
+    if domain == "post_generation":
+        return Utilities.create_post_generation_prompt(sentence)
     return Utilities.create_reddit_sentiment_prompt(sentence)
 
 
@@ -75,6 +78,14 @@ def validate_sentence(tokenizer, sentence, domain):
     if token_count > max_tokens:
         return False, f"Too long: {token_count} tokens (max {max_tokens})"
     return True, token_count
+
+
+def has_stop_token(tokenizer, generated_ids, token_str, stop_token):
+    if token_str == stop_token:
+        return True
+
+    generated_text = tokenizer.decode(generated_ids, skip_special_tokens=False)
+    return stop_token in generated_text
 
 
 class InferenceLogger:
@@ -131,7 +142,7 @@ def generate_teacher(model, tokenizer, sentence, domain, device, logger):
             token_str = tokenizer.decode([next_token.item()])
             logger.append_token(token_str)
 
-            if next_token.item() == tokenizer.eos_token_id or token_str == stop_token:
+            if next_token.item() == tokenizer.eos_token_id or has_stop_token(tokenizer, generated_ids, token_str, stop_token):
                 break
 
             current_input = next_token.unsqueeze(0)
@@ -175,7 +186,7 @@ def generate_student(model, tokenizer, output_token_ids, sentence, domain, devic
             token_str = tokenizer.decode([pred_token_id])
             logger.append_token(token_str)
 
-            if token_str == stop_token:
+            if has_stop_token(tokenizer, generated_ids, token_str, stop_token):
                 break
 
     gen_time = time() - gen_start
@@ -272,7 +283,7 @@ def main():
 
     print(f"\n[Teacher] Loading {teacher_model}...")
     load_start = time()
-    teacher_model_instance = AutoModelForCausalLM.from_pretrained(teacher_model, torch_dtype=torch.bfloat16, device_map=device)
+    teacher_model_instance = AutoModelForCausalLM.from_pretrained(teacher_model, dtype=torch.bfloat16, device_map=device)
     teacher_model_instance.eval()
     teacher_load = time() - load_start
     print(f"[Teacher] Loaded in {teacher_load:.2f}s")

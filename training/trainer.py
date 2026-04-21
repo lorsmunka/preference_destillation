@@ -13,6 +13,7 @@ from shared import (
     Logger,
     ClassificationAccuracyCalculator,
     MathAccuracyCalculator,
+    PostGenerationAccuracyCalculator,
     get_device,
     PROMPT_DELIMITER,
     MINI_EVAL_FREQUENCY,
@@ -46,6 +47,10 @@ class Trainer:
         self.model = model.to(self.device)
         self.vocabulary = model.vocabulary
         self.vocab_size = model.vocabulary['vocab_size']
+        self.output_token_to_index = {
+            token: index
+            for index, token in enumerate(self.vocabulary['token_list'])
+        }
         self.tokenizer = model.tokenizer
         self.optimizer = AdamW(model.parameters(), lr=self.learning_rate)
 
@@ -279,6 +284,8 @@ class Trainer:
     def _evaluate_batches(self, batch_start: int, batch_end: int, verbose: bool = False):
         if self.domain == "math_word_problem":
             task_accuracy_calculator = MathAccuracyCalculator()
+        elif self.domain == "post_generation":
+            task_accuracy_calculator = PostGenerationAccuracyCalculator()
         else:
             task_accuracy_calculator = ClassificationAccuracyCalculator()
 
@@ -450,7 +457,8 @@ class Trainer:
     def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float], int]:
         token = step['token']
         logit_vector = step['logits'][:self.vocab_size]
-        target_index = step['predicted_token_index']
+        target_index = self.output_token_to_index.get(
+            token, step['predicted_token_index'])
 
         token_ids = self.tokenizer.encode(token, add_special_tokens=False)
         token_id = token_ids[0] if token_ids else self.tokenizer.unk_token_id

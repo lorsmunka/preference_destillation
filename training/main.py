@@ -1,5 +1,15 @@
 import json
 import os
+import sys
+from pathlib import Path
+
+project_root = Path(__file__).resolve().parent.parent
+project_root_path = str(project_root)
+
+if project_root_path in sys.path:
+    sys.path.remove(project_root_path)
+sys.path.insert(0, project_root_path)
+os.chdir(project_root)
 
 from training_runner import TrainingRunner
 from shared import ExitListener, TRAINING_QUEUE_PATH, get_training_run_dir

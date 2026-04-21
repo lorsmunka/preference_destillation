@@ -48,12 +48,16 @@ class ModelHandler:
     def build_prompt(self, text: str) -> str:
         if self.domain == "math_word_problem":
             return Utilities.create_math_word_problem_prompt(text)
+        elif self.domain == "post_generation":
+            return Utilities.create_post_generation_prompt(text)
         return Utilities.create_reddit_sentiment_prompt(text)
 
-    def is_stop_token(self, token_decoded: str) -> bool:
+    def is_stop(self, last_token_decoded: str, generated_text: str) -> bool:
         if self.domain == "math_word_problem":
-            return token_decoded == ";"
-        return token_decoded == "}"
+            return last_token_decoded == ";"
+        elif self.domain == "post_generation":
+            return "<end>" in generated_text
+        return last_token_decoded == "}"
 
     def generate_training_example(self, text: str) -> Tuple[Optional[Dict], Optional[str]]:
         start_time = time()
@@ -66,7 +70,7 @@ class ModelHandler:
         current_sequence = inputs['input_ids']
 
         last_token_decoded = ""
-        while not self.is_stop_token(last_token_decoded) and len(steps) <= self.max_generation_steps:
+        while not self.is_stop(last_token_decoded, generated_text) and len(steps) <= self.max_generation_steps:
             token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
                 current_sequence)
 

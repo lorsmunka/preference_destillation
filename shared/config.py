@@ -17,6 +17,7 @@ def get_device() -> str:
 INPUT_PATHS = {
     "reddit_comment_sentiment": "./text_generation/reddit_comment_sentiment/reddit_comments.jsonl",
     "math_word_problem": "./text_generation/math_word_problem/math_word_problems.jsonl",
+    "post_generation": "./text_generation/reddit_comment_sentiment/reddit_comments.jsonl",
 }
 
 
@@ -65,6 +66,7 @@ MAX_SENTENCE_LENGTH = 25
 DOMAIN_MAX_GENERATION_STEPS = {
     "reddit_comment_sentiment": 50,
     "math_word_problem": 350,
+    "post_generation": 150,
 }
 PROMPT_DELIMITER = "\n\n"
 
@@ -75,6 +77,7 @@ NUM_HEADS = 8
 DOMAIN_MAX_SEQ_LENGTH = {
     "reddit_comment_sentiment": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["reddit_comment_sentiment"],
     "math_word_problem": 210,
+    "post_generation": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["post_generation"],
 }
 DROPOUT = 0.15
 

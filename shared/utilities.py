@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict, List, Tuple, Optional
 
 
@@ -160,6 +161,24 @@ class Utilities:
         "definite", "indefinite", "unsure", "confident", "doubtful",
     ]
 
+    _post_generation_path = os.path.join(
+        os.path.dirname(__file__), "..",
+        "text_generation", "post_generation", "sample_posts.txt"
+    )
+    with open(_post_generation_path, "r", encoding="utf-8") as _file:
+        POST_GENERATION_EXAMPLE_RESPONSES = [
+            line.strip() for line in _file if line.strip()
+        ]
+
+    POST_GENERATION_PROMPT_TOKENS = [
+        "Given", "Reddit", "comment", "write", "original", "post",
+        "that", "could", "have", "prompted", "this", "comment",
+        "The", "post", "should", "be", "no", "longer", "than",
+        "sentences", "End", "with", "Comment", "Post",
+        "Example", "example",
+        "<", ">", "end",
+    ]
+
     MATH_WORD_PROBLEM_MASTER_PROMPT = """Follow this example exactly:
 
 Problem: "Lisa has 3 bags with 5 apples each. She eats 2 apples. How many are left?"
@@ -199,6 +218,10 @@ Solution: False;
     _vocabulary_cache: Dict[str, dict] = {}
 
     @classmethod
+    def create_post_generation_prompt(cls, text: str) -> str:
+        return f'Generate a plausible reddit post based on this comment: "{text}"\n\nNo title or text formatting needed. Only reply with the body of the post. 3 sentences or about 50 words. End post with <end>.\n\nPost: '
+
+    @classmethod
     def create_math_word_problem_prompt(cls, text: str) -> str:
         # text includes full scaffold: Problem: "..."\nA=?\nB=?\n...Solution: ?;
         # Append "Calculations:\nA=" so Gemma sees the scaffold then is forced
@@ -226,6 +249,8 @@ JSON:
     def _get_example_tokens(cls, tokenizer, domain: str = "reddit_comment_sentiment") -> List[str]:
         if domain == "math_word_problem":
             responses = cls.MATH_WORD_PROBLEM_EXAMPLE_RESPONSES
+        elif domain == "post_generation":
+            responses = cls.POST_GENERATION_EXAMPLE_RESPONSES
         else:
             responses = cls.REDDIT_SENTIMENT_EXAMPLE_RESPONSES
 
@@ -258,6 +283,9 @@ JSON:
             seen_auxiliary = set(math_auxiliary)
             combined = math_auxiliary + [t for t in cls.AUXILIARY_TOKENS if t not in seen_auxiliary]
             auxiliary_tokens = combined
+        elif domain == "post_generation":
+            prompt_tokens = cls.POST_GENERATION_PROMPT_TOKENS
+            auxiliary_tokens = list(cls.AUXILIARY_TOKENS)
         else:
             prompt_tokens = cls.PROMPT_TOKENS
             auxiliary_tokens = list(cls.AUXILIARY_TOKENS)
