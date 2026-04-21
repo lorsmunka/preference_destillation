@@ -19,6 +19,10 @@ A dolgozat három domaint vizsgál: Reddit kommentek strukturált sentiment klas
 A desztilláció előtt költségelemzés szükséges: elég gyakran hívják-e az adott részfeladatot ahhoz, hogy megérje a desztillációs befektetés? Szükséges-e edge eszközön vagy lokálisan futtatni? Elég szűk-e a domain ahhoz, hogy a bemeneti és kimeneti vocabulary jelentősen csökkenthető legyen? Szükséges-e autoregresszív transformer, vagy egy egyszerűbb klasszifikátor is elegendő lenne?
 A dolgozat olvasása segíthet megérteni, hogy milyen jellegű problémákon vizsgálható a bemutatott desztillációs megközelítés, a projekt pedig kiindulási pontként szolgálhat hasonló modellprototípusok készítéséhez vagy a végső tanítás előkészítéséhez.
 
+1.2 Vizsgált optimalizációk
+A dolgozat fókusza a bemeneti vocabulary redukció, a kimeneti vocabulary redukció és a paraméterezhető desztillációs tanítás együttes vizsgálata. A bemeneti redukció a domainen nem használt embedding paramétereket hagyja el, ami domainfüggően akár 98% feletti input embedding redukciót is jelenthet, míg a kimeneti redukció a feladathoz szükséges tokenekre és átgondolt tippeléssel kiválasztott auxiliary tokenekre szűkíti az output projectiont. A tanítási pipeline a KL divergencia és cross-entropy veszteségek arányát, valamint a distillation temperature-t is egymástól függetlenül konfigurálhatóvá teszi.
+A dolgozat hozzájárulása nem egy teljesen új modellarchitektúra vagy egyetlen általánosan optimális tanítási eljárás, hanem ezeknek a részben ismert és kutatott technikáknak és módszereknek a több domainen vizsgált, gyakorlati kombinációja.
+
 2. Irodalomkutatás
 
 2.1 Transformer architektúra
