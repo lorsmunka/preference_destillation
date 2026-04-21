@@ -1,1 +1,0 @@
-scp -i C:\Users\Ors\.ssh\Ors.pem -r ubuntu@10.1.158.223:/tmp/math_sub2/* D:\preference_destillation\batches\math_word_problem\google_gemma-3-4b-it\
