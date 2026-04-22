@@ -279,7 +279,7 @@ Example 9: student only 71,79%, teacher-forced 92,31%. A JSON struktúra (kulcso
 
 Example 19: mindkét accuracy 97,44%, egyetlen token hibás. A "sentiment" mezőnél "neutral" helyett "negative"-ot prediktál. Ez jellemző hiba: a modell a JSON szerkezetét stabilan generálja, a bizonytalanság a kategória értékeknél jelentkezik.
 
-3. kép
+3. kép![alt text](image.png)
 
 4.10 Erőforrás becslés
 A pipeline legnagyobb erőforrásigénye az adatgenerálás: a teacher modell (Gemma 3 4B) egy A100 GPU 20GB-s szeletén példánként ~3 másodperc alatt generál egy példát, tehát ~500 ezer példa előállítása ~417 óra. Ez a bottleneck nem változott a projekt során, mivel a teacher modell sebessége fix.

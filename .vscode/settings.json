@@ -8,5 +8,8 @@
         "**/.vscode/**": true
     },
     "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "markdown.copyFiles.destination": {
+        "/thesis_work/thesis.md": "${documentDirName}/thesis_images/"
+    }
 }
