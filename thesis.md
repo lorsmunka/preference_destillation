@@ -189,7 +189,23 @@ A post generation domainben a szabadabb kimenet miatt a student minőségét nem
 
 Az eredmény azt mutatja, hogy a pure KL követi legjobban a teacher valószínű tokenhalmazát: ennek a legmagasabb a top-20 overlapje és a legalacsonyabb az átlagos cél-token rangja. A pure CE ezzel szemben jobb cél-token találatot ad, de sokkal gyengébben őrzi meg a teacher eloszlásának szerkezetét. A KL/CE és temperature annealinget kombináló beállítás ebben a mérésben a legmagasabb top-20 cél-token találatot adja, miközben az overlap lényegesen közelebb marad a pure KL-hez, mint a pure CE-hez. Ez támasztja alá a "best of both worlds" értelmezést: a modell magabiztosabb következő-token predikciót kap, de nem veszti el teljesen a KL által tanított eloszláskövetést. Mivel ez egy kisebb, adat- és tárhelyigényes free-form kísérleti sorozat, az eredmény ígéretes, de további futtatásokkal kell statisztikailag erősebben alátámasztani.
 
-4.4 Pilot run
+4.4 Skálázás és bemeneti vocabulary redukció
+A reddit sentiment domainen végzett skálázási futtatások azt mutatják, hogy a strukturált JSON feladat viszonylag korán telítődik. Teljes Gemma bemeneti vocabulary mellett az 5,27M paraméteres modell 92,55% student-only és 86,00% task accuracy-t ér el, míg a 129,19M paraméteres modell 93,25% student-only és 87,42% task accuracy-t. Ez nem azt jelenti, hogy a nagyobb modell haszontalan, hanem azt, hogy ezen a kötött, erősen strukturált feladaton a többletparaméterek hozama gyorsan csökken.
+
+Az alábbi táblázat egy-egy reprezentatív futtatást mutat, nem több seedből számolt átlag.
+
+| Beállítás | Paraméter | Student-only accuracy | Task accuracy |
+|---|---:|---:|---:|
+| Teljes input vocabulary | 5,27M | 92,55% | 86,00% |
+| Redukált input vocabulary | 4,93M | 92,87% | 86,33% |
+| Teljes input vocabulary | 10,56M | 92,83% | 86,06% |
+| Redukált input vocabulary | 10,13M | 93,22% | 87,20% |
+| Teljes input vocabulary | 34,67M | 93,09% | 86,84% |
+| Redukált input vocabulary | 36,79M | 93,16% | 87,22% |
+
+A táblázat nem kontrollált architektúra-ablációként értelmezendő, mert a redukált bemeneti vocabulary-vel futtatott modellek más depth/width arányt használnak. A lényeg az, hogy a bemeneti embeddingből felszabadított paraméterkeret hasznos transformer body kapacitásra fordítható, és hasonló teljes paraméterszám mellett legalább versenyképes eredményt ad. Ez a bemeneti vocabulary redukció gyakorlati értékét támasztja alá: nem pusztán paramétert töröl, hanem lehetővé teszi, hogy a kisebb modellben nagyobb arány jusson a tényleges számítást végző rétegekre.
+
+4.5 Pilot run
 A teljes modell betanítások előtt saját hardveren pilot runok futottak, hogy kiderüljön, a kód jól működik-e és a modell elkezd-e konvergálni. Egy 30 perces teszt pilot 10 batch adaton már megmutatta, hogy a modell képes helyes JSON outputot generálni. Egy 3 órás pilot run 100 batch adaton, 3,5 epoch után egy 10 batch-es (10*32 példa) teszten a student only accuracy átlagosan 87,69%, míg a teacher forced accuracy átlagosan 98,97% volt. Példa a tesztből, ahol a modell tökéletesen eltalálta a teacher modell klasszifikációját (student only accuracy: 100%):
 
 Bemenet: "F**k you and your family"
@@ -226,9 +242,9 @@ Teacher kimenet (ground truth):
 ```
 
 A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált. Érdemes megjegyezni, hogy a teacher klasszifikációja is vitatható, kontextus nélkül a mondat inkább frusztrált/játékos, mint toxic.
-4.5 Korábbi pilot
-Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanult a modell. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 4.4-ben leírt eredmények születtek.
-4.6 Pilot teszt elemzés
+4.6 Korábbi pilot
+Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanult a modell. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 4.5-ben leírt eredmények születtek.
+4.7 Pilot teszt elemzés
 A pilot teszt összesen ~9 órát vett igénybe: 2,63 óra adatgenerálás (101 batch, 3232 mondat) és 6,25 óra tanítás (347 batch, 3 epoch). A 2. képen láthatók a tanítás metrikái.
 A loss az első batcheknél élesen csökken (~25-ről ~2-re), majd tovább csökken, de fluktuálva. A fluktuáció oka, hogy a tanítás előrehaladtával a CE loss egyre nagyobb súlyt kap, ami élesebb, kevésbé sima gradienst eredményez. Az accuracy folyamatosan emelkedik, 35%-ról 95% fölé (ez tanítás közbeni, teacher forced accuracy).
 Az aggregált train loss magasabb, mint az eval loss (epoch summary), tehát overfitting nem figyelhető meg, annak ellenére, hogy viszonylag kevés adaton tanult a modell.
@@ -237,7 +253,7 @@ Mindezek ellenére a student-only módban is az esetek túlnyomó többségében
 
 2. kép
 
-4.7 Kiértékelési példák
+4.8 Kiértékelési példák
 A 3. képen látható három kiértékelési példa. Minden példánál három szakasz jelenik meg: student (a modell saját predikciói alapján generál), teacher-forced (minden lépésnél a helyes eddigi tokeneket kapja kontextusként), és ground truth (a teacher modell eredeti kimenete).
 A színkódolás: zöld a helyes, piros a hibás token.
 
@@ -249,7 +265,7 @@ Example 19: mindkét accuracy 97,44%, egyetlen token hibás. A "sentiment" mező
 
 3. kép
 
-4.8 Erőforrás becslés
+4.9 Erőforrás becslés
 A pipeline legnagyobb erőforrásigénye az adatgenerálás: a teacher modell (Gemma 3 4b) egy A100 GPU 20GB-s szeletén példánként ~3 másodperc alatt generál egy példát, tehát ~500 ezer példa előállítása ~417 óra. Ez a bottleneck nem változott a projekt során, mivel a teacher modell sebessége fix.
 A tanítás erőforrásigénye viszont jelentősen csökkent a pilot óta. A korai becslés 537M paraméteres modellre 15 epochon 2600 óra GPU időt jósolt. A végső kísérletek 5-10M paraméteres modelleket használnak, és 3 epoch elegendő — ennél több túltanuláshoz vezet. A korai implementáció minden egyes tokenre külön forward passt futtatott (40-50 pass/példa), de mivel a causal mask biztosítja, hogy a későbbi tokenek nem befolyásolják a korábbiakat, a teljes szekvencia egyetlen forward passból kiértékelhető. Ez 40-50x gyorsulást eredményezett a loss számításban. 500 ezer példával, 32-es batch mérettel, saját hardveren (RTX 4070) ~0,5 mp/batch sebességgel egy modell 3 epoch tanítása ~6,5 óra. A teljes pipeline bottleneckje tehát egyértelműen az adatgenerálás, nem a tanítás.
 
