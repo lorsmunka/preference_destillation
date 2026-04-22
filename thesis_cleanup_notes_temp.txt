@@ -1,0 +1,127 @@
+Thesis remaining update + cleanup notes
+=======================================
+
+Working rule:
+- Go in 1-5 sentence thesis edits.
+- For each increment: propose the exact change, wait for approval, edit thesis.md, then user commits.
+- This file merges remaining structural thesis work with the low-information / overstrong-sentence cleanup list.
+
+
+Increment 1 - Reduced-output coverage and filtering caveat [added]
+---------------------------------------------------------
+
+Goal:
+Add one short caveat explaining that reduced output vocabulary also creates a representability boundary.
+
+Content to add:
+During data generation, if the teacher produces response tokens outside the selected output vocabulary, that example cannot be used directly for reduced-output KL training and must be skipped or filtered. This is acceptable for controlled domain experiments, but it means the reported results apply to the part of the domain covered by the chosen output vocabulary. This is especially important for post generation, where vocabulary coverage is harder than in structured JSON or math outputs.
+
+Likely location:
+thesis.md around 3.4.2 / 3.4.3, after the reduced-input unknown-token paragraph or near the output vocabulary tradeoff.
+
+
+Increment 2 - Practical observations, clearly not proven claims [added]
+--------------------------------------------------------------
+
+Goal:
+Keep the anecdotal schedule findings, but label them as practical observations rather than settled conclusions.
+
+Content to include:
+Across the current experiments, high KL start values with moderate ending values (for example 0.99->0.5 or 0.99->0.6) appeared more stable than aggressive schedules such as 0.9->0.1. This should be presented as an observation, not a universal rule, because KL and CE losses have different scales and the best mixture depends on domain, output vocabulary size, teacher entropy, and whether the goal is confident next-token prediction or closer distribution following.
+
+Optional note:
+The tokenizer-bug origin story can be added only if it helps the methodology narrative. Otherwise skip it to avoid thesis diary vibes.
+
+Likely location:
+thesis.md 3.3 A tanitas, after the schedule/domain-dependence paragraph.
+
+
+Increment 3 - Vectorized teacher-forced loss computation
+-------------------------------------------------------
+
+Goal:
+Move or tighten the existing implementation detail into a clear technical contribution to feasibility.
+
+Content to include:
+The early implementation evaluated each target token with a separate forward pass, while the later implementation evaluates the whole sequence in one causal forward pass. Because the causal mask prevents later tokens from influencing earlier positions, this preserves teacher-forced loss correctness while reducing the loss computation by roughly the number of generated tokens per example. This should be framed as a feasibility improvement, not as a model-quality improvement.
+
+Likely location:
+Either 4.2 Kutatasi eszkoztar or 4.10 Eroforras becsles.
+
+
+Increment 4 - Limitations and future work
+-----------------------------------------
+
+Goal:
+Add a compact section that makes the thesis more honest and closes the research story.
+
+Content to include:
+The project is mostly complete as a proof-of-concept pipeline, but broader claims require more experiments. Main limitations: one primary teacher model, three domains, limited post-generation repetition because of data cost, math/postgen reduced input not yet trained as completed ablations, and weak semantic evaluation for free-form generation. Future work: more seeds, more baselines, more teacher models, more domains, horizontal and vertical scaling, reduced-input/reduced-output ablations, better OOD routing for reduced input vocabulary, and storage optimizations such as top-k logits or lower-precision logit storage.
+
+Likely location:
+New section before conclusion, probably section 5 if sources move later.
+
+
+Increment 5 - Short conclusion
+------------------------------
+
+Goal:
+Add a short final synthesis, not a victory lap.
+
+Content to include:
+The thesis demonstrates that domain-specific distillation with reduced input and output vocabularies is feasible across structured and freer generative tasks. Input and output vocabulary reduction can remove large parameter costs from small autoregressive students, while annealed KL/CE and temperature schedules are most useful when the teacher distribution contains meaningful alternatives. The current results support the approach as a research direction and reusable starting point, while generality across broader domains and teachers remains future work.
+
+Likely location:
+After limitations/future work, before sources.
+
+
+Increment 6 - Final cleanup pass for weak or overstrong wording
+--------------------------------------------------------------
+
+Goal:
+Fix wording that either says too little, says too much, or is now outdated.
+
+Items:
+- thesis.md:90
+  "eros bizonyitekkent szolgal" is too strong for post generation.
+  Better framing: important stress test, or early promising evidence.
+
+- thesis.md:111
+  "nem jelent problemat" is too absolute.
+  Better framing: the instruction-tuned teacher does not invalidate this proof-of-concept setup.
+
+- thesis.md:141
+  Context length / 75-token balance sentence is probably outdated and not central to the parameter-reduction argument.
+  Remove or reduce heavily.
+
+- thesis.md:154
+  "biztositjak" overclaims.
+  Better framing: these similarities support / make the comparison more meaningful.
+
+- thesis.md:277
+  "egyertelmuen" bottleneck claim needs scope.
+  Better framing: true for the sentiment pipeline or for the current setup, not necessarily for post generation.
+
+- thesis.md:30
+  The transformer-architecture-understanding sentence reads partly like project diary.
+  Keep only if it supports the implementation narrative.
+
+- thesis.md:63
+  "rugalmas" is generic; the concrete examples after it do the real work.
+
+- thesis.md:69
+  "ahol az autoregressziv transformer modellek elonyosebbek" is vague / potentially overstrong.
+  Better framing: domains where autoregressive generation itself is the object of study.
+
+- thesis.md:78
+  "hasonloan gondolkodjon" is understandable but hand-wavy.
+  Better framing: follows the teacher token distribution.
+
+- thesis.md:130
+  "Ez a munka jelenleg is aktivan folyik." is low information.
+  Future work can carry this idea better.
+
+Tiny concrete fixes:
+- thesis.md:177: "HTM oldalon" -> "HTML oldalon"
+- thesis.md:69: "autoregreszsiv" -> "autoregressziv"
+- thesis.md:110: use Hungarian-style number formatting: "26 659" and "262 144"
