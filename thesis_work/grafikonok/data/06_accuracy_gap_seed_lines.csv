@@ -1,0 +1,19 @@
+domain,strategy,metric,mean_accuracy
+Sentiment,CE,Teacher-forced,97.67699999999999
+Sentiment,CE,Student-only,88.603
+Sentiment,CE,Task,64.564
+Sentiment,KL,Teacher-forced,97.77799999999999
+Sentiment,KL,Student-only,88.52000000000001
+Sentiment,KL,Task,64.11699999999999
+Sentiment,KL/CE anneal,Teacher-forced,97.75699999999999
+Sentiment,KL/CE anneal,Student-only,88.62899999999999
+Sentiment,KL/CE anneal,Task,65.032
+Math,CE,Teacher-forced,78.078
+Math,CE,Student-only,65.439
+Math,CE,Task,21.656
+Math,KL,Teacher-forced,78.353
+Math,KL,Student-only,66.434
+Math,KL,Task,21.919999999999998
+Math,KL/CE anneal,Teacher-forced,78.65299999999999
+Math,KL/CE anneal,Student-only,65.34299999999999
+Math,KL/CE anneal,Task,22.834

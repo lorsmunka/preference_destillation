@@ -1,0 +1,13 @@
+run,category,true_label,pred_aggressive,pred_rude,pred_neutral,pred_polite,pred_friendly,pred_negative,pred_positive,pred_harmful,pred_safe,pred_toxic,pred_respectful
+tsc-scale-20h-2L-5M,tone,aggressive,2161,0,352,0,0,,,,,,
+tsc-scale-20h-2L-5M,tone,rude,89,0,30,0,0,,,,,,
+tsc-scale-20h-2L-5M,tone,neutral,520,0,4937,0,1,,,,,,
+tsc-scale-20h-2L-5M,tone,polite,0,0,0,27,0,,,,,,
+tsc-scale-20h-2L-5M,tone,friendly,8,0,34,0,4,,,,,,
+tsc-scale-20h-2L-5M,sentiment,negative,,,667,,,3402,59,,,,
+tsc-scale-20h-2L-5M,sentiment,neutral,,,2546,,,697,126,,,,
+tsc-scale-20h-2L-5M,sentiment,positive,,,194,,,145,327,,,,
+tsc-scale-20h-2L-5M,safety,harmful,,,,,,,,1913,395,,
+tsc-scale-20h-2L-5M,safety,safe,,,,,,,,430,5425,,
+tsc-scale-20h-2L-5M,toxicity,toxic,,,,,,,,,,2379,395
+tsc-scale-20h-2L-5M,toxicity,respectful,,,,,,,,,,430,4959

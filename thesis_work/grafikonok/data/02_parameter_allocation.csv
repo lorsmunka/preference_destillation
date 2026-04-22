@@ -1,0 +1,7 @@
+domain,scenario,total_params,input_embedding,attention,feed_forward,output_projection,norm
+Sentiment,No reduction,42718064,20971520,128000,384000,21233664,880
+Sentiment,Input-only,27212784,5466240,128000,384000,21233664,880
+Sentiment,Input + output,6021645,5466240,128000,384000,42525,880
+Post generation,No reduction,42718064,20971520,128000,384000,21233664,880
+Post generation,Input-only,27517184,5770640,128000,384000,21233664,880
+Post generation,Input + output,8442899,5770640,128000,384000,2159379,880

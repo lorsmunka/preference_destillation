@@ -1,0 +1,4 @@
+domain,steps_per_example,output_vocab,logit_values,batch_mb
+Sentiment,38.9,525,20400,5.9
+Math,32.0,528,16900,5.5
+Post generation,62.9,26659,1680000,512.0
