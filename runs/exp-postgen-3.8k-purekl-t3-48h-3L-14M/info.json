@@ -23,7 +23,7 @@
   "started_at": "2026-04-20T20:25:37.973076",
   "completed_at": "2026-04-20T20:48:43.273883",
   "model_info": {
-    "total_parameters": 14000131,
+    "total_parameters": 14000131, 
     "input_embedding_params": 12582912,
     "attention_params": 27648,
     "feedforward_params": 82944,
