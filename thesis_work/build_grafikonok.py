@@ -69,6 +69,11 @@ def color(name, alpha=255):
     return (*rgb, alpha)
 
 
+def faded_on_paper(rgba, opacity=0.3):
+    paper = ImageColor.getrgb(COLORS["paper"])
+    return tuple(round(channel * opacity + paper[index] * (1 - opacity)) for index, channel in enumerate(rgba[:3])) + (255,)
+
+
 def canvas(width=1600, height=900):
     image = Image.new("RGBA", (width, height), color("paper"))
     return image, ImageDraw.Draw(image)
@@ -484,48 +489,75 @@ def plot_structured_loss_spread():
 
 
 def plot_accuracy_gap_seed_lines():
-    image, draw = canvas()
     rows = []
     metrics = [
         ("Teacher-forced", "teacher_forced_accuracy"),
         ("Student-only", "student_accuracy"),
         ("Task", "classification_accuracy"),
     ]
-    for panel_index, (domain_label, domain_prefix, y_min, y_max) in enumerate([
-        ("Sentiment", "sentiment", 58, 100),
-        ("Math", "math", 18, 82),
-    ]):
-        area = (115 + panel_index * 760, 100, 660 + panel_index * 760, 735)
-        draw.text((area[0], area[1] - 45), domain_label, font=FONT["bold"], fill=color("dark"))
+    filenames = {
+        "CE": "06a_accuracy_gap_seed_lines_ce.png",
+        "KL": "06b_accuracy_gap_seed_lines_kl.png",
+        "KL/CE anneal": "06c_accuracy_gap_seed_lines_klce_annealing.png",
+    }
+    groups = strategy_evals("sentiment")
+    sample_run = groups["CE"]["runs"][0]
+    model_size = run_info(sample_run)["model_info"]["total_parameters"] / 1_000_000
+    y_min, y_max = 58, 100
+
+    for label, _, fill in LOSS_GROUPS:
+        seed_fill = faded_on_paper(fill, 0.3)
+        image, draw = canvas(width=1300, height=780)
+        area = (145, 135, 1130, 625)
+        draw.text((area[0], 52), f"Sentiment {model_size:.1f}M - {label}", font=FONT["bold"], fill=color("dark"))
         draw_axes(draw, area, y_min, y_max, y_label="Accuracy (%)", x_label="Metric")
         for metric_index, (metric_label, _) in enumerate(metrics):
             x = area[0] + (area[2] - area[0]) * (metric_index + 0.5) / len(metrics)
-            text_center(draw, (x, area[3] + 28), metric_label.replace("-", "\n"), FONT["tiny"], color("muted"))
-        groups = strategy_evals(domain_prefix)
-        for label, _, fill in LOSS_GROUPS:
-            run_values = []
-            for ev in groups[label]["evals"]:
-                values = [percent(ev[key]) for _, key in metrics]
-                run_values.append(values)
-                points = []
-                for metric_index, value in enumerate(values):
-                    x = area[0] + (area[2] - area[0]) * (metric_index + 0.5) / len(metrics)
-                    y = area[3] - (value - y_min) / (y_max - y_min) * (area[3] - area[1])
-                    points.append((x, y))
-                draw.line(points, fill=(*fill[:3], 45), width=2)
-            mean_values = [mean(values[index] for values in run_values) for index in range(len(metrics))]
+            text_center(draw, (x, area[3] + 28), metric_label, FONT["small"], color("muted"))
+
+        run_values = []
+        for run_name, ev in zip(groups[label]["runs"], groups[label]["evals"]):
+            values = [percent(ev[key]) for _, key in metrics]
+            run_values.append(values)
             points = []
-            for metric_index, value in enumerate(mean_values):
+            for metric_index, value in enumerate(values):
                 x = area[0] + (area[2] - area[0]) * (metric_index + 0.5) / len(metrics)
                 y = area[3] - (value - y_min) / (y_max - y_min) * (area[3] - area[1])
                 points.append((x, y))
-                draw.ellipse((x - 7, y - 7, x + 7, y + 7), fill=fill, outline=color("paper"), width=2)
-            draw.line(points, fill=fill, width=5)
-            for metric_label, value in zip([m[0] for m in metrics], mean_values):
-                rows.append({"domain": domain_label, "strategy": label, "metric": metric_label, "mean_accuracy": value})
-    draw_legend(draw, [(label, fill) for label, _, fill in LOSS_GROUPS], 650, 770)
+                rows.append({
+                    "domain": "Sentiment",
+                    "model_parameters_m": model_size,
+                    "strategy": label,
+                    "run": run_name,
+                    "metric": metrics[metric_index][0],
+                    "accuracy": value,
+                    "summary": "seed",
+                })
+            draw.line(points, fill=seed_fill, width=2)
+            for x, y in points:
+                draw.ellipse((x - 4, y - 4, x + 4, y + 4), fill=seed_fill, outline=color("paper"), width=1)
+
+        mean_values = [mean(values[index] for values in run_values) for index in range(len(metrics))]
+        mean_points = []
+        for metric_index, value in enumerate(mean_values):
+            x = area[0] + (area[2] - area[0]) * (metric_index + 0.5) / len(metrics)
+            y = area[3] - (value - y_min) / (y_max - y_min) * (area[3] - area[1])
+            mean_points.append((x, y))
+            draw.ellipse((x - 8, y - 8, x + 8, y + 8), fill=fill, outline=color("paper"), width=2)
+            rows.append({
+                "domain": "Sentiment",
+                "model_parameters_m": model_size,
+                "strategy": label,
+                "run": "mean",
+                "metric": metrics[metric_index][0],
+                "accuracy": value,
+                "summary": "mean",
+            })
+        draw.line(mean_points, fill=fill, width=5)
+        draw.text((area[0], area[3] + 82), "faded lines: individual seeds", font=FONT["tiny"], fill=seed_fill)
+        draw.text((area[0] + 290, area[3] + 82), "solid line: seed mean", font=FONT["tiny"], fill=fill)
+        save_image(image, filenames[label])
     write_csv("06_accuracy_gap_seed_lines.csv", rows)
-    save_image(image, "06_accuracy_gap_seed_lines.png")
 
 
 def smooth(values, window=25):
@@ -563,19 +595,54 @@ def plot_loss_strategy_training_curves():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from analysis.training_analysis import TrainingAnalyzer
-    from analysis.visualize_logs import moving_average
+    def moving_average(values, window):
+        if len(values) < window:
+            return values
+        return [
+            sum(values[index - window + 1:index + 1]) / window
+            for index in range(window - 1, len(values))
+        ]
+
+    def plot_timeseries(axis, indices, data, light_color, dark_color, ylabel, title,
+                        ma_window=40, ylim_data=None, default_padding=0.1,
+                        is_percent=False, show_last_200_avg=True, ylim_padding_ratio=0.1):
+        axis.plot(indices, data, color=light_color, alpha=0.5, linewidth=0.7)
+
+        if len(data) >= ma_window:
+            averaged = moving_average(data, ma_window)
+            axis.plot(indices[ma_window - 1:], averaged, color=dark_color, linewidth=2, label=f"MA({ma_window})")
+
+        if show_last_200_avg and len(data) >= 200:
+            avg = sum(data[-200:]) / 200
+            fmt = f"{avg:.1f}%" if is_percent else f"{avg:.4f}"
+            axis.axhline(y=avg, color=dark_color, linewidth=1, alpha=0.25, linestyle="-", label=f"Last 200 avg: {fmt}")
+
+        if ylim_data:
+            min_value = min(ylim_data)
+            max_value = max(ylim_data)
+            padding = (max_value - min_value) * ylim_padding_ratio if max_value > min_value else default_padding
+            low = max(0, min_value - padding)
+            high = min(100, max_value + padding) if is_percent else max_value + padding
+            axis.set_ylim([low, high])
+
+        axis.set_xlabel("Batch")
+        axis.set_ylabel(ylabel)
+        axis.set_title(title)
+        axis.legend()
+        axis.grid(True, alpha=0.3)
 
     strategy_runs = [
-        ("Pure CE", "exp-tsc-8k-purece-t1-48h-3L-3.4M-1", "07a_pure_ce_training_curves.png"),
-        ("Pure KL", "exp-tsc-8k-purekl-t1-48h-3L-3.4M-1", "07b_pure_kl_training_curves.png"),
-        ("KL/CE annealing", "exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-1", "07c_klce_annealing_training_curves.png"),
+        ("Pure CE", "short", "exp-tsc-8k-purece-t1-48h-3L-3.4M-1", "07a_pure_ce_training_curves.png"),
+        ("Pure KL", "short", "exp-tsc-8k-purekl-t1-48h-3L-3.4M-1", "07b_pure_kl_training_curves.png"),
+        ("KL/CE annealing", "short", "exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-1", "07c_klce_annealing_training_curves.png"),
+        ("Pure CE", "larger", "exp-purece-t1-1", "07d_large_pure_ce_training_curves.png"),
+        ("Pure KL", "larger", "exp-purekl-t1-1", "07e_large_pure_kl_training_curves.png"),
+        ("KL/CE annealing", "larger", "exp-kl99to50-t1-1", "07f_large_klce_annealing_training_curves.png"),
     ]
     rows = []
-    for strategy_label, run_name, filename in strategy_runs:
+    for strategy_label, run_set, run_name, filename in strategy_runs:
         entries = training_entries(run_name)
-        analyzer = TrainingAnalyzer(entries, str(OUTPUT_DIR))
-        batches = analyzer.train_batches
+        batches = [entry for entry in entries if entry.get("type") == "train_batch"]
         batch_indices = list(range(1, len(batches) + 1))
         losses = [batch["loss"] for batch in batches]
         kl_losses = [batch.get("kl_loss", 0) for batch in batches]
@@ -593,11 +660,10 @@ def plot_loss_strategy_training_curves():
         ]
         for name, data, light_color, dark_color, axis, is_percent in metrics:
             data_90 = data[last_90_start:] if last_90_start < len(data) else data
-            analyzer._plot_timeseries(
+            plot_timeseries(
                 axis,
                 batch_indices,
                 data,
-                moving_average,
                 light_color,
                 dark_color,
                 name,
@@ -622,6 +688,7 @@ def plot_loss_strategy_training_curves():
             for batch_index, value in zip(batch_indices, data):
                 rows.append({
                     "strategy": strategy_label,
+                    "run_set": run_set,
                     "run": run_name,
                     "metric": name,
                     "batch": batch_index,
@@ -778,10 +845,15 @@ def write_graph_index():
         ("03_sentiment_scaling_curve.png", "Sentiment scaling", "Accuracy saturation across model sizes."),
         ("04_reduced_vs_full_vocab.png", "Reduced vs full input vocab", "Full and reduced-input student/task accuracy at comparable parameter budgets."),
         ("05_structured_loss_spread.png", "Structured loss spread", "Seed spread and standard deviation for task accuracy."),
-        ("06_accuracy_gap_seed_lines.png", "Teacher-forced/student/task gap", "Thin lines are individual seeds; thick lines are strategy means."),
+        ("06a_accuracy_gap_seed_lines_ce.png", "CE accuracy gap", "Teacher-forced/student/task gap for sentiment CE seeds."),
+        ("06b_accuracy_gap_seed_lines_kl.png", "KL accuracy gap", "Teacher-forced/student/task gap for sentiment KL seeds."),
+        ("06c_accuracy_gap_seed_lines_klce_annealing.png", "KL/CE annealing accuracy gap", "Teacher-forced/student/task gap for sentiment annealing seeds."),
         ("07a_pure_ce_training_curves.png", "Pure CE training curves", "Exact mid-training plotting style for combined loss, KL loss, CE loss, and accuracy."),
         ("07b_pure_kl_training_curves.png", "Pure KL training curves", "Exact mid-training plotting style for combined loss, KL loss, CE loss, and accuracy."),
         ("07c_klce_annealing_training_curves.png", "KL/CE annealing training curves", "Exact mid-training plotting style for combined loss, KL loss, CE loss, and accuracy."),
+        ("07d_large_pure_ce_training_curves.png", "Larger pure CE training curves", "Same plotting style for the longer sentiment pure CE run."),
+        ("07e_large_pure_kl_training_curves.png", "Larger pure KL training curves", "Same plotting style for the longer sentiment pure KL run."),
+        ("07f_large_klce_annealing_training_curves.png", "Larger KL/CE annealing training curves", "Same plotting style for the longer sentiment KL/CE annealing run."),
         ("08_reddit_confusion_matrices.png", "Confusion matrices", "Sentiment category mistakes for the 5M-scale run."),
         ("09_postgen_topk_metrics.png", "Post generation top-k", "Free-form generation top-k tradeoff."),
         ("10_domain_data_cost.png", "Domain data cost", "Why post generation is much more expensive to compile."),
@@ -789,7 +861,7 @@ def write_graph_index():
     lines = [
         "# Grafikonok indexe",
         "",
-        "A script chart-only PNG-ket general. A cim es magyarazat a thesis szovegeben legyen, ne a kepben.",
+        "A script tobbnyire chart-only PNG-ket general. A 06a-c abrakban a modellmeret is latszik.",
         "",
     ]
     for index, (filename, title, note) in enumerate(entries, start=1):

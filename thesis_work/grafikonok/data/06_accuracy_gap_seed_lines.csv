@@ -1,19 +1,100 @@
-domain,strategy,metric,mean_accuracy
-Sentiment,CE,Teacher-forced,97.67699999999999
-Sentiment,CE,Student-only,88.603
-Sentiment,CE,Task,64.564
-Sentiment,KL,Teacher-forced,97.77799999999999
-Sentiment,KL,Student-only,88.52000000000001
-Sentiment,KL,Task,64.11699999999999
-Sentiment,KL/CE anneal,Teacher-forced,97.75699999999999
-Sentiment,KL/CE anneal,Student-only,88.62899999999999
-Sentiment,KL/CE anneal,Task,65.032
-Math,CE,Teacher-forced,78.078
-Math,CE,Student-only,65.439
-Math,CE,Task,21.656
-Math,KL,Teacher-forced,78.353
-Math,KL,Student-only,66.434
-Math,KL,Task,21.919999999999998
-Math,KL/CE anneal,Teacher-forced,78.65299999999999
-Math,KL/CE anneal,Student-only,65.34299999999999
-Math,KL/CE anneal,Task,22.834
+domain,model_parameters_m,strategy,run,metric,accuracy,summary
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-1,Teacher-forced,97.76,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-1,Student-only,88.32,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-1,Task,63.13999999999999,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-10,Teacher-forced,97.82,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-10,Student-only,88.92999999999999,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-10,Task,65.8,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-2,Teacher-forced,97.77,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-2,Student-only,88.3,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-2,Task,63.0,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-3,Teacher-forced,97.75,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-3,Student-only,88.31,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-3,Task,62.980000000000004,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-4,Teacher-forced,97.74000000000001,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-4,Student-only,88.31,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-4,Task,62.99,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-5,Teacher-forced,97.72,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-5,Student-only,88.3,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-5,Task,62.89,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-6,Teacher-forced,96.67,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-6,Student-only,88.83,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-6,Task,64.35,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-7,Teacher-forced,97.77,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-7,Student-only,88.33,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-7,Task,63.029999999999994,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-8,Teacher-forced,97.92,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-8,Student-only,89.13,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-8,Task,69.57,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-9,Teacher-forced,97.85000000000001,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-9,Student-only,89.27000000000001,seed
+Sentiment,3.416397,CE,exp-tsc-8k-purece-t1-48h-3L-3.4M-9,Task,67.89,seed
+Sentiment,3.416397,CE,mean,Teacher-forced,97.67699999999999,mean
+Sentiment,3.416397,CE,mean,Student-only,88.603,mean
+Sentiment,3.416397,CE,mean,Task,64.564,mean
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-1,Teacher-forced,97.76,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-1,Student-only,88.34,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-1,Task,63.06,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-10,Teacher-forced,97.72999999999999,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-10,Student-only,88.34,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-10,Task,63.04,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-2,Teacher-forced,97.92,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-2,Student-only,89.48,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-2,Task,69.48,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-3,Teacher-forced,97.76,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-3,Student-only,88.31,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-3,Task,63.0,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-4,Teacher-forced,97.72999999999999,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-4,Student-only,88.33,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-4,Task,63.129999999999995,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-5,Teacher-forced,97.76,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-5,Student-only,88.3,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-5,Task,63.01,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-6,Teacher-forced,97.75,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-6,Student-only,88.31,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-6,Task,62.980000000000004,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-7,Teacher-forced,97.81,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-7,Student-only,88.87,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-7,Task,65.95,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-8,Teacher-forced,97.78999999999999,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-8,Student-only,88.57000000000001,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-8,Task,64.05,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-9,Teacher-forced,97.77,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-9,Student-only,88.35,seed
+Sentiment,3.416397,KL,exp-tsc-8k-purekl-t1-48h-3L-3.4M-9,Task,63.470000000000006,seed
+Sentiment,3.416397,KL,mean,Teacher-forced,97.77799999999999,mean
+Sentiment,3.416397,KL,mean,Student-only,88.52000000000001,mean
+Sentiment,3.416397,KL,mean,Task,64.11699999999999,mean
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-1,Teacher-forced,97.78,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-1,Student-only,88.47,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-1,Task,63.73,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-10,Teacher-forced,97.75,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-10,Student-only,88.34,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-10,Task,63.22,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-2,Teacher-forced,97.74000000000001,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-2,Student-only,88.31,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-2,Task,62.89,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-3,Teacher-forced,97.72,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-3,Student-only,88.33,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-3,Task,63.0,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-4,Teacher-forced,97.49,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-4,Student-only,88.56,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-4,Task,66.46,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-5,Teacher-forced,97.77,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-5,Student-only,88.36,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-5,Task,63.57000000000001,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-6,Teacher-forced,97.89999999999999,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-6,Student-only,89.25,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-6,Task,68.28999999999999,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-7,Teacher-forced,97.94,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-7,Student-only,89.73,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-7,Task,71.41999999999999,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-8,Teacher-forced,97.8,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-8,Student-only,88.63,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-8,Task,64.7,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-9,Teacher-forced,97.68,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-9,Student-only,88.31,seed
+Sentiment,3.416397,KL/CE anneal,exp-tsc-8k-kl99to50-t1-48h-3L-3.4M-9,Task,63.04,seed
+Sentiment,3.416397,KL/CE anneal,mean,Teacher-forced,97.75699999999999,mean
+Sentiment,3.416397,KL/CE anneal,mean,Student-only,88.62899999999999,mean
+Sentiment,3.416397,KL/CE anneal,mean,Task,65.032,mean

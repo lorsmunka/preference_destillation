@@ -246,7 +246,7 @@ class TrainingAnalyzer:
         if show_last_200_avg and len(data) >= 200:
             avg = np.mean(data[-200:])
             fmt = f'{avg:.1f}%' if is_percent else f'{avg:.4f}'
-            ax.axhline(y=avg, color='black', linewidth=1, alpha=0.4, linestyle='-', label=f'Last 200 avg: {fmt}')
+            ax.axhline(y=avg, color=dark_color, linewidth=1, alpha=0.25, linestyle='-', label=f'Last 200 avg: {fmt}')
 
         if ylim_data is not None and len(ylim_data) > 0:
             min_val = min(ylim_data)

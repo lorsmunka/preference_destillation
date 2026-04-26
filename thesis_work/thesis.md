@@ -9,7 +9,7 @@ A pipeline több feladattípuson kerül vizsgálatra: Reddit kommentek struktur�
 A nagy nyelvi modellek (LLM-ek) az elmúlt években jelentős áttörést hoztak a természetes nyelvfeldolgozásban. Képesek szöveget generálni, klasszifikálni, strukturált outputot előállítani és összetett instrukciókat követni. Ugyanakkor ezek a modellek erőforrásigényesek: nagy memóriaigényt, jelentős számítási kapacitást és sok esetben külső API-függőséget igényelnek. Számos alkalmazásban nincs szükség a teljes általános intelligenciára, hanem csak egy gyakran ismételt, szűk domainhez kötött részfeladat megbízható végrehajtására.
 A dolgozat célja egy olyan desztillációs pipeline kifejlesztése és vizsgálata, amely nagy nyelvi modellek domain-specifikus viselkedését kisebb, hatékonyabb autoregresszív student modellekbe ülteti át. A rendszer nem egyetlen feladatra írt klasszifikátor, hanem konfigurálható kutatási eszköz: a domain, a teacher modell, a prompt, a stop token, a kimeneti szótár, a student architektúra és a tanítási stratégia külön módosítható. Ez lehetővé teszi, hogy a dolgozat ne csak egy adott domaint vagy modellt, hanem különböző optimalizációs döntések hatását is vizsgálja.
 
-1.1 Probléma és motiváció
+1.1. Probléma és motiváció
 Az LLM-ek használata egyszerű, jól definiált feladatokra gyakran nem gazdaságos. Egy sentiment klasszifikáció, egy strukturált JSON válasz generálása, egy kötött matematikai levezetés vagy egy rövid domain-specifikus szöveggenerálási lépés nem feltétlenül igényli egy többmilliárd paraméteres általános célú modell teljes kapacitását. Ennek ellenére sok alkalmazás ilyen modelleket használ API hívásokon keresztül, magas költség, nagyobb válaszidő és külső szolgáltatótól való függés mellett. A mixture of experts (MoE) modellek részben csökkenthetik az aktív számítási igényt, de a teljes paraméterkészlet tárolása továbbra is jelentős infrastruktúrát igényel.
 A desztilláció alternatívát kínál: egy kisebb modell megtanulhatja a nagyobb modell viselkedését egy adott feladatra, és azt töredék erőforrással képes végrehajtani [2]. Ez lehetővé teszi:
 - on-device futtatást (pl. telefonon, edge eszközökön)
@@ -19,56 +19,56 @@ A dolgozat három domaint vizsgál: Reddit kommentek strukturált sentiment klas
 A desztilláció előtt költségelemzés szükséges: elég gyakran hívják-e az adott részfeladatot ahhoz, hogy megérje a desztillációs befektetés? Szükséges-e edge eszközön vagy lokálisan futtatni? Elég szűk-e a domain ahhoz, hogy a bemeneti és kimeneti vocabulary jelentősen csökkenthető legyen? Szükséges-e autoregresszív transformer, vagy egy egyszerűbb klasszifikátor is elegendő lenne?
 A dolgozat olvasása segíthet megérteni, hogy milyen jellegű problémákon vizsgálható a bemutatott desztillációs megközelítés, a projekt pedig kiindulási pontként szolgálhat hasonló modellprototípusok készítéséhez vagy a végső tanítás előkészítéséhez.
 
-1.2 Vizsgált optimalizációk
+1.2. Vizsgált optimalizációk
 A dolgozat fókusza a bemeneti vocabulary redukció, a kimeneti vocabulary redukció és a paraméterezhető desztillációs tanítás együttes vizsgálata. A bemeneti redukció a domainen nem használt embedding paramétereket hagyja el, ami domainfüggően akár 98% feletti input embedding redukciót is jelenthet, míg a kimeneti redukció a feladathoz szükséges tokenekre és átgondolt tippeléssel kiválasztott auxiliary tokenekre szűkíti az output projectiont. A tanítási pipeline a KL divergencia és cross-entropy veszteségek arányát, valamint a distillation temperature-t is egymástól függetlenül konfigurálhatóvá teszi.
 A dolgozat hozzájárulása nem egy teljesen új modellarchitektúra vagy egyetlen általánosan optimális tanítási eljárás, hanem ezeknek a részben ismert és kutatott technikáknak és módszereknek a több domainen vizsgált, gyakorlati kombinációja.
 
 2. Irodalomkutatás
 
-2.1 Transformer architektúra
+2.1. Transformer architektúra
 A modern nagy nyelvi modellek alapját a Vaswani et al. (2017) által bevezetett Transformer architektúra adja [1]. A kulcsinnovációk: self-attention mechanizmus (a szekvencia bármely pozíciójából közvetlenül figyel bármely másikra), multi-head attention (párhuzamos attention mechanizmusok különböző aspektusokra), és pozícionális kódolás. Az eredeti architektúra 6 encoder és 6 decoder réteget használt. A dolgozat student modellje decoder-only transformer, hasonlóan a modern LLM-ekhez (GPT, Gemma, Claude).
 A Transformer architektúra megértéséhez a 3Blue1Brown YouTube csatorna [24] és a Welch Labs alapozó videói [25] szolgáltak kiindulópontként. Az első saját transformer implementáció ezek alapján készült, majd a működő modell a Gemma architektúrájához lett igazítva a könnyebb desztilláció érdekében.
 
-2.2 Knowledge Distillation
+2.2. Knowledge Distillation
 A knowledge distillation fogalmát Hinton et al. (2015) vezette be [2]. A módszer lényege: egy nagyobb "teacher" modell tudását kisebb "student" modellbe tömörítjük. A kulcs a "soft targets" használata, a teacher softmax kimenetét magas temperature-rel lágyítva kapjuk az eloszlást, amely gazdagabb információt tartalmaz a hard labels-nél. Hinton ezt "dark knowledge"-nek nevezte: a teacher bizonytalanságai és a hibás osztályok közötti preferenciái is átadódnak.
 A desztillációs loss általános formája: L = α·L_CE + (1-α)·L_KL, ahol L_CE a cross-entropy a ground truth címkékkel, L_KL pedig a Kullback-Leibler divergencia a teacher és student eloszlások között [3]. A soft targets információgazdagsága miatt kevesebb adat és tanítási idő szükséges.
 
-2.3 LLM-specifikus desztilláció
+2.3. LLM-specifikus desztilláció
 A DistilBERT [4] 40%-kal kisebb modellt ért el a BERT-hez képest, 97%-os teljesítménymegőrzéssel. A TinyBERT [5] továbbment: transformer rétegek, embedding-ek és predikciós rétegek együttes desztillációjával 7,5x kisebb, 9,4x gyorsabb modellt hozott létre 96,8%-os GLUE teljesítménnyel.
 A MiniLLM [6] megállapítása szerint autoregresszív generálásnál a forward KL divergencia helyett reverse KL előnyösebb, mert megakadályozza, hogy a student túlbecsülje a teacher alacsony valószínűségű régióit. A dolgozat forward KL-t használ, de a CE loss dominanciájának növelése a tanítás végén hasonló hatást ér el.
 
-2.4 Curriculum Learning és Loss Annealing
+2.4. Curriculum Learning és Loss Annealing
 A curriculum learning, ahol a modell először könnyebb, majd fokozatosan nehezebb példákon tanul, bevett módszer [7]. A dolgozat egy speciális curriculum-ot alkalmaz: nem a példák nehézségét, hanem a loss komponensek arányát változtatja konfigurálható kezdő- és végértékkel. Ez az "Annealing Knowledge Distillation" [8] megközelítéshez hasonlít, ahol a temperature-t csökkentik a tanítás során.
 A "Curriculum Temperature for Knowledge Distillation" [9] kimutatta, hogy a student modellek lágyabb eloszlásokból profitálnak a tanítás elején, de élesebb eloszlásokra van szükségük később. A dolgozat ezt implementálja: mind a KL/CE arány, mind a desztillációs temperature cosine decay-t követ konfigurálható start→end értékekkel.
 
-2.5 Csökkentett ki- és bemeneti szótár
+2.5. Csökkentett ki- és bemeneti szótár
 A vocabulary reduction desztillációban kevésbé kutatott terület. A "Knowledge Distillation with Reduction of Vocabulary" [10] 17-49x tömörítést ért el orosz nyelvi modelleken. A "Fast Vocabulary Transfer" [11] a vocabulary cseréjét vizsgálta desztilláció során.
 A dolgozat megközelítése eltér: nem a teljes vocabulary-t csökkenti, hanem a kimeneti szótárat korlátozza a feladathoz szükséges tokenekre (strukturált domaineknél ~525, post generation esetén 26 659 token a 262 144-ből), és a bemeneti szótárat is a domainen előforduló tokenekre szűkíti (reddit sentiment: 68 328, math: 1 282, post generation: 72 133 token). Ez a task-specifikus ki- és bemeneti vocabulary kombináció kevésbé kutatott terület a szakirodalomban.
 
-2.6 Architektúrai komponensek
+2.6. Architektúrai komponensek
 A student modell a következő, szakirodalomban megalapozott komponenseket használja:
 - RMSNorm [12]: Zhang és Sennrich (2019). A LayerNorm egyszerűsített változata, amely csak RMS-sel normalizál, mean subtraction nélkül. 7-64%-kal gyorsabb, azonos teljesítmény mellett. A modern LLM-ek (LLaMA, Gemma) ezt használják.
 - RoPE [13]: Su et al. (2021). Rotary Position Embedding - a pozíció információt rotációs mátrixokkal kódolja. Paramétermentes, jól skálázódik hosszú kontextusra.
 - GeGLU [14]: Shazeer (2020). A feed-forward rétegekben GELU aktivációt gated mechanizmussal kombinál. A Gemma és más modern LLM-ek ezt használják.
 
-2.7 Optimalizáció
+2.7. Optimalizáció
 AdamW [15]: Loshchilov és Hutter (2017) javított Adam változata, ahol a weight decay különválik a gradiens alapú frissítéstől. A transformer tanítás de facto standard optimizere.
 Cosine Annealing [16]: Szintén Loshchilov és Hutter munkája (2016). A learning rate koszinusz görbe mentén csökken, opcionálisan warm restarts-szal. A dolgozat ezt használja a learning rate-re és a KL/CE arány változtatására is.
 
-2.8 Scaling Laws
+2.8. Scaling Laws
 A Chinchilla scaling law (Hoffmann et al., 2022) [17] megállapította, hogy compute-optimális tanításhoz minden modell paraméterre ~20 token szükséges. A dolgozat 5M-129M paraméteres modelleket vizsgál ~500 ezer példával. A desztilláció más dinamikát követ — a soft labels információgazdagabbak, így potenciálisan kevesebb adat is elegendő lehet, ami a domain-specifikus feladat és a csökkentett vocabulary mellett működhet.
 
-2.9 Toxicitás klasszifikáció
+2.9. Toxicitás klasszifikáció
 A Reddit és általános toxicitás klasszifikáció aktív kutatási terület. A Jigsaw Toxic Comment Classification Challenge [18] alapvető benchmark. A transformer modellek (BERT, RoBERTa) state-of-the-art eredményeket érnek el [19]. A Detoxify projekt [20] széles körben használt pre-trained modelleket kínál.
 A dolgozat megközelítése eltér: nem fine-tuned classifier, hanem generatív, autoregresszív JSON output. Ez komplexebb, de a kódbázis rugalmas - könnyen átírható más domain-specifikus feladatokra (pl. email klasszifikáció, matematikai feladatok) a kimeneti vocabulary és prompt cseréjével.
 
-2.10 Gemma modell
+2.10. Gemma modell
 A Gemma 3 modellcsalád (Google DeepMind, 2025) [21] maga is desztillációval készült - egy nagyobb teacher modellből tanult. A 4B variáns 4,3 milliárd paraméterrel rendelkezik, 4 trillió tokenen pretrained. A dolgozat ezt használja teacher modellként.
 
-2.11 Autoregresszív generálás vs klasszifikáció
+2.11. Autoregresszív generálás vs klasszifikáció
 A dolgozat tudatosan választ autoregresszív generálást a klasszifikáció helyett. Egyszerű sentiment analysis-hez általában encoder modelleket (BERT) vagy classifier head-eket használnak [22]. A T5 modell [23] bizonyította, hogy minden NLP feladat text-to-text formában kezelhető, beleértve a klasszifikációt is. A dolgozat megközelítése ezt követi: a cél nem az optimális klasszifikáció, hanem annak bizonyítása, hogy a desztillációs pipeline működik, olyan feladatokra is, ahol az autoregresszív transformer modellek előnyösebbek. 
 
-2.12 A dolgozat pozícionálása
+2.12. A dolgozat pozícionálása
 A dolgozat több ismert technikát kombinál:
 - Standard elemek: KL+CE loss, AdamW, Cosine Annealing, Transformer architektúra, RMSNorm, RoPE, GeGLU
 - Kevésbé standard: dinamikus KL/CE arányváltozás curriculum-ként
@@ -77,17 +77,59 @@ A dolgozat több ismert technikát kombinál:
 3. Implementáció
 A projekt 3 részre bontható: data extraction pipeline, tanítás és a modell(ek). A data extraction pipeline egy tanármodellt használva állítja elő és menti el a desztillációs tanításhoz szükséges adatokat (ami akár több modell tanításához is újrahasználható). A tanítás és modell jobban összefügg, a tanítás egy speciális curriculum, amely célja először a teacher modell következő token predikció disztribúciójának a student modellhez való közelítése, majd ezt követően a következő helyes token fontosságára nagyobb hangsúlyt fektetve megerősíteni a modellt, hogy ne csak hasonlóan gondolkodjon, mint a teacher modell, de a helyes döntést is hozza meg [2][8]. Több fajta student modellt is lehet használni, a dolgozat viszont elsősorban kisebb multi-headed attentiont használó Transformer modellekre fókuszál [1], amelyek ugyanazzal az autoregresszív viselkedéssel állítják elő a kimeneti választ, mint a manapság leginkább elterjedt nagy nyelvi modellek (pl.: OpenAI GPT, Google Gemini, Anthropic Claude modellek) és a desztillációhoz használt teacher modellek maguk is.
 
-3.1 Vizsgált domainek
+3.1. Vizsgált domainek
 A projekt több domainen keresztül vizsgálja ugyanazt az alapötletet: teacher modell által generált autoregresszív, tokenenként mentett logit eloszlások alapján tanítani egy kisebb student modellt. A domainek szándékosan eltérő kimeneti struktúrát használnak, mert más kompromisszumok jelennek meg egy kötött JSON objektumnál, egy determinisztikus számítási scaffoldnál és egy szabadabb természetes nyelvi generálási feladatnál.
 
-3.1.1 Reddit komment sentiment klasszifikáció
+3.1.1. Reddit komment sentiment klasszifikáció
 A Reddit sentiment domain rövid, 3 és 25 token közötti kommenteket használ bemenetként. A bemeneti adatokból kiszűrésre kerülnek a speciális tagek, URL-ek és zavaró karakterek, hogy a domain zajmentes és könnyebben kontrollálható legyen. A teacher modell kimenete egy strukturált JSON objektum, amely a kommentet négy mező mentén jellemzi: tone, sentiment, safety és toxicity. A generálás a lezáró kapcsos zárójelig tart. Ez a domain elsősorban azt vizsgálja, hogy egy csökkentett vocabulary-jű autoregresszív student modell képes-e stabilan megtanulni a kötött JSON formátumot és a teacher klasszifikációs preferenciáit.
 
-3.1.2 Matematikai szöveges feladatok
+Domain: `reddit_comment_sentiment`
+
+Input:
+`"F**k you and your family"`
+
+Model output:
+```json
+{
+  "tone": "aggressive",
+  "sentiment": "negative",
+  "safety": "harmful",
+  "toxicity": "toxic"
+}
+```
+
+3.1.2. Matematikai szöveges feladatok
 A math word problem domain generált matematikai szöveges feladatokat használ. A bemenet templatekből, véletlenszerű nevekből, tárgyakból és számokból épül fel, 13 művelettípussal: alap aritmetikai, összetett és összehasonlító feladatokkal. Minden feladathoz scaffold tartozik, például: "Problem: ...\nA=?\nB=?\nC=A+B=?\nSolution: ?;". A teacher modell a konkrét számítási lépéseket tölti ki, a kimenet pedig pontosvesszővel zárul. Ez a domain a strukturált, nem JSON-alapú kimenetet és a nyelvi-matematikai gondolkodás kapcsolatát vizsgálja.
 
-3.1.3 Reddit posztgenerálás
+Domain: `math_word_problem`
+
+Input:
+```text
+Problem: "Emma has 24 stickers and buys 18 more. How many stickers does Emma have in total?"
+A=?
+B=?
+C=A+B=?
+Solution: ?;
+```
+
+Model output:
+```text
+A=24
+B=18
+C=A+B=42
+Solution: 42;
+```
+
+3.1.3. Reddit posztgenerálás
 A post generation domainben az a feladat, hogy a modell egy Reddit kommentből rövid, plauzibilis Reddit posztot generáljon, amelyre a komment válaszként illeszkedhetne. A bemenet itt is rövid Reddit komment, de a kimenet már nem kötött JSON vagy számítási scaffold kitöltése, hanem természetes nyelvi szöveg, amely a "<end>" lezáró markerrel zárul. Emiatt a kimeneti vocabulary jóval nagyobb, és a teacher eloszlásában több hasznos puha információ maradhat. Ez a domain stressztesztként szolgált az infrastruktúrának (óriási desztillációs adatmennyiség), és bíztató jeleket ad a pure KL és KL/CE annealing veszteségszámítás előnyeire. A domain értékelése emiatt később nem csak pontos tokenegyezésre, hanem top-k és teacher-student eloszlás-összehasonlításra is támaszkodik.
+
+Domain: `post_generation`
+
+Input:
+`"Same thing happened to me last week, support was useless."`
+
+Model output:
+`I'm starting to think Reddit is actively targeting me. I just got shadowbanned after a completely neutral comment on a RAW photography thread, and I have no idea why it happened. It's incredibly frustrating and makes me question if I should even bother posting here anymore. <end>`
 
 1. Táblázat: domainek vocabulary és adatméret jellemzői
 
@@ -105,11 +147,11 @@ A post generation domainben az a feladat, hogy a modell egy Reddit kommentből r
 
 A vocabulary redukciók a Gemma 262 144 tokenes vocabulary-jéhez képest értendők. A teljes modell redukció egy azonos transformer body-val rendelkező 80 hidden dimenziós, 5 rétegű modellhez viszonyít, ahol redukció nélkül a bemeneti és kimeneti vocabulary is 262 144 token. Ebben az összehasonlításban a redukció nélküli modell 42,72M paraméteres. A post generation redukált bemeneti vocabulary a Reddit kommentek, a 10 ezer generált mintaposzt, valamint a prompt, lezáró és egyéb technikai tokenek uniója. Az átlagos generált lépésszám az adott domain egy runjának első 5 train batchéből számolt átlag. A "logit érték / példa" az átlagos generált lépésszám és a kimeneti vocabulary méretének szorzata, ezért nem a JSONL fájlméretet, hanem a desztillációs példa információs sűrűségét mutatja. A batch fájlméret sor korábbi mérések alapján a desztillációs JSONL batchek nagyságrendjét mutatja. Ez alapján látszik, hogy a post generation domain nemcsak hosszabb kimeneteket használ, hanem nagyságrendekkel nagyobb teacher eloszlást is tárol minden példához.
 
-3.2 Data extraction pipeline
+3.2. Data extraction pipeline
 A projekt során a Google Gemma 3 4B open source modell szolgál teacher modellként [21]. A modell méretéhez képest elfogadható intelligenciával rendelkezik, képes megbízhatóan structured outputot előállítani. Mérete miatt kényelmesen elfér 12GB VRAM-on, és consumer grade videókártyán is használható inferenciára.
 A data extraction során minden autoregresszív lépésnél mentésre kerülnek a domainhez definiált kimeneti vocabulary nyers logit értékei. A szükséges tokenek azok, amelyek abszolút szükségesek az összes lehetséges valid kimenet generálásához (reddit sentiment: 27, math: 30 token), míg az auxiliary tokenek (további whitespace, prompt tokenek, gyakori angol szavak, math-nál extra változónevek) nagyobb puha címkét biztosítanak a student modellnek, így jobban el tudja sajátítani a teacher "dark knowledge"-jét [2], illetve hasonlóbb top-k eloszlást tud produkálni nem determinisztikus generáláskor. A jelenlegi konfigurációkban ez reddit sentiment esetén 525, math esetén 528, post generation esetén 26 659 kimeneti tokent jelent, szemben Gemma 262 144 tokenjével. A strukturált domaineknél ez 99,8%-os csökkentés. Ezeknél a domaineknél a vocabulary szempontjából a különbség elhanyagolható, viszont desztillációs szempontból az ~525 tokenes puha címke ~19x annyi információt hordozhat, mint a ~30 tokenes szükséges minimum — ezért a nagyobb vocabulary meghagyható. A példák 32-esével kerülnek mentésre JSONL batchekbe.
 Az, hogy Gemma 3 4B bizonyos esetekben hibás vagy vitatható választ ad, nem jelent problémát, hiszen a cél nem annak bizonyítása, hogy a desztillált modell emberi szempontból helyes választ adott-e, hanem hogy mennyire tudja a student modell követni a teacher modell preferenciáját. Ez azt is jelenti, hogy a student modell maximum annyira lehet jó, mint a teacher, hiszen a teacher hibáit is megtanulja.
-3.3 A tanítás
+3.3. A tanítás
 A tanítás egyik legfontosabb része a veszteség, amit használva a modell optimalizál. A projekt két veszteség együttesét használja, változó arányban [3]. A cross entropy loss a teacher által generált konkrét következő tokenre optimalizál, míg a Kullback-Leibler divergencia a teacher és student eloszlások közötti különbséget számolja [2][3]. Ezen belül a projekt forward KL divergenciát használ (KL(teacher || student)), amely a student modellt a teacher teljes eloszlásának lefedésére ösztönzi [2][3]. A MiniLLM [6] kimutatta, hogy autoregresszív generálásnál a reverse KL előnyösebb lehet, mert megakadályozza a teacher alacsony valószínűségű régióinak túlbecslését; a projektben ezt a hatást részben a CE loss későbbi erősítése adja vissza.
 
 A KL/CE arány és a distillation temperature együtt curriculum jellegű tanítási ütemezést alkot. A tanítás elején a magasabb KL súly és a magasabb temperature lágyabb teacher eloszlást ad, így a student nem csak a helyes tokent látja, hanem a teacher bizonytalanságát és alternatív preferenciáit is [2][9]. A tanítás végén a temperature csökken, a CE komponens nagyobb szerepet kaphat, és a modell erősebben a helyes következő-token predikció felé élesedik. A KL és CE veszteség aránya, valamint a temperature konfigurálható kezdő- és végértékkel rendelkezik (például KL 0,99→0,5 vagy temperature 5→3), és cosine decay-t követ a tanítás során [16]. Mindkét veszteség végig jelen van a gradiensben, így a modell nem vált hirtelen egyik tanulási célról a másikra [8][9].
@@ -135,14 +177,14 @@ A learning rate lineáris warmup fázissal indul (a teljes tanítás konfigurál
 A tanítás folyamán folyamatosan megjelenik a konzolon a train loss, a train accuracy és az adott példa vagy batch ideje. Ezeknek az adatoknak a fontosabb része mentésre is kerül.
 Minden epoch végén készül checkpoint és tesztelésre kerül a modell a teljes adathalmaz konfigurálható hányadán (alapértelmezetten 2%), ami erre a célra lett félretéve. Emellett mini-eval fut konfigurálható gyakorisággal (alapértelmezetten 1000 batchenként), amely konfigurálható számú teszt batch-en (alapértelmezetten 10) méri a modell aktuális teljesítményét — ez lehetővé teszi a konvergencia epoch közbeni követését.
 A program kezeli a graceful shutdownt, tehát epochok között is el tudja menteni a progresst.
-3.4 Student modell
+3.4. Student modell
 A kiinduló pilot modellnél fontos volt, hogy a lehető legnagyobb eséllyel legyen sikeres a desztilláció. A fő kérdések:
 - Működik-e a pipeline end-to-end? Elérhető-e közel 100%-os student only accuracy?
 - Tud-e koherens JSON-t generálni a saját modell? Egyáltalán a rendelkezésre álló erőforrásokon betanítható-e?
 - Működik-e a csökkentett kimeneti szótár?
 Ezért a legkedvezőbb körülmények biztosítása volt a cél: nagy puha címke (525 token), elegendő paraméter (~537M), Gemma-szerű architektúra. A kimeneti szótár mérete lineárisan skálázódik, így a nagyobb puha címke meghagyható - segít a modellnek magába szívni a teacher "dark knowledge"-ét [2].
 A pilot sikere után a projekt több modellméret és konfiguráció szisztematikus tesztelésére bővült, 5M-tól 129M paraméterig.
-3.4.1 Architektúra és Gemma hasonlóságok
+3.4.1. Architektúra és Gemma hasonlóságok
 A student modell architektúrája paraméterezhető: a hidden dimenzió, rétegszám és attention head-ek száma konfigurálható. A transformer body hasznos kapacitását elsősorban az attention és feed-forward rétegek adják, míg a bemeneti embedding és a kimeneti projekció paraméterszáma közvetlenül a vocabulary méretétől függ. A bemeneti embedding paraméterszáma input_vocab × h, a kimeneti projekcióé output_vocab × h + output_vocab, ahol h a hidden dimenzió. A transformer body közelítő paraméterszáma 16 × L × h², ahol L a rétegszám.
 
 Ez különösen kisebb student modelleknél fontos, mert teljes Gemma vocabulary mellett a modell nagy része olyan tokenek reprezentációjára megy el, amelyek a domainben nem fordulnak elő. Az összehasonlításhoz használt 80 hidden dimenziós, 5 rétegű konfiguráció transformer body-ja 512 880 paraméter. Teljes bemeneti és teljes kimeneti vocabulary mellett az erre épülő modell 42,72M paraméteres. Ugyanez a hasznos transformer body redukált vocabulary-vel reddit sentiment esetén 6,02M, math word problem esetén 0,66M, post generation esetén 8,44M paraméteres modellt eredményez. A csökkenés tehát nem abból származik, hogy a modell gyengébb attention vagy feed-forward rétegeket kap, hanem abból, hogy a domainben nem használt vocabulary paraméterek kikerülnek.
@@ -157,40 +199,40 @@ A modell a következő architekturális elemeket veszi át Gemmától:
 - GeGLU-szerű aktiváció [14]: GELU(gate) * linear, hasonló a Gemma megoldásához
 - Ugyanaz a tokenizer: a bemeneti tokenek azonos reprezentációt kapnak
 Ezek a hasonlóságok segítik, hogy a student modell architektúrája közel álljon a teacher modelléhez, így a desztilláció hatékonyabb.
-3.4.2 Optimalizációk
+3.4.2. Optimalizációk
 A modell bemeneti szótára alapértelmezetten megegyezik Gemma 3 4B-vel (262 144 token), de a domain-specifikus bemeneti szótár jelentősen csökkenti ezt: reddit sentiment esetén 68 328 tokenre (73,9%-os csökkentés), matematikához 1 282 tokenre (99,5%-os csökkentés), post generation esetén 72 133 tokenre (72,5%-os csökkentés). A kimeneti szótár szintén domainfüggő: 525 token reddit sentimenthez (27 szükséges + 498 auxiliary), 528 token matematikához (30 szükséges + 498 auxiliary), és 26 659 token post generationhöz. A strukturált domaineknél ez 99,8%-os, post generation esetén 89,8%-os kimeneti vocabulary redukciót jelent.
 A tesztelt modellek 5M-tól 129M paraméterig terjednek, szemben a teacher modell 4,3 milliárd paraméterével, tehát 34x-tól 860x-os méretcsökkentés érhető el.
 
-3.4.3 Kimeneti vocabulary és KL kompromisszum
+3.4.3. Kimeneti vocabulary és KL kompromisszum
 A kimeneti vocabulary redukció közvetlen paramétercsökkentést ad, mert a kimeneti projekció mérete output_vocab × h + output_vocab. Ez első ránézésre egyszerűbbnek tűnik, mint a bemeneti vocabulary redukció: ha a feladat csak néhány tíz vagy száz tokent használ, a teljes 262 144 tokenes kimeneti réteg felesleges. Desztillációs tanításnál azonban a kimeneti szótár nem csökkenthető következmények nélkül a minimálisan valid tokenekre, mert a KL divergencia nem csak a helyes következő tokent, hanem a teacher teljes eloszlását próbálja követni [2][3]. Ha túl kevés token marad a kimeneti eloszlásban, a soft target közelebb kerül egy hard labelhez, és csökken a "dark knowledge" átadásának lehetősége [2], valamint a helyes top-k disztribúció követése is.
 
 Ezért a projekt a szükséges tokenek mellett auxiliary tokeneket is megtart. A strukturált domaineknél ezek főleg whitespace, prompt-hoz kapcsolódó tokenek, gyakori angol szavak és domain-specifikus kiegészítők. Paraméterszámban az 525 vagy 528 tokenes kimeneti réteg továbbra is elhanyagolható a teljes Gemma vocabulary-hez képest, és elméletileg gazdagabb eloszlást ad, mint a 27-30 tokenes minimum. A kísérletek alapján azonban strukturált outputnál ezt a többletet nehéz volt statisztikailag jelentős javulásként kimutatni a pure KL, pure CE és vegyes veszteségfüggvények között. Ezekben a feladatokban sok lépésnél a teacher eloszlása nagyon éles: JSON mezőnevek, zárójelek, írásjelek, számjegyek vagy scaffold elemek következnek, ahol kevés valódi alternatíva versenyez. Ilyen eloszlásnál az auxiliary tokenek és a KL loss többletinformációja kevésbé látszik a determinisztikus tokenválasztást mérő tokenpontosságban.
 
 Post generation esetén más a helyzet: a kimeneti vocabulary 26 659 token, mert természetes nyelvi generálásnál több plauzibilis folytatás versenyez egymással. Itt a nagyobb output vocabulary a feladat természetéből következő kompromisszum: még mindig 89,8%-kal kisebb, mint a teljes Gemma kimeneti tér, de elég nagy ahhoz, hogy a KL loss értelmes eloszlási információt kapjon. Ezért a kimeneti vocabulary méretét és a KL/CE arányt nem érdemes domainfüggetlen konstansként kezelni: a döntés attól is függ, hogy a teacher következő-token eloszlása éles, strukturált vagy több lehetséges folytatást tartalmazó természetes nyelvi eloszlás.
 
-3.4.4 Modell részletek
+3.4.4. Modell részletek
 A projekt során tesztelt modellek hidden dimenziója 20-tól 384-ig terjed, rétegszámuk 2-től 12-ig, head számuk 1-től 6-ig. A skálázási kísérletek 7 modellméretet vizsgáltak teljes bemeneti szótárral, a csökkentett bemeneti szótár kísérletekben további 3 konfiguráció készült azonos paraméterszámú, de mélyebb architektúrával — a felszabaduló embedding paraméterek a transformer body-ra fordíthatók.
 4. Kísérleti módszertan és eredmények
-4.1 Kísérletek
+4.1. Kísérletek
 A projekt minden tanítási futtatásról külön alkönyvtárat tart fenn a run könyvtáron belül, amelyben a konfiguráció, a modell metaadatai, a tanítási logok, az epoch végi kiértékelések és a checkpointok elkülönítve tárolódnak. Ez azért fontos, mert a dolgozat nem egyetlen végső modellt vizsgál, hanem több domainen, több modellméreten és több tanítási stratégián keresztül hasonlítja össze a desztillációs döntéseket. A jelenlegi experiment registry több mint 100 futtatást tartalmaz: skálázási, loss- és curriculum-beállításokat és vocabulary redukciós változatokat több domainen. A futtatások fő csoportjai a sentiment domainen végzett skálázási és vocabulary redukciós kísérletek, a sentiment és math domaineken futtatott CE/KL/vegyes loss összehasonlítások, valamint a post generation domainen végzett free-form generálási kísérletek.
 
 A math domainnél a csökkentett 1282 tokenes bemeneti vocabulary paraméterszám szempontjából kiszámolt és támogatott konfiguráció, de a jelenlegi math futtatások teljes Gemma bemeneti vocabulary-t használtak. A post generation domainnél szintén rendelkezésre áll a redukált bemeneti vocabulary számítása, de az eddigi post generation futtatások még teljes bemeneti vocabulary-vel készültek.
 
-4.2 Kutatási eszköztár
+4.2. Kutatási eszköztár
 A projekt tooling rétege jelenleg nem letisztult, hanem egymás után épült ki, ahogy a kutatási igények változtak. Emiatt több egymást részben lefedő, illetve mostanra részben elavult funkció is található benne. Jelenleg körülbelül 4-6 külön rendszer van legalább részben fenntartva modellfuttatásra, modell- és logelemzésre, valamint kísérleti riportok készítésére. A jövőben ezeknek az eszközöknek az egységesítése fontos fejlesztési irány.
 
 Az eszköztár legfontosabb pillére a log-alapú vizualizáció. A data generation és training folyamat JSONL logokat, állapotfájlokat, run metaadatokat és checkpointokat ment. Ezekből készülnek a training progress ábrák, az epoch végi accuracy/loss görbék, a mini-eval görbék és a confusion matrix jellegű elemzések. Erre épül az experiment analysis réteg is, amely több run összehasonlítását, skálázási ábrákat, vocabulary összehasonlítást, annealing összehasonlítást és HTML oldalon olvasható riportot generál. Az újabb eszközök már nem csak különálló futtatások, hanem egy kutatási kérdéshez tartozó modellcsoportok közös vizsgálatát is támogatják, ami biztosabb alapot ad a következtetések levonásához.
 
 Emellett több célzott elemzőeszköz készült: checkpointonkénti inference-szimuláció, kézi példaelemzés, run-összehasonlítás, skálázási görbe illesztés, valamint a post generation kísérletekhez top-k target accuracy, teacher-student top-k overlap és mean target rank számítás. A data generation és training oldal queue fájlokból indítható, így több futtatás egymás után, felügyelet nélkül végrehajtható. A graceful shutdown, a temp checkpointok és a logger state fájlok lehetővé teszik a hosszabb futtatások megszakítását és folytatását. A jelenlegi állapot a dolgozat kísérleteinek reprodukálását és elemzését támogatja, de tisztább újrafelhasználható eszköztárhoz további egységesítés szükséges.
 
-4.3 Metrikák
+4.3. Metrikák
 A kísérletek értelmezéséhez külön kell választani a tokenpontosságot és a domain-specifikus feladatmetrikákat. A teacher-forced accuracy token szintű metrika: a modell minden lépésben a helyes korábbi tokeneket kapja kontextusként, ezért ez optimista mérés, főleg azt mutatja, hogy lokálisan megtanulta-e a következő tokeneket. A student-only accuracy szintén token szintű, de a modell saját korábbi predikcióit kapja vissza, ezért jobban közelíti az autoregresszív inference közbeni viselkedést.
 
 A "classification accuracy" név a logokban kompatibilitási okból maradt meg, de domainenként eltérő task accuracy-t jelent. Reddit sentiment esetén a generált JSON négy mezőjének (tone, sentiment, safety, toxicity) kategóriahelyességét méri. Math word problem esetén a "Solution:" mezőből kinyert végső megoldás egyezését méri. Post generation esetén nem szemantikai minőséget mér, hanem strukturális completion rate-et: megjelenik-e a "<end>" lezáró marker a generált válaszban. Emiatt a három domain task accuracy értékei nem közvetlenül összehasonlíthatóak egymással.
 
 Free-form generálásnál további metrikák szükségesek, mert a tokenpontos egyezés túl szigorú lehet több plauzibilis folytatás mellett. A top-k target accuracy azt méri, hogy a teacher által generált cél token szerepel-e a student legvalószínűbb tokenjei között. A teacher-student top-k overlap azt mutatja, mennyire hasonló a két modell valószínű tokenhalmaza. A mean target rank a cél token átlagos rangját méri a student eloszlásában, ahol az alacsonyabb érték jobb. Ezek a metrikák teacher-forced kontextusban értelmezendők: nem teljes szabad generálási minőséget mérnek, hanem a következő-token eloszlás hasonlóságát.
 
-4.4 Post generation top-k elemzés
+4.4. Post generation top-k elemzés
 A post generation domainben a szabadabb kimenet miatt a student minőségét nem elég csak pontos tokenegyezéssel mérni. Egy rövid Reddit poszt többféleképpen is lehet elfogadható válasz egy adott komment előzményeként, ezért a teacher eloszlásának követése önmagában is fontos jel. A top-k elemzés három 10 epochos post generation futtatást hasonlít össze ugyanazon test split 24 batchén (768 példa, 47 911 generált tokenlépés).
 
 3. Táblázat: post generation top-k metrikák
@@ -203,7 +245,7 @@ A post generation domainben a szabadabb kimenet miatt a student minőségét nem
 
 Az eredmény azt mutatja, hogy a pure KL követi legjobban a teacher valószínű tokenhalmazát: ennek a legmagasabb a top-20 overlapje és a legalacsonyabb az átlagos cél-token rangja. A pure CE ezzel szemben jobb cél-token találatot ad, de sokkal gyengébben őrzi meg a teacher eloszlásának szerkezetét. A KL/CE és temperature annealinget kombináló beállítás ebben a mérésben a legmagasabb top-20 cél-token találatot adja, miközben az overlap lényegesen közelebb marad a pure KL-hez, mint a pure CE-hez. Ez támasztja alá a "best of both worlds" értelmezést: a modell magabiztosabb következő-token predikciót kap, de nem veszti el teljesen a KL által tanított eloszláskövetést. Mivel ez egy kisebb, adat- és tárhelyigényes free-form kísérleti sorozat, az eredmény ígéretes, de további futtatásokkal kell statisztikailag erősebben alátámasztani.
 
-4.5 Skálázás és bemeneti vocabulary redukció
+4.5. Skálázás és bemeneti vocabulary redukció
 A reddit sentiment domainen végzett skálázási futtatások azt mutatják, hogy a strukturált JSON feladat viszonylag korán telítődik. Teljes Gemma bemeneti vocabulary mellett az 5,27M paraméteres modell 92,55% student-only és 86,00% task accuracy-t ér el, míg a 129,19M paraméteres modell 93,25% student-only és 87,42% task accuracy-t. Ez nem azt jelenti, hogy a nagyobb modell haszontalan, hanem azt, hogy ezen a kötött, erősen strukturált feladaton a többletparaméterek hozama gyorsan csökken.
 
 Az alábbi táblázat egy-egy reprezentatív futtatást mutat, nem több seedből számolt átlag.
@@ -221,7 +263,7 @@ Az alábbi táblázat egy-egy reprezentatív futtatást mutat, nem több seedbő
 
 A táblázat nem kontrollált architektúra-ablációként értelmezendő, mert a redukált bemeneti vocabulary-vel futtatott modellek más depth/width arányt használnak. A lényeg az, hogy a bemeneti embeddingből felszabadított paraméterkeret hasznos transformer body kapacitásra fordítható, és hasonló teljes paraméterszám mellett legalább versenyképes eredményt ad. Ez a bemeneti vocabulary redukció gyakorlati értékét támasztja alá: nem pusztán paramétert töröl, hanem lehetővé teszi, hogy a kisebb modellben nagyobb arány jusson a tényleges számítást végző rétegekre.
 
-4.6 Pilot run
+4.6. Pilot run
 A teljes modell betanítások előtt saját hardveren pilot runok futottak, hogy kiderüljön, a kód jól működik-e és a modell elkezd-e konvergálni. Egy 30 perces teszt pilot 10 batch adaton már megmutatta, hogy a modell képes helyes JSON outputot generálni. Egy 3 órás pilot run 100 batch adaton, 3,5 epoch után egy 10 batch-es (10*32 példa) teszten a student only accuracy átlagosan 87,69%, míg a teacher forced accuracy átlagosan 98,97% volt. Példa a tesztből, ahol a modell tökéletesen eltalálta a teacher modell klasszifikációját (student only accuracy: 100%):
 
 Bemenet: "F**k you and your family"
@@ -258,18 +300,19 @@ Teacher kimenet (ground truth):
 ```
 
 A második példán látható, hogy a modell hibázott a klasszifikációban, de valid JSON struktúrát generált. Érdemes megjegyezni, hogy a teacher klasszifikációja is vitatható, kontextus nélkül a mondat inkább frusztrált/játékos, mint toxic.
-4.7 Korábbi pilot
+4.7. Korábbi pilot
 Egy korábbi, nagyobb léptékű pilot run során 97 órán keresztül tanult a modell. A loss folyamatosan csökkent, a teacher forced accuracy 80-90% körül volt, viszont a student only accuracy csak 10-20% maradt. A nagy különbség a két metrika között gyanús volt. A generált JSON outputok hibásak voltak, annak ellenére, hogy a loss és a teacher forced accuracy jónak tűnt. Később kiderült, hogy egy encoding hiba okozta a problémát: néhány token (pl. „_\"") rosszul volt kódolva a training adatban és inference közben is. A hiba javítása után a 4.6-ban leírt eredmények születtek.
-4.8 Pilot teszt elemzés
-A pilot teszt összesen ~9 órát vett igénybe: 2,63 óra adatgenerálás (101 batch, 3232 mondat) és 6,25 óra tanítás (347 batch, 3 epoch). A tanítási metrikák reprezentatív, későbbi futtatásból származó összefoglalója az 5.8. ábrán látható.
+4.8. Pilot teszt elemzés
+A pilot teszt összesen ~9 órát vett igénybe: 2,63 óra adatgenerálás (101 batch, 3232 mondat) és 6,25 óra tanítás (347 batch, 3 epoch). A tanítási metrikák reprezentatív, későbbi futtatásból származó összefoglalója a 10-15. ábrán látható.
 A loss az első batcheknél élesen csökken (~25-ről ~2-re), majd tovább csökken, de fluktuálva. A fluktuáció oka, hogy a tanítás előrehaladtával a CE loss egyre nagyobb súlyt kap, ami élesebb, kevésbé sima gradienst eredményez. Az accuracy folyamatosan emelkedik, 35%-ról 95% fölé (ez tanítás közbeni, teacher forced accuracy).
 Az aggregált train loss magasabb, mint az eval loss (epoch summary), tehát overfitting nem figyelhető meg, annak ellenére, hogy viszonylag kevés adaton tanult a modell.
 A teacher-forced és student-only accuracy párhuzamosan emelkedik. A teacher-forced accuracy magasabb (~97%), mert a modell ilyenkor mindig a helyes kontextust kapja. A student-only accuracy alacsonyabb (~88%), mert bizonyos tokeneket (elsősorban kategória értékeket: "aggressive", "neutral" stb.) nehezebben talál el a modell. Ráadásul az autoregresszív generálás miatt, ha egy korai token hibás, az a teljes kimenet hibás predikciót okozhat.
 Mindezek ellenére a student-only módban is az esetek túlnyomó többségében koherens, valid JSON generálódik.
 
-4.9 Kiértékelési példák
-A kézi kiértékelési példák három szakaszt használnak: student (a modell saját predikciói alapján generál), teacher-forced (minden lépésnél a helyes eddigi tokeneket kapja kontextusként), és ground truth (a teacher modell eredeti kimenete). A kategóriaszintű hibákat az 5.9. ábra confusion matrix formában foglalja össze.
-A színkódolás: zöld a helyes, piros a hibás token.
+4.9. Manuális kiértékelési példák
+A manuális kiértékelési példák három szakaszt használnak: student (a modell saját predikciói alapján generál), teacher-forced (minden lépésnél a helyes eddigi tokeneket kapja kontextusként), és ground truth (a teacher modell eredeti kimenete). A kézi példákat az 1. ábra console print formában mutatja, míg a kategóriaszintű összesített hibákat a 16. ábra confusion matrix formában foglalja össze. A színkódolás: zöld a helyes, piros a hibás token.
+
+![1. ábra: Inference console print](thesis_images/01_inference_console_print.png)
 
 Example 6: mindkét accuracy 100%, a teljes kimenet zöld. A modell tökéletesen követi a teacher predikciót.
 
@@ -277,7 +320,7 @@ Example 9: student only 71,79%, teacher-forced 92,31%. A JSON struktúra (kulcso
 
 Example 19: mindkét accuracy 97,44%, egyetlen token hibás. A "sentiment" mezőnél "neutral" helyett "negative"-ot prediktál. Ez jellemző hiba: a modell a JSON szerkezetét stabilan generálja, a bizonytalanság a kategória értékeknél jelentkezik.
 
-4.10 Erőforrás becslés
+4.10. Erőforrás becslés
 A pipeline legnagyobb erőforrásigénye az adatgenerálás: a teacher modell (Gemma 3 4B) egy A100 GPU 20GB-s szeletén példánként ~3 másodperc alatt generál egy példát, tehát ~500 ezer példa előállítása ~417 óra. Ez a bottleneck nem változott a projekt során, mivel a teacher modell sebessége fix.
 A tanítás erőforrásigénye viszont jelentősen csökkent a pilot óta. A korai becslés 537M paraméteres modellre 15 epochon 2600 óra GPU időt jósolt. A végső kísérletek 5-10M paraméteres modelleket használnak, és 3 epoch elegendő — ennél több túltanuláshoz vezet. A korai implementáció minden egyes tokenre külön forward passt futtatott (40-50 pass/példa), de mivel a causal mask biztosítja, hogy a későbbi tokenek nem befolyásolják a korábbiakat, a teljes szekvencia egyetlen forward passból kiértékelhető. Ez 40-50x gyorsulást eredményezett a loss számításban. 500 ezer példával, 32-es batch mérettel, saját hardveren (RTX 4070) ~0,5 mp/batch sebességgel egy modell 3 epoch tanítása ~6,5 óra. A teljes pipeline bottleneckje tehát egyértelműen az adatgenerálás, nem a tanítás.
 
@@ -286,69 +329,81 @@ Ez a fejezet a kísérletek fő eredményeit vizuálisan foglalja össze. A cél
 
 A több száz GB méretű batch és checkpoint artefaktumok nincsenek verziózva, mert ezek gyakorlati okokból nem alkalmasak Git-tárolásra. A grafikonok a verziózott run metaadatokra, training JSONL logokra és elemző kimenetekre épülnek. A grafikonokhoz tartozó CSV összesítők a projekt `thesis_work/grafikonok/data` almappájában találhatók.
 
-5.1 Vocabulary redukció
+5.1. Vocabulary redukció
 
-![5.1. ábra: Domain-specifikus vocabulary redukció](grafikonok/01_vocabulary_reduction.png)
+![2. ábra: Domain-specifikus vocabulary redukció](grafikonok/01_vocabulary_reduction.png)
 
-Az 5.1. ábra lineáris skálán mutatja a teljes Gemma vocabulary, a redukált input vocabulary és a redukált output vocabulary méretét. Így látható, hogy a strukturált sentiment és math domaineknél az ~525 tokenes kimeneti tér a 262 144 tokenes teljes vocabulary-hez képest valóban elhanyagolható méretű. A post generation domain nagyobb output vocabulary-t igényel, mert természetes nyelvi folytatásoknál több plauzibilis token versenyez.
+A 2. ábra lineáris skálán mutatja a teljes Gemma vocabulary, a redukált input vocabulary és a redukált output vocabulary méretét. Így látható, hogy a strukturált sentiment és math domaineknél az ~525 tokenes kimeneti tér a 262 144 tokenes teljes vocabulary-hez képest valóban elhanyagolható méretű. A post generation domain nagyobb output vocabulary-t igényel, mert természetes nyelvi folytatásoknál több plauzibilis token versenyez.
 
-5.2 Paraméterallokáció elméleti redukciókkal
+5.2. Paraméterallokáció elméleti redukciókkal
 
-![5.2. ábra: Paraméterallokáció no reduction, input-only és input+output redukció mellett](grafikonok/02_parameter_allocation.png)
+![3. ábra: Paraméterallokáció no reduction, input-only és input+output redukció mellett](grafikonok/02_parameter_allocation.png)
 
-Az 5.2. ábra ugyanarra a 80 hidden dimenziós, 5 rétegű transformer body-ra mutatja meg a paraméterallokációt redukció nélkül, csak input redukcióval, illetve input és output redukcióval. A grafikon elméleti összehasonlítás: azt mutatja, hogy a domain-specifikus vocabulary redukció hogyan változtatná a modell paraméterköltségét akkor is, ha az adott kísérleti run még teljes input vocabulary-vel futott. Sentiment esetén a teljes redukció 42,72M paraméterről 6,02M-re, post generation esetén 8,44M-re csökkenti az azonos transformer body-val rendelkező modellt.
+A 3. ábra ugyanarra a 80 hidden dimenziós, 5 rétegű transformer body-ra mutatja meg a paraméterallokációt redukció nélkül, csak input redukcióval, illetve input és output redukcióval. A grafikon elméleti összehasonlítás: azt mutatja, hogy a domain-specifikus vocabulary redukció hogyan változtatná a modell paraméterköltségét akkor is, ha az adott kísérleti run még teljes input vocabulary-vel futott. Sentiment esetén a teljes redukció 42,72M paraméterről 6,02M-re, post generation esetén 8,44M-re csökkenti az azonos transformer body-val rendelkező modellt.
 
-5.3 Skálázási görbe
+5.3. Skálázási görbe
 
-![5.3. ábra: Skálázási görbe Reddit JSON feladaton](grafikonok/03_sentiment_scaling_curve.png)
+![4. ábra: Skálázási görbe Reddit JSON feladaton](grafikonok/03_sentiment_scaling_curve.png)
 
-Az 5.3. ábra alapján a Reddit JSON klasszifikációs feladat viszonylag korán telítődik. A nagyobb modellek enyhén javítanak a student-only és task accuracy értékeken, de a javulás nem arányos a paraméterszám növekedésével. Ez arra utal, hogy ennél a kötött kimenetű domainnél már kisebb student modell is képes a teacher viselkedésének nagy részét megtanulni.
+A 4. ábra alapján a Reddit JSON klasszifikációs feladat viszonylag korán telítődik. A nagyobb modellek enyhén javítanak a student-only és task accuracy értékeken, de a javulás nem arányos a paraméterszám növekedésével. Ez arra utal, hogy ennél a kötött kimenetű domainnél már kisebb student modell is képes a teacher viselkedésének nagy részét megtanulni.
 
-5.4 Teljes és redukált input vocabulary összehasonlítása
+5.4. Teljes és redukált input vocabulary összehasonlítása
 
-![5.4. ábra: Teljes és redukált input vocabulary összehasonlítása](grafikonok/04_reduced_vs_full_vocab.png)
+![5. ábra: Teljes és redukált input vocabulary összehasonlítása](grafikonok/04_reduced_vs_full_vocab.png)
 
-Az 5.4. ábra teljes és redukált input vocabulary-s sentiment futtatásokat hasonlít össze hasonló paraméterkeretek mellett. A bal panel a student-only tokenpontosságot, a jobb panel a task accuracy-t mutatja. A grafikon nem kontrollált architektúra-abláció, mert a redukált vocabulary-s modellek eltérő width/depth arányt használnak, de gyakorlati szempontból fontos: a redukált input vocabulary-s modellek versenyképesek, több esetben jobbak is.
+A 5. ábra teljes és redukált input vocabulary-s sentiment futtatásokat hasonlít össze hasonló paraméterkeretek mellett. A bal panel a student-only tokenpontosságot, a jobb panel a task accuracy-t mutatja. A grafikon nem kontrollált architektúra-abláció, mert a redukált vocabulary-s modellek eltérő width/depth arányt használnak, de gyakorlati szempontból fontos: a redukált input vocabulary-s modellek versenyképesek, több esetben jobbak is.
 
-5.5 Loss-stratégiák szórása strukturált domaineken
+5.5. Loss-stratégiák szórása strukturált domaineken
 
-![5.5. ábra: CE, KL és KL/CE annealing task accuracy szórása](grafikonok/05_structured_loss_spread.png)
+![6. ábra: CE, KL és KL/CE annealing task accuracy szórása](grafikonok/05_structured_loss_spread.png)
 
-Az 5.5. ábra 10-10 futás alapján mutatja a pure CE, pure KL és KL/CE annealing beállítások task accuracy értékeit sentiment és math domainen. A pontok az egyedi futtatások, a nagy pont az átlag, a függőleges vonal pedig a szórás. A különbségek többnyire a futások közötti szórással összemérhetőek. A hozzá tartozó CSV-ben a CE-hez viszonyított Welch t-statisztika és Cohen-d hatásméret is szerepel, de a jelenlegi adatok alapján strukturált outputnál nem érdemes túl erős általános állítást tenni a három stratégia sorrendjéről.
+A 6. ábra 10-10 futás alapján mutatja a pure CE, pure KL és KL/CE annealing beállítások task accuracy értékeit sentiment és math domainen. A pontok az egyedi futtatások, a nagy pont az átlag, a függőleges vonal pedig a szórás. A különbségek többnyire a futások közötti szórással összemérhetőek, ezért a jelenlegi adatok alapján strukturált outputnál nem érdemes túl erős általános állítást tenni a három stratégia sorrendjéről.
 
-5.6 Teacher-forced, student-only és task metrikák
+5.6. Teacher-forced, student-only és task metrikák
 
-![5.6. ábra: Teacher-forced, student-only és task accuracy több seed alapján](grafikonok/06_accuracy_gap_seed_lines.png)
+![7. ábra: CE futtatások teacher-forced, student-only és task accuracy gapje](grafikonok/06a_accuracy_gap_seed_lines_ce.png)
 
-Az 5.6. ábra ugyanazokból a többseedes kísérletekből mutatja a teacher-forced, student-only és task metrikák közötti különbséget. A halvány vonalak az egyedi futtatások, a vastag vonalak az adott stratégia átlagai. A teacher-forced mérés optimistább, mert a modell minden lépésben helyes előzményeket kap, míg a student-only mérés jobban közelíti az autoregresszív inference közbeni viselkedést.
+![8. ábra: KL futtatások teacher-forced, student-only és task accuracy gapje](grafikonok/06b_accuracy_gap_seed_lines_kl.png)
 
-5.7 Loss-komponensek tanítás közben
+![9. ábra: KL/CE annealing futtatások teacher-forced, student-only és task accuracy gapje](grafikonok/06c_accuracy_gap_seed_lines_klce_annealing.png)
 
-![5.7a. ábra: Pure CE training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07a_pure_ce_training_curves.png)
+A 7-9. ábrák ugyanazokból a sentiment többseedes kísérletekből mutatják a teacher-forced, student-only és task metrikák közötti különbséget, külön ábrán a CE, KL és KL/CE annealing stratégiákra. A halvány, stratégiaszínű vonalak az egyedi futtatások, a vastag vonal az adott stratégia átlaga. A teacher-forced mérés optimistább, mert a modell minden lépésben helyes előzményeket kap, míg a student-only mérés jobban közelíti az autoregresszív inference közbeni viselkedést.
 
-![5.7b. ábra: Pure KL training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07b_pure_kl_training_curves.png)
+5.7. Loss-komponensek tanítás közben
 
-![5.7c. ábra: KL/CE annealing training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07c_klce_annealing_training_curves.png)
+![10. ábra: Pure CE training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07a_pure_ce_training_curves.png)
 
-Az 5.7a-c ábrák egy-egy reprezentatív sentiment futtatást mutatnak ugyanazzal a plotting logikával, amelyet a tréning közbeni grafikon is használ: halvány nyers batchgörbe, mozgóátlag és fekete utolsó-200-batch átlagvonal. A négy panel külön választja a combined losst, a KL losst, a CE losst és a train token accuracy-t. Így a cél nem a seedek átlagolása, hanem a tanulási dinamika közvetlen, futtatásszintű bemutatása.
+![11. ábra: Pure KL training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07b_pure_kl_training_curves.png)
 
-5.8 Reddit sentiment kategóriahibák
+![12. ábra: KL/CE annealing training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07c_klce_annealing_training_curves.png)
 
-![5.8. ábra: Reddit sentiment confusion matrixok egy 5M körüli modellen](grafikonok/08_reddit_confusion_matrices.png)
+Az 10-12. ábrák egy-egy reprezentatív sentiment futtatást mutatnak ugyanazzal a plotting logikával, amelyet a tréning közbeni grafikon is használ: halvány nyers batchgörbe, mozgóátlag és halvány utolsó-200-batch átlagvonal. A négy panel külön választja a combined losst, a KL losst, a CE losst és a train token accuracy-t. Így a cél nem a seedek átlagolása, hanem a tanulási dinamika közvetlen, futtatásszintű bemutatása.
 
-Az 5.8. ábra egy 5M körüli sentiment modell kategóriahibáit foglalja össze. A hibák főként a kategóriaértékeknél jelennek meg, miközben a JSON struktúra stabilan megmarad. Ez megerősíti a pilot példákból is látható mintát: a modell a formátumot könnyen megtanulja, a bizonytalanság inkább a teacher kategóriadöntéseinek utánzásában jelenik meg.
+![13. ábra: Hosszabb Pure CE training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07d_large_pure_ce_training_curves.png)
 
-5.9 Post generation top-k metrikák
+![14. ábra: Hosszabb Pure KL training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07e_large_pure_kl_training_curves.png)
 
-![5.9. ábra: Post generation top-k összehasonlítás](grafikonok/09_postgen_topk_metrics.png)
+![15. ábra: Hosszabb KL/CE annealing training curve, combined loss, KL loss, CE loss és accuracy](grafikonok/07f_large_klce_annealing_training_curves.png)
 
-Az 5.9. ábra a free-form post generation domainben hasonlítja össze a pure CE, pure KL és KL/CE plus temperature annealing beállításokat. A pure KL jobban őrzi a teacher top-k eloszlásának szerkezetét, a pure CE jobban élesít a cél tokenre, míg az annealingelt beállítás a két cél között jobb kompromisszumot ad. Ez a post generation domain egyik legfontosabb eredménye, de a futtatások számát további munkában növelni kell.
+A 13-15. ábrák ugyanezt a nézetet adják a hosszabb sentiment futtatásokra (`exp-purece-t1-1`, `exp-purekl-t1-1`, `exp-kl99to50-t1-1`). Ezek a 3,4M paraméteres text sentiment classifier modellek 4215 train batchből álló futásai, ezért a rövid reprezentatív görbék után jobban mutatják a későbbi tanulási dinamikát.
 
-5.10 Desztillációs adat költsége
+5.8. Reddit sentiment kategóriahibák
 
-![5.10. ábra: Desztillációs adat költsége domainenként](grafikonok/10_domain_data_cost.png)
+![16. ábra: Reddit sentiment confusion mátrixok egy 5M körüli modellen](grafikonok/08_reddit_confusion_matrices.png)
 
-Az 5.10. ábra indokolja, miért nehezebb a post generation kísérletsorozat statisztikailag erősítése. A post generation nemcsak hosszabb kimeneteket használ, hanem sokkal nagyobb output vocabulary-t is, ezért egy példa nagyságrendekkel több logit értéket tárol, mint a strukturált domainek. Ez a batch fájlméretekben is megjelenik.
+A 16. ábra egy 5M körüli sentiment modell kategóriahibáit foglalja össze. A hibák főként a kategóriaértékeknél jelennek meg, miközben a JSON struktúra stabilan megmarad. Ez megerősíti a pilot példákból is látható mintát: a modell a formátumot könnyen megtanulja, a bizonytalanság inkább a teacher kategóriadöntéseinek utánzásában jelenik meg.
+
+5.9. Post generation top-k metrikák
+
+![17. ábra: Post generation top-k összehasonlítás](grafikonok/09_postgen_topk_metrics.png)
+
+A 17. ábra a free-form post generation domainben hasonlítja össze a pure CE, pure KL és KL/CE plus temperature annealing beállításokat. A pure KL jobban őrzi a teacher top-k eloszlásának szerkezetét, a pure CE jobban élesít a cél tokenre, míg az annealingelt beállítás a két cél között jobb kompromisszumot ad. Ez a post generation domain egyik legfontosabb eredménye, de az ígéretes eredményeket további mérésekkel kell megerősíteni.
+
+5.10. Desztillációs adat költsége
+
+![18. ábra: Desztillációs adat költsége domainenként](grafikonok/10_domain_data_cost.png)
+
+A 18. ábra indokolja, miért nehezebb a post generation kísérletsorozat statisztikailag erősítése. A post generation nemcsak hosszabb kimeneteket használ, hanem sokkal nagyobb output vocabulary-t is, ezért egy példa nagyságrendekkel több logit értéket tárol, mint a strukturált domainek. Ez a batch fájlméretekben is megjelenik.
 
 6. Korlátok és jövőbeli munka
 A dolgozat egy elsősorban desztillációs kísérletekre épített kutatási pipeline-t mutat be, amely később új architektúrák vagy tanítási stratégiák vizsgálatára is használható. A fő korlátok: egy elsődleges teacher modell, három domain, post generation esetén kevés ismételt futtatás, math és post generation esetén még nem végigfuttatott redukált-input ablation, valamint free-form generálásnál korlátozott szemantikai értékelés. További munka: több seed, baseline, teacher modell és domain; horizontális és vertikális skálázás; külön input/output vocabulary ablation; jobb, egységesített tooling, különösen free-form generálás értékeléséhez.
@@ -356,7 +411,7 @@ A dolgozat egy elsősorban desztillációs kísérletekre épített kutatási pi
 7. Konklúzió
 A kísérletek alapján a domain-specifikus desztilláció csökkentett input és output vocabulary-vel működőképes irány kis autoregresszív student modelleknél. A vocabulary redukció jelentős paraméterköltséget távolít el, a KL/CE és temperature annealing pedig főleg gazdagabb, kevésbé determinisztikus kimeneti eloszlásoknál tűnik hasznosnak. Az eredmények a pipeline használhatóságát és a megközelítés ígéretét támasztják alá; az általánosíthatóságot további domaineken, teacher modelleken és kontrollált ablation kísérleteken kell vizsgálni.
 
-8. Források
+8. Irodalomjegyzék
 
 [1] Vaswani, A., et al. (2017). "Attention Is All You Need." NeurIPS 2017. https://arxiv.org/abs/1706.03762
 A Transformer architektúra alapcikke, amelyre az egész modern LLM ökoszisztéma épül.
