@@ -22,7 +22,12 @@
       "Bash(grep -r \"run_name\\\\|experiment\" /d/preference_destillation/training/*.py)",
       "Bash(grep -rn \"keys\\\\|schema\\\\|validate\\\\|unknown\" /d/preference_destillation/training/*.py /d/preference_destillation/shared/*.py)",
       "Bash(grep -rn \"run_name\\\\|parse\\\\|split\\\\|substring\" /d/preference_destillation/analysis/*.py /d/preference_destillation/experimental_analysis/*.py)",
-      "Bash(c:/python313/python.exe:*)"
+      "Bash(c:/python313/python.exe:*)",
+      "Bash(npm --version)",
+      "Bash(npm init *)",
+      "Bash(npm pkg *)",
+      "Bash(npm install *)",
+      "Bash(node *)"
     ]
   }
 }

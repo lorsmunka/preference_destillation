@@ -1,0 +1,39 @@
+The slides should only support my claims with images, bullet points, and short texts. I'll go off them naturally. All in Hungarian.
+
+Slide 1: title, name, témavezető
+Slide 2: just the title (I'll say I'll explain each part of the title first)
+Slide 3: LLM, or large language model, the models behind sites like ChatGPT.
+Slide 4: In particular I'm using open-source models because I need fine control over them, like their logit distribution.
+Slide 5: domain-specific distillation: just how you can distill oil, here it's exactly the same
+Slide 6: domain-specific distillation: domain-specific means we only want a part of the model for a specific task
+Slide 7-9: domain-specific distillation: a simple image of all domains' generated output
+Slide 10: pipeline: an end-to-end system to handle everything necessary for distillation (there is a lot)
+Slide 11: pipeline: important, the project isn't a framework, you can't do `new Domain()`, you can augment existing code
+Slide 12: pipeline: defining domain, input and output tokens, preparing data for data generation
+Slide 13: pipeline: generating data from teacher model, capture raw logit data for watched tokens
+Slide 14: pipeline: configure model and train
+Slide 15: pipeline: training supports many parameters (show an actual config object), model configuration and training regimen
+Slide 16: pipeline: it supports experiment tags, saved in a scalable experimental way under runs
+Slide 17: project novelties
+Slide 18: it's hard to say what definitely hasn't been studied or published, and although I've found some different experiments, for example loss annealing (not LLMs), temperature annealing (LLMs), but not combined
+Slide 19: input and output projection reduction: although there were different experiments regarding the topic (see the Russian thing), none have so explicitly done so as I; I didn't find research utilizing this relatively crude technique
+Slide 20: I initially started out with output projection reduction, seemed logical. The challenge here is that distillation prefers larger soft targets to get dark knowledge
+Slide 21: first off, we define necessary domain-specific tokens: for JSON generation the JSON structure plus labels
+Slide 22: for maths it's variable names, symbols, and numbers
+Slide 23: but that alone is a small distribution. The project supports auxiliary tokens. You can append other tokens that can double or triple the soft target, but it's still a 99% reduction (show math here)
+Slide 24: it's important to note that it's not that easy to come up with scalable free-form text generation distillation tasks, and for most of the "automatically" generated ones they tend to have structured output, which doesn't convey much KL data, so pure CE and pure KL distillation could yield the same results
+Slide 25: I've made a harder free-form domain as well: from comment generate a post
+Slide 26: this has 22k something out and some more in (exact numbers)
+Slide 27: this really shows the power of the configurable training, that is genuinely under-researched: with pure KL you get better distribution, which is important for variety and top-k sampling (there is temperature annealing that helps you go from softer to sharper distribution)
+Slide 28: with pure CE you get really good next-token following
+Slide 29: but with my technique, you get the best of both worlds: really good next-token following and pretty matched top-k distribution
+Slide 30: this allows you to customize regarding your goal
+Slide 31: explain the three metrics (top-k metrics) with a short definition
+Slide 32: show metrics
+Slide 33: why is this good? You can create an offline math solver that explains in natural language and runs on a phone
+Slide 34: or create an automoderation tool that pre-checks a comment on the phone, and if it has a high confidence of malicious intent it can bounce it on client
+Slide 35: or it allows you to create an automated optimized email-writing tool that is specifically customized for your needs, much cheaper
+Slide 36-37: show how much faster smaller my models are on different domains
+Slide 38: so summarizing my project: it allows you to create custom LLMs from larger models, on many domains. You can create a domain, generate training data, customize the transformer model (built from scratch), and then customize the training regimen
+Slide 39: the project also has insane tooling for result analysis and controlled experiments
+Slide 40: thanks for your attention
