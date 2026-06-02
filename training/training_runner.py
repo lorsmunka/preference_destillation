@@ -2,13 +2,13 @@ import json
 import os
 from datetime import datetime
 
-from batch_handler import BatchHandler
-from model import Transformer
-from trainer import Trainer
-from analysis.visualize_logs import update_training_plot
+from training.batch_handler import BatchHandler
+from training.model import Transformer
+from training.trainer import Trainer
+from pdkit.logging import RunLogger
+from pdkit.render.plots import plot_training_logs
 from shared import (
     ExitListener,
-    Logger,
     get_batches_dir,
     get_training_run_dir,
     load_input_vocabulary,
@@ -56,7 +56,7 @@ class TrainingRunner:
             max_training_examples=self.config.get("max_training_examples"),
             batch_size=self.config["batch_size"],
         )
-        logger = Logger(self.logs_dir)
+        logger = RunLogger(self.logs_dir)
 
         input_vocabulary = load_input_vocabulary(self.domain, self.teacher_model)
 
@@ -92,7 +92,7 @@ class TrainingRunner:
                 return False
 
             trainer.eval_epoch(test_start, test_end, epoch)
-            update_training_plot(self.logs_dir)
+            plot_training_logs(self.logs_dir)
             logger.save()
 
         completed_at = datetime.now().isoformat()

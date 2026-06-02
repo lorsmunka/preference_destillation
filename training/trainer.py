@@ -10,22 +10,21 @@ import math
 
 from shared import (
     ExitListener,
-    Logger,
-    ClassificationAccuracyCalculator,
-    MathAccuracyCalculator,
-    PostGenerationAccuracyCalculator,
     get_device,
     PROMPT_DELIMITER,
     MINI_EVAL_FREQUENCY,
     MINI_EVAL_BATCH_COUNT,
 )
-from model import Transformer
-from batch_handler import BatchHandler
-from analysis.visualize_logs import update_training_plot
+from training.model import Transformer
+from training.batch_handler import BatchHandler
+from pdkit.logging import RunLogger
+from pdkit.domains import get_domain
+from pdkit.metrics.distribution import step_distribution_stats
+from pdkit.render.plots import plot_training_logs
 
 
 class Trainer:
-    def __init__(self, model: Transformer, logger: Logger, exit_listener: ExitListener,
+    def __init__(self, model: Transformer, logger: RunLogger, exit_listener: ExitListener,
                  batch_handler: BatchHandler, config: dict):
         start_time = time()
         print("Initializing Trainer...")
@@ -63,6 +62,8 @@ class Trainer:
 
         self.mini_eval_frequency = config.get('mini_eval_frequency', MINI_EVAL_FREQUENCY)
         self.mini_eval_batch_count = config.get('mini_eval_batch_count', MINI_EVAL_BATCH_COUNT)
+        self.eval_top_k = config.get('eval_top_k', 20)
+        self.eval_cap_multiple = config.get('eval_cap_multiple', 2.0)
 
         self.logger = logger
         self.exit_listener = exit_listener
@@ -197,7 +198,7 @@ class Trainer:
         )
 
         if (batch_idx + 1) % 100 == 0:
-            update_training_plot(self.logs_dir)
+            plot_training_logs(self.logs_dir)
         else:
             until_update = 100 - ((batch_idx + 1) % 100)
             mini_eval_part = ""
@@ -211,7 +212,7 @@ class Trainer:
             total_test_batches = test_end - test_start
             mini_eval_count = min(self.mini_eval_batch_count, total_test_batches)
             self._run_mini_eval(test_start, test_start + mini_eval_count, epoch, batch_idx + 1)
-            update_training_plot(self.logs_dir)
+            plot_training_logs(self.logs_dir)
 
         self.logger.update_progress(epoch, batch_idx + 1)
 
@@ -222,10 +223,10 @@ class Trainer:
 
         self.logger.log_mini_eval(
             epoch, current_batch, results['teacher_forced_accuracy'],
-            results['student_accuracy'], results['classification_accuracy'],
-            results['total_steps'])
+            results['student_accuracy'], results['task_accuracy'],
+            results['total_steps'], distribution=results['distribution'])
 
-        print(f"Mini-eval: TF={results['teacher_forced_accuracy']:.4f}, Student={results['student_accuracy']:.4f}, Classification={results['classification_accuracy']:.4f} ({results['total_steps']} steps)")
+        print(f"Mini-eval: TF={results['teacher_forced_accuracy']:.4f}, Student={results['student_accuracy']:.4f}, Task={results['task_accuracy']:.4f} ({results['total_steps']} steps)")
         print(f"--- Mini-eval done ---\n")
 
         self.model.train()
@@ -282,12 +283,7 @@ class Trainer:
         return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
     def _evaluate_batches(self, batch_start: int, batch_end: int, verbose: bool = False):
-        if self.domain == "math_word_problem":
-            task_accuracy_calculator = MathAccuracyCalculator()
-        elif self.domain == "post_generation":
-            task_accuracy_calculator = PostGenerationAccuracyCalculator()
-        else:
-            task_accuracy_calculator = ClassificationAccuracyCalculator()
+        task_accuracy_calculator = get_domain(self.domain).task_metric()
 
         total_loss = 0.0
         total_kl_loss = 0.0
@@ -295,6 +291,13 @@ class Trainer:
         total_teacher_forced_correct = 0
         total_student_correct = 0
         total_steps = 0
+
+        distribution_totals = {'topk_hits': 0.0, 'overlap_sum': 0.0, 'target_rank_sum': 0.0,
+                               'student_entropy_sum': 0.0, 'teacher_entropy_sum': 0.0,
+                               'ce_sum': 0.0, 'steps': 0}
+        terminated_count = 0
+        length_ratio_sum = 0.0
+        eval_examples = 0
 
         with torch.no_grad():
             for batch_idx in range(batch_start, batch_end):
@@ -309,7 +312,8 @@ class Trainer:
                 batch_steps = 0
 
                 for example in batch_data:
-                    loss_sum, kl_loss_sum, ce_loss_sum, teacher_forced_correct, student_correct, num_steps, student_tokens = self._eval_single_example(example)
+                    (loss_sum, kl_loss_sum, ce_loss_sum, teacher_forced_correct, student_correct,
+                     num_steps, student_tokens, distribution, terminated, generated_length) = self._eval_single_example(example)
                     batch_loss += loss_sum
                     batch_kl_loss += kl_loss_sum
                     batch_ce_loss += ce_loss_sum
@@ -323,6 +327,12 @@ class Trainer:
                     total_student_correct += student_correct
                     total_steps += num_steps
 
+                    for key in distribution_totals:
+                        distribution_totals[key] += distribution.get(key, 0)
+                    terminated_count += 1 if terminated else 0
+                    length_ratio_sum += (generated_length / num_steps) if num_steps > 0 else 0.0
+                    eval_examples += 1
+
                     ground_truth_response = example.get('model_response', '')
                     task_accuracy_calculator.update(student_tokens, ground_truth_response)
 
@@ -333,16 +343,28 @@ class Trainer:
                     avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
                     batch_tf_accuracy = batch_teacher_forced_correct / batch_steps if batch_steps > 0 else 0.0
                     batch_student_accuracy = batch_student_correct / batch_steps if batch_steps > 0 else 0.0
-                    running_classification_accuracy = task_accuracy_calculator.get_accuracy()
-                    print(f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_tf_accuracy:.4f}, student_acc={batch_student_accuracy:.4f}, class_acc={running_classification_accuracy:.4f} -> took {batch_elapsed:.2f}s")
+                    running_task_accuracy = task_accuracy_calculator.result().accuracy
+                    print(f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_tf_accuracy:.4f}, student_acc={batch_student_accuracy:.4f}, task_acc={running_task_accuracy:.4f} -> took {batch_elapsed:.2f}s")
 
+        steps = total_steps if total_steps > 0 else 1
         avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
         avg_kl_loss = total_kl_loss / total_steps if total_steps > 0 else 0.0
         avg_ce_loss = total_ce_loss / total_steps if total_steps > 0 else 0.0
         teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
         student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
-        classification_accuracy = task_accuracy_calculator.get_accuracy()
-        confusion_matrices = task_accuracy_calculator.get_confusion_matrices()
+        metric_result = task_accuracy_calculator.result()
+
+        distribution = {
+            'topk_accuracy': distribution_totals['topk_hits'] / steps,
+            'teacher_student_overlap': distribution_totals['overlap_sum'] / steps,
+            'mean_target_rank': distribution_totals['target_rank_sum'] / steps,
+            'student_entropy': distribution_totals['student_entropy_sum'] / steps,
+            'teacher_entropy': distribution_totals['teacher_entropy_sum'] / steps,
+            'perplexity': math.exp(distribution_totals['ce_sum'] / steps),
+            'validity_rate': metric_result.validity_rate,
+            'termination_rate': terminated_count / eval_examples if eval_examples > 0 else 0.0,
+            'mean_length_ratio': length_ratio_sum / eval_examples if eval_examples > 0 else 0.0,
+        }
 
         return {
             'avg_loss': avg_loss,
@@ -350,8 +372,9 @@ class Trainer:
             'avg_ce_loss': avg_ce_loss,
             'teacher_forced_accuracy': teacher_forced_accuracy,
             'student_accuracy': student_accuracy,
-            'classification_accuracy': classification_accuracy,
-            'confusion_matrices': confusion_matrices,
+            'task_accuracy': metric_result.accuracy,
+            'confusion_matrices': metric_result.confusion or {},
+            'distribution': distribution,
             'total_steps': total_steps,
         }
 
@@ -361,21 +384,25 @@ class Trainer:
 
         self.logger.log_eval_epoch(
             epoch, results['avg_loss'], results['teacher_forced_accuracy'],
-            results['student_accuracy'], results['classification_accuracy'],
+            results['student_accuracy'], results['task_accuracy'],
             results['confusion_matrices'], results['total_steps'],
-            results['avg_kl_loss'], results['avg_ce_loss'])
+            results['avg_kl_loss'], results['avg_ce_loss'],
+            distribution=results['distribution'])
 
+        dist = results['distribution']
         print(
-            f"Eval Loss: {results['avg_loss']:.4f} | KL Loss: {results['avg_kl_loss']:.4f} | CE Loss: {results['avg_ce_loss']:.4f} | TF Accuracy: {results['teacher_forced_accuracy']:.4f} | Student Accuracy: {results['student_accuracy']:.4f} | Classification Accuracy: {results['classification_accuracy']:.4f}")
-        return results['avg_loss'], results['teacher_forced_accuracy'], results['student_accuracy'], results['classification_accuracy']
+            f"Eval Loss: {results['avg_loss']:.4f} | KL Loss: {results['avg_kl_loss']:.4f} | CE Loss: {results['avg_ce_loss']:.4f} | TF Accuracy: {results['teacher_forced_accuracy']:.4f} | Student Accuracy: {results['student_accuracy']:.4f} | Task Accuracy: {results['task_accuracy']:.4f}")
+        print(
+            f"  top{self.eval_top_k}={dist['topk_accuracy']:.4f} overlap={dist['teacher_student_overlap']:.4f} mean_rank={dist['mean_target_rank']:.1f} teacher_H={dist['teacher_entropy']:.3f} student_H={dist['student_entropy']:.3f} ppl={dist['perplexity']:.3f} termination={dist['termination_rate']:.4f}")
+        return results['avg_loss'], results['teacher_forced_accuracy'], results['student_accuracy'], results['task_accuracy']
 
-    def _eval_single_example(self, example: Dict) -> Tuple[float, float, float, int, int, int, List[str]]:
+    def _eval_single_example(self, example: Dict) -> Tuple:
         sentence_tokens = self._get_sentence_tokens(example)
         steps = example['steps']
         num_steps = len(steps)
 
         if num_steps == 0:
-            return 0.0, 0.0, 0.0, 0, 0, 0, []
+            return 0.0, 0.0, 0.0, 0, 0, 0, [], {}, False, 0
 
         all_token_ids = []
         all_target_logits = []
@@ -402,25 +429,42 @@ class Trainer:
 
         teacher_forced_correct = (torch.argmax(prediction_logits, dim=-1) == target_indices_tensor).sum().item()
 
-        # Student: sequential forward passes (own predictions as input)
+        # Eval-time distribution metrics — free, from the teacher-forced pass already computed.
+        distribution = step_distribution_stats(
+            prediction_logits, target_logits_tensor, target_indices_tensor, self.eval_top_k)
+        distribution['ce_sum'] = F.cross_entropy(
+            prediction_logits, target_indices_tensor, reduction='sum').item()
+
+        # Student: free-generation rollout (own predictions), capped at eval_cap_multiple x
+        # teacher length. Stops on the domain stop token -> natural-termination signal.
+        domain = get_domain(self.domain)
         student_correct = 0
         remapped_sentence_tokens = self.model.remap_input_tokens(sentence_tokens)
         student_token_ids = []
         student_tokens = []
+        generated_text = ""
+        terminated = False
+        max_rollout = max(num_steps, int(self.eval_cap_multiple * num_steps))
 
-        for step_index in range(num_steps):
+        for step_index in range(max_rollout):
             student_input_tensor = torch.tensor(
                 [remapped_sentence_tokens + student_token_ids], dtype=torch.long, device=self.device)
             student_logits = self.model(student_input_tensor)[:, -1, :]
             student_predicted_index = torch.argmax(student_logits[0]).item()
             student_predicted_token_id = self.model.output_token_ids[student_predicted_index]
             student_predicted_token = self.vocabulary['token_list'][student_predicted_index]
-            if student_predicted_index == all_target_indices[step_index]:
+            if step_index < num_steps and student_predicted_index == all_target_indices[step_index]:
                 student_correct += 1
             student_token_ids.append(self.model.remap_input_tokens([student_predicted_token_id])[0])
             student_tokens.append(student_predicted_token)
+            decoded = self.tokenizer.decode([student_predicted_token_id])
+            generated_text += decoded
+            if domain.is_stop(decoded, generated_text):
+                terminated = True
+                break
 
-        return total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct, student_correct, num_steps, student_tokens
+        return (total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct,
+                student_correct, num_steps, student_tokens, distribution, terminated, len(student_tokens))
 
     def _get_current_temperature(self) -> float:
         if self.total_training_steps <= 1:

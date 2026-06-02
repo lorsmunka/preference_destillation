@@ -3,11 +3,11 @@ import json
 from time import time
 from datetime import datetime, timezone
 
-from shared import Logger
+from pdkit.logging import RunLogger
 
 
 class SavingHandler:
-    def __init__(self, logger: Logger, output_dir: str):
+    def __init__(self, logger: RunLogger, output_dir: str):
         self.logger = logger
         self.output_dir = output_dir
 

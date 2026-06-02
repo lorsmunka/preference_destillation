@@ -10,6 +10,32 @@
 
 ---
 
+## Status — `pdkit/` built (analytics + logging + eval kit)
+
+Implemented as an additive package `pdkit/` (non-breaking: reads existing `runs/` + JSONL schema; old dirs and the live trainer untouched). `import pdkit` does **not** import torch.
+
+**Verified against the 120 real logs / synthetic data:**
+- `pdkit.metrics` — task metrics behind one `TaskMetric`/`MetricResult`; **JSON-validity bug fixed** (invalid output counts as wrong + `validity_rate`); distribution fns (entropy, perplexity, top-k, overlap, rank) and generation fns (termination, length ratio).
+- `pdkit.logging` — one typed record schema + reader (maps old `classification_accuracy`→`task_accuracy`; new distribution fields default `None`) + drop-in `RunLogger`. Round-trips.
+- `pdkit.run` — `Run` + `RunStore` (one discovery + `resolve_checkpoint`) + `Experiment` cohorts. **Reproduces thesis Table 2 to the decimal** (e.g. sent-8k CE 88.60±0.37 / 64.56±2.29 / 97.68±0.34) using population std.
+- `pdkit.domains` — `Domain` registry replaces the scattered string dispatch; optional `structural_validity` (structured domains only).
+- `pdkit.analysis.Analysis` facade + `Comparison`; `pdkit.render` tables + plots (PNGs render from real logs).
+- Entry script `analyze.py` replaces the `input()` menus.
+
+**Ported but NOT runnable in this env** (no batch data, gated Gemma tokenizer) — compiles + imports, logic ported from the working trainer/top-k/inference:
+- `pdkit.student.StudentModel` (one model build + checkpoint load **with the rotary-buffer pop fix** + free-gen rollout) and `Analysis.evaluate()/infer()` (eval-time distribution/entropy/termination/length, 2× cap). Needs a machine with batches + tokenizer to validate end-to-end.
+
+**Whole project migrated onto pdkit (done):**
+- `training/trainer.py` + `training_runner.py` now log via `RunLogger`, score via `get_domain().task_metric()`, compute eval-time distribution/entropy/perplexity (free, from the teacher-forced pass) + termination/length (capped free-gen rollout, `eval_cap_multiple`), rename `classification_accuracy`→`task_accuracy`, and plot via `pdkit.render`.
+- `distillation_data_generation` dispatches prompt/stop via `pdkit.domains`; `QueueRunner`→`DistillationDataGenerator`.
+- **Queue JSON replaced by Python entry scripts** `train.py` / `generate_data.py` (configs in Python). Bare `sys.path`/sibling imports replaced by package-qualified imports.
+- **Deleted:** `analysis/`, `experimental_analysis/`, `top-k-accruacy-analsy/`, `shared/logger.py`, `shared/*_accuracy.py`, the queue mains + JSON (git-recoverable).
+- Verified: full source compiles; training + data-gen chains import; `StudentModel` path runs on a stub model; analytics still reproduces the thesis.
+
+**Still TODO (needs a real run / later):** smoke a 10-batch `train.py` + a small `generate_data.py` on a machine with batches + the Gemma tokenizer before long runs; optionally fully unify the trainer's eval rollout with `StudentModel` (kept separate to avoid a blind merge of the hottest path); move vocab token data out of `shared.Utilities` into the domains (currently a bridge import).
+
+---
+
 ## 1. Current state — the fragmentation
 
 | System | Dir | Entry | Purpose | Overlap |

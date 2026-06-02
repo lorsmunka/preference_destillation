@@ -4,14 +4,16 @@ from typing import Dict, List, Tuple, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Utilities, DOMAIN_MAX_GENERATION_STEPS, get_device
+from shared import Utilities, get_device
+from pdkit.domains import get_domain
 
 
 class ModelHandler:
     def __init__(self, model_name: str, domain: str):
         self.model_name = model_name
         self.domain = domain
-        self.max_generation_steps = DOMAIN_MAX_GENERATION_STEPS[domain]
+        self.domain_handler = get_domain(domain)
+        self.max_generation_steps = self.domain_handler.max_steps
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
@@ -46,18 +48,10 @@ class ModelHandler:
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
 
     def build_prompt(self, text: str) -> str:
-        if self.domain == "math_word_problem":
-            return Utilities.create_math_word_problem_prompt(text)
-        elif self.domain == "post_generation":
-            return Utilities.create_post_generation_prompt(text)
-        return Utilities.create_reddit_sentiment_prompt(text)
+        return self.domain_handler.teacher_prompt(text)
 
     def is_stop(self, last_token_decoded: str, generated_text: str) -> bool:
-        if self.domain == "math_word_problem":
-            return last_token_decoded == ";"
-        elif self.domain == "post_generation":
-            return "<end>" in generated_text
-        return last_token_decoded == "}"
+        return self.domain_handler.is_stop(last_token_decoded, generated_text)
 
     def generate_training_example(self, text: str) -> Tuple[Optional[Dict], Optional[str]]:
         start_time = time()

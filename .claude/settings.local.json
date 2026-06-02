@@ -30,7 +30,12 @@
       "Bash(node *)",
       "Bash(xargs -I{} sh -c 'head -c 1200 \"{}\"')",
       "Bash(awk '/def train_single_example/{f=1} f{print NR\": \"$0} /def [a-z_]+\\\\\\(self/ && f && !/train_single_example/ {c++; if\\(c>1\\) exit}' training/trainer.py)",
-      "WebFetch(domain:arxiv.org)"
+      "WebFetch(domain:arxiv.org)",
+      "Bash(.venv/bin/python -c \"import sys; print\\('py', sys.version.split\\(\\)[0]\\)\")",
+      "Bash(.venv/bin/python -c \"import torch; print\\('torch', torch.__version__\\)\")",
+      "Bash(.venv/bin/python -c \"import transformers; print\\('transformers', transformers.__version__\\)\")",
+      "Bash(.venv/bin/python -c \"import numpy, matplotlib; print\\('numpy+matplotlib ok'\\)\")",
+      "Bash(.venv/bin/python *)"
     ]
   }
 }
