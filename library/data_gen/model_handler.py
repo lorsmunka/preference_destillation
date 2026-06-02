@@ -4,7 +4,11 @@ from typing import Dict, List, Tuple, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from library.shared import Utilities
+from library.shared.vocabulary import (
+    build_vocabulary,
+    get_response_tokens,
+    extract_logits_as_vector,
+)
 from library.shared.device import get_device
 from library.domain import get_domain
 
@@ -41,9 +45,9 @@ class ModelHandler:
         start_time = time()
         print("Creating vocabulary...")
 
-        self.vocabulary = Utilities.build_vocabulary(self.tokenizer, self.domain)
-        self.response_tokens = Utilities.get_response_tokens(
-            self.tokenizer, self.domain)
+        self.vocabulary = build_vocabulary(self.tokenizer, self.domain_handler)
+        self.response_tokens = get_response_tokens(
+            self.tokenizer, self.domain_handler)
 
         elapsed_time = time() - start_time
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
@@ -112,7 +116,7 @@ class ModelHandler:
         with torch.no_grad():
             logits = self.model(**current_inputs).logits[0, -1, :]
 
-        logit_vector = Utilities.extract_logits_as_vector(
+        logit_vector = extract_logits_as_vector(
             logits, self.vocabulary)
         predicted_token_index = int(
             max(range(len(logit_vector)), key=lambda i: logit_vector[i]))

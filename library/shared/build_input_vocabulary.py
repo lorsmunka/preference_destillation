@@ -19,7 +19,8 @@ from transformers import AutoTokenizer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
-from library.shared.utilities import Utilities
+from library.shared.vocabulary import build_vocabulary
+from library.domain import get_domain
 
 
 WORKER_COUNT = 8
@@ -104,7 +105,7 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
     unique_token_ids = scan_batches(batches_directory, tokenizer)
 
     # Include all output vocab token IDs (they feed back as input during autoregressive generation)
-    output_vocabulary = Utilities.build_vocabulary(tokenizer, domain)
+    output_vocabulary = build_vocabulary(tokenizer, get_domain(domain))
     output_token_ids = set(
         output_vocabulary['token_to_id'][token]
         for token in output_vocabulary['token_list']

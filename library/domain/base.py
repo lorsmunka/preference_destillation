@@ -1,7 +1,10 @@
-"""Domain ABC — everything that used to be dispatched on the domain string lives here."""
+"""Domain ABC — everything that used to be dispatched on the domain string lives here:
+the teacher prompt, the stop condition, the end-task metric, and the domain's slice of
+the reduced output vocabulary (example responses, prompt tokens, extra auxiliary tokens).
+"""
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 
 from library.shared.config import PROMPT_DELIMITER
 from library.shared.metrics.base import TaskMetric
@@ -12,6 +15,14 @@ class Domain(ABC):
     stop_token: str
     max_steps: int
     max_input_tokens: int
+
+    # --- reduced-vocabulary contributions (see library.shared.vocabulary) ---------
+    # Example responses are tokenized into the "example" section (the hardest labels).
+    example_responses: List[str] = []
+    # Domain-specific tokens from the evaluation prompt -> the "prompt" section.
+    prompt_tokens: List[str] = []
+    # Domain extras prepended to the shared auxiliary bank (e.g. math's A..T scaffold).
+    extra_auxiliary_tokens: List[str] = []
 
     def student_prompt(self, text: str) -> str:
         """Context fed to the student at inference: just the sentence + delimiter (same for all)."""

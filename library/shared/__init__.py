@@ -1,9 +1,9 @@
-"""Shared infrastructure: paths/constants (config), vocabulary (Utilities), the exit
-listener, and the metrics/ + logging/ subpackages. Torch-free at this level — import
-`library.shared.device` for `get_device`.
+"""Shared infrastructure: paths/constants (config), the reduced output vocabulary
+(vocabulary), the exit listener, and the metrics/ + logging/ subpackages. Torch-free at
+this level — import `library.shared.device` for `get_device`.
 """
 
-from .utilities import Utilities
+from .vocabulary import build_vocabulary, get_response_tokens, extract_logits_as_vector
 from .exit_listener import ExitListener
 from library.shared.config import (
     sanitize_model_name,
@@ -31,7 +31,9 @@ from library.shared.config import (
 )
 
 __all__ = [
-    "Utilities",
+    "build_vocabulary",
+    "get_response_tokens",
+    "extract_logits_as_vector",
     "ExitListener",
     "sanitize_model_name",
     "get_input_path",

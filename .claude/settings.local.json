@@ -35,7 +35,14 @@
       "Bash(.venv/bin/python -c \"import torch; print\\('torch', torch.__version__\\)\")",
       "Bash(.venv/bin/python -c \"import transformers; print\\('transformers', transformers.__version__\\)\")",
       "Bash(.venv/bin/python -c \"import numpy, matplotlib; print\\('numpy+matplotlib ok'\\)\")",
-      "Bash(.venv/bin/python *)"
+      "Bash(.venv/bin/python *)",
+      "Bash(awk '{print $1}')",
+      "Bash(git check-ignore *)",
+      "Bash(grep '/$')",
+      "Bash(git -c color.ui=never status)",
+      "Bash(git config *)",
+      "Bash(git rm *)",
+      "Bash(command -v python3)"
     ]
   }
 }

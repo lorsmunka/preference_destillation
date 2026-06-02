@@ -7,7 +7,6 @@ from typing import Optional
 
 from transformers import AutoTokenizer
 from library.shared import (
-    Utilities,
     MODEL_NAME,
     HIDDEN_DIM,
     NUM_LAYERS,
@@ -15,6 +14,8 @@ from library.shared import (
     DOMAIN_MAX_SEQ_LENGTH,
     DROPOUT,
 )
+from library.shared.vocabulary import build_vocabulary
+from library.domain import get_domain
 
 
 class RMSNorm(nn.Module):
@@ -101,8 +102,8 @@ class Transformer(nn.Module):
             self.input_vocab_size = self.full_input_vocab_size
             self.input_token_mapping = None
 
-        self.vocabulary = Utilities.build_vocabulary(
-            self.tokenizer, domain, auxiliary_token_percentage)
+        self.vocabulary = build_vocabulary(
+            self.tokenizer, get_domain(domain), auxiliary_token_percentage)
         self.output_vocab_size = self.vocabulary['vocab_size']
 
         self.output_token_ids = [
