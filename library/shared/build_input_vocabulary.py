@@ -18,8 +18,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from transformers import AutoTokenizer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
-from shared.utilities import Utilities
+from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
+from library.shared.utilities import Utilities
 
 
 WORKER_COUNT = 8

@@ -1,6 +1,6 @@
 """Analysis — the single researcher-facing facade.
 
-    from pdkit import Analysis, RunStore
+    from library import Analysis, RunStore
     a = Analysis("tsc-scale-128h-4L-36M")
     print(a.summary())
     a.plot_training()
@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Union
 
 from . import render
-from .config import batches_dir
+from library.shared.config import batches_dir
 from .run import Experiment, Run, RunStore, sort_runs
 
 RunRef = Union[str, Run]
@@ -132,9 +132,9 @@ class Analysis:
                  max_batches: Optional[int] = None, cap_multiple: float = 2.0) -> EvalResult:
         import torch
         import torch.nn.functional as F
-        from .metrics.distribution import step_distribution_stats
-        from .metrics.generation import TerminationStats
-        from .student import StudentModel
+        from library.shared.metrics.distribution import step_distribution_stats
+        from library.shared.metrics.generation import TerminationStats
+        from library.model.student import StudentModel
 
         label, path = self.store.resolve_checkpoint(self.run.name, checkpoint)
         student = StudentModel.from_run(self.run, path)
@@ -192,7 +192,7 @@ class Analysis:
     def infer(self, sentences: List[str], checkpoint: str = "latest", temperature: float = 0.0):
         """Demo/debug: generate the student's output for each sentence. Teacher comparison is
         intentionally left to a separate benchmark (loading Gemma is heavy)."""
-        from .student import StudentModel
+        from library.model.student import StudentModel
         label, path = self.store.resolve_checkpoint(self.run.name, checkpoint)
         student = StudentModel.from_run(self.run, path)
         results = []

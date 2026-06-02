@@ -1,11 +1,11 @@
 """Researcher entry point — edit freely and run `python analyze.py`.
 
 This replaces the input()-menu tools (analysis/, experimental_analysis/, top-k-accruacy-analsy/)
-with a single script that imports the library. Everything below is just example usage of pdkit.
+with a single script that imports the library. Everything below is just example usage of the library.
 """
 
-from pdkit import Analysis, RunStore
-from pdkit.render import comparison_table, experiment_summary
+from library import Analysis, RunStore
+from library.tooling.render import comparison_table, experiment_summary
 
 store = RunStore()
 print(f"{len(store.all())} runs ({len(store.completed())} completed)\n")

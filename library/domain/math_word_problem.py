@@ -1,6 +1,6 @@
 import re
 
-from ..metrics.task import MathMetric
+from library.shared.metrics.task import MathMetric
 from .base import Domain
 
 
@@ -11,7 +11,7 @@ class MathWordProblemDomain(Domain):
     max_input_tokens = 500
 
     def teacher_prompt(self, text: str) -> str:
-        from shared.utilities import Utilities
+        from library.shared.utilities import Utilities
         return Utilities.create_math_word_problem_prompt(text)
 
     def task_metric(self) -> MathMetric:

@@ -10,7 +10,10 @@
 
 ---
 
-## Status — `pdkit/` built (analytics + logging + eval kit)
+## Status — built as `library/` (analytics + logging + eval kit + full migration)
+
+> Final layout: the package is **`library/`** (umbrella name temporary). `pdkit` was reorganized into stage subpackages: `library/{shared (config, vocabulary, device, metrics/, logging/), domain, model (transformer + student), data_gen, training, tooling (analysis, run, render)}`. Entry scripts `train.py` / `generate_data.py` / `analyze.py` at repo root. `import library` is torch-free; verified post-restructure (analytics still reproduces the thesis, all chains import, StudentModel stub runs).
+
 
 Implemented as an additive package `pdkit/` (non-breaking: reads existing `runs/` + JSONL schema; old dirs and the live trainer untouched). `import pdkit` does **not** import torch.
 

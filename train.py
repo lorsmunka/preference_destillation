@@ -9,8 +9,8 @@ resumable. New eval-time knobs (optional per run): `eval_top_k` (default 20),
 import json
 import os
 
-from shared import ExitListener, get_training_run_dir
-from training.training_runner import TrainingRunner
+from library.shared import ExitListener, get_training_run_dir
+from library.training.training_runner import TrainingRunner
 
 RUNS = [
     {

@@ -14,35 +14,48 @@ Reddit comment classification (tone, sentiment, safety, toxicity) → determinis
 
 ## Project Structure
 
+Everything is one importable package, `library/`. Researcher entry scripts live at the repo root and import from it (no queue JSON; configs are Python).
+
 ```
-training/       Model, trainer, entry point (run from here)
-shared/         Config, logger, utilities
-analysis/       Log visualization, model evaluation
-batches/        Training data (JSONL)
-logs/           Training logs, state persistence
-checkpoints/    Model checkpoints per epoch
+library/
+  shared/      paths/constants (config), vocabulary (Utilities), device, metrics/, logging/
+  domain/      Domain registry (reddit / math / post-gen): prompt, stop token, task metric
+  model/       Transformer architecture + StudentModel (checkpoint load + generate)
+  data_gen/    DistillationDataGenerator (teacher data generation)
+  training/    Trainer + TrainingRunner + BatchHandler
+  tooling/     Analysis facade + Run / RunStore / Experiment + render (plots, tables)
+train.py           training entry — edit the RUNS list
+generate_data.py   data-generation entry — edit the JOBS list
+analyze.py         analytics/eval entry — Analysis / RunStore
+runs/        per-run artifacts: info.json, logs/ (JSONL), checkpoints/
+batches/     distillation data (JSONL)
 ```
 
 ## Running
 
 ```
-cd training && python main.py
+python train.py          # run configs are a Python RUNS list (not a JSON queue)
+python generate_data.py  # JOBS list
+python analyze.py         # or: from library import Analysis, RunStore
 ```
 
-Press `%` for graceful exit (saves temp checkpoint).
+Press `%` (or Ctrl+C in headless mode) for graceful exit (saves a temp checkpoint).
 
 ## Configuration
 
-All in `shared/config.py`. Key params:
-- `EPOCH_COUNT`, `BATCH_SIZE`, `LEARNING_RATE`
-- `KL_RATIO_START/END` - Loss blend annealing
-- `DISTILLATION_TEMPERATURE` - Softens logits
+Run configs are plain Python — one dict per run in `train.py` / `generate_data.py`. Paths and
+constants live in `library/shared/config.py` (torch-free). Key per-run params: `epoch_count`,
+`batch_size`, `learning_rate`, `kl_ratio_start/end`, `distillation_temperature_start/end`,
+`eval_top_k`, `eval_cap_multiple`.
 
 ## Evaluation
 
-Two accuracy types:
-- **Teacher-forced**: Ground truth as context (optimistic)
-- **Student**: Own predictions as context (realistic)
+Single facade: `from library import Analysis`. Accuracy types: **teacher-forced** (ground truth
+as context, optimistic), **student** (own predictions, autoregressive), **task accuracy** (was
+"classification accuracy") + structural validity rate. Distribution metrics (top-k, teacher /
+student entropy, perplexity, mean target rank) and natural-termination / length ratio are
+computed **during eval and logged** — post-run analysis only reads logs, never reloads the
+model. The `experiment` tag groups seed-replicate runs into cohorts (`Experiment`: mean ± std).
 
 ## Code Style
 

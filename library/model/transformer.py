@@ -6,7 +6,7 @@ import math
 from typing import Optional
 
 from transformers import AutoTokenizer
-from shared import (
+from library.shared import (
     Utilities,
     MODEL_NAME,
     HIDDEN_DIM,

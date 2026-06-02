@@ -18,8 +18,8 @@ from typing import Dict, List, Optional
 import torch
 import torch.nn.functional as F
 
-from .config import load_input_vocabulary
-from .domains import Domain, get_domain
+from library.shared.config import load_input_vocabulary
+from library.domain import Domain, get_domain
 
 
 def pick_device() -> str:
@@ -55,7 +55,7 @@ class StudentModel:
     # ── construction ──────────────────────────────────────────────────
     @classmethod
     def from_run(cls, run, checkpoint_path: Path, device: Optional[str] = None) -> "StudentModel":
-        from training.model import Transformer  # lazy: pulls torch/tokenizer only on model path
+        from library.model.transformer import Transformer  # lazy: pulls torch/tokenizer only on model path
 
         device = device or pick_device()
         info = run.info

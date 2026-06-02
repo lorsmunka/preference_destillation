@@ -3,8 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from ..config import PROMPT_DELIMITER
-from ..metrics.base import TaskMetric
+from library.shared.config import PROMPT_DELIMITER
+from library.shared.metrics.base import TaskMetric
 
 
 class Domain(ABC):

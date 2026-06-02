@@ -4,8 +4,9 @@ from typing import Dict, List, Tuple, Optional
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Utilities, get_device
-from pdkit.domains import get_domain
+from library.shared import Utilities
+from library.shared.device import get_device
+from library.domain import get_domain
 
 
 class ModelHandler:

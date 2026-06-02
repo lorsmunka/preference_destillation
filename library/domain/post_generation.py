@@ -1,4 +1,4 @@
-from ..metrics.task import PostGenerationMetric
+from library.shared.metrics.task import PostGenerationMetric
 from .base import Domain
 
 
@@ -9,7 +9,7 @@ class PostGenerationDomain(Domain):
     max_input_tokens = 25
 
     def teacher_prompt(self, text: str) -> str:
-        from shared.utilities import Utilities
+        from library.shared.utilities import Utilities
         return Utilities.create_post_generation_prompt(text)
 
     def task_metric(self) -> PostGenerationMetric:

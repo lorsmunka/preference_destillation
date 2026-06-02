@@ -60,7 +60,7 @@ def plot_training(run: Run, out_path: Optional[Path] = None):
 def plot_training_logs(logs_dir, out_path: Optional[Path] = None, title: str = ""):
     """Plot directly from a logs dir's training.jsonl — used live during training (no Run
     object / info.json needed). Replaces analysis.visualize_logs.update_training_plot."""
-    from ..logging.reader import read_training_records
+    from library.shared.logging.reader import read_training_records
     logs_dir = Path(logs_dir)
     logs = read_training_records(logs_dir / "training.jsonl")
     out_path = Path(out_path) if out_path else (logs_dir / "training_progress.png")

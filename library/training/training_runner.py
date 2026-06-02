@@ -2,12 +2,12 @@ import json
 import os
 from datetime import datetime
 
-from training.batch_handler import BatchHandler
-from training.model import Transformer
-from training.trainer import Trainer
-from pdkit.logging import RunLogger
-from pdkit.render.plots import plot_training_logs
-from shared import (
+from library.training.batch_handler import BatchHandler
+from library.model.transformer import Transformer
+from library.training.trainer import Trainer
+from library.shared.logging import RunLogger
+from library.tooling.render.plots import plot_training_logs
+from library.shared import (
     ExitListener,
     get_batches_dir,
     get_training_run_dir,

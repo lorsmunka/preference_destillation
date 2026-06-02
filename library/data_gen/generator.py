@@ -7,11 +7,11 @@ logs via pdkit.logging.RunLogger. Prompt/stop dispatch lives in pdkit.domains vi
 from time import sleep, time
 from datetime import datetime, timezone
 
-from distillation_data_generation.input_handler import InputHandler
-from distillation_data_generation.model_handler import ModelHandler
-from distillation_data_generation.saving_handler import SavingHandler
-from pdkit.logging import RunLogger
-from shared import ExitListener, get_input_path, get_output_dir
+from library.data_gen.input_handler import InputHandler
+from library.data_gen.model_handler import ModelHandler
+from library.data_gen.saving_handler import SavingHandler
+from library.shared.logging import RunLogger
+from library.shared import ExitListener, get_input_path, get_output_dir
 
 
 class DistillationDataGenerator:

@@ -7,8 +7,8 @@ jobs are plain Python now. Completed jobs (by info.json status) are skipped.
 import json
 import os
 
-from distillation_data_generation.generator import DistillationDataGenerator
-from shared import ExitListener, get_output_dir
+from library.data_gen.generator import DistillationDataGenerator
+from library.shared import ExitListener, get_output_dir
 
 JOBS = [
     {

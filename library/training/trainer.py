@@ -8,19 +8,19 @@ from time import time
 
 import math
 
-from shared import (
+from library.shared import (
     ExitListener,
-    get_device,
     PROMPT_DELIMITER,
     MINI_EVAL_FREQUENCY,
     MINI_EVAL_BATCH_COUNT,
 )
-from training.model import Transformer
-from training.batch_handler import BatchHandler
-from pdkit.logging import RunLogger
-from pdkit.domains import get_domain
-from pdkit.metrics.distribution import step_distribution_stats
-from pdkit.render.plots import plot_training_logs
+from library.shared.device import get_device
+from library.model.transformer import Transformer
+from library.training.batch_handler import BatchHandler
+from library.shared.logging import RunLogger
+from library.domain import get_domain
+from library.shared.metrics.distribution import step_distribution_stats
+from library.tooling.render.plots import plot_training_logs
 
 
 class Trainer:

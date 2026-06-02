@@ -17,8 +17,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .config import RUNS_DIR
-from .logging.reader import RunLogs, read_run_logs
+from library.shared.config import RUNS_DIR
+from library.shared.logging.reader import RunLogs, read_run_logs
 
 FULL_GEMMA_INPUT_VOCAB = 262144
 

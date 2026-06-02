@@ -161,8 +161,9 @@ class Utilities:
         "definite", "indefinite", "unsure", "confident", "doubtful",
     ]
 
+    # library/shared/utilities.py -> repo root is two levels up
     _post_generation_path = os.path.join(
-        os.path.dirname(__file__), "..",
+        os.path.dirname(__file__), "..", "..",
         "text_generation", "post_generation", "sample_posts.txt"
     )
     with open(_post_generation_path, "r", encoding="utf-8") as _file:

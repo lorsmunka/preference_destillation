@@ -1,6 +1,6 @@
 import json
 
-from ..metrics.task import ClassificationMetric
+from library.shared.metrics.task import ClassificationMetric
 from .base import Domain
 
 
@@ -11,7 +11,7 @@ class RedditSentimentDomain(Domain):
     max_input_tokens = 25
 
     def teacher_prompt(self, text: str) -> str:
-        from shared.utilities import Utilities  # single source for the prompt text (bridge)
+        from library.shared.utilities import Utilities  # single source for the prompt text (bridge)
         return Utilities.create_reddit_sentiment_prompt(text)
 
     def task_metric(self) -> ClassificationMetric:
