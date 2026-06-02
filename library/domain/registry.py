@@ -5,7 +5,7 @@ from typing import Dict, List
 from .base import Domain
 from .math_word_problem import MathWordProblemDomain
 from .post_generation import PostGenerationDomain
-from .reddit_sentiment import RedditSentimentDomain
+from .reddit_comment_sentiment import RedditSentimentDomain
 
 _REGISTRY: Dict[str, Domain] = {}
 

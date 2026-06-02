@@ -44,22 +44,11 @@ MINI_EVAL_FREQUENCY = 1000
 MINI_EVAL_BATCH_COUNT = 10
 BATCH_SIZE = 32
 
-# Domain input corpora (relative to the repo root)
-_INPUT_PATHS = {
-    "reddit_comment_sentiment": "text_generation/reddit_comment_sentiment/reddit_comments.jsonl",
-    "math_word_problem": "text_generation/math_word_problem/math_word_problems.jsonl",
-    "post_generation": "text_generation/reddit_comment_sentiment/reddit_comments.jsonl",
-}
-
-
 def sanitize_model_name(model_name: str) -> str:
     return model_name.replace("/", "_")
 
 
-def get_input_path(domain: str) -> str:
-    if domain not in _INPUT_PATHS:
-        raise ValueError(f"Unknown domain: {domain}")
-    return str(PROJECT_ROOT / _INPUT_PATHS[domain])
+# Input corpora are owned by each domain (Domain.corpus_path), produced by its corpus.py.
 
 
 def run_dir(run_name: str) -> Path:

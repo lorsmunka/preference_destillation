@@ -19,7 +19,9 @@ Everything is one importable package, `library/`. Researcher entry scripts live 
 ```
 library/
   shared/      paths/constants (config), vocabulary (reduced-vocab builder), device, metrics/, logging/
-  domain/      Domain registry (reddit / math / post-gen): teacher prompt, stop token, task metric, vocab slice (example responses / prompt / extra-aux tokens)
+  domain/      One self-contained package per domain (reddit / math / post-gen) + registry.
+               Each holds its Domain class (teacher prompt, stop token, task metric, vocab
+               slice) in __init__.py and a corpus.py producing its {"text": ...} input jsonl.
   model/       Transformer architecture + StudentModel (checkpoint load + generate)
   data_gen/    DistillationDataGenerator (teacher data generation)
   training/    Trainer + TrainingRunner + BatchHandler

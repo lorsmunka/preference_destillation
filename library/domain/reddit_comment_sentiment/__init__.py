@@ -1,7 +1,8 @@
 import json
+from typing import Optional
 
 from library.shared.metrics.task import ClassificationMetric
-from .base import Domain
+from ..base import Domain
 
 
 class RedditSentimentDomain(Domain):
@@ -43,6 +44,10 @@ JSON:
 
     def task_metric(self) -> ClassificationMetric:
         return ClassificationMetric()
+
+    def build_corpus(self, count: Optional[int] = None) -> None:
+        from .corpus import build_corpus
+        build_corpus(self.corpus_path, count=count)
 
     def structural_validity(self, output: str) -> bool:
         text = output.replace("```json", "").replace("```", "").strip()

@@ -7,7 +7,6 @@ from .vocabulary import build_vocabulary, get_response_tokens, extract_logits_as
 from .exit_listener import ExitListener
 from library.shared.config import (
     sanitize_model_name,
-    get_input_path,
     get_output_dir,
     get_batches_dir,
     get_training_run_dir,
@@ -36,7 +35,6 @@ __all__ = [
     "extract_logits_as_vector",
     "ExitListener",
     "sanitize_model_name",
-    "get_input_path",
     "get_output_dir",
     "get_batches_dir",
     "get_training_run_dir",

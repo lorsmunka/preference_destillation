@@ -1,71 +1,75 @@
+"""Reddit-comment corpus producer — downloads a Kaggle comment dataset, cleans and
+length-filters it into {"text": ...} records. Heavy deps (kagglehub, pandas, tqdm,
+transformers) are imported lazily, so `import library` never needs them. Run standalone
+(`python -m library.domain.reddit_comment_sentiment.corpus`) or via
+`get_domain("reddit_comment_sentiment").build_corpus(count=...)`.
+"""
+
 import re
 import os
 import json
-import pandas as pd
-import kagglehub
-from tqdm import tqdm
-from transformers import AutoTokenizer
+from typing import Optional
 
-from shared import MODEL_NAME, MIN_SENTENCE_LENGTH, MAX_SENTENCE_LENGTH
+from library.shared import MODEL_NAME, MIN_SENTENCE_LENGTH, MAX_SENTENCE_LENGTH
+
+KAGGLE_DATASET = "smagnan/1-million-reddit-comments-from-40-subreddits"
 
 
 def download_reddit_data():
+    import kagglehub
+    import pandas as pd
     print("Downloading Reddit dataset...")
-    path = kagglehub.dataset_download(
-        "smagnan/1-million-reddit-comments-from-40-subreddits")
-
-    csv_files = [f for f in os.listdir(path) if f.endswith('.csv')]
+    path = kagglehub.dataset_download(KAGGLE_DATASET)
+    csv_files = [f for f in os.listdir(path) if f.endswith(".csv")]
     df = pd.read_csv(os.path.join(path, csv_files[0]))
-    comment_column = 'body'
-
-    return df[comment_column].dropna()
+    return df["body"].dropna()
 
 
 def load_gemma_tokenizer():
+    from transformers import AutoTokenizer
     print("Loading Gemma-3 tokenizer...")
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    return tokenizer
+    return AutoTokenizer.from_pretrained(MODEL_NAME)
 
 
 def filter_sentences(comments, tokenizer):
+    from tqdm import tqdm
     sentences = []
-    url_pattern = re.compile(r'https?://\S+|www\.\S+')
-    noise_pattern = re.compile(r'[^a-zA-Z0-9\s.,!?\'"-]')
-    reddit_artifacts = {'[deleted]', '[removed]'}
+    url_pattern = re.compile(r"https?://\S+|www\.\S+")
+    noise_pattern = re.compile(r"[^a-zA-Z0-9\s.,!?\'\"-]")
+    reddit_artifacts = {"[deleted]", "[removed]"}
 
     for comment in tqdm(comments, desc="Processing comments"):
-        if not isinstance(comment, str):
+        if not isinstance(comment, str) or comment.lower() in reddit_artifacts:
             continue
-
-        if comment.lower() in reddit_artifacts:
+        comment = url_pattern.sub("", comment)
+        comment = noise_pattern.sub("", comment)
+        comment = re.sub(r"\s+", " ", comment).strip()
+        if not comment:
             continue
-
-        comment = url_pattern.sub('', comment)
-        comment = noise_pattern.sub('', comment)
-        comment = re.sub(r'\s+', ' ', comment).strip()
-
-        if comment:
-            tokens = tokenizer.encode(comment, add_special_tokens=False)
-            token_count = len(tokens)
-
-            if MIN_SENTENCE_LENGTH <= token_count <= MAX_SENTENCE_LENGTH:
-                sentences.append(comment)
+        token_count = len(tokenizer.encode(comment, add_special_tokens=False))
+        if MIN_SENTENCE_LENGTH <= token_count <= MAX_SENTENCE_LENGTH:
+            sentences.append(comment)
 
     return list(set(sentences))
 
 
-def save_reddit_comments_jsonl(sentences):
-    os.makedirs("text_generation/reddit_comment_sentiment", exist_ok=True)
+def build_corpus(output_path: Optional[str] = None, count: Optional[int] = None) -> None:
+    if output_path is None:
+        output_path = os.path.join(os.path.dirname(__file__), "corpus.jsonl")
 
-    with open("text_generation/reddit_comment_sentiment/reddit_comments.jsonl", 'w', encoding='utf-8') as f:
+    tokenizer = load_gemma_tokenizer()
+    comments = download_reddit_data()
+    sentences = filter_sentences(comments, tokenizer)
+    if count is not None:
+        sentences = sentences[:count]
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as file:
         for sentence in sentences:
-            json_line = {"text": sentence}
-            f.write(json.dumps(json_line, ensure_ascii=False) + '\n')
+            file.write(json.dumps({"text": sentence}, ensure_ascii=False) + "\n")
 
-    print(f"Saved {len(sentences)} sentences to text_generation/reddit_comment_sentiment/reddit_comments.jsonl")
+    print(f"Saved {len(sentences)} sentences to {output_path}")
 
 
-tokenizer = load_gemma_tokenizer()
-comments = download_reddit_data()
-sentences = filter_sentences(comments, tokenizer)
-save_reddit_comments_jsonl(sentences)
+if __name__ == "__main__":
+    build_corpus()

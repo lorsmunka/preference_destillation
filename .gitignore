@@ -4,9 +4,8 @@ logs12b/
 inferences/
 evals/
 
-# Input data
-text_generation/reddit_comment_sentiment/reddit_comments.jsonl
-text_generation/math_word_problem/math_word_problems.jsonl
+# Input data — each domain's corpus.py writes corpus.jsonl next to the domain
+library/domain/*/corpus.jsonl
 sentences/sentences.jsonl
 
 # Python

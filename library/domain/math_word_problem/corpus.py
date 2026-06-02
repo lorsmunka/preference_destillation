@@ -1,22 +1,25 @@
+"""Math word-problem corpus producer — procedurally generates {"text": ...} problems.
+No heavy deps. Run standalone (`python -m library.domain.math_word_problem.corpus`) or via
+`get_domain("math_word_problem").build_corpus(count=...)`.
+"""
+
 import json
 import random
 import hashlib
 import re
 import os
-import sys
+from typing import Optional
 
-sys.path.append(os.path.dirname(__file__))
-
-from word_problem_variables import (
+from .word_problem_variables import (
     NAMES, ALL_ITEMS, BAKEABLES, CONSUMABLES, COLLECTIBLES, SCHOOL_SUPPLIES,
     NATURE_ITEMS, ANIMALS, MANUFACTURED, CLOTHING, CONTAINERS, GROUPS,
     singularize,
 )
-from operations import (
+from .operations import (
     ARITHMETIC_OPERATIONS, COMPARISON_OPERATIONS, LARGE_RANGE_ARITHMETIC,
     SCAFFOLDS, pick_distribution_bucket, generate_numbers,
 )
-from templates import (
+from .templates import (
     ADDITION_TEMPLATES, SUBTRACTION_TEMPLATES, MULTIPLICATION_TEMPLATES,
     DIVISION_TEMPLATES, MUL_ADD_TEMPLATES, MUL_SUB_TEMPLATES,
     ADD_MUL_TEMPLATES, ADD_SUB_TEMPLATES, SUB_MUL_TEMPLATES,
@@ -32,7 +35,7 @@ OPERATION_TEMPLATES = {
     "cmp": CMP_TEMPLATES, "cmp_sub": CMP_SUB_TEMPLATES, "cmp_mul": CMP_MUL_TEMPLATES,
 }
 
-TARGET_COUNT = 500_000
+DEFAULT_COUNT = 500_000
 
 
 def pick_operation(is_comparison, range_high):
@@ -85,11 +88,15 @@ def fill_template(template, operation, range_low, range_high, use_round):
     return f'Problem: "{text}"\n{scaffold}'
 
 
-def generate_problems():
+def build_corpus(output_path: Optional[str] = None, count: Optional[int] = None) -> None:
+    count = count or DEFAULT_COUNT
+    if output_path is None:
+        output_path = os.path.join(os.path.dirname(__file__), "corpus.jsonl")
+
     seen = set()
     problems = []
 
-    while len(problems) < TARGET_COUNT:
+    while len(problems) < count:
         _, range_low, range_high, use_round, is_comparison = pick_distribution_bucket()
         operation = pick_operation(is_comparison, range_high)
         template = random.choice(OPERATION_TEMPLATES[operation])
@@ -102,11 +109,10 @@ def generate_problems():
         problems.append({"text": problem_text})
 
         if len(problems) % 10000 == 0:
-            print(f"Generated {len(problems):,} / {TARGET_COUNT:,} problems")
+            print(f"Generated {len(problems):,} / {count:,} problems")
 
     random.shuffle(problems)
 
-    output_path = os.path.join(os.path.dirname(__file__), "math_word_problems.jsonl")
     with open(output_path, 'w', encoding='utf-8') as f:
         for problem in problems:
             f.write(json.dumps(problem) + '\n')
@@ -115,4 +121,4 @@ def generate_problems():
 
 
 if __name__ == "__main__":
-    generate_problems()
+    build_corpus()

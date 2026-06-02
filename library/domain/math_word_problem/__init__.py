@@ -1,7 +1,8 @@
 import re
+from typing import Optional
 
 from library.shared.metrics.task import MathMetric
-from .base import Domain
+from ..base import Domain
 
 
 # Two worked examples shown to the teacher before the real problem, so it fills in the
@@ -89,6 +90,10 @@ class MathWordProblemDomain(Domain):
 
     def task_metric(self) -> MathMetric:
         return MathMetric()
+
+    def build_corpus(self, count: Optional[int] = None) -> None:
+        from .corpus import build_corpus
+        build_corpus(self.corpus_path, count=count)
 
     def structural_validity(self, output: str) -> bool:
         return bool(re.search(r"Solution:\s*[^;\n]+", output))

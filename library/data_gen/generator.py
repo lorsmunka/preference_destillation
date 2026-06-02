@@ -1,7 +1,8 @@
 """DistillationDataGenerator — generates + saves teacher distillation data for one job.
 
 Renamed from the old QueueRunner; driven by a plain Python config dict (no queue JSON) and
-logs via pdkit.logging.RunLogger. Prompt/stop dispatch lives in pdkit.domains via ModelHandler.
+logs via library.shared.logging.RunLogger. Prompt/stop dispatch lives in library.domain
+via ModelHandler.
 """
 
 from time import sleep, time
@@ -11,7 +12,8 @@ from library.data_gen.input_handler import InputHandler
 from library.data_gen.model_handler import ModelHandler
 from library.data_gen.saving_handler import SavingHandler
 from library.shared.logging import RunLogger
-from library.shared import ExitListener, get_input_path, get_output_dir
+from library.shared import ExitListener, get_output_dir
+from library.domain import get_domain
 
 
 class DistillationDataGenerator:
@@ -26,7 +28,7 @@ class DistillationDataGenerator:
 
         self.config["started_at"] = datetime.now(timezone.utc).isoformat()
 
-        input_path = get_input_path(self.domain)
+        input_path = get_domain(self.domain).corpus_path
         output_dir = get_output_dir(self.domain, self.model_name)
 
         self.input_handler = InputHandler(input_path)

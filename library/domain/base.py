@@ -1,9 +1,16 @@
 """Domain ABC — everything that used to be dispatched on the domain string lives here:
-the teacher prompt, the stop condition, the end-task metric, and the domain's slice of
-the reduced output vocabulary (example responses, prompt tokens, extra auxiliary tokens).
+the teacher prompt, the stop condition, the end-task metric, the domain's slice of the
+reduced output vocabulary (example responses, prompt tokens, extra auxiliary tokens), and
+where its input corpus comes from (`corpus_path` + `build_corpus`).
+
+A domain is one self-contained package under library/domain/<name>/: this class in
+__init__.py, plus a corpus.py that produces the {"text": ...} input jsonl. To add a
+domain, copy a package, edit it, and register it in registry.py.
 """
 
+import sys
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import List, Optional
 
 from library.shared.config import PROMPT_DELIMITER
@@ -45,6 +52,26 @@ class Domain(ABC):
         """Stop condition during generation. Unifies the old per-domain dispatch
         (ModelHandler.is_stop / inference.has_stop_token)."""
         return last_token_decoded == self.stop_token or self.stop_token in generated_text
+
+    # --- input corpus -------------------------------------------------------------
+    @property
+    def package_dir(self) -> Path:
+        """The directory of the concrete domain's package (library/domain/<name>/)."""
+        return Path(sys.modules[type(self).__module__].__file__).resolve().parent
+
+    @property
+    def corpus_path(self) -> str:
+        """Path to this domain's input corpus — a jsonl of {"text": ...} records, read by
+        data-gen and produced by `build_corpus`. Defaults to corpus.jsonl in the package;
+        a domain may override to reuse another's corpus."""
+        return str(self.package_dir / "corpus.jsonl")
+
+    def build_corpus(self, count: Optional[int] = None) -> None:
+        """Produce the input corpus at `corpus_path`. Override per domain, importing any
+        heavy/optional deps lazily inside the override (so `import library` stays light)."""
+        raise NotImplementedError(
+            f"{type(self).__name__} has no corpus builder — add build_corpus to its corpus.py"
+        )
 
     def __repr__(self) -> str:
         return f"Domain({self.name!r})"
