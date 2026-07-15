@@ -45,10 +45,20 @@ Press `%` (or Ctrl+C in headless mode) for graceful exit (saves a temp checkpoin
 
 ## Configuration
 
-Run configs are plain Python — one dict per run in `train.py` / `generate_data.py`. Paths and
-constants live in `library/shared/config.py` (torch-free). Key per-run params: `epoch_count`,
-`batch_size`, `learning_rate`, `kl_ratio_start/end`, `distillation_temperature_start/end`,
-`eval_top_k`, `eval_cap_multiple`.
+Run configs are typed objects — `TrainingRun(...)` / `GenerationJob(...)` (`library/specs.py`),
+one per entry in the `RUNS` / `JOBS` lists. `domain=` takes a **Domain object** (a singleton
+like `MATH_WORD_PROBLEM`, a fresh `RedditSentimentDomain()`, or your own subclass — no magic
+strings), everything else has a default. Required: `run_name` (training) + `domain`. Key params:
+`epoch_count`, `batch_size`, `learning_rate`, `kl_ratio_start/end`,
+`distillation_temperature_start/end`, `eval_top_k`, `eval_cap_multiple`. **You pass the Domain
+object everywhere** — to specs, and (for a custom domain) to analysis: `Analysis(run).evaluate(domain=MyDomain())`
+/ `infer(domain=...)`, `StudentModel.from_run(run, domain=...)`, `build_input_vocabulary(MyDomain())`.
+The object is used directly; `info.json` records `domain.name` (string) for paths. Built-in runs
+auto-resolve their name (zero ceremony); the name→object registry is an internal detail for that,
+not part of the front-door API (`register_domain` exists in `library.domain` as an optional escape
+hatch, never required). A plain dict config still works (its `domain` name resolves to a built-in).
+Each Domain owns `max_steps` / `max_input_tokens` / `max_seq_length` — no name-keyed config dicts.
+Paths/constants live in `library/shared/config.py` (torch-free).
 
 ## Evaluation
 

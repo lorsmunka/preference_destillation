@@ -10,14 +10,13 @@ from library.shared.vocabulary import (
     extract_logits_as_vector,
 )
 from library.shared.device import get_device
-from library.domain import get_domain
+from library.domain import as_domain
 
 
 class ModelHandler:
-    def __init__(self, model_name: str, domain: str):
+    def __init__(self, model_name: str, domain):
         self.model_name = model_name
-        self.domain = domain
-        self.domain_handler = get_domain(domain)
+        self.domain_handler = as_domain(domain)  # accepts a Domain object or a name string
         self.max_generation_steps = self.domain_handler.max_steps
         self.tokenizer = None
         self.model = None

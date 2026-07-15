@@ -20,7 +20,7 @@ from transformers import AutoTokenizer
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
 from library.shared.vocabulary import build_vocabulary
-from library.domain import get_domain
+from library.domain import as_domain
 
 
 WORKER_COUNT = 8
@@ -98,14 +98,16 @@ def scan_batches(batches_directory, tokenizer):
 
 
 def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
+    domain_object = as_domain(domain)  # accepts a Domain object or a built-in name
+    domain_name = domain_object.name
     tokenizer = AutoTokenizer.from_pretrained(teacher_model)
     full_vocab_size = tokenizer.vocab_size
 
-    batches_directory = get_batches_dir(domain, teacher_model)
+    batches_directory = get_batches_dir(domain_name, teacher_model)
     unique_token_ids = scan_batches(batches_directory, tokenizer)
 
     # Include all output vocab token IDs (they feed back as input during autoregressive generation)
-    output_vocabulary = build_vocabulary(tokenizer, get_domain(domain))
+    output_vocabulary = build_vocabulary(tokenizer, domain_object)
     output_token_ids = set(
         output_vocabulary['token_to_id'][token]
         for token in output_vocabulary['token_list']
@@ -126,7 +128,7 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
     output_path = os.path.join(output_directory, "input_vocabulary.json")
 
     vocabulary_data = {
-        "domain": domain,
+        "domain": domain_name,
         "teacher_model": teacher_model,
         "full_vocab_size": full_vocab_size,
         "compact_vocab_size": len(sorted_token_ids),
@@ -139,7 +141,7 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
     reduction_percentage = (1 - len(sorted_token_ids) / full_vocab_size) * 100
 
     print(f"\nInput vocabulary built:")
-    print(f"  Domain: {domain}")
+    print(f"  Domain: {domain_name}")
     print(f"  Teacher: {teacher_model}")
     print(f"  Full vocab: {full_vocab_size:,} tokens")
     print(f"  Input vocab: {len(sorted_token_ids):,} tokens")

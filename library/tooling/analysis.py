@@ -129,7 +129,8 @@ class Analysis:
 
     # ── evaluation (model path) ───────────────────────────────────────
     def evaluate(self, split: str = "test", checkpoint: str = "latest", k: int = 20,
-                 max_batches: Optional[int] = None, cap_multiple: float = 2.0) -> EvalResult:
+                 max_batches: Optional[int] = None, cap_multiple: float = 2.0,
+                 domain=None) -> EvalResult:
         import torch
         import torch.nn.functional as F
         from library.shared.metrics.distribution import step_distribution_stats
@@ -137,7 +138,7 @@ class Analysis:
         from library.model.student import StudentModel
 
         label, path = self.store.resolve_checkpoint(self.run.name, checkpoint)
-        student = StudentModel.from_run(self.run, path)
+        student = StudentModel.from_run(self.run, path, domain=domain)
         domain = student.domain
         task_metric = domain.task_metric()
         termination = TerminationStats()
@@ -189,12 +190,14 @@ class Analysis:
             mean_length_ratio=termination.mean_length_ratio,
         )
 
-    def infer(self, sentences: List[str], checkpoint: str = "latest", temperature: float = 0.0):
+    def infer(self, sentences: List[str], checkpoint: str = "latest", temperature: float = 0.0,
+              domain=None):
         """Demo/debug: generate the student's output for each sentence. Teacher comparison is
-        intentionally left to a separate benchmark (loading Gemma is heavy)."""
+        intentionally left to a separate benchmark (loading Gemma is heavy). Pass `domain=` for
+        a custom-domain run (built-ins resolve automatically)."""
         from library.model.student import StudentModel
         label, path = self.store.resolve_checkpoint(self.run.name, checkpoint)
-        student = StudentModel.from_run(self.run, path)
+        student = StudentModel.from_run(self.run, path, domain=domain)
         results = []
         for sentence in sentences:
             generation = student.generate(sentence, max_new_tokens=student.domain.max_steps, temperature=temperature)

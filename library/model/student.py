@@ -19,7 +19,7 @@ import torch
 import torch.nn.functional as F
 
 from library.shared.config import load_input_vocabulary
-from library.domain import Domain, get_domain
+from library.domain import Domain, as_domain
 
 
 def pick_device() -> str:
@@ -54,14 +54,23 @@ class StudentModel:
 
     # ── construction ──────────────────────────────────────────────────
     @classmethod
-    def from_run(cls, run, checkpoint_path: Path, device: Optional[str] = None) -> "StudentModel":
+    def from_run(cls, run, checkpoint_path: Path, device: Optional[str] = None,
+                 domain: Optional[Domain] = None) -> "StudentModel":
         from library.model.transformer import Transformer  # lazy: pulls torch/tokenizer only on model path
 
         device = device or pick_device()
         info = run.info
+        if domain is None:  # built-in runs resolve by name; custom runs pass the object
+            try:
+                domain = as_domain(info["domain"])
+            except KeyError:
+                raise ValueError(
+                    f"Run {run.name!r} uses custom domain {info['domain']!r} — pass "
+                    f"domain=YourDomain() to analyse it (it isn't one of the built-ins)."
+                )
         input_vocabulary = load_input_vocabulary(info["domain"], info["teacher_model"])
         model = Transformer(
-            domain=info["domain"],
+            domain=domain,
             teacher_model=info["teacher_model"],
             hidden_dim=info["hidden_dim"],
             num_layers=info["num_layers"],
@@ -72,7 +81,7 @@ class StudentModel:
         ).to(device)
         cls._load_checkpoint(model, Path(checkpoint_path), device)
         model.eval()
-        return cls(model, get_domain(info["domain"]), device)
+        return cls(model, domain, device)
 
     @staticmethod
     def _load_checkpoint(model, checkpoint_path: Path, device: str) -> None:

@@ -12,10 +12,13 @@ Importing `library` does NOT import torch — that happens only when a model met
 """
 
 from library.tooling import Analysis, Comparison, EvalResult, Experiment, Run, RunStore, sort_runs
-from library.domain import get_domain, registered_domains
+from library.specs import TrainingRun, GenerationJob
 
 __version__ = "0.1.0"
 
+# Domains are passed as objects (singletons / your own subclass) from `library.domain`;
+# the registry (get_domain / register_domain) is an internal detail for resolving built-in
+# names off info.json, not part of this front-door facade.
 __all__ = [
     "Analysis",
     "Comparison",
@@ -24,6 +27,6 @@ __all__ = [
     "Run",
     "Experiment",
     "sort_runs",
-    "get_domain",
-    "registered_domains",
+    "TrainingRun",
+    "GenerationJob",
 ]

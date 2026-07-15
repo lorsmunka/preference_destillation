@@ -1,5 +1,5 @@
 """Plots — write PNGs from Run / Experiment data. Matplotlib is imported lazily with the
-Agg backend so this works headless and `import pdkit` never pulls in matplotlib.
+Agg backend so this works headless and `import library` never pulls in matplotlib.
 """
 
 from pathlib import Path

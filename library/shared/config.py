@@ -22,16 +22,8 @@ PROMPT_DELIMITER = "\n\n"
 MIN_SENTENCE_LENGTH = 3
 MAX_SENTENCE_LENGTH = 25
 
-DOMAIN_MAX_GENERATION_STEPS = {
-    "reddit_comment_sentiment": 50,
-    "math_word_problem": 350,
-    "post_generation": 150,
-}
-DOMAIN_MAX_SEQ_LENGTH = {
-    "reddit_comment_sentiment": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["reddit_comment_sentiment"],
-    "math_word_problem": 210,
-    "post_generation": MAX_SENTENCE_LENGTH + DOMAIN_MAX_GENERATION_STEPS["post_generation"],
-}
+# Per-domain generation/sequence limits now live on the Domain itself
+# (`max_steps`, `max_input_tokens`, `max_seq_length`) — no name-keyed dicts here.
 
 # Transformer architecture defaults (overridden per run)
 HIDDEN_DIM = 384

@@ -17,19 +17,23 @@ from library.domain import get_domain
 
 
 class DistillationDataGenerator:
-    def __init__(self, config: dict, exit_listener: ExitListener):
-        self.config = config
+    def __init__(self, config, exit_listener: ExitListener):
+        if isinstance(config, dict):  # legacy dict — resolve the domain name to its object
+            self.config = config
+            self.domain = get_domain(config["domain"])
+        else:  # a GenerationJob spec — keep its Domain object, flatten the rest for info.json
+            self.config = config.as_dict()
+            self.domain = config.domain
         self.exit_listener = exit_listener
 
-        self.domain = config["domain"]
-        self.model_name = config["model_name"]
-        self.max_examples = config["max_examples"]
-        self.batch_size = config["batch_size"]
+        self.model_name = self.config["model_name"]
+        self.max_examples = self.config["max_examples"]
+        self.batch_size = self.config["batch_size"]
 
         self.config["started_at"] = datetime.now(timezone.utc).isoformat()
 
-        input_path = get_domain(self.domain).corpus_path
-        output_dir = get_output_dir(self.domain, self.model_name)
+        input_path = self.domain.corpus_path
+        output_dir = get_output_dir(self.domain.name, self.model_name)
 
         self.input_handler = InputHandler(input_path)
         self.model_handler = ModelHandler(self.model_name, self.domain)

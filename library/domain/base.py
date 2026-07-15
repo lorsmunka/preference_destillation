@@ -31,6 +31,12 @@ class Domain(ABC):
     # Domain extras prepended to the shared auxiliary bank (e.g. math's A..T scaffold).
     extra_auxiliary_tokens: List[str] = []
 
+    @property
+    def max_seq_length(self) -> int:
+        """Max positions the student needs (input context + generation). Default is
+        input + steps; a domain overrides with a class attribute if it needs a tuned value."""
+        return self.max_input_tokens + self.max_steps
+
     def student_prompt(self, text: str) -> str:
         """Context fed to the student at inference: just the sentence + delimiter (same for all)."""
         return text + PROMPT_DELIMITER

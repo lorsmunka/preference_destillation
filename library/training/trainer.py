@@ -18,7 +18,6 @@ from library.shared.device import get_device
 from library.model.transformer import Transformer
 from library.training.batch_handler import BatchHandler
 from library.shared.logging import RunLogger
-from library.domain import get_domain
 from library.shared.metrics.distribution import step_distribution_stats
 from library.tooling.render.plots import plot_training_logs
 
@@ -30,7 +29,7 @@ class Trainer:
         print("Initializing Trainer...")
 
         self.config = config
-        self.domain = config['domain']
+        self.domain = model.domain  # the Domain object the model was built from (used directly)
         self.learning_rate = config['learning_rate']
         self.epoch_count_value = config['epoch_count']
         self.kl_ratio_start = config['kl_ratio_start']
@@ -283,7 +282,7 @@ class Trainer:
         return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
     def _evaluate_batches(self, batch_start: int, batch_end: int, verbose: bool = False):
-        task_accuracy_calculator = get_domain(self.domain).task_metric()
+        task_accuracy_calculator = self.domain.task_metric()
 
         total_loss = 0.0
         total_kl_loss = 0.0
@@ -437,7 +436,7 @@ class Trainer:
 
         # Student: free-generation rollout (own predictions), capped at eval_cap_multiple x
         # teacher length. Stops on the domain stop token -> natural-termination signal.
-        domain = get_domain(self.domain)
+        domain = self.domain
         student_correct = 0
         remapped_sentence_tokens = self.model.remap_input_tokens(sentence_tokens)
         student_token_ids = []

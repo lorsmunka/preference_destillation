@@ -1,2 +1,10 @@
+# Core — train / generate / analyze
 torch
 transformers
+numpy
+matplotlib
+
+# Corpus generation only (library/domain/*/corpus.py; imported lazily)
+kagglehub
+pandas
+tqdm

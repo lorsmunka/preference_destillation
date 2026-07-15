@@ -43,7 +43,12 @@
       "Bash(git config *)",
       "Bash(git rm *)",
       "Bash(command -v python3)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Workflow(deep-research)",
+      "WebFetch(domain:aclanthology.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:ar5iv.org)",
+      "WebFetch(domain:ar5iv.labs.arxiv.org)"
     ]
   }
 }

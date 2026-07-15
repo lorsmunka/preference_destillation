@@ -13,15 +13,20 @@ from library.shared import (
     get_training_run_dir,
     load_input_vocabulary,
 )
+from library.domain import get_domain
 
 
 class TrainingRunner:
-    def __init__(self, config: dict, exit_listener: ExitListener):
-        self.config = config
+    def __init__(self, config, exit_listener: ExitListener):
+        if isinstance(config, dict):  # legacy dict — resolve the domain name to its object
+            self.config = config
+            self.domain = get_domain(config["domain"])
+        else:  # a TrainingRun spec — keep its Domain object, flatten the rest for info.json
+            self.config = config.as_dict()
+            self.domain = config.domain
         self.exit_listener = exit_listener
-        self.run_name = config["run_name"]
-        self.domain = config["domain"]
-        self.teacher_model = config["teacher_model"]
+        self.run_name = self.config["run_name"]
+        self.teacher_model = self.config["teacher_model"]
         self.run_dir = get_training_run_dir(self.run_name)
         self.checkpoints_dir = os.path.join(self.run_dir, "checkpoints")
         self.logs_dir = os.path.join(self.run_dir, "logs")
@@ -37,7 +42,7 @@ class TrainingRunner:
         print(f"\n{'=' * 60}")
         print(f"Run: {self.run_name}")
         print(f"  Description: {self.config.get('description', '')}")
-        print(f"  Domain: {self.domain}")
+        print(f"  Domain: {self.domain.name}")
         print(f"  Teacher: {self.teacher_model}")
         print(f"  Architecture: {self.config['hidden_dim']}h, {self.config['num_layers']}L, {self.config['num_heads']} heads")
         print(f"  KL annealing: {self.config['kl_ratio_start']} -> {self.config['kl_ratio_end']}")
@@ -49,7 +54,7 @@ class TrainingRunner:
 
         started_at = datetime.now().isoformat()
 
-        batches_dir = get_batches_dir(self.domain, self.teacher_model)
+        batches_dir = get_batches_dir(self.domain.name, self.teacher_model)
         batch_handler = BatchHandler(
             batches_dir,
             self.config["training_test_ratio"],
@@ -58,7 +63,7 @@ class TrainingRunner:
         )
         logger = RunLogger(self.logs_dir)
 
-        input_vocabulary = load_input_vocabulary(self.domain, self.teacher_model)
+        input_vocabulary = load_input_vocabulary(self.domain.name, self.teacher_model)
 
         transformer = Transformer(
             domain=self.domain,

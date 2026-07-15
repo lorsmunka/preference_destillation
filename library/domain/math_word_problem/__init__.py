@@ -49,6 +49,7 @@ class MathWordProblemDomain(Domain):
     stop_token = ";"
     max_steps = 350
     max_input_tokens = 500
+    max_seq_length = 210  # tuned: well below input+steps; problems rarely fill the scaffold
 
     # Populated from an empirical test (200 examples, 0 failures): 31 unique tokens
     # observed; F, G added for robustness (+2 beyond the max scaffold variable E).

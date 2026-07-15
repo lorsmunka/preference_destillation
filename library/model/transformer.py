@@ -11,11 +11,10 @@ from library.shared import (
     HIDDEN_DIM,
     NUM_LAYERS,
     NUM_HEADS,
-    DOMAIN_MAX_SEQ_LENGTH,
     DROPOUT,
 )
 from library.shared.vocabulary import build_vocabulary
-from library.domain import get_domain
+from library.domain import as_domain
 
 
 class RMSNorm(nn.Module):
@@ -33,7 +32,7 @@ class RMSNorm(nn.Module):
 
 
 class RotaryEmbedding(nn.Module):
-    def __init__(self, head_dim: int, max_seq_length: int = DOMAIN_MAX_SEQ_LENGTH["reddit_comment_sentiment"], base: int = 10000):
+    def __init__(self, head_dim: int, max_seq_length: int = 512, base: int = 10000):
         super().__init__()
         self.head_dim = head_dim
         self.max_seq_length = max_seq_length
@@ -86,8 +85,9 @@ class Transformer(nn.Module):
         print("Initializing Transformer model...")
         super().__init__()
 
+        self.domain = as_domain(domain)
         if max_seq_length is None:
-            max_seq_length = DOMAIN_MAX_SEQ_LENGTH[domain]
+            max_seq_length = self.domain.max_seq_length
 
         self.tokenizer = AutoTokenizer.from_pretrained(teacher_model)
         self.full_input_vocab_size = self.tokenizer.vocab_size
@@ -103,7 +103,7 @@ class Transformer(nn.Module):
             self.input_token_mapping = None
 
         self.vocabulary = build_vocabulary(
-            self.tokenizer, get_domain(domain), auxiliary_token_percentage)
+            self.tokenizer, self.domain, auxiliary_token_percentage)
         self.output_vocab_size = self.vocabulary['vocab_size']
 
         self.output_token_ids = [

@@ -6,6 +6,17 @@ build-backend = "setuptools.build_meta"
 name = "preference_distillation"
 version = "0.1.0"
 requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "transformers",
+    "numpy",
+    "matplotlib",
+]
+
+# Corpus producers (library/domain/*/corpus.py) import these lazily — install with
+# `pip install -e .[corpus]` only when regenerating input data.
+[project.optional-dependencies]
+corpus = ["kagglehub", "pandas", "tqdm"]
 
 [tool.setuptools.packages.find]
 include = ["library*"]
