@@ -3,15 +3,14 @@
 Run configs are typed `TrainingRun` objects (not dicts): pass a Domain object as `domain=`
 (no magic strings), everything else has a default. Runs whose info.json says "completed"
 are skipped, so the list is resumable.
-"""
 
-import json
-import os
+For a named experiment (its own runs plus the analysis that reads them), write a script
+under experiments/ instead of editing this list — see experiments/postgen_kl_anneal.py.
+"""
 
 from library import TrainingRun
 from library.domain import REDDIT_SENTIMENT
-from library.shared import ExitListener, get_training_run_dir
-from library.training.training_runner import TrainingRunner
+from library.training.training_runner import run_training
 
 RUNS = [
     TrainingRun(
@@ -39,17 +38,7 @@ RUNS = [
 
 
 def main():
-    exit_listener = ExitListener()
-    for run in RUNS:
-        info_path = os.path.join(get_training_run_dir(run.run_name), "info.json")
-        if os.path.exists(info_path):
-            with open(info_path, "r", encoding="utf-8") as file:
-                if json.load(file).get("status") == "completed":
-                    print(f"Skipping completed run: {run.run_name}")
-                    continue
-        if not TrainingRunner(run, exit_listener).run():
-            break
-    exit_listener.stop()
+    run_training(RUNS)
     print("Done.")
 
 

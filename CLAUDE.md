@@ -29,6 +29,8 @@ library/
 train.py           training entry — edit the RUNS list
 generate_data.py   data-generation entry — edit the JOBS list
 analyze.py         analytics/eval entry — Analysis / RunStore
+experiments/ one script per named experiment: its RUNS plus the analysis that reads
+             them back (e.g. postgen_kl_anneal.py), with measured tables in results/
 runs/        per-run artifacts: info.json, logs/ (JSONL), checkpoints/
 batches/     distillation data (JSONL)
 ```
@@ -39,7 +41,14 @@ batches/     distillation data (JSONL)
 python train.py          # run configs are a Python RUNS list (not a JSON queue)
 python generate_data.py  # JOBS list
 python analyze.py         # or: from library import Analysis, RunStore
+python experiments/postgen_kl_anneal.py   # one experiment: trains what is missing, then reports
 ```
+
+An experiment is a script, not a config file. Copy an existing one in `experiments/`,
+edit its `RUNS` (a different architecture is just different `hidden_dim` / `num_layers` /
+`num_heads`), and run it — `run_training` skips runs that already completed, so the script
+stays re-runnable and doubles as the record of what the experiment was. Scripts there start
+with the repo-root `sys.path` line so they run without installing the package.
 
 Press `%` (or Ctrl+C in headless mode) for graceful exit (saves a temp checkpoint).
 

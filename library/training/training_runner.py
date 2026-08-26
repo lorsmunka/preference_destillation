@@ -115,3 +115,32 @@ class TrainingRunner:
         info_path = os.path.join(self.run_dir, "info.json")
         with open(info_path, "w", encoding="utf-8") as file:
             json.dump(info, file, indent=2)
+
+
+def is_completed(run_name: str) -> bool:
+    """Whether this run already finished — the resumability check every entry script needs."""
+    info_path = os.path.join(get_training_run_dir(run_name), "info.json")
+    if not os.path.exists(info_path):
+        return False
+    with open(info_path, "r", encoding="utf-8") as file:
+        return json.load(file).get("status") == "completed"
+
+
+def run_training(runs, exit_listener: ExitListener = None) -> None:
+    """Train every run in the list, skipping the ones already completed.
+
+    The shared body of train.py and every experiments/*.py script — they differ only in
+    which runs they define. Pass an `exit_listener` to share one across several calls;
+    otherwise this owns and stops its own.
+    """
+    owns_listener = exit_listener is None
+    exit_listener = exit_listener or ExitListener()
+    for run in runs:
+        run_name = run["run_name"] if isinstance(run, dict) else run.run_name
+        if is_completed(run_name):
+            print(f"Skipping completed run: {run_name}")
+            continue
+        if not TrainingRunner(run, exit_listener).run():
+            break
+    if owns_listener:
+        exit_listener.stop()
