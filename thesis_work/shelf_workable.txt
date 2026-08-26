@@ -1,0 +1,102 @@
+========================================================================
+SHELF — WORKABLE IDEAS (the survivors)
+The ideas that survived hostile checks, kept SEPARATE from the graveyard
+(idea_ledger.txt). Each is framed as the NARROWEST HONEST claim — i.e. what
+you'd actually publish. All are thin (characterization / mechanism at the tiny
+reduced-vocab floor, not a new mechanism), but genuinely unclaimed and buildable
+on your existing pipeline. Last updated 2026-07-16.
+========================================================================
+
+S1. CO-COMPRESSION INTERACTION
+    Claim: "In a from-scratch sub-10M generative student, does prompt-
+    internalization still work when the output vocabulary is SIMULTANEOUSLY
+    starved to ~500 tokens — and where do the two compressions interfere?"
+    Workable: ablation on the existing pipeline (internalization on/off x vocab
+    size), reuse existing data. Cheap.
+    Could go either way: survives (existence proof) / breaks (interaction found).
+    Cite/distinguish: Snell 2022 (context distillation, FULL model); Kolesnikova
+    2022 (reduced vocab, NO internalization) — the joint corner is empty.
+    Status: survived BOTH early hostile passes. Strongest "only you can run this."
+
+S2. OUTPUT-VOCAB SIZE AS A REASONING-CAPACITY AXIS
+    Claim: "Is output-vocabulary size an INDEPENDENT capacity axis for reasoning
+    distillation into tiny students — does vocab size (not just parameter count)
+    gate how well multi-step reasoning distills?"
+    Workable: existing scaling infra + a vocab-size sweep on the math domain.
+    Could go either way: vocab is a real second axis / it just tracks params.
+    Cite: SCoTD (2306.14050), Teaching Arithmetic to Small Transformers
+    (2307.03381), capacity-gap work.
+    Status: the one genuinely fresh VARIABLE in the reasoning-floor space.
+
+S3. CAPACITY-VS-FORGETTING FRONTIER (continual vocab under drift)
+    Claim: "When you graft teacher-distilled output tokens onto a deployed
+    sub-10M student under drift, where does freeze-the-backbone zero-forgetting
+    BREAK — i.e. where must the tiny model move shared weights to absorb new-token
+    signal, and forgetting returns?"
+    Workable: simulate drift on the pipeline (train old vocab, add new tokens,
+    measure forgetting). Moderate.
+    Could go either way: cheap grafting works / tiny scale forces forgetting.
+    Cite: Markov-Matrix zero-forgetting (2605.04308), ASR continual output-vocab
+    (2401.04482) — their guarantees assume a frozen backbone you may not have.
+    Status: real "why the scale changes the answer" reason.
+
+S4. REASONING-THROUGH-SOFT-LABELS-ALONE   [DEEP CHECK DONE -> MECHANISM SCOOPED]
+    Deep check verdict (2026-07-16): the MECHANISM is OWNED, cleanly. Snell 2022
+    "Learning by Distilling Context" (2209.15189) IS this mechanism verbatim;
+    OPSD "Self-Distilled Reasoner" (2601.18734, 2026) states it almost word-for-
+    word AND runs the {think/no-think} ablation. Do NOT pitch "does reasoning
+    transfer via soft labels alone" as novelty.
+    SURVIVING (regime only, conditional): the EXTREME-capacity-gap (Gemma-4B ->
+    from-scratch tiny) + SINGLE deterministic answer token + ~525 reduced vocab
+    limit — every scoop is self-distillation / same-family / multi-token. So S4 is
+    now the SAME SPECIES as S1-S3: a limit study, contribution only if this regime
+    behaves DIFFERENTLY from Snell/OPSD. Cite Snell 2022 + OPSD as the owned
+    mechanism you stress-test; CODI (2502.21074) / Deng (2311.01460) as the
+    implicit-CoT contrast; concede 2511.05184 owns the vanilla-KD-vs-KD+CoT ablation.
+
+S6. ALGORITHM-vs-HEURISTIC on a verifiable formal domain  [GUN CHANGE: 1 formal task]
+    Deep check verdict: the QUESTION is owned (Wu 2024 "What Mechanisms Does KD
+    Distill?"; Distilled Circuits 2505.10822 = "students use heuristics diverging
+    from the teacher"). BUT the VERIFIABLE-DECISION instantiation is unclaimed:
+    LLM teacher with PRE-MAPPED heuristic errors on a decidable formal task
+    (cipher/grammar/transform) -> tiny from-scratch reduced-vocab student ->
+    measured on held-out inputs where algorithm and heuristic PROVABLY disagree,
+    with a rule-recovery-vs-error-inheritance metric. Cleaner than S1-S4: has a
+    crisp metric + a decidable ground-truth answer. Pitch = "we verifiably DECIDE
+    what prior work only ASSERTED." Needs one new formal-task corpus.
+
+STATED OPEN QUESTIONS (miner harvest 2026-07-16 — from paper future-work.
+NOT yet hostile-checked; re-ranked by REAL freshness using what we already know):
+
+OQ1 [FRESHEST, CHECK BEFORE COMMIT]. Stanton "Does KD Really Work?" (2106.05945)
+    invites investigation of the FIDELITY GAP (student can't match teacher dist
+    even with capacity; accuracy != fidelity). Q: does REDUCING the output vocab
+    close the gap so a tiny student finally MATCHES teacher fidelity, and does
+    fidelity then predict JSON/task accuracy? Least entangled with the dark-
+    knowledge cluster; vocab-size is a natural instrument.
+
+OQ2 [METHOD, CHECK]. Subclass Distillation (2002.03936) states: KD inefficient
+    for FEW classes + no way to set subclass counts w/o ground-truth structure.
+    Q: do invented subclasses recover dark knowledge for tiny reduced-vocab
+    few-class students (your JSON tone/safety)? Strongest METHOD shape found.
+
+OQ3 [ENTANGLED - probably weaker than it looks]. Kolesnikova (2205.02340) "KL
+    contribution unclear, further investigation needed" + Don't-Ignore-the-Tail
+    (2602.20816) "vocab-size effect on tail not analyzed" = the sharpness/dark-
+    knowledge/tail cluster ALREADY mostly owned (Bridge-Garden) + SATURATING (our
+    own retained-mass probe). Cite, don't build on.
+
+------------------------------------------------------------------------
+HONEST META (2026-07-16): all four survivors are the SAME species — "does a
+known, OWNED mechanism change at the tiny-reduced-vocab-from-scratch floor?"
+S4 was the "freshest" and a deep check collapsed it to exactly this; S1-S3 would
+likely do the same under equally deep scrutiny. This is a legitimate paper type
+(a limit/regime study), NOT a new-mechanism paper. Pick by which could-go-either-
+way is most interesting + cheapest, and own it as characterization.
+
+------------------------------------------------------------------------
+S5. [ABSOLUTE LAST RESORT — user-deprioritized]
+    Open-source benchmark / framework for extreme narrow-domain distillation
+    (released, contributable domains). Sidesteps novelty entirely; venues = JOSS,
+    Datasets & Benchmarks track, demo track. Here for completeness only.
+========================================================================

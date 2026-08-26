@@ -1,0 +1,211 @@
+========================================================================
+CANDIDATE BOARD — rebounds to shoot at (miner harvest, 2026-07-16)
+Each hangs off a paper's LITERAL stated weakness / future-work. NOT yet hostile-
+checked (miners are scouts) — but "stated open" = higher base rate than
+brainstorming. Grouped into clusters that could BUNDLE into one paper.
+Gun = tiny (<10M) from-scratch reduced-output-vocab (~525) distilled students,
+saves full teacher distributions, single GPU.
+========================================================================
+
+*** ANCHOR THEME — REDUCED OUTPUT VOCAB AS A MITIGATION FOR THE SOFTMAX/OUTPUT-
+    RANK BOTTLENECK THAT CRIPPLES TINY MODELS ***
+Multiple independent papers flag the SAME small-model weakness and LEAVE THE FIX
+TO FUTURE WORK — and the untested fix is your exact knob. Likely a POSITIVE result
+(reduced vocab HELPS), which is Sanyo's "beats existing on a sub-case" target.
+  A1. LM Saturation / Softmax Bottleneck (2404.07647): "<1000 hidden dims ->
+      degenerate representations"; mismatch of small hidden dim vs HIGH-RANK
+      target dist; "we leave exploration of [softmax alternatives] to future
+      work." Never tests reducing output vocab. -> reduced vocab lowers target
+      rank = the untested mitigation. [ANCHOR, check first]
+  A2. LM Head is a Gradient Bottleneck (2603.10145): softmax bottleneck "destroys
+      >95% of gradient norm"; future work = "softmax alternatives that preserve
+      gradient flow." Reduced vocab = a fix they list but never run. Measure
+      gradient-norm retention vs vocab size.
+  A3. Distillation Traps & Guards (2604.18963): full-vocab KL "tail domination"
+      -> low-capacity students "mode-average / cover entire support." ~525 vocab
+      directly removes the tail trap. Does reduced vocab raise fidelity?
+  A4. Scaling Laws with Vocabulary (2407.13623, NeurIPS'24): "limited vocabulary
+      may constrain performance... do not empirically validate"; floor 33M ->
+      sub-10M reduced-vocab corner unvalidated.
+
+  >>> HOSTILE CHECK VERDICT (2026-07-16): *** SURVIVES *** — FIRST hard-pass
+  survivor of the whole hunt. Nobody claims reduced OUTPUT vocab relieves the
+  softmax bottleneck (bottleneck papers -> richer decoders; reduced-vocab papers
+  -> only param savings; tail-KL papers -> loss reweighting). The DUAL move
+  (shrink target rank via task vocab so a low-d student can express it) is
+  unclaimed + untested. Nearest paper 2603.10145, then 2404.07647.
+  FRAMING GUARDRAILS: (1) claim the MITIGATION+MEASUREMENT, not the phenomenon
+  (cite 2603.10145 / 2404.07647 as mechanism you operationalize); (2) DROP the
+  "uninformative tail dominates" wording (2602.20816 contradicts it) -> reframe
+  as "matched-capacity KL is easier when target rank <= student expressible rank."
+  EXPERIMENT (Sanyo implement+measure): matched body (same d, layers, data) x
+  vary output V {~525, 2k, 8k, ~26k}; measure per V: (1) head-vs-body gradient-
+  norm fraction (2603.10145 metric); (2) target log-prob-matrix rank vs student
+  rank ~d; (3) hidden-state singular-value spectrum / isotropy (degeneracy);
+  (4) distillation fidelity + task accuracy. PREDICT: smaller V -> more gradient
+  reaches body, target rank below student ceiling, less degeneracy, better
+  fidelity/accuracy at matched capacity = reduced vocab lets tiny models ESCAPE
+  the bottleneck = positive headline result. THIS IS THE ANCHOR/HEADLINE.
+
+CLUSTER B — STRUCTURAL VALIDITY != VALUE ACCURACY (JSON "looks right, values wrong")
+  B1. Structured Output Benchmark (2604.25359): "nearly perfect JSON, yet leaf
+      values wrong"; 15-25pp gap. You already log validity -> add value-accuracy +
+      study gap vs KL/CE ratio & vocab. [EASY, very open]
+  B2. JSONSchemaBench (2501.10868): ">84% JSON pass, <80.4% value accuracy...
+      structured-output hallucination schema benchmarks miss." Corroborates B1.
+  B3. When Correct Isn't Usable (2605.02363): format-accuracy gap in small LMs
+      (bracket matching, field ordering under load).
+
+CLUSTER C — CALIBRATION / UNCERTAINTY / FIDELITY OF TINY STUDENTS
+  C1. Teacher Calibration in KD (2508.20224): teacher ECE anti-correlates w/
+      student (R^2~0.92); "limited to logit distillation... feature distillation
+      unexplored." Student ECE = cheap novel eval axis for you.
+  C2. Uncertainty Propagation in KD (2601.18909): single-draw student "learns one
+      mode... overconfident"; future work "balance fidelity with uncertainty";
+      resource-constrained students "unexplored." You keep FULL dist, not one draw.
+  C3. KD Must Account for What It Loses (2604.25110): calibration + tail-mode
+      collapse "difficult to measure" -> your controlled setup measures them cheap.
+  C4. Generalization-vs-Fidelity Paradox (2505.15442): "higher agreement !=> better
+      student; effective students DEVIATE from teacher." Test in reduced vocab.
+
+CLUSTER D — DATA EFFICIENCY / LOGIT STORAGE / PLATEAU
+  D1. How-many-logits / what-precision at ~525 vocab (2503.16870: "Top-K caching
+      introduces bias, harms calibration"). You save FULL dist -> clean
+      full-vs-topk-vs-int8 sweep. [EASY]
+      >>> DEMOTED 2026-08-22: offline top-k logit caching benchmark now owned
+      outright (2608.03796, Aug 2026 practitioner study) + Top-KD 2508.04539 +
+      QAT x logit-KD combos; at 525 vocab full storage is cheap so the
+      question is moot in our regime. = one paragraph/table in the paper,
+      NOT a piece. (Matches ledger #16 verdict.)
+  D2. Pretraining-distillation design space (2410.16215): "k doesn't matter /
+      plateau turning point undetermined" -> untested at ~525 vocab & sub-10M.
+  D3. Distillation vs Pre-Training small models (2404.03263): benefit "tends not
+      to occur if the task is data-limited" -> chart the data-limited frontier.
+  D4. Synthetic-data plateau (2504.14772): "small models saturate/hurt by excess
+      synthetic data," ~5k-30k plateau, size/task-dependent -> where for you?
+
+CLUSTER E — SCHEDULE EXTENSIONS  [DISCOUNT: loss-schedule axis is scoop-heavy]
+  E1. Dynamic Temperature Scheduler (2511.13767): future work = separate
+      teacher/student temperature; instance-wise temp. Extends your anneal.
+  E2. Forward-vs-reverse KL mode collapse (2603.07079): "practical solutions
+      remain elusive." Per-token forward/reverse mix is offline-doable.
+
+CLUSTER F — SCALE-DOWN OF FRONTIER (2025-26) TECHNIQUES  [user's "does it scale
+down / help distillation?" strategy; win = memory OR perf; both scanners cross-checked]
+  F1. Gated Attention (Qwen, 2505.06708, NeurIPS'25 best paper): head sigmoid gate
+      after SDPA; ~free, one-line; kills attention sinks; +LR headroom. OPEN
+      tiny/distilled. NOVEL Q: do sinks even FORM at tiny/short-seq/525-vocab, and
+      does gating still pay? WIN perf+stability. [TOP - check]
+  F2. Canon layers (2512.17351, Dec 2025): lightweight causal depthwise conv,
+      arch-agnostic, ~free params, lifts reasoning ~2x; UNTESTED distillation/
+      reduced-vocab. WIN perf. [TOP, newest - check]
+  F3. Hyper-/Frac-Connections (2409.19606 / 2503.14125): multi residual streams,
+      ~1/2 tokens to match baseline; tested 7B, never tiny/distilled; ~free.
+      WIN perf/compute.
+  F4. Differential Attention (2410.05258): attention noise-cancel, +6-7.5%, only
+      ablated 1.4-3B; OPEN <100M/distill; caveat throughput/lambda-init. WIN perf.
+  F5. MTP as distillation objective (2404.19737): distill teacher multi-step-ahead
+      dists into 525 head. CONFLICT: helps big / HURTS small -> possible NEGATIVE
+      result. Lower priority.
+  F6. DSA "distill-your-own-attention-map" (2512.02556): indexer trained by KL to
+      mimic dense attention. Novel training idea; short-seq caps memory payoff.
+  SCOOPED/skip: MLA (2506.09342 @30-100M), Muon (nanoGPT speedrun = tiny Muon;
+      adopt as baseline not novelty), NSA/YOCO/linear-attn (long-context; MiniMax-M2
+      REVERSED to full attention).
+  META open-endedness: "which 2026 frontier efficiency techniques survive
+  scale-down to tiny distilled models?" = a bundle-able AUDIT beside the anchor.
+
+  >>> F1-F4 HOSTILE VERDICTS (2026-07-17): all "survive" ONLY as application/
+  combination (new setting), NOT a new mechanism.
+    F2 Canon = STRONGEST: genuinely untouched (nobody put Canon in distillation/
+      tiny/reduced-vocab; only Allen-Zhu 4.1/4.2). Rides on the perf number ->
+      LIFT IT by showing Canon x reduced-vocab/KL INTERACTION (differential gain
+      vs full-vocab or CE-only) = the thing scale-up papers can't test. WIN perf.
+      >>> RE-VERIFIED OPEN 2026-08-22 (fresh 3-angle scoop-check): zero hits on
+      Canon x {distillation, student, tiny}. BUT (1) WINDOW CLOSING: public
+      since May'25 SSRN / Dec'25 arXiv, ICLR'26 review, follow-ups landing
+      (ByteFlow adopts it, Mamba-3 cites it), Allen-Zhu running 1-8B scale-up
+      -> combination corners get mined next; RUN EARLY IN QUEUE. (2) NEW FENCE:
+      primitive = depthwise conv in transformers, OWNED (Primer 2109.08668,
+      Conformer 2005.08100, Lite Transformer), and small conv-augmented
+      students distilled from big teachers = routine ASR practice. Claim ONLY
+      the measured Canon x KL/vocab INTERACTION on generative reduced-vocab
+      students, never "conv helps small distilled models."
+    F1 Gated Attention = UNDERCUT/likely-null: short seq -> ~0% attention sinks
+      (2504.02732, 2603.05498), so sink-elimination is moot; kill the sink sub-
+      claim; only weak stability win survives. Good as a NULL data-point.
+    F3 Hyper-Connections = confirmatory only (token-efficiency expected to transfer
+      down; nanoGPT reproductions exist). Ablation axis, not a contribution.
+    F4 Differential Attention = OUT (long-context noise-cancel rationale doesn't
+      apply to short structured seq; modded-nanogpt already did tiny diff-attn).
+  => INDIVIDUALLY THIN, COLLECTIVELY = the scale-down AUDIT, a coherent bundle
+  with the softmax-bottleneck ANCHOR (verified) as theory. PAPER SHAPE:
+  ANCHOR (reduced vocab relieves softmax/rank bottleneck) + AUDIT (Canon helps /
+  gated-attn null / HC confirmatory / diff-attn N/A) + board clusters B,C,D.
+  Best single scale-down piece = F2 Canon (with the interaction result).
+
+CLUSTER G — SAMPLING / TEST-TIME DIVIDEND (2026-08-22 harvest: codebase assets
+x fresh diversity literature; hostile-checked same day)
+  G1. KL/CE RATIO AS CONTROLLER OF THE SELF-CONSISTENCY DIVIDEND.
+      Claim: KL-heavy distillation preserves teacher spread -> sampling+voting
+      buys accuracy; CE-heavy mode-collapses -> voting flat. FENCE: 2604.16027
+      owns diversity->sampling-benefit but ONLY SFT/DPO/RL lineages @7B (no KD
+      losses, no tiny, verified by fetch); SCoTD 2306.14050 owns student self-
+      consistency but keys it to DATA (rationales/example), not loss; TAID/ToDi
+      own loss-side diversity w/o the voting cash-out; C2 (2601.18909) is the
+      mechanism hook ("single-draw learns one mode"). PHASE 1 = INFERENCE ONLY:
+      sample k @ temps from existing math 10-seed cohort, vote, correlate gain
+      w/ logged student entropy + sample diversity. PHASE 2: CE-side runs (old
+      #1 sweep checkpoints if kept, else few 48h runs). Math domain only
+      (reddit deterministic -> no headroom). PAYOFF: turns the measured CE~=KL
+      one-shot tie (#1, Menon) into "KL buys test-time headroom CE doesn't" =
+      deployment so-what for the bundle. Null is publishable (tiny students
+      too small to carry diversity = counterpoint to 7B result).
+      VERDICT: SURVIVES (interaction/application, S1-S4 species). CHEAPEST
+      ITEM ON BOARD. Slot beside C1/C2 in the ANCHOR bundle.
+  G2. Schema-masked KL targets (renorm teacher dist over grammar-legal support,
+      offline on saved batches). WOUNDED/likely-null — support-selection family
+      owned (#5/#17, AdaKD); own retained-mass probe says ~99% on-support ->
+      predicts null; value-slot masking reduces to classic label-KD. Free
+      ablation column only.
+  G3. Structure-vs-value position decomposition of eval metrics. INSTRUMENT,
+      not claim — per-token "where KD signal lives" claimed in last 12mo
+      (ICML'26 token-level OPSD analysis, TIP 2604.14084, ToDi, AdaKD: signal
+      sparse, concentrates on content tokens). Our exact-schema partition
+      sharpens B1/OQ1 measurement; phenomenon headline gone.
+
+CLUSTER J — JEPA REBOUNDS (2026-08-21 harvest off the Gemma->JEPA shoot-down,
+ledger #26; stated-open gaps in LLM-JEPA/JEP-KD/VL-JEPA/JEPA-Reasoner)
+  J1. LLM-JEPA-style view-prediction AUX LOSS inside tiny reduced-vocab KD
+      (2509.14252 gaps: never tested in KD; "requires non-trivial paired views"
+      -> our comment<->JSON pairs ARE the views; 2x compute moot at sub-10M;
+      aux loss uses student's OWN embeddings -> zero new teacher data).
+      MECHANISTIC HOOK -> A2: aux loss routes gradient to body BYPASSING the
+      softmax head; 2x2 {full vocab, ~525} x {logit-KL, +JEPA aux}, measure
+      head-vs-body gradient-norm fraction (2603.10145 metric) + fidelity.
+      Substitutes = bottleneck story confirmed; complements = 2nd positive.
+      NULL-RISK: deterministic JSON -> views degenerate -> aux collapses into
+      task loss. VERDICT: SURVIVES as ANCHOR-bundle audit item ONLY
+      (application species, same as F1-F4; LLM-JEPA owns objective, JEP-KD
+      owns the "JEPA x KD" phrase). NOT standalone. [only J worth shooting]
+  J2. Port JEP-KD wiring to generative text KD (2403.18843 future work:
+      "universality... port to other tasks"). WOUNDED — mechanism = FitNets
+      regressor + EMA; their own 11.97-vs-2% CER gap; needs teacher hidden
+      states we don't save (regen ~25s/ex). Thin first-instantiation only.
+  J3. VL-JEPA-at-tiny (predict frozen embedder's JSON embedding + decoder).
+      OUT — classifier-with-extra-steps, kills generative premise + ANCHOR axis.
+  J4. JEPA-Reasoner scale-down / x distillation. OUT — below reasoning floor;
+      their 198M Talker alone = 20x our student budget.
+
+EARLIER SURVIVORS (from shelf_workable.txt): S1 co-compression, S2 vocab-as-
+reasoning, S3 continual-forgetting, S6 algorithm-vs-heuristic, OQ1 fidelity x
+vocab (=~ A/C overlap), OQ2 subclass few-class.
+
+========================================================================
+THE PLAY: bundle the ANCHOR (reduced vocab vs softmax bottleneck) as the
+headline + 3-4 supporting pieces (B1 validity-value gap, C1/C2 calibration, D1
+logit storage) into ONE empirical paper: "Reduced Output Vocabulary in Tiny
+Distillation: what it fixes, what it costs." >10 pieces on the board; funnel down
+to the 4-5 that beat baseline. NEXT: hostile-check the ANCHOR first — if it
+survives, it's the headline, not a sliver.
+========================================================================

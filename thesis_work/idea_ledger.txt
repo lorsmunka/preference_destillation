@@ -1,0 +1,245 @@
+========================================================================
+IDEA LEDGER — distillation thesis / novelty search
+What was tried, and (1 sentence) why it got shot down. Last updated 2026-07-15.
+Verdict key:  SCOOPED = owned by prior work · WOUNDED = mechanism owned, only a
+narrow setting survives · MEASURED = killed by our own experiment · SURVIVES =
+still standing (thin).
+========================================================================
+
+LOSS / SCHEDULE FAMILY
+----------------------
+1. Loss-schedule sweep (KL/CE mixing ratios, temp annealing, KL->CE vs CE->KL)
+   SCOOPED — the mechanism is Hinton/Annealing-KD/CTKD/DKD, and the CE~=KL
+   outcome is already predicted by Menon (ICML 2021).
+
+2. Sharpness crossover ("KL marginal on sharp domains, decisive on free-form")
+   SCOOPED — near-identical concurrent ICML 2026 work: Bridge-Garden
+   (2605.26246) + EGAD (2605.01732), entropy-keyed, verified real.
+
+3. CE->KL reverse-direction annealing as "the untested direction"
+   WOUNDED/trivial — "anneal toward the distribution you want at the end" is
+   close to a tautology, and the mixing-wins result is Bridge-Garden's.
+
+VOCABULARY FAMILY
+-----------------
+4. Output-vocab floor / collapse curve (how small before KL dies)
+   WOUNDED — Kolesnikova (2205.02340) already plots KD-quality vs vocab size
+   (and found no clean collapse); Subclass Distillation owns "few classes
+   starve dark knowledge."
+
+5. Best auxiliary-token selection (mass-ranked aux tokens)
+   SCOOPED — token selection by teacher mass is Sparse Logit Sampling
+   (2503.16870) / Selective KD (2602.01395) / top-K logit distillation.
+
+6. Retained-mass predictor (cheap pass predicts where KL collapses under
+   vocab truncation)
+   MEASURED (no-go) — on our own machine both sharp and soft domains retain
+   ~99% at their operating vocab; entropy (0.02 vs 0.79) is the real
+   discriminator, so retained mass adds nothing; metric also already named
+   ("Don't Ignore the Tail", 2602.20816, ICML 2026).
+
+PROMPT / CONTEXT FAMILY
+-----------------------
+7. Prompt internalization into a tiny from-scratch student
+   WOUNDED — the mechanism is Snell 2022 "Learning by Distilling Context"
+   verbatim (SKIntern, PromptIntern, Gist Tokens pile on); only the tiny scale
+   is new.
+
+8. Co-compression interaction (does internalization survive when the vocab is
+   ALSO starved to ~500, from scratch?)
+   SURVIVES (thin) — the joint corner is genuinely unmeasured, but it's an
+   existence-proof / combination, not a new mechanism.
+
+SYSTEMS / DEPLOYMENT FAMILY
+---------------------------
+9. Tool-call tutor (tiny expert emits calculator/tool calls; math tutor)
+   SCOOPED — every verb is owned: Toolformer, Calc-X/Calcformers, PAL/PoT,
+   Agent Distillation (2505.17612).
+
+10. Chain of tiny distilled experts vs MoE on edge
+    SCOOPED + PREMISE REFUTED — NVIDIA 2506.02153 + Mixture-of-Modular-Experts
+    2407.19610 own the comparison, and 2606.21428 shows edge is memory-bound,
+    not compute-bound (killing the whole "FLOPS is the constraint" framing).
+
+INTERPRETABILITY / SCALE FAMILY
+-------------------------------
+11. CE-vs-KL representation comparison ("same accuracy, same model inside?")
+    SCOOPED — Muller 2019 (soft changes geometry at equal accuracy) + Stanton
+    2021 (accuracy != internal fidelity) + Distilled Circuits (2505.10822,
+    generative, 2025); only the accuracy-matched seed-baseline hygiene + tiny
+    sandbox survive.
+
+12. Calibration transfer into tiny reduced-vocab students (+ deferral cascade)
+    SCOOPED hard — Calibration-transfer-via-KD (2302.11472), teacher-calibration
+    (2508.20224), Gatekeeper cascade (2502.19335), Muller 2019; the closed-vocab
+    "clean ECE" pitch is backwards (classification is the cleanest setting).
+
+13. Reasoning scale floor (min size/vocab where reasoning distills)
+    SCOOPED — SCoTD (2306.14050), and Teaching Arithmetic to Small Transformers
+    (2307.03381) already does sub-10M FROM-SCRATCH verifiable multi-step
+    arithmetic; sub-10M is likely below the floor, so the curve is flat-at-chance.
+
+STORAGE / PRECISION FAMILY
+--------------------------
+16. Mass-graded teacher-logit storage precision (more bits to high-mass tokens,
+    fewer to the tail; store full distribution at graded bit-depth)
+    SCOOPED/TRIVIAL — it's the KL-optimal solution, proven (ISIT 2021/2022
+    companders x^2/3 / ArcSinh) and shipped (Arcee DistillKit 2024); only a
+    "benchmark the KL-optimal compander on LLM logits" engineering sliver
+    survives, AND the benefit is suspect (Don't Ignore the Tail 2602.20816 says
+    the tail carries the signal you'd be degrading).
+
+17. Progressive output-vocab REDUCTION during training (wide->narrow curriculum)
+    SCOOPED — DeepKD (2505.15133, Dynamic Top-K Masking) and PCD (2505.24310,
+    C2FL branch) already schedule the KD output-support SIZE during training in
+    both directions (May 2025); "not annealing" is true but doesn't help since
+    the size-schedule axis itself is now claimed; only a reduced-vocab-AR
+    head-physically-shrinks engineering delta survives.
+
+METHOD / ARCHITECTURE FAMILY (big swings)
+-----------------------------------------
+18. Learned/differentiable output vocabulary (learn which tokens to keep, vs
+    mass-ranking)
+    SCOOPED + BENEFIT-NULL — VVD (NAACL 2019) owns learned-selection-beats-
+    frequency (on input embeddings); porting to the KD output head is a thin
+    "old technique, new layer," and theory says the gain over mass-ranking is
+    ~zero because the KL loss is already mass-weighted.
+
+19. Shared tiny body + swappable per-domain reduced-vocab heads (modular
+    on-device, one body many domains)
+    SCOOPED + VALUE-PROP KILLED — classic MTL shared-trunk/heads (MT-DNN,
+    HydraNet, Apple-2024, MT-DNN+KD 1904.09482); only reduced-vocab-head-as-unit
+    at sub-10M is unclaimed, and negative transfer at tiny scale (Stem Cell
+    Hypothesis, EMNLP 2021) likely makes independent experts beat the shared
+    body, killing the memory-savings claim. Base task itself near-scooped by
+    2607.08268 (2026, sub-1B on-device closed-vocab sentiment/tone JSON).
+
+SAFETY / LIFECYCLE / EXTRACTION FAMILY (big swings, batch 2)
+-----------------------------------------------------------
+20. Reduced vocab as a HARD safety guarantee (can't emit harmful tokens)
+    DEAD — it's a manual token filter with extra steps, bypassable by coded
+    language (like humans); "can't say slurs because I filter 'shit'" is a
+    regex, not a thesis.
+
+21. Continual output-vocab expansion for a deployed tiny distilled expert under
+    drift (grow vocab online, no forgetting)
+    SCOOPED (mechanism) — Markov-Matrix zero-forgetting expansion (2605.04308),
+    ASR continual output-vocab expansion (2401.04482), class-incremental
+    distillation all own it; surviving sliver = the capacity-vs-forgetting
+    frontier at sub-10M where freeze-backbone zero-forgetting BREAKS (tiny model
+    must move shared weights to absorb new tokens) — a real "why scale matters"
+    reason, but a characterization, not a method.
+
+22. Reverse-compile a tiny distilled net into explicit code/rules
+    WEAK FOR OUR DOMAINS — sentiment extraction yields a trivial keyword
+    classifier (undercuts the generative premise); math extraction yields a
+    BROKEN heuristic (our model gets arithmetic wrong ~22%); only pays off on a
+    task with a clean hidden algorithm, which ours aren't.
+
+TEACHER-SIDE / DATA-GENERATION FAMILY (batch 3)
+-----------------------------------------------
+23. Teacher reasons at length, tiny student emits ONLY the answer (does
+    teacher-side reasoning help a non-reasoning student; capacity floor)
+    OWNED (headline) — Wadhwa "Mysteries of CoT-Augmented Distillation"
+    (2406.14511, EMNLP 2024) does it on small models incl. the "how much
+    reasoning" answer (>60% CoT-mask before collapse); Dual-Head (2509.21487);
+    capacity floor (2502.18001, minimum-width 2604.04037).
+    *** SLIVER WORTH KEEPING *** — Wadhwa/Dual-Head put reasoning tokens IN the
+    student target; ours would transfer reasoning PURELY via the answer's soft
+    distribution (logit-KL over ~525 vocab), ZERO reasoning tokens in the
+    student. "Does reasoning transfer through soft labels alone?" is a clean
+    falsifiable mechanistic question nobody isolates; benefit uncertain (Wadhwa
+    implies it may NOT), but a negative result is still a real finding.
+
+24. Teacher-prompt as dominant student lever + internalization pitfalls
+    SCOOPED — Snell 2022 (2209.15189: exact setup + capacity ceiling); the
+    pitfalls paper already exists (GenPI 2411.15927, NAACL 2025); teacher-prompt-
+    as-lever = Distilling Step-by-Step / SCoTD; prompt-vs-generator decomposition
+    = 2604.13977. Sliver: prompt-vs-recipe attribution in the reduced-vocab
+    internalization regime — a measurement only. NOT shelved (pitfalls scooped).
+
+25. Confidence/entropy-curated distillation data to cut generation cost
+    SCOOPED — LLM on a Budget (2511.11574, up to 80% fewer teacher labels);
+    Distill on a Diet (2606.25488); sample selection by teacher signal
+    (2404.03693). Sliver: reduced-vocab generative measurement only. NOT shelved.
+
+26. Distill Gemma (transformer) into a JEPA student
+    SCOOPED + PREMISE-CONFLICT — "KD via JEPA latent prediction" is owned
+    title-level (JEP-KD 2403.18843) on top of the ancient feature-KD genre
+    (FitNets/TinyBERT); "JEPA x language" is owned by the LeCun orbit itself
+    (LLM-JEPA 2509.14252; VL-JEPA 2512.10942 = predicts text EMBEDDINGS instead
+    of AR tokens, 1.6B, LeCun+Fung; JEPA-Reasoner 2512.19171; LLM2Vec-Gen
+    2603.10913 mines LLM-teacher->latent-student in 2026). Deeper: JEPA is an
+    OBJECTIVE around a transformer, not an alternative architecture, and a JEPA
+    student has NO softmax head — deleting the reduced-vocab/logit-KL axis (the
+    ANCHOR) and turning the JSON task into the classifier the thesis exists to
+    avoid. Scale floor: text-JEPA is 1.6B+ frontier-lab territory. Sliver:
+    JEPA-style latent aux-loss beside logit-KL at the tiny floor = C1's
+    "feature distillation unexplored" = same replication species as S1-S4.
+
+27. Distill via speculative decoding (student drafts training data, teacher
+    verifies/replaces tokens)
+    SCOOPED at title level — the exact mechanism is SKD (2410.11325, Google,
+    ICLR 2025): student drafts, teacher top-K accept/replace, interleaved
+    sequence = training data. Surrounding space carpet-bombed: principle =
+    GKD 2306.13649 / MiniLLM / ImitKD; reverse direction = DistillSpec
+    2310.08461; loss-level accept/reject = SpecKD 2510.24021; deployment-time
+    = Online Spec Decoding 2310.07177; 2026 niche-of-niche = Draft-OPD
+    2605.29343 + H-OPD 2607.02592; on-policy KD = standard recipe since
+    Thinking Machines blog (2025). ALSO wrong for our pipeline: puts teacher
+    in the training loop (kills the offline saved-full-distribution asset,
+    infeasible on Mac) and its motivation (exposure bias in long free-form
+    gen) ~vanishes for short deterministic JSON. Sliver (weakest yet, do NOT
+    board): nobody runs on-policy KD on a FROM-SCRATCH student (early drafts
+    = noise -> acceptance ~0 -> degenerates to supervised KD); "when does
+    on-policy start mattering from scratch" = replication-at-floor + costly.
+
+28. Watcher model predicts student correctness from its attention patterns
+    SCOOPED (saturated 2024-2026) — attention-map correctness/hallucination
+    classifiers: Lookback Lens (2407.07071), spectral attention features
+    (2502.17598), attention-head entropy predicts correctness; hidden-state
+    probes: question-only linear probes predict accuracy BEFORE generation
+    (2509.10625), self-failure via internal circuits incl. attention
+    (2512.20578), look-ahead correctness in states (2506.23274), entropy-trace
+    monitoring (2601.09001); the deferral USE CASE already died as #12
+    (Gatekeeper). At 3L/525-vocab, plain output entropy likely predicts errors
+    anyway (cheaper than any probe). Sliver: probe-as-INSTRUMENT for S6 error
+    analysis (attention encodes the failure mode), not a paper.
+
+29. Answer-slot auxiliary supervision (reserve part of output/hidden state to
+    hold the fixed-length final answer during training, aux loss on it)
+    SCOOPED (family) — answer-head beside reasoning-head = Dual-Head KD
+    (2509.21487, already owned #23); aux future/target prediction = MTP
+    (2404.19737, F5: helps big / HURTS small); latent-target aux losses =
+    Hierarchical Latent Prediction (2608.05806) + activation-space process
+    supervision + Coconut (2412.06769); deep supervision is 2015; Allen-Zhu
+    Physics 2.1 owns the phenomenon (answer precomputed in hidden states).
+    Sliver: the INTERVENTION at the tiny distilled floor as ONE audit row
+    (math templates give free ground truth; F5's conflict predicts a possible
+    clean negative at 3.4M via capacity competition). Not a paper.
+
+KNOB-TURNS (not novelty, noted for completeness)
+------------------------------------------------
+14. Teacher swap / data-scarcity curves / aux-% sweep / body depth-vs-width
+    NOT NOVELTY — standard ablations; useful robustness, no contribution claim.
+
+15. Reduced INPUT-vocab on math/post-gen (thesis gap)
+    MATHEMATICALLY INERT — dropping unused embedding rows cannot change outputs;
+    it's compression, not behavior. Closes a gap, claims nothing.
+
+========================================================================
+THE RECURRING PATTERN
+Every check dies the same way: the PHENOMENON is owned (usually by 2019-2023
+work + a fresh 2025/2026 paper), and the only thing left unclaimed is OUR
+SPECIFIC SANDBOX — sub-10M, from-scratch, reduced-output-vocab, logit-distilled
+generative students. Nobody instruments these questions at that extreme; the
+whole field works on pretrained 100M-7B models. So the honest recurring survivor
+is "does known-effect-X reproduce at the tiny reduced-vocab floor" =
+replication-at-new-scale, thin on novelty but legitimate for an applied venue.
+
+STILL STANDING (thin): #8 co-compression interaction; #13's one fresh variable
+(output-vocab size as a reasoning-capacity axis, not the scale floor itself).
+
+ASSET (unchanged): tested end-to-end pipeline + swappable teacher/domain/schedule
++ existing data => any new idea is testable end-to-end in ~1 week.
+========================================================================
