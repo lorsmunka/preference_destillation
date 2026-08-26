@@ -40,7 +40,11 @@ def _render_training(batches, title: str, out_path: Path):
     for ax, (label, values, color) in zip(axes.flat, series):
         ax.plot(index, values, color=color, alpha=0.3, linewidth=0.6)
         smoothed = moving_average(values, window)
-        ax.plot(index[window - 1:][: len(smoothed)], smoothed, color=color, linewidth=2)
+        # moving_average returns the values untouched when there are fewer than `window` of
+        # them, so derive the x offset from the lengths instead of assuming a valid-mode
+        # convolution — otherwise short runs plot an empty x against a full y.
+        offset = len(values) - len(smoothed)
+        ax.plot(index[offset:], smoothed, color=color, linewidth=2)
         ax.set_title(label)
         ax.set_xlabel("Batch")
         ax.grid(True, alpha=0.3)

@@ -28,3 +28,5 @@ test.json
 Thumbs.db
 
 node_modules/
+# Archived run artifacts (see saves/runs-archive-manifest.tsv)
+saves/

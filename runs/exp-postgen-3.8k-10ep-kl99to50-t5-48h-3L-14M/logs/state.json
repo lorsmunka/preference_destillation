@@ -1,9 +1,0 @@
-{
-    "processed_sentence_count": 0,
-    "successful_sentence_count": 0,
-    "current_epoch": 9,
-    "current_batch": 96,
-    "total_batches_processed": 960,
-    "total_runtime_seconds": 11150.420099258423,
-    "session_count": 1
-}
