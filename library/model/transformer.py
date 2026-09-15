@@ -175,6 +175,11 @@ class Transformer(nn.Module):
 
         return logits
 
+    def set_attention_noise(self, sigma: float) -> None:
+        """Set the gaussian noise level on every attention layer (only applied in training mode)."""
+        for layer in self.transformer_layers:
+            layer.attention.attention_noise = sigma
+
     def create_causal_mask(self, seq_length: int, device: torch.device) -> torch.Tensor:
         mask = torch.triu(torch.ones(
             seq_length, seq_length, device=device), diagonal=1)
@@ -318,6 +323,7 @@ class MultiHeadAttention(nn.Module):
 
         self.output = nn.Linear(hidden_dim, hidden_dim, bias=False)
         self.dropout = nn.Dropout(dropout)
+        self.attention_noise = 0.0  # sigma of gaussian noise on attention logits; set by the trainer, training only
 
     def forward(
         self,
@@ -341,6 +347,9 @@ class MultiHeadAttention(nn.Module):
         Q, K = apply_rotary_pos_emb(Q, K, cos, sin)
 
         attention_scores = torch.matmul(Q, K.transpose(-2, -1)) / self.scale
+
+        if self.training and self.attention_noise > 0:
+            attention_scores = attention_scores + torch.randn_like(attention_scores) * self.attention_noise
 
         if attention_mask is not None:
             attention_scores = attention_scores + attention_mask

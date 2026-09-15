@@ -93,12 +93,15 @@ class RunLogger:
         })
 
     def log_training_batch(self, epoch, batch, steps, loss, kl_loss, ce_loss, accuracy,
-                           learning_rate, kl_ratio, temperature, time_seconds) -> None:
+                           learning_rate, kl_ratio, temperature, time_seconds,
+                           teacher_temperature=None, attention_noise=0.0) -> None:
         self._write(self.training_log_file, {
             "type": "train_batch", "epoch": epoch, "batch": batch, "steps": steps,
             "loss": round(loss, 6), "kl_loss": round(kl_loss, 6), "ce_loss": round(ce_loss, 6),
             "accuracy": round(accuracy, 4), "learning_rate": learning_rate,
             "kl_ratio": round(kl_ratio, 6), "temperature": round(temperature, 6),
+            "teacher_temperature": round(teacher_temperature if teacher_temperature is not None else temperature, 6),
+            "attention_noise": round(attention_noise, 6),
             "time_seconds": round(time_seconds, 2),
         })
 

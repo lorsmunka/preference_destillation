@@ -44,6 +44,14 @@ class TrainingRun:
     kl_ratio_end: float = 0.5
     distillation_temperature_start: float = 1.0
     distillation_temperature_end: float = 1.0
+    teacher_temperature_start: Optional[float] = None   # None = follow distillation_temperature (coupled, legacy)
+    teacher_temperature_end: Optional[float] = None
+    divergence: str = "forward_kl"                       # forward_kl | reverse_kl | js | tvd
+    entropy_kl_weighting: float = 0.0                    # 0 = scheduled ratio only; 1 = per-token ratio = teacher entropy / log V
+    kl_ratio_cycle_epochs: float = 0.0                   # 0 = off; 1.0 = one oscillation per epoch
+    kl_ratio_cycle_amplitude: float = 0.0                # 0.10 = +/-10% around the scheduled ratio
+    attention_noise_start: float = 0.0                   # gaussian sigma on attention logits, training only
+    attention_noise_end: float = 0.0                     # start > end anneals noise down, start < end anneals it up
     eval_top_k: int = 20
     eval_cap_multiple: float = 2.0
     description: str = ""

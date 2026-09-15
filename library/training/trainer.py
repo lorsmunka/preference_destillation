@@ -36,6 +36,17 @@ class Trainer:
         self.kl_ratio_end = config['kl_ratio_end']
         self.distillation_temperature_start = config['distillation_temperature_start']
         self.distillation_temperature_end = config['distillation_temperature_end']
+        # New dials — all read with defaults so older dict configs and info.json files still load.
+        self.teacher_temperature_start = config.get('teacher_temperature_start')
+        self.teacher_temperature_end = config.get('teacher_temperature_end')
+        if self.teacher_temperature_start is not None and self.teacher_temperature_end is None:
+            self.teacher_temperature_end = self.teacher_temperature_start
+        self.divergence = config.get('divergence', 'forward_kl')
+        self.entropy_kl_weighting = config.get('entropy_kl_weighting', 0.0)
+        self.kl_ratio_cycle_epochs = config.get('kl_ratio_cycle_epochs', 0.0)
+        self.kl_ratio_cycle_amplitude = config.get('kl_ratio_cycle_amplitude', 0.0)
+        self.attention_noise_start = config.get('attention_noise_start', 0.0)
+        self.attention_noise_end = config.get('attention_noise_end', 0.0)
         self.lr_warmup_ratio = config['lr_warmup_ratio']
         self.checkpoints_dir = config.get('checkpoints_dir', './checkpoints')
         self.logs_dir = config.get('logs_dir', './logs')
@@ -54,6 +65,7 @@ class Trainer:
 
         self.batch_handler = batch_handler
         batch_count = batch_handler.get_training_batches_radius()[1]
+        self.steps_per_epoch = batch_count
         self.total_training_steps = self.epoch_count_value * batch_count
         self.current_step = 0
         self.warmup_steps = int(self.total_training_steps * self.lr_warmup_ratio)
@@ -193,7 +205,9 @@ class Trainer:
             learning_rate=current_lr,
             kl_ratio=current_kl_ratio,
             temperature=current_temperature,
-            time_seconds=batch_elapsed
+            time_seconds=batch_elapsed,
+            teacher_temperature=self._get_current_teacher_temperature(),
+            attention_noise=self._get_current_attention_noise(),
         )
 
         if (batch_idx + 1) % 100 == 0:
@@ -264,6 +278,7 @@ class Trainer:
             all_target_indices, dtype=torch.long, device=self.device)
 
         self.optimizer.zero_grad(set_to_none=True)
+        self.model.set_attention_noise(self._get_current_attention_noise())
         model_logits = self.model(input_tensor)
 
         sentence_length = len(sentence_tokens)
@@ -465,19 +480,35 @@ class Trainer:
         return (total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct,
                 student_correct, num_steps, student_tokens, distribution, terminated, len(student_tokens))
 
-    def _get_current_temperature(self) -> float:
+    def _cosine_between(self, start: float, end: float) -> float:
+        """Cosine interpolation from `start` (step 0) to `end` (last step) — the schedule shape
+        every annealed dial shares."""
         if self.total_training_steps <= 1:
-            return self.distillation_temperature_start
+            return start
         progress = self.current_step / self.total_training_steps
         cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
-        return self.distillation_temperature_end + (self.distillation_temperature_start - self.distillation_temperature_end) * cosine_decay
+        return end + (start - end) * cosine_decay
+
+    def _get_current_temperature(self) -> float:
+        return self._cosine_between(self.distillation_temperature_start, self.distillation_temperature_end)
+
+    def _get_current_teacher_temperature(self) -> float:
+        """The teacher's own softmax temperature — the entropy dial. Follows the student's
+        temperature unless teacher_temperature_start is set."""
+        if self.teacher_temperature_start is None:
+            return self._get_current_temperature()
+        return self._cosine_between(self.teacher_temperature_start, self.teacher_temperature_end)
 
     def _get_current_kl_ratio(self) -> float:
-        if self.total_training_steps <= 1:
-            return self.kl_ratio_start
-        progress = self.current_step / self.total_training_steps
-        cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
-        return self.kl_ratio_end + (self.kl_ratio_start - self.kl_ratio_end) * cosine_decay
+        ratio = self._cosine_between(self.kl_ratio_start, self.kl_ratio_end)
+        if self.kl_ratio_cycle_epochs > 0 and self.kl_ratio_cycle_amplitude > 0:
+            progress_in_epochs = self.current_step / max(self.steps_per_epoch, 1)
+            ratio += self.kl_ratio_cycle_amplitude * math.sin(
+                2 * math.pi * progress_in_epochs / self.kl_ratio_cycle_epochs)
+        return min(1.0, max(0.0, ratio))
+
+    def _get_current_attention_noise(self) -> float:
+        return self._cosine_between(self.attention_noise_start, self.attention_noise_end)
 
     def _get_current_learning_rate(self) -> float:
         if self.warmup_steps > 0 and self.current_step <= self.warmup_steps:
@@ -517,20 +548,54 @@ class Trainer:
 
     def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
                        target_indices: torch.Tensor, reduction: str = 'mean'):
-        temperature = self._get_current_temperature()
-        student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
-        teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
+        """Per-token distribution-matching term (the chosen divergence) mixed with per-token
+        cross-entropy. With every new dial at its default this is exactly the original
+        forward-KL + CE loss."""
+        student_temperature = self._get_current_temperature()
+        teacher_temperature = self._get_current_teacher_temperature()
+        student_log_probs = F.log_softmax(student_logits / student_temperature, dim=-1)
+        teacher_probs = F.softmax(teacher_logits / teacher_temperature, dim=-1)
 
-        kl_reduction = 'batchmean' if reduction == 'mean' else reduction
-        kl_loss = F.kl_div(student_log_probs, teacher_probs,
-                           reduction=kl_reduction) * (temperature ** 2)
-        ce_loss = F.cross_entropy(
-            student_logits / temperature, target_indices, reduction=reduction) * (temperature ** 2)
+        divergence_per_token = self._divergence_per_token(student_log_probs, teacher_probs) * (student_temperature ** 2)
+        ce_per_token = F.cross_entropy(
+            student_logits / student_temperature, target_indices, reduction='none') * (student_temperature ** 2)
 
-        kl_ratio = self._get_current_kl_ratio()
-        combined_loss = kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss
+        kl_ratio_per_token = self._kl_ratio_per_token(teacher_probs)
+        combined_per_token = kl_ratio_per_token * divergence_per_token + (1 - kl_ratio_per_token) * ce_per_token
 
-        return kl_loss, ce_loss, combined_loss
+        if reduction == 'mean':
+            return divergence_per_token.mean(), ce_per_token.mean(), combined_per_token.mean()
+        return divergence_per_token.sum(), ce_per_token.sum(), combined_per_token.sum()
+
+    def _divergence_per_token(self, student_log_probs: torch.Tensor, teacher_probs: torch.Tensor) -> torch.Tensor:
+        """One number per token for the chosen divergence (the #38 zoo), summed over the vocabulary."""
+        if self.divergence == 'forward_kl':  # KL(teacher || student) — the classic Hinton direction
+            return F.kl_div(student_log_probs, teacher_probs, reduction='none').sum(dim=-1)
+        teacher_log_probs = torch.log(teacher_probs.clamp_min(1e-12))
+        student_probs = student_log_probs.exp()
+        if self.divergence == 'reverse_kl':  # KL(student || teacher) — mode-seeking
+            return (student_probs * (student_log_probs - teacher_log_probs)).sum(dim=-1)
+        if self.divergence == 'js':  # Jensen-Shannon: symmetric, bounded
+            mixture_log_probs = torch.log((0.5 * (student_probs + teacher_probs)).clamp_min(1e-12))
+            teacher_side = (teacher_probs * (teacher_log_probs - mixture_log_probs)).sum(dim=-1)
+            student_side = (student_probs * (student_log_probs - mixture_log_probs)).sum(dim=-1)
+            return 0.5 * teacher_side + 0.5 * student_side
+        if self.divergence == 'tvd':  # total variation distance
+            return 0.5 * (student_probs - teacher_probs).abs().sum(dim=-1)
+        raise ValueError(f"Unknown divergence {self.divergence!r}; use forward_kl, reverse_kl, js or tvd")
+
+    def _kl_ratio_per_token(self, teacher_probs: torch.Tensor) -> torch.Tensor:
+        """Weight of the divergence term per token. entropy_kl_weighting blends the scheduled
+        ratio with the teacher's normalized entropy at that token (0..1, over log V), so
+        confident tokens lean on cross-entropy and uncertain tokens on the divergence."""
+        scheduled_ratio = self._get_current_kl_ratio()
+        token_count = teacher_probs.shape[0]
+        if self.entropy_kl_weighting <= 0:
+            return torch.full((token_count,), scheduled_ratio, device=teacher_probs.device)
+        entropy = -(teacher_probs * torch.log(teacher_probs.clamp_min(1e-12))).sum(dim=-1)
+        normalized_entropy = entropy / math.log(teacher_probs.shape[-1])
+        weight = self.entropy_kl_weighting
+        return (1 - weight) * scheduled_ratio + weight * normalized_entropy
 
     def save_checkpoint(self, epoch: int, train_loss: float, filepath: str = None):
         start_time = time()

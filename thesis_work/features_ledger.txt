@@ -1,0 +1,12 @@
+FEATURES LEDGER — what got added to the toolkit, one line each
+Newest at the bottom. All dials live on TrainingRun (library/specs.py);
+every one defaults to the old behaviour, so existing runs reproduce.
+
+2026-09-15
+- teacher_temperature_start / _end   teacher softmax gets its own schedule (the entropy dial); None = coupled to student temperature as before
+- divergence                         forward_kl (default) | reverse_kl | js | tvd — the #38 zoo, offline on stored logits
+- entropy_kl_weighting               0..1; per-token KL weight blends scheduled ratio with teacher entropy / log V (idea #58)
+- kl_ratio_cycle_epochs + _amplitude oscillating annealing (idea #36); cycle length in epochs, amplitude as +/- around the schedule; 0 = off
+- attention_noise_start / _end       gaussian sigma on attention logits, training only, cosine-annealed; start > end = fade out (idea #30)
+- logs                               train_batch records now carry teacher_temperature and attention_noise
+- (no new param) CE->KL vs KL->CE    already expressed by kl_ratio_start/_end: start < end is CE->KL, start > end is KL->CE
