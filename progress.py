@@ -22,6 +22,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
+STOP_PATH = Path("STOP")    # library.shared.exit_listener watches this file
 RUNS_DIR = Path("runs")
 LOG_DIRS = [Path("experiments"), Path(".")]
 CHART_POINTS = 400          # train_batch records kept for the chart
@@ -254,10 +255,16 @@ def batches_per_epoch(info, batch_records):
     return max((r.get("batch", 0) for r in batch_records), default=0)
 
 
+def request_stop(path=STOP_PATH):
+    """Ask the running script to stop after its current batch (saves a resume checkpoint)."""
+    path.write_text(datetime.now().isoformat(timespec="seconds"), encoding="utf-8")
+
+
 def build_state():
     infos = run_infos()
     name = current_run(infos)
-    state = {"now": datetime.now().isoformat(timespec="seconds"), "gpu": GPU, "run": None}
+    state = {"now": datetime.now().isoformat(timespec="seconds"), "gpu": GPU, "run": None,
+             "stop_pending": STOP_PATH.exists()}
 
     log_path = newest_console_log()
     state["console"] = {"file": str(log_path) if log_path else None,
@@ -348,8 +355,11 @@ pre{margin:0;font:11.5px/1.45 var(--mono);color:#b9c6d2;white-space:pre-wrap;wor
 .tick{color:var(--dim);font-size:12px;font-family:var(--mono)}
 .about{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;margin-top:10px}.about pre{background:#0b0f14;padding:8px 10px;border-radius:4px}
 details summary{font-size:13px}
+button#stop{background:#2a1a1a;color:#f2a8a8;border:1px solid #6b2b2b;border-radius:4px;padding:5px 12px;font:13px inherit;cursor:pointer}
+button#stop:hover{background:#3a1f1f}button#stop[disabled]{opacity:.55;cursor:default}
 </style></head><body><div class="wrap">
-<h1 id="title">Training progress</h1><p class="sub" id="subtitle">waiting for data…</p>
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px"><h1 id="title">Training progress</h1>
+ <button id="stop" onclick="stopRun()">Stop gracefully</button></div><p class="sub" id="subtitle">waiting for data…</p>
 <div class="grid">
  <div class="panel wide"><p class="label">Now</p><div class="big mono" id="runname">—</div>
   <div class="bar"><i id="bar" style="width:0%"></i></div>
@@ -383,7 +393,8 @@ function draw(chart){const c=$('chart'),ctx=c.getContext('2d');const W=c.width,H
   for(const p of chart){if(p[key]==null)continue;const x=X(p.x),y=Y(p[key],lo,hi);s?ctx.lineTo(x,y):ctx.moveTo(x,y);s=true;}ctx.stroke();ctx.setLineDash([]);};
  line('loss','#5aa9ff',lmin,lmax);line('accuracy','#7fd48a',0,1);line('kl_ratio','#f0b35c',0,1,[4,4]);}
 function render(s){lastState=s;const r=s.run;
- $('subtitle').textContent=(s.console.file?('console: '+s.console.file+' · '):'')+'updated '+s.now.replace('T',' ');
+ $('subtitle').textContent=(s.console.file?('console: '+s.console.file+' · '):'')+'updated '+s.now.replace('T',' ')+(s.stop_pending?'  ·  STOP REQUESTED — finishing the current batch, then saving':'');
+ $('stop').disabled=s.stop_pending;$('stop').textContent=s.stop_pending?'Stop requested…':'Stop gracefully';
  if(!r){$('runname').textContent='no runs found';return;}
  $('runname').textContent=r.name+'   ['+r.status+']';$('bar').style.width=(r.progress*100).toFixed(1)+'%';
  const el=r.started_at?((Date.now()-Date.parse(r.started_at))/60000):null;
@@ -400,6 +411,8 @@ function render(s){lastState=s;const r=s.run;
   $('groups').innerHTML=Object.entries(e.groups||{}).map(([g,c])=>`<tr><td>${g}</td><td class="r">${c.completed}/${c.seen} done</td></tr>`).join('');
   $('exp').innerHTML='<tr><th>run</th><th>kl</th><th>status</th><th class="r">min</th><th class="r">task best</th><th class="r">task final</th><th class="r">overlap</th><th class="r">H stu</th></tr>'+e.rows.map(x=>`<tr class="${x.run===r.name?'now':''}"><td>${x.run}</td><td>${x.kl}</td><td>${x.status}</td><td class="r">${f(x.minutes,1)}</td><td class="r">${pct(x.task_best)}</td><td class="r">${pct(x.task_final)}</td><td class="r">${pct(x.overlap_final)}</td><td class="r">${f(x.student_entropy_final,2)}</td></tr>`).join('');}
  $('conlabel').textContent='Console — '+(s.console.file||'');$('console').textContent=s.console.lines.join('\\n');$('console').scrollTop=$('console').scrollHeight;}
+async function stopRun(){const r=lastState&&lastState.run;if(!confirm('Stop after the current batch? The run saves a resume checkpoint; re-running the same experiment command continues from it.'+(r?'\\n\\nCurrent run: '+r.name:''))) return;
+ await fetch('/api/stop',{method:'POST'});poll();}
 async function poll(){try{const s=await(await fetch('/api/state')).json();lastFetch=Date.now();render(s);}catch(err){$('subtitle').textContent='server unreachable — '+err;}}
 setInterval(poll,3000);poll();
 setInterval(()=>{if(lastState&&lastState.run&&lastState.run.started_at){const el=(Date.now()-Date.parse(lastState.run.started_at))/60000;const t=$('progress').textContent.replace(/elapsed [^·]+/,'elapsed '+el.toFixed(1)+' min');$('progress').textContent=t;}},1000);
@@ -407,6 +420,13 @@ setInterval(()=>{if(lastState&&lastState.run&&lastState.run.started_at){const el
 
 
 class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == "/api/stop":
+            request_stop()
+            self._send(200, "application/json", b'{"ok": true}')
+        else:
+            self._send(404, "text/plain", b"not found")
+
     def do_GET(self):
         if self.path.startswith("/api/state"):
             body = json.dumps(build_state()).encode("utf-8")

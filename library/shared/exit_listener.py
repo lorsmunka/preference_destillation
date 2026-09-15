@@ -1,5 +1,8 @@
+import os
 import signal
 import sys
+
+STOP_FILE = "STOP"   # create this file in the working directory to request a graceful exit
 
 try:
     from pynput import keyboard
@@ -13,6 +16,8 @@ class ExitListener:
         self.should_exit = False
         self.exit_key = exit_key
         self.listener = None
+        if os.path.exists(STOP_FILE):   # a leftover from an earlier stop must not kill this run
+            os.remove(STOP_FILE)
 
         if PYNPUT_AVAILABLE:
             try:
@@ -40,6 +45,10 @@ class ExitListener:
             pass
 
     def check_exit(self):
+        if not self.should_exit and os.path.exists(STOP_FILE):
+            self.should_exit = True
+            os.remove(STOP_FILE)
+            print("\nStop file found — exiting gracefully.")
         return self.should_exit
 
     def stop(self):
