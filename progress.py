@@ -147,6 +147,60 @@ class ExperimentCache:
 
 EXPERIMENT_CACHE = ExperimentCache()
 
+EXPERIMENTS_DIR = Path("experiments")
+LEDGER_PATH = Path("thesis_work") / "experiment_ledger.txt"
+DESCRIPTION_CACHE = {}   # tag -> {"script", "docstring", "ledger"}
+RUN_BOOKKEEPING_KEYS = {"run_name", "description", "status", "started_at", "completed_at", "model_info", "experiment"}
+
+
+def experiment_description(tag):
+    """The script that declares this tag (its path + docstring) and the ledger block for it."""
+    if tag in DESCRIPTION_CACHE:
+        return DESCRIPTION_CACHE[tag]
+    import ast
+    script, docstring = None, None
+    if EXPERIMENTS_DIR.is_dir():
+        for path in sorted(EXPERIMENTS_DIR.glob("*.py")):
+            try:
+                source = path.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if re.search(r"^EXPERIMENT\s*=\s*[\"']" + re.escape(tag) + r"[\"']", source, re.MULTILINE):
+                script = str(path)
+                try:
+                    docstring = ast.get_docstring(ast.parse(source))
+                except SyntaxError:
+                    docstring = None
+                break
+    ledger = None
+    number = re.match(r"e(\d+)-", tag or "")
+    if number and LEDGER_PATH.exists():
+        key = f"E-{int(number.group(1)):02d}"
+        block, inside = [], False
+        for line in LEDGER_PATH.read_text(encoding="utf-8").splitlines():
+            if re.match(r"^E-\d+", line):
+                if inside:
+                    break
+                inside = line.startswith(key + " ")
+            if inside:
+                block.append(line)
+        ledger = "\n".join(block).strip() or None
+    DESCRIPTION_CACHE[tag] = {"script": script, "docstring": docstring, "ledger": ledger}
+    return DESCRIPTION_CACHE[tag]
+
+
+def config_split(run_infos_for_tag):
+    """Which config fields are shared by every run of the experiment, and which vary (the arms)."""
+    values = {}
+    for info in run_infos_for_tag:
+        for key, value in info.items():
+            if key in RUN_BOOKKEEPING_KEYS:
+                continue
+            values.setdefault(key, set()).add(json.dumps(value, sort_keys=True))
+    shared = {k: json.loads(next(iter(v))) for k, v in values.items() if len(v) == 1}
+    varying = {k: sorted(json.loads(x) for x in v) for k, v in values.items() if len(v) > 1}
+    return shared, varying
+
 
 # ── gpu sampler (one process spawn per 5 s, in its own thread) ────────
 
@@ -251,12 +305,23 @@ def build_state():
     rows = sorted((EXPERIMENT_CACHE.summary(n, i, m) for n, i, m in siblings), key=lambda r: r["run"])
     completed = [r for r in rows if r["status"] == "completed" and r["minutes"]]
     mean_minutes = sum(r["minutes"] for r in completed) / len(completed) if completed else None
+    shared, varying = config_split([i for _, i, _ in siblings])
+    per_group = {}
+    for row in rows:
+        group = f"{row['domain']} · kl {row['kl']}"
+        bucket = per_group.setdefault(group, {"completed": 0, "seen": 0})
+        bucket["seen"] += 1
+        bucket["completed"] += row["status"] == "completed"
     state["experiment"] = {
         "tag": tag,
         "rows": rows,
         "completed": len(completed),
         "total": planned_run_count(log_path) or len(rows),
         "mean_minutes": mean_minutes,
+        "shared_config": shared,
+        "varying_config": varying,
+        "groups": per_group,
+        **experiment_description(tag),
     }
     return state
 
@@ -281,6 +346,8 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}th{color:var(--dim);f
 td{padding:3px 6px;border-bottom:1px solid #1d2630;font-family:var(--mono);font-size:12px}td.r{text-align:right}tr.now td{color:var(--acc)}
 pre{margin:0;font:11.5px/1.45 var(--mono);color:#b9c6d2;white-space:pre-wrap;word-break:break-all;max-height:320px;overflow:auto}
 .tick{color:var(--dim);font-size:12px;font-family:var(--mono)}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;margin-top:10px}.about pre{background:#0b0f14;padding:8px 10px;border-radius:4px}
+details summary{font-size:13px}
 </style></head><body><div class="wrap">
 <h1 id="title">Training progress</h1><p class="sub" id="subtitle">waiting for data…</p>
 <div class="grid">
@@ -291,7 +358,13 @@ pre{margin:0;font:11.5px/1.45 var(--mono);color:#b9c6d2;white-space:pre-wrap;wor
  <div class="panel wide"><p class="label">Current run — loss (blue) and token accuracy (green) per batch · KL ratio (amber, dashed)</p><canvas id="chart" width="1120" height="220"></canvas></div>
  <div class="panel"><p class="label">Epoch evaluations</p><table id="evals"></table></div>
  <div class="panel"><p class="label">GPU</p><div id="gpu">—</div></div>
- <div class="panel wide"><p class="label" id="explabel">Experiment</p><div class="tick" id="eta"></div><div style="max-height:300px;overflow:auto;margin-top:6px"><table id="exp"></table></div></div>
+ <div class="panel wide"><p class="label" id="explabel">Experiment</p><div class="tick" id="eta"></div>
+  <details id="about" style="margin-top:8px"><summary style="cursor:pointer;color:var(--acc)">About this experiment — what is being tested, the arms, the shared config</summary>
+   <div class="about"><div><p class="label">Script</p><div class="tick" id="script"></div><pre id="docstring" style="max-height:260px"></pre></div>
+   <div><p class="label">Varies across runs (the arms)</p><table id="varying"></table><p class="label" style="margin-top:10px">Progress per group</p><table id="groups"></table></div>
+   <div><p class="label">Shared by every run</p><table id="shared"></table></div>
+   <div><p class="label">Experiment ledger entry</p><pre id="ledger" style="max-height:260px"></pre></div></div></details>
+  <div style="max-height:300px;overflow:auto;margin-top:10px"><table id="exp"></table></div></div>
  <div class="panel wide"><p class="label" id="conlabel">Console</p><pre id="console"></pre></div>
 </div></div>
 <script>
@@ -321,6 +394,10 @@ function render(s){lastState=s;const r=s.run;
  const g=s.gpu;$('gpu').innerHTML=g.available?`<div class="tick">${g.utilization.toFixed(0)}% util · ${(g.memory_used/1024).toFixed(1)} / ${(g.memory_total/1024).toFixed(1)} GB · ${g.temperature.toFixed(0)}°C</div><div class="bar gpu"><i style="width:${g.utilization}%"></i></div><div class="bar"><i style="width:${g.memory_used/g.memory_total*100}%"></i></div>`:'nvidia-smi unavailable';
  const e=s.experiment;if(e){$('explabel').textContent=`Experiment ${e.tag} — ${e.completed}/${e.total} runs completed`;
   const rem=e.total-e.completed;$('eta').textContent=e.mean_minutes?`mean ${e.mean_minutes.toFixed(1)} min/run · ${rem} left ≈ ${(rem*e.mean_minutes/60).toFixed(1)} h · ETA ${new Date(Date.now()+rem*e.mean_minutes*60000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`:'';
+  $('script').textContent=e.script||'(no experiments/*.py declares this tag)';$('docstring').textContent=e.docstring||'';$('ledger').textContent=e.ledger||'(no ledger entry)';
+  const kv=obj=>Object.entries(obj||{}).map(([k,v])=>`<tr><td>${k}</td><td>${Array.isArray(v)?v.map(x=>JSON.stringify(x)).join(' · '):JSON.stringify(v)}</td></tr>`).join('');
+  $('varying').innerHTML=kv(e.varying_config)||'<tr><td>—</td></tr>';$('shared').innerHTML=kv(e.shared_config);
+  $('groups').innerHTML=Object.entries(e.groups||{}).map(([g,c])=>`<tr><td>${g}</td><td class="r">${c.completed}/${c.seen} done</td></tr>`).join('');
   $('exp').innerHTML='<tr><th>run</th><th>kl</th><th>status</th><th class="r">min</th><th class="r">task best</th><th class="r">task final</th><th class="r">overlap</th><th class="r">H stu</th></tr>'+e.rows.map(x=>`<tr class="${x.run===r.name?'now':''}"><td>${x.run}</td><td>${x.kl}</td><td>${x.status}</td><td class="r">${f(x.minutes,1)}</td><td class="r">${pct(x.task_best)}</td><td class="r">${pct(x.task_final)}</td><td class="r">${pct(x.overlap_final)}</td><td class="r">${f(x.student_entropy_final,2)}</td></tr>`).join('');}
  $('conlabel').textContent='Console — '+(s.console.file||'');$('console').textContent=s.console.lines.join('\\n');$('console').scrollTop=$('console').scrollHeight;}
 async function poll(){try{const s=await(await fetch('/api/state')).json();lastFetch=Date.now();render(s);}catch(err){$('subtitle').textContent='server unreachable — '+err;}}

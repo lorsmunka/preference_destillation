@@ -9,7 +9,7 @@ RUNNING
                      Graceful stop: press % in any window (pynput global hook).
                      Results -> experiments/results/e01_anneal_direction.csv when done.
                      Skips completed runs, so re-run the same command if interrupted.
-- dashboard          python progress.py  ->  http://localhost:8765   (pid 10120)
+- dashboard          python progress.py  ->  http://localhost:8765   (pid 41636)
                      live view of the current run, the experiment table with ETA, GPU,
                      and the console tail. ~5 ms per 3 s poll, no GPU. Ctrl+C or kill to stop.
 
