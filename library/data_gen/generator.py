@@ -36,7 +36,11 @@ class DistillationDataGenerator:
         output_dir = get_output_dir(self.domain.name, self.model_name)
 
         self.input_handler = InputHandler(input_path)
-        self.model_handler = ModelHandler(self.model_name, self.domain)
+        self.model_handler = ModelHandler(
+            self.model_name, self.domain,
+            load_in_4bit=self.config.get("load_in_4bit", False),
+            chat_template=self.config.get("chat_template", False),
+            thinking=self.config.get("thinking", False))
         self.logger = RunLogger(output_dir, batch_size=self.batch_size)
         self.saving_handler = SavingHandler(self.logger, output_dir)
 

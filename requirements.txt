@@ -1,6 +1,6 @@
 # Core — train / generate / analyze
 torch
-transformers
+transformers>=5.10          # Gemma 4 (gemma4_unified) needs 5.x
 numpy
 matplotlib
 
@@ -8,3 +8,5 @@ matplotlib
 kagglehub
 pandas
 tqdm
+compressed-tensors>=0.18    # loads the w4a16 (QAT 4-bit) Gemma 4 teacher
+protobuf

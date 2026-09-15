@@ -2,7 +2,7 @@ from time import time
 from typing import Dict, List, Tuple, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, CompressedTensorsConfig
 
 from library.shared.vocabulary import (
     build_vocabulary,
@@ -13,32 +13,62 @@ from library.shared.device import get_device
 from library.domain import as_domain
 
 
+MAX_THINKING_TOKENS = 1024
+
+
 class ModelHandler:
-    def __init__(self, model_name: str, domain):
+    def __init__(self, model_name: str, domain, load_in_4bit: bool = False,
+                 chat_template: bool = False, thinking: bool = False):
         self.model_name = model_name
         self.domain_handler = as_domain(domain)  # accepts a Domain object or a name string
         self.max_generation_steps = self.domain_handler.max_steps
+        self.load_in_4bit = load_in_4bit
+        self.chat_template = chat_template or thinking
+        self.thinking = thinking
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
         self.response_tokens: Optional[List[str]] = None
+        self.thought_end_token_id: Optional[int] = None
 
         self.load_tokenizer_and_model()
 
     def load_tokenizer_and_model(self):
         start_time = time()
-        print("Loading tokenizer and model...")
+        print(f"Loading tokenizer and model{' (4-bit NF4)' if self.load_in_4bit else ''}...")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            self.model_name,
-            device_map="auto",
-            dtype=torch.bfloat16
-        )
+        load_kwargs = dict(device_map="auto", dtype=torch.bfloat16)
+        if self.load_in_4bit:
+            load_kwargs["quantization_config"] = BitsAndBytesConfig(
+                load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
+        elif self.is_compressed_tensors_checkpoint():
+            # Already-quantized (e.g. Google's QAT w4a16) checkpoints: keep the weights packed
+            # on the GPU. The default would unpack them to bf16 — 24 GB for a 12B model.
+            load_kwargs["quantization_config"] = CompressedTensorsConfig(run_compressed=True)
+        self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **load_kwargs)
+        if self.thinking:
+            self.thought_end_token_id = self.find_thought_end_token()
         elapsed_time = time() - start_time
         print(
             f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
 
         self.create_vocabulary()
+
+    def is_compressed_tensors_checkpoint(self) -> bool:
+        quantization = getattr(AutoConfig.from_pretrained(self.model_name), "quantization_config", None)
+        method = quantization.get("quant_method") if isinstance(quantization, dict) else getattr(quantization, "quant_method", None)
+        return method == "compressed-tensors"
+
+    def find_thought_end_token(self) -> int:
+        """The special token that closes Gemma 4's thinking channel. Fails loudly on a
+        tokenizer that has no such token, rather than silently generating without it."""
+        candidates = [token for token in self.tokenizer.get_vocab() if "channel" in token and "|" in token]
+        closers = [token for token in candidates if token.startswith("<channel")]
+        if not closers:
+            raise ValueError(f"{self.model_name}: thinking=True but no thought-channel close token in the "
+                             f"tokenizer (channel-like tokens: {candidates[:6]})")
+        return self.tokenizer.convert_tokens_to_ids(closers[0])
 
     def create_vocabulary(self):
         start_time = time()
@@ -52,7 +82,24 @@ class ModelHandler:
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
 
     def build_prompt(self, text: str) -> str:
-        return self.domain_handler.teacher_prompt(text)
+        prompt = self.domain_handler.teacher_prompt(text)
+        if not self.chat_template:
+            return prompt
+        return self.tokenizer.apply_chat_template(
+            [{"role": "user", "content": prompt}], tokenize=False,
+            add_generation_prompt=True, enable_thinking=self.thinking)
+
+    def generate_thinking(self, input_ids: torch.Tensor):
+        """Let the teacher think (greedy, plain generate — no logits kept), stopping when the
+        thought channel closes. Returns (sequence including the thought, thought text)."""
+        with torch.no_grad():
+            output = self.model.generate(
+                input_ids, attention_mask=torch.ones_like(input_ids), do_sample=False,
+                max_new_tokens=MAX_THINKING_TOKENS, eos_token_id=self.thought_end_token_id,
+                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id)
+        new_tokens = output[0, input_ids.shape[1]:]
+        thought = self.tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+        return output, thought
 
     def is_stop(self, last_token_decoded: str, generated_text: str) -> bool:
         return self.domain_handler.is_stop(last_token_decoded, generated_text)
@@ -66,6 +113,9 @@ class ModelHandler:
         steps = []
         generated_text = ""
         current_sequence = inputs['input_ids']
+        thinking = ""
+        if self.thinking:
+            current_sequence, thinking = self.generate_thinking(current_sequence)
 
         last_token_decoded = ""
         while not self.is_stop(last_token_decoded, generated_text) and len(steps) <= self.max_generation_steps:
@@ -100,11 +150,14 @@ class ModelHandler:
                 f"\tSkipped: Generated response is too long ({len(response_tokens)} tokens).")
             return None, "too_long"
 
-        return {
+        example = {
             "sentence": text,
             "model_response": generated_text,
             "steps": steps
-        }, None
+        }
+        if self.thinking:
+            example["thinking"] = thinking
+        return example, None
 
     def generate_single_step(self, current_sequence: torch.Tensor) -> Tuple[str, str, List[float], int, torch.Tensor]:
         current_inputs = {

@@ -104,6 +104,7 @@ def write_batch(path, records: List[dict]) -> Path:
         "sentences": [record["sentence"] for record in records],
         "model_responses": [record.get("model_response", "") for record in records],
         "tokens": [[step["token"] for step in record["steps"]] for record in records],
+        "thinking": [record.get("thinking", "") for record in records],   # teacher's reasoning trace, text only
     }
     predicted = np.asarray([step["predicted_token_index"] for record in records for step in record["steps"]],
                            dtype=np.int32)
@@ -120,6 +121,7 @@ def _read_npz(path: Path) -> List[dict]:
         predicted = data["predicted_token_index"]
         meta = json.loads(data["meta"].item())
 
+    thinking = meta.get("thinking") or [""] * len(meta["sentences"])
     records = []
     for example_index, (sentence, response, tokens) in enumerate(
             zip(meta["sentences"], meta["model_responses"], meta["tokens"])):
@@ -129,5 +131,8 @@ def _read_npz(path: Path) -> List[dict]:
              "predicted_token_index": int(predicted[start + offset])}
             for offset in range(end - start)
         ]
-        records.append({"sentence": sentence, "model_response": response, "steps": steps})
+        record = {"sentence": sentence, "model_response": response, "steps": steps}
+        if thinking[example_index]:
+            record["thinking"] = thinking[example_index]
+        records.append(record)
     return records

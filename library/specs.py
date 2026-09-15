@@ -73,10 +73,15 @@ class GenerationJob:
     teacher_model: str = DEFAULT_TEACHER_MODEL
     max_examples: int = 8000
     batch_size: int = 32
+    load_in_4bit: bool = False       # NF4 via bitsandbytes — how a 12B teacher fits a 12 GB card
+    chat_template: bool = False      # wrap the domain prompt in the tokenizer's chat template (Gemma 4 expects it)
+    thinking: bool = False           # Gemma 4 thinking mode; the trace is stored as text, only the answer gets logits
     description: str = ""
 
     def __post_init__(self):
         self.domain = as_domain(self.domain)
+        if self.thinking:
+            self.chat_template = True
 
     def as_dict(self) -> dict:
         return {
@@ -84,5 +89,8 @@ class GenerationJob:
             "model_name": self.teacher_model,
             "max_examples": self.max_examples,
             "batch_size": self.batch_size,
+            "load_in_4bit": self.load_in_4bit,
+            "chat_template": self.chat_template,
+            "thinking": self.thinking,
             "description": self.description,
         }
