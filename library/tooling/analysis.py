@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Union
 
 from . import render
+from library.shared.batch_files import batch_paths, read_batch
 from library.shared.config import batches_dir
 from .run import Experiment, Run, RunStore, sort_runs
 
@@ -66,7 +67,7 @@ class EvalResult:
 
 def _batch_paths(run: Run, split: str, max_batches: Optional[int]) -> List[Path]:
     directory = batches_dir(run.domain, run.teacher_model)
-    all_batches = sorted(directory.glob("batch_*.jsonl"), key=lambda p: int(p.stem.split("_")[-1]))
+    all_batches = batch_paths(directory)
     total = len(all_batches)
     max_examples = run.info.get("max_training_examples")
     batch_size = run.info.get("batch_size", 32)
@@ -85,11 +86,7 @@ def _batch_paths(run: Run, split: str, max_batches: Optional[int]) -> List[Path]
 
 
 def _iter_examples(batch_path: Path):
-    with open(batch_path, "r", encoding="utf-8") as file:
-        for line in file:
-            line = line.strip()
-            if line:
-                yield json.loads(line)
+    yield from read_batch(batch_path)
 
 
 class Analysis:

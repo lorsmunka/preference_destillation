@@ -12,12 +12,13 @@ Results are also written to experiments/results/domain_entropy.csv (rows replace
 """
 
 import csv
-import json
 import math
 import sys
 from pathlib import Path
 
 import numpy as np
+
+from library.shared.batch_files import batch_paths, read_batch
 
 BATCHES_ROOT = Path("batches")
 RESULTS_PATH = Path("experiments") / "results" / "domain_entropy.csv"
@@ -61,8 +62,7 @@ def field_of_each_step(steps):
 
 def iter_batch_files(domain_dir):
     for teacher_dir in sorted(p for p in domain_dir.iterdir() if p.is_dir()):
-        files = sorted(teacher_dir.glob("batch_*.jsonl"), key=lambda p: int(p.stem.split("_")[-1]))
-        yield teacher_dir.name, files[:SAMPLE_FILES]
+        yield teacher_dir.name, batch_paths(teacher_dir)[:SAMPLE_FILES]
 
 
 def summarize(entropies):
@@ -83,18 +83,16 @@ def measure_domain(domain_dir):
         per_field = {field: [] for field in REDDIT_FIELDS}
         example_count = 0
         for path in files:
-            with open(path, "r", encoding="utf-8") as file:
-                for line in file:
-                    record = json.loads(line)
-                    steps = record["steps"]
-                    if not steps:
-                        continue
-                    example_count += 1
-                    entropies = [step_entropy(step["logits"]) for step in steps]
-                    all_entropies.extend(entropies)
-                    for label, entropy in zip(field_of_each_step(steps), entropies):
-                        if label:
-                            per_field[label].append(entropy)
+            for record in read_batch(path):
+                steps = record["steps"]
+                if not steps:
+                    continue
+                example_count += 1
+                entropies = [step_entropy(step["logits"]) for step in steps]
+                all_entropies.extend(entropies)
+                for label, entropy in zip(field_of_each_step(steps), entropies):
+                    if label:
+                        per_field[label].append(entropy)
         if not all_entropies:
             continue
         rows.append({"key": f"{domain_dir.name}", "domain": domain_dir.name, "field": "all",

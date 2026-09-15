@@ -18,6 +18,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from transformers import AutoTokenizer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from library.shared.batch_files import batch_paths, read_batch_texts
 from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
 from library.shared.vocabulary import build_vocabulary
 from library.domain import as_domain
@@ -32,14 +33,9 @@ def load_chunk(worker_index, file_chunk):
     total = len(file_chunk)
 
     for file_index, filepath in enumerate(file_chunk):
-        with open(filepath, "r", encoding="utf-8") as file:
-            for line in file:
-                if not line.strip():
-                    continue
-                example = json.loads(line)
-                sentences.add(example['sentence'] + PROMPT_DELIMITER)
-                for step in example.get('steps', []):
-                    step_tokens.add(step['token'])
+        for example in read_batch_texts(filepath):
+            sentences.add(example['sentence'] + PROMPT_DELIMITER)
+            step_tokens.update(example['tokens'])
 
         if (file_index + 1) % 100 == 0:
             percentage = (file_index + 1) / total * 100
@@ -50,7 +46,7 @@ def load_chunk(worker_index, file_chunk):
 
 
 def scan_batches(batches_directory, tokenizer):
-    batch_files = glob.glob(os.path.join(batches_directory, "batch_*.jsonl"))
+    batch_files = batch_paths(batches_directory)
 
     if not batch_files:
         print(f"No batch files found in {batches_directory}")
@@ -163,7 +159,7 @@ def discover_domains(batches_root="./batches"):
             teacher_path = os.path.join(domain_path, teacher_dir)
             if not os.path.isdir(teacher_path):
                 continue
-            if glob.glob(os.path.join(teacher_path, "batch_*.jsonl")):
+            if batch_paths(teacher_path):
                 teacher_model = teacher_dir.replace("_", "/", 1)
                 domains.append((domain, teacher_model))
     return domains

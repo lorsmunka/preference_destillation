@@ -1,6 +1,6 @@
-import json
-import os
 from time import time
+
+from library.shared.batch_files import batch_count, batch_path, read_batch
 
 
 class BatchHandler:
@@ -15,8 +15,7 @@ class BatchHandler:
         print(f"Loading batch {batch_index}...")
         start_time = time()
 
-        with open(os.path.join(self.batches_dir, f"batch_{batch_index}.jsonl"), "r", encoding="utf-8") as file:
-            batch = [json.loads(line.strip()) for line in file]
+        batch = read_batch(batch_path(self.batches_dir, batch_index))
 
         elapsed_time = time() - start_time
         print(
@@ -25,10 +24,7 @@ class BatchHandler:
         return batch
 
     def get_batch_count(self):
-        files = os.listdir(self.batches_dir)
-        batch_files = [f for f in files if f.startswith(
-            "batch_") and f.endswith(".jsonl")]
-        return len(batch_files)
+        return batch_count(self.batches_dir)
 
     def _effective_batch_count(self):
         total_batches = self.get_batch_count()

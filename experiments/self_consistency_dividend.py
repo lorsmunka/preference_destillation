@@ -23,6 +23,7 @@ from _common import RESULTS_DIR, seeded_run_training, write_rows
 from library import TrainingRun
 from library.domain import MATH_WORD_PROBLEM
 from library.shared import batches_dir
+from library.shared.batch_files import batch_paths, read_batch
 
 EXPERIMENT = "ideaG-self-consistency"
 
@@ -75,22 +76,18 @@ def build_runs():
 def test_examples(run, limit):
     """Held-out examples for this run, using the same split the trainer used."""
     directory = batches_dir(run.domain, run.teacher_model)
-    batch_paths = sorted(directory.glob("batch_*.jsonl"),
-                         key=lambda path: int(path.stem.split("_")[-1]))
+    paths = batch_paths(directory)
     max_examples = run.info.get("max_training_examples")
     batch_size = run.info.get("batch_size", 32)
-    effective = min(len(batch_paths), max_examples // batch_size) if max_examples else len(batch_paths)
+    effective = min(len(paths), max_examples // batch_size) if max_examples else len(paths)
     ratio = run.info.get("training_test_ratio", 0.8)
 
     examples = []
-    for path in batch_paths[int(effective * ratio):effective]:
-        with open(path, "r", encoding="utf-8") as file:
-            for line in file:
-                line = line.strip()
-                if line:
-                    examples.append(json.loads(line))
-                    if len(examples) >= limit:
-                        return examples
+    for path in paths[int(effective * ratio):effective]:
+        for example in read_batch(path):
+            examples.append(example)
+            if len(examples) >= limit:
+                return examples
     return examples
 
 

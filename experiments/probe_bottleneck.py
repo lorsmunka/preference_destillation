@@ -28,6 +28,7 @@ from _common import RESULTS_DIR, write_rows
 from library import Analysis, RunStore
 from library.model.student import StudentModel
 from library.shared import batches_dir
+from library.shared.batch_files import batch_paths, read_batch
 
 PROBE_EXAMPLES = 20        # examples for ECE + isotropy
 GRADIENT_EXAMPLES = 8      # backward passes (one per example, gradients accumulated)
@@ -35,9 +36,8 @@ CALIBRATION_BINS = 10
 
 
 def test_examples(run, limit):
-    import json
     directory = batches_dir(run.domain, run.teacher_model)
-    paths = sorted(directory.glob("batch_*.jsonl"), key=lambda p: int(p.stem.split("_")[-1]))
+    paths = batch_paths(directory)
     max_examples = run.info.get("max_training_examples")
     batch_size = run.info.get("batch_size", 32)
     effective = min(len(paths), max_examples // batch_size) if max_examples else len(paths)
@@ -45,13 +45,10 @@ def test_examples(run, limit):
 
     examples = []
     for path in paths[int(effective * ratio):effective]:
-        with open(path, "r", encoding="utf-8") as file:
-            for line in file:
-                line = line.strip()
-                if line:
-                    examples.append(json.loads(line))
-                    if len(examples) >= limit:
-                        return examples
+        for example in read_batch(path):
+            examples.append(example)
+            if len(examples) >= limit:
+                return examples
     return examples
 
 

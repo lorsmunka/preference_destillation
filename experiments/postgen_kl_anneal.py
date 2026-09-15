@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, so `l
 from library import Analysis, TrainingRun
 from library.domain import POST_GENERATION
 from library.shared import DEFAULT_TEACHER_MODEL, batches_dir
+from library.shared.batch_files import batch_paths
 from library.training.training_runner import run_training
 
 RESULTS_PATH = Path(__file__).resolve().parent / "results" / "postgen_kl_anneal_topk.csv"
@@ -112,7 +113,7 @@ TOP_K_COLUMNS = ["run", "checkpoint", "split", "top_k", "examples", "steps",
 
 
 def batches_available() -> bool:
-    return any(batches_dir(POST_GENERATION.name, DEFAULT_TEACHER_MODEL).glob("batch_*.jsonl"))
+    return bool(batch_paths(batches_dir(POST_GENERATION.name, DEFAULT_TEACHER_MODEL)))
 
 
 def measure_top_k():

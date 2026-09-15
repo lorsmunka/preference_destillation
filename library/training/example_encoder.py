@@ -4,6 +4,7 @@ consumes. Shared by training and evaluation so they cannot drift apart."""
 from dataclasses import dataclass
 from typing import Dict, List
 
+import numpy as np
 import torch
 
 from library.shared import PROMPT_DELIMITER
@@ -58,6 +59,7 @@ class ExampleEncoder:
             sentence_tokens=sentence_tokens,
             target_indices=target_indices,
             input_tensor=torch.tensor([input_ids], dtype=torch.long, device=self.device),
-            target_logits_tensor=torch.tensor(target_logits, dtype=torch.float32, device=self.device),
+            # rows may be float16 numpy views (.npz batches) or lists (.jsonl) — one cast covers both
+            target_logits_tensor=torch.from_numpy(np.asarray(target_logits, dtype=np.float32)).to(self.device),
             target_indices_tensor=torch.tensor(target_indices, dtype=torch.long, device=self.device),
         )

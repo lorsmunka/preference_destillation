@@ -3,6 +3,7 @@ import json
 from time import time
 from datetime import datetime, timezone
 
+from library.shared.batch_files import write_batch
 from library.shared.logging import RunLogger
 
 
@@ -16,10 +17,7 @@ class SavingHandler:
     def save_batch(self, batch_examples):
         start_time = time()
 
-        path = os.path.join(self.output_dir, f"batch_{self.logger.batch_count}.jsonl")
-        with open(path, "w", encoding="utf-8") as file:
-            for example in batch_examples:
-                file.write(f"{json.dumps(example)}\n")
+        path = write_batch(os.path.join(self.output_dir, f"batch_{self.logger.batch_count}.npz"), batch_examples)
 
         elapsed_time = time() - start_time
         print(f"\nSaved batch to {path} -> took {elapsed_time:.2f} seconds.\n")
