@@ -208,3 +208,40 @@ class ExactAnswerMetric(TaskMetric):
         # The teacher prompt ends in "Answer:", so the response may start with the word itself.
         match = re.search(r"(?:Answer:)?\s*([^;\n]+);", text)
         return match.group(1).strip().lower() if match else None
+
+
+class JudgedPostMetric(TaskMetric):
+    """Post + JSON verdict: accuracy = the student's `approve` matches the teacher's;
+    an output whose verdict does not parse counts as wrong and invalid."""
+
+    name = "task_accuracy"
+
+    def __init__(self) -> None:
+        self.correct = 0
+        self.examples = 0
+        self.invalid = 0
+
+    def update(self, predicted_tokens: List[str], ground_truth_response: str) -> None:
+        from library.domain.post_generation_judged import parse_judgment
+        expected = parse_judgment(ground_truth_response)
+        if expected is None:
+            return
+        self.examples += 1
+        predicted = parse_judgment(_tokens_to_text(predicted_tokens))
+        if predicted is None:
+            self.invalid += 1
+            return
+        if predicted["approve"] == expected["approve"]:
+            self.correct += 1
+
+    def result(self) -> MetricResult:
+        accuracy = self.correct / self.examples if self.examples else 0.0
+        validity_rate = (self.examples - self.invalid) / self.examples if self.examples else None
+        return MetricResult(
+            name=self.name,
+            accuracy=accuracy,
+            correct=self.correct,
+            total=self.examples,
+            examples=self.examples,
+            validity_rate=validity_rate,
+        )
