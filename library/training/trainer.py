@@ -246,7 +246,7 @@ class Trainer:
 
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
         print("Exit requested. Saving progress...")
-        self.save_checkpoint(epoch, avg_batch_loss, filepath=self.temp_checkpoint_path)
+        self.save_checkpoint(epoch, avg_batch_loss, filepath=self.temp_checkpoint_path, include_optimizer=True)
         self.logger.save()
         return None
 
@@ -597,7 +597,10 @@ class Trainer:
         weight = self.entropy_kl_weighting
         return (1 - weight) * scheduled_ratio + weight * normalized_entropy
 
-    def save_checkpoint(self, epoch: int, train_loss: float, filepath: str = None):
+    def save_checkpoint(self, epoch: int, train_loss: float, filepath: str = None,
+                        include_optimizer: bool = False):
+        """Per-epoch checkpoints hold weights only (13.6 MB); the optimizer state (27 MB)
+        is written only into the resume checkpoint, which is the one place it is needed."""
         start_time = time()
 
         if filepath is None:
@@ -607,9 +610,10 @@ class Trainer:
             'epoch': epoch,
             'current_step': self.current_step,
             'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
             'train_loss': train_loss,
         }
+        if include_optimizer:
+            checkpoint['optimizer_state_dict'] = self.optimizer.state_dict()
 
         os.makedirs(self.checkpoints_dir, exist_ok=True)
 
