@@ -255,6 +255,41 @@ def batches_per_epoch(info, batch_records):
     return max((r.get("batch", 0) for r in batch_records), default=0)
 
 
+QUEUE_DIR = Path("queue")
+
+
+def queue_states(infos):
+    """Every planned queue (queue/*.json) with each item's live status and an ETA."""
+    if not QUEUE_DIR.is_dir():
+        return []
+    queues = []
+    for path in sorted(QUEUE_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        queue = read_json(path)
+        if not queue:
+            continue
+        items, durations, running = [], [], None
+        for item in queue.get("items", []):
+            name = item.get("name")
+            info = infos.get(name, (None, None))[0] if name in infos else read_json(item.get("info_path", ""))
+            status = (info or {}).get("status") or "pending"
+            minutes = minutes_between((info or {}).get("started_at"), (info or {}).get("completed_at")) if info else None
+            if status == "completed" and minutes:
+                durations.append(minutes)
+            if status == "in_progress":
+                running = name
+            items.append({"name": name, "description": item.get("description", ""), "status": status, "minutes": minutes})
+        done = sum(1 for i in items if i["status"] == "completed")
+        mean_minutes = sum(durations) / len(durations) if durations else None
+        remaining = len(items) - done
+        queues.append({
+            "tag": queue.get("tag"), "kind": queue.get("kind"), "written_at": queue.get("written_at"),
+            "items": items, "done": done, "total": len(items), "running": running,
+            "mean_minutes": mean_minutes,
+            "eta_minutes": remaining * mean_minutes if mean_minutes else None,
+        })
+    return queues
+
+
 def request_stop(path=STOP_PATH):
     """Ask the running script to stop after its current batch (saves a resume checkpoint)."""
     path.write_text(datetime.now().isoformat(timespec="seconds"), encoding="utf-8")
@@ -264,7 +299,7 @@ def build_state():
     infos = run_infos()
     name = current_run(infos)
     state = {"now": datetime.now().isoformat(timespec="seconds"), "gpu": GPU, "run": None,
-             "stop_pending": STOP_PATH.exists()}
+             "stop_pending": STOP_PATH.exists(), "queues": queue_states(infos)}
 
     log_path = newest_console_log()
     state["console"] = {"file": str(log_path) if log_path else None,
@@ -355,12 +390,16 @@ pre{margin:0;font:11.5px/1.45 var(--mono);color:#b9c6d2;white-space:pre-wrap;wor
 .tick{color:var(--dim);font-size:12px;font-family:var(--mono)}
 .about{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;margin-top:10px}.about pre{background:#0b0f14;padding:8px 10px;border-radius:4px}
 details summary{font-size:13px}
+.queue{margin-bottom:10px}.queue:last-child{margin-bottom:0}.queue .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.queue .bar{margin:5px 0 4px}.qlist{columns:2;column-gap:24px;font:11.5px/1.5 var(--mono);margin-top:6px}
+.qlist div{break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-completed{color:var(--ok)}.st-in_progress{color:var(--acc);font-weight:600}.st-pending{color:var(--dim)}
 button#stop{background:#2a1a1a;color:#f2a8a8;border:1px solid #6b2b2b;border-radius:4px;padding:5px 12px;font:13px inherit;cursor:pointer}
 button#stop:hover{background:#3a1f1f}button#stop[disabled]{opacity:.55;cursor:default}
 </style></head><body><div class="wrap">
 <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px"><h1 id="title">Training progress</h1>
  <button id="stop" onclick="stopRun()">Stop gracefully</button></div><p class="sub" id="subtitle">waiting for data…</p>
 <div class="grid">
+ <div class="panel wide" id="queues"></div>
  <div class="panel wide"><p class="label">Now</p><div class="big mono" id="runname">—</div>
   <div class="bar"><i id="bar" style="width:0%"></i></div>
   <div class="tick" id="progress">—</div>
@@ -395,6 +434,12 @@ function draw(chart){const c=$('chart'),ctx=c.getContext('2d');const W=c.width,H
 function render(s){lastState=s;const r=s.run;
  $('subtitle').textContent=(s.console.file?('console: '+s.console.file+' · '):'')+'updated '+s.now.replace('T',' ')+(s.stop_pending?'  ·  STOP REQUESTED — finishing the current batch, then saving':'');
  $('stop').disabled=s.stop_pending;$('stop').textContent=s.stop_pending?'Stop requested…':'Stop gracefully';
+ const mark={completed:'✓',in_progress:'▶',pending:'·'};
+ $('queues').innerHTML='<p class="label">Queues</p>'+((s.queues&&s.queues.length)?s.queues.map(q=>{const p=q.total?q.done/q.total:0;
+  const eta=q.eta_minutes!=null?` · ${q.mean_minutes.toFixed(1)} min each · ${(q.eta_minutes/60).toFixed(1)} h left · ETA ${new Date(Date.now()+q.eta_minutes*60000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`:'';
+  return `<div class="queue"><div class="head"><b class="mono">${q.tag}</b><span class="tick">${q.kind} · ${q.done}/${q.total} done${q.running?' · running: '+q.running:''}${eta}</span></div>
+  <div class="bar"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+  <details><summary style="cursor:pointer;font-size:12px;color:var(--dim)">${q.total} items</summary><div class="qlist">${q.items.map(i=>`<div class="st-${i.status}" title="${(i.description||'').replace(/"/g,'&quot;')}">${mark[i.status]||'?'} ${i.name}${i.minutes?' <span class="st-pending">'+i.minutes.toFixed(1)+'m</span>':''}</div>`).join('')}</div></details></div>`;}).join(''):'<div class="tick">no queue files yet — scripts write queue/&lt;tag&gt;.json when they start</div>');
  if(!r){$('runname').textContent='no runs found';return;}
  $('runname').textContent=r.name+'   ['+r.status+']';$('bar').style.width=(r.progress*100).toFixed(1)+'%';
  const el=r.started_at?((Date.now()-Date.parse(r.started_at))/60000):null;

@@ -14,6 +14,7 @@ from library.shared import (
     load_input_vocabulary,
 )
 from library.domain import get_domain
+from library.shared.queue_file import write_queue
 
 
 class TrainingRunner:
@@ -126,6 +127,18 @@ def is_completed(run_name: str) -> bool:
         return json.load(file).get("status") == "completed"
 
 
+def write_training_queue(runs) -> None:
+    """Announce the planned runs to the dashboard (queue/<experiment tag>.json)."""
+    items = []
+    for run in runs:
+        spec = run if isinstance(run, dict) else run.as_dict()
+        items.append({"name": spec["run_name"], "description": spec.get("description", ""),
+                      "info_path": os.path.join(get_training_run_dir(spec["run_name"]), "info.json")})
+    if items:
+        first = runs[0] if isinstance(runs[0], dict) else runs[0].as_dict()
+        write_queue(first.get("experiment") or "training", items, kind="training")
+
+
 def run_training(runs, exit_listener: ExitListener = None) -> None:
     """Train every run in the list, skipping the ones already completed.
 
@@ -135,6 +148,7 @@ def run_training(runs, exit_listener: ExitListener = None) -> None:
     """
     owns_listener = exit_listener is None
     exit_listener = exit_listener or ExitListener()
+    write_training_queue(runs)
     for run in runs:
         run_name = run["run_name"] if isinstance(run, dict) else run.run_name
         if is_completed(run_name):

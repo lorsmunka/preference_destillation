@@ -10,7 +10,7 @@ RUNNING
                      Graceful stop: the dashboard's Stop button (or Ctrl+C in its window) — the % hook is gone.
                      Results -> experiments/results/e01_anneal_direction.csv when done.
                      Skips completed runs, so re-run the same command if interrupted.
-- dashboard          python progress.py  ->  http://localhost:8765   (pid 8288)
+- dashboard          python progress.py  ->  http://localhost:8765   (pid 40548)
                      live view of the current run, the experiment table with ETA, GPU,
                      and the console tail. ~5 ms per 3 s poll, no GPU. Ctrl+C or kill to stop.
 

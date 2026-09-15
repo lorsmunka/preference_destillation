@@ -11,6 +11,7 @@ from library import GenerationJob
 from library.domain import REDDIT_SENTIMENT
 from library.data_gen.generator import DistillationDataGenerator
 from library.shared import ExitListener, get_output_dir
+from library.shared.queue_file import write_queue
 
 JOBS = [
     GenerationJob(
@@ -24,6 +25,10 @@ JOBS = [
 
 def main():
     exit_listener = ExitListener()
+    write_queue("generation", [
+        {"name": f"{job.domain.name} / {job.teacher_model}", "description": job.description,
+         "info_path": os.path.join(get_output_dir(job.domain.name, job.teacher_model), "info.json")}
+        for job in JOBS], kind="generation")
     for job in JOBS:
         info_path = os.path.join(get_output_dir(job.domain.name, job.teacher_model), "info.json")
         if os.path.exists(info_path):

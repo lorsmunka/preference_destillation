@@ -25,9 +25,10 @@ def seeded_run_training(seeded_runs):
     """
     import torch
     from library.shared import ExitListener
-    from library.training.training_runner import TrainingRunner, is_completed
+    from library.training.training_runner import TrainingRunner, is_completed, write_training_queue
 
     exit_listener = ExitListener()
+    write_training_queue([run for _, run in seeded_runs])
     for seed, run in seeded_runs:
         if is_completed(run.run_name):
             print(f"Skipping completed run: {run.run_name}")

@@ -36,3 +36,4 @@ progress_server.log
 gemma4*_download.log
 sanity_*.log
 STOP
+queue/
