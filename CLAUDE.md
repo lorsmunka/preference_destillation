@@ -24,7 +24,9 @@ library/
                slice) in __init__.py and a corpus.py producing its {"text": ...} input jsonl.
   model/       Transformer architecture + StudentModel (checkpoint load + generate)
   data_gen/    DistillationDataGenerator (teacher data generation)
-  training/    Trainer + TrainingRunner + BatchHandler
+  training/    Trainer (the loop) + TrainingRunner + BatchHandler, with the loop's parts beside it:
+               schedules (annealed dials), losses (divergence zoo + CE mix), example_encoder
+               (example -> tensors), evaluator (eval passes), checkpoints (save / load)
   tooling/     Analysis facade + Run / RunStore / Experiment + render (plots, tables)
 train.py           training entry — edit the RUNS list
 generate_data.py   data-generation entry — edit the JOBS list

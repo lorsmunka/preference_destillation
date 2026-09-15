@@ -1,25 +1,25 @@
+"""The training loop. Everything that is not the loop itself lives beside it:
+schedules.py (annealed dials), losses.py (the distillation loss), example_encoder.py
+(example -> tensors), evaluator.py (eval passes), checkpoints.py (save / load)."""
+
 import os
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.optim import AdamW
-from typing import Dict, List, Optional, Tuple
 from time import time
+from typing import Dict, Optional, Tuple
 
-import math
+import torch
+from torch.optim import AdamW
 
-from library.shared import (
-    ExitListener,
-    PROMPT_DELIMITER,
-    MINI_EVAL_FREQUENCY,
-    MINI_EVAL_BATCH_COUNT,
-)
+from library.shared import ExitListener, MINI_EVAL_FREQUENCY, MINI_EVAL_BATCH_COUNT
 from library.shared.device import get_device
 from library.model.transformer import Transformer
-from library.training.batch_handler import BatchHandler
 from library.shared.logging import RunLogger
-from library.shared.metrics.distribution import step_distribution_stats
 from library.tooling.render.plots import plot_training_logs
+from library.training.batch_handler import BatchHandler
+from library.training.checkpoints import load_checkpoint, save_checkpoint
+from library.training.evaluator import Evaluator
+from library.training.example_encoder import ExampleEncoder
+from library.training.losses import DistillationLoss
+from library.training.schedules import Schedules
 
 
 class Trainer:
@@ -30,51 +30,35 @@ class Trainer:
 
         self.config = config
         self.domain = model.domain  # the Domain object the model was built from (used directly)
-        self.learning_rate = config['learning_rate']
         self.epoch_count_value = config['epoch_count']
-        self.kl_ratio_start = config['kl_ratio_start']
-        self.kl_ratio_end = config['kl_ratio_end']
-        self.distillation_temperature_start = config['distillation_temperature_start']
-        self.distillation_temperature_end = config['distillation_temperature_end']
-        # New dials — all read with defaults so older dict configs and info.json files still load.
-        self.teacher_temperature_start = config.get('teacher_temperature_start')
-        self.teacher_temperature_end = config.get('teacher_temperature_end')
-        if self.teacher_temperature_start is not None and self.teacher_temperature_end is None:
-            self.teacher_temperature_end = self.teacher_temperature_start
-        self.divergence = config.get('divergence', 'forward_kl')
-        self.entropy_kl_weighting = config.get('entropy_kl_weighting', 0.0)
-        self.kl_ratio_cycle_epochs = config.get('kl_ratio_cycle_epochs', 0.0)
-        self.kl_ratio_cycle_amplitude = config.get('kl_ratio_cycle_amplitude', 0.0)
-        self.attention_noise_start = config.get('attention_noise_start', 0.0)
-        self.attention_noise_end = config.get('attention_noise_end', 0.0)
-        self.lr_warmup_ratio = config['lr_warmup_ratio']
         self.checkpoints_dir = config.get('checkpoints_dir', './checkpoints')
         self.logs_dir = config.get('logs_dir', './logs')
         self.temp_checkpoint_path = os.path.join(self.checkpoints_dir, 'temp_checkpoint.pt')
 
         self.device = get_device()
         self.model = model.to(self.device)
-        self.vocabulary = model.vocabulary
-        self.vocab_size = model.vocabulary['vocab_size']
-        self.output_token_to_index = {
-            token: index
-            for index, token in enumerate(self.vocabulary['token_list'])
-        }
-        self.tokenizer = model.tokenizer
-        self.optimizer = AdamW(model.parameters(), lr=self.learning_rate)
+        self.optimizer = AdamW(model.parameters(), lr=config['learning_rate'])
 
         self.batch_handler = batch_handler
         batch_count = batch_handler.get_training_batches_radius()[1]
-        self.steps_per_epoch = batch_count
         self.total_training_steps = self.epoch_count_value * batch_count
         self.current_step = 0
-        self.warmup_steps = int(self.total_training_steps * self.lr_warmup_ratio)
-        self.lr_min = 1e-5
+
+        self.schedules = Schedules(config, steps_per_epoch=batch_count,
+                                   total_training_steps=self.total_training_steps)
+        self.loss = DistillationLoss(
+            divergence=config.get('divergence', 'forward_kl'),
+            entropy_kl_weighting=config.get('entropy_kl_weighting', 0.0))
+        self.encoder = ExampleEncoder(self.model, self.device)
+        self.evaluator = Evaluator(
+            self.model, self.domain, self.encoder, batch_handler, self.device,
+            loss_function=self._compute_loss,
+            eval_top_k=config.get('eval_top_k', 20),
+            eval_cap_multiple=config.get('eval_cap_multiple', 2.0))
 
         self.mini_eval_frequency = config.get('mini_eval_frequency', MINI_EVAL_FREQUENCY)
         self.mini_eval_batch_count = config.get('mini_eval_batch_count', MINI_EVAL_BATCH_COUNT)
-        self.eval_top_k = config.get('eval_top_k', 20)
-        self.eval_cap_multiple = config.get('eval_cap_multiple', 2.0)
+        self.eval_top_k = self.evaluator.eval_top_k
 
         self.logger = logger
         self.exit_listener = exit_listener
@@ -82,7 +66,7 @@ class Trainer:
         elapsed_time = time() - start_time
         print(
             f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={self.total_training_steps})")
-        print(f"LR Warmup Steps: {self.warmup_steps}\n")
+        print(f"LR Warmup Steps: {self.schedules.warmup_steps}\n")
 
         if self.logger.should_resume():
             if os.path.exists(self.temp_checkpoint_path):
@@ -94,6 +78,8 @@ class Trainer:
     def epoch_count(self):
         return self.epoch_count_value
 
+    # ── training ──────────────────────────────────────────────────────
+
     def train_epoch(self, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> Optional[bool]:
         self.model.train()
         total_loss = 0.0
@@ -102,9 +88,8 @@ class Trainer:
         total_steps = 0
         start_batch = max(batch_start, resume_from_batch)
 
-        current_lr = self._get_current_learning_rate()
         print(
-            f"Training Epoch {epoch} with starting learning rate: {current_lr:.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}, current temperature: {self._get_current_temperature():.6f}\n ")
+            f"Training Epoch {epoch} with starting learning rate: {self._get_current_learning_rate():.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}, current temperature: {self._get_current_temperature():.6f}\n ")
 
         for batch_idx in range(start_batch, batch_end):
             batch_result = self._process_batch(batch_idx, epoch)
@@ -142,9 +127,8 @@ class Trainer:
         batch_steps = 0
         batch_correct = 0
 
-        for example_idx, example in enumerate(batch_data):
-            example_loss, example_kl_loss, example_ce_loss, example_steps, example_correct = self._process_example(
-                example, example_idx, len(batch_data), epoch, batch_idx)
+        for example in batch_data:
+            example_loss, example_kl_loss, example_ce_loss, example_steps, example_correct = self.train_single_example(example)
             batch_loss += example_loss
             batch_kl_loss += example_kl_loss
             batch_ce_loss += example_ce_loss
@@ -153,11 +137,8 @@ class Trainer:
 
         self.current_step += 1
         self._apply_learning_rate()
-        current_lr = self._get_current_learning_rate()
-        current_kl_ratio = self._get_current_kl_ratio()
-        current_temperature = self._get_current_temperature()
         print(
-            f"Batch {batch_idx + 1} -> LR: {current_lr:.8f}, KL ratio: {current_kl_ratio:.3f}, Temp: {current_temperature:.3f}")
+            f"Batch {batch_idx + 1} -> LR: {self._get_current_learning_rate():.8f}, KL ratio: {self._get_current_kl_ratio():.3f}, Temp: {self._get_current_temperature():.3f}")
 
         self._log_batch_completion(
             batch_idx, batch_steps, batch_loss, batch_kl_loss, batch_ce_loss, batch_correct, batch_start_time, epoch)
@@ -168,19 +149,29 @@ class Trainer:
 
         return batch_loss, batch_kl_loss, batch_ce_loss, batch_steps
 
-    def _process_example(self, example, example_idx: int, total_examples: int, epoch: int, batch_idx: int):
-        example_start_time = time()
-        loss_sum, kl_loss_sum, ce_loss_sum, num_steps, correct = self.train_single_example(
-            example)
+    def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
+        if len(example['steps']) == 0:
+            return 0.0, 0.0, 0.0, 0, 0
 
-        avg_loss = loss_sum / num_steps if num_steps > 0 else 0.0
-        avg_kl_loss = kl_loss_sum / num_steps if num_steps > 0 else 0.0
-        avg_ce_loss = ce_loss_sum / num_steps if num_steps > 0 else 0.0
-        accuracy = correct / num_steps if num_steps > 0 else 0.0
-        example_elapsed = time() - example_start_time
-        # print(f"\tExample {example_idx + 1}/{total_examples}: {num_steps} steps, loss={avg_loss:.4f}, kl={avg_kl_loss:.4f}, ce={avg_ce_loss:.4f}, acc={accuracy:.4f} -> took {example_elapsed:.2f}s")
+        encoded = self.encoder.encode(example)
+        num_steps = encoded.num_steps
 
-        return loss_sum, kl_loss_sum, ce_loss_sum, num_steps, correct
+        self.optimizer.zero_grad(set_to_none=True)
+        self.model.set_attention_noise(self._get_current_attention_noise())
+        model_logits = self.model(encoded.input_tensor)
+
+        sentence_length = len(encoded.sentence_tokens)
+        prediction_logits = model_logits[0, sentence_length - 1:sentence_length - 1 + num_steps, :]
+
+        kl_loss, ce_loss, total_loss = self._compute_loss(
+            prediction_logits, encoded.target_logits_tensor, encoded.target_indices_tensor, reduction='sum')
+
+        total_loss.backward()
+        self.optimizer.step()
+
+        correct_predictions = (torch.argmax(prediction_logits, dim=-1) == encoded.target_indices_tensor).sum().item()
+
+        return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
     def _log_batch_completion(self, batch_idx: int, batch_steps: int, batch_loss: float, batch_kl_loss: float, batch_ce_loss: float, batch_correct: int, batch_start_time: float, epoch: int):
         batch_elapsed = time() - batch_start_time
@@ -188,9 +179,6 @@ class Trainer:
         avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
         avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
-        current_lr = self._get_current_learning_rate()
-        current_kl_ratio = self._get_current_kl_ratio()
-        current_temperature = self._get_current_temperature()
 
         print(f"Batch {batch_idx + 1} (of Epoch {epoch}) processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
 
@@ -202,9 +190,9 @@ class Trainer:
             kl_loss=avg_batch_kl_loss,
             ce_loss=avg_batch_ce_loss,
             accuracy=batch_accuracy,
-            learning_rate=current_lr,
-            kl_ratio=current_kl_ratio,
-            temperature=current_temperature,
+            learning_rate=self._get_current_learning_rate(),
+            kl_ratio=self._get_current_kl_ratio(),
+            temperature=self._get_current_temperature(),
             time_seconds=batch_elapsed,
             teacher_temperature=self._get_current_teacher_temperature(),
             attention_noise=self._get_current_attention_noise(),
@@ -229,172 +217,17 @@ class Trainer:
 
         self.logger.update_progress(epoch, batch_idx + 1)
 
-    def _run_mini_eval(self, batch_start: int, batch_end: int, epoch: int, current_batch: int):
-        print(f"\n--- Mini-eval on test batches {batch_start + 1}-{batch_end} ---")
-        self.model.eval()
-        results = self._evaluate_batches(batch_start, batch_end)
-
-        self.logger.log_mini_eval(
-            epoch, current_batch, results['teacher_forced_accuracy'],
-            results['student_accuracy'], results['task_accuracy'],
-            results['total_steps'], distribution=results['distribution'])
-
-        print(f"Mini-eval: TF={results['teacher_forced_accuracy']:.4f}, Student={results['student_accuracy']:.4f}, Task={results['task_accuracy']:.4f} ({results['total_steps']} steps)")
-        print(f"--- Mini-eval done ---\n")
-
-        self.model.train()
-
     def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
         print("Exit requested. Saving progress...")
         self.save_checkpoint(epoch, avg_batch_loss, filepath=self.temp_checkpoint_path, include_optimizer=True)
         self.logger.save()
         return None
 
-    def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
-        sentence_tokens = self._get_sentence_tokens(example)
-        steps = example['steps']
-        num_steps = len(steps)
-
-        if num_steps == 0:
-            return 0.0, 0.0, 0.0, 0, 0
-
-        all_token_ids = []
-        all_target_logits = []
-        all_target_indices = []
-        for step in steps:
-            token_id, target_logits, target_index = self._prepare_step_data(
-                step)
-            all_token_ids.append(token_id)
-            all_target_logits.append(target_logits)
-            all_target_indices.append(target_index)
-
-        full_input_ids = sentence_tokens + all_token_ids[:-1]
-        full_input_ids = self.model.remap_input_tokens(full_input_ids)
-        input_tensor = torch.tensor(
-            [full_input_ids], dtype=torch.long, device=self.device)
-        target_logits_tensor = torch.tensor(
-            all_target_logits, dtype=torch.float32, device=self.device)
-        target_indices_tensor = torch.tensor(
-            all_target_indices, dtype=torch.long, device=self.device)
-
-        self.optimizer.zero_grad(set_to_none=True)
-        self.model.set_attention_noise(self._get_current_attention_noise())
-        model_logits = self.model(input_tensor)
-
-        sentence_length = len(sentence_tokens)
-        prediction_logits = model_logits[0, sentence_length -
-                                         1:sentence_length - 1 + num_steps, :]
-
-        kl_loss, ce_loss, total_loss = self._compute_loss(
-            prediction_logits, target_logits_tensor, target_indices_tensor, reduction='sum')
-
-        total_loss.backward()
-        self.optimizer.step()
-
-        correct_predictions = (torch.argmax(
-            prediction_logits, dim=-1) == target_indices_tensor).sum().item()
-
-        return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
-
-    def _evaluate_batches(self, batch_start: int, batch_end: int, verbose: bool = False):
-        task_accuracy_calculator = self.domain.task_metric()
-
-        total_loss = 0.0
-        total_kl_loss = 0.0
-        total_ce_loss = 0.0
-        total_teacher_forced_correct = 0
-        total_student_correct = 0
-        total_steps = 0
-
-        distribution_totals = {'topk_hits': 0.0, 'overlap_sum': 0.0, 'target_rank_sum': 0.0,
-                               'student_entropy_sum': 0.0, 'teacher_entropy_sum': 0.0,
-                               'ce_sum': 0.0, 'steps': 0}
-        terminated_count = 0
-        length_ratio_sum = 0.0
-        eval_examples = 0
-
-        with torch.no_grad():
-            for batch_idx in range(batch_start, batch_end):
-                batch_start_time = time()
-                batch_data = self.batch_handler.get_batch(batch_idx)
-
-                batch_loss = 0.0
-                batch_kl_loss = 0.0
-                batch_ce_loss = 0.0
-                batch_teacher_forced_correct = 0
-                batch_student_correct = 0
-                batch_steps = 0
-
-                for example in batch_data:
-                    (loss_sum, kl_loss_sum, ce_loss_sum, teacher_forced_correct, student_correct,
-                     num_steps, student_tokens, distribution, terminated, generated_length) = self._eval_single_example(example)
-                    batch_loss += loss_sum
-                    batch_kl_loss += kl_loss_sum
-                    batch_ce_loss += ce_loss_sum
-                    batch_teacher_forced_correct += teacher_forced_correct
-                    batch_student_correct += student_correct
-                    batch_steps += num_steps
-                    total_loss += loss_sum
-                    total_kl_loss += kl_loss_sum
-                    total_ce_loss += ce_loss_sum
-                    total_teacher_forced_correct += teacher_forced_correct
-                    total_student_correct += student_correct
-                    total_steps += num_steps
-
-                    for key in distribution_totals:
-                        distribution_totals[key] += distribution.get(key, 0)
-                    terminated_count += 1 if terminated else 0
-                    length_ratio_sum += (generated_length / num_steps) if num_steps > 0 else 0.0
-                    eval_examples += 1
-
-                    ground_truth_response = example.get('model_response', '')
-                    task_accuracy_calculator.update(student_tokens, ground_truth_response)
-
-                if verbose:
-                    batch_elapsed = time() - batch_start_time
-                    avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
-                    avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
-                    avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
-                    batch_tf_accuracy = batch_teacher_forced_correct / batch_steps if batch_steps > 0 else 0.0
-                    batch_student_accuracy = batch_student_correct / batch_steps if batch_steps > 0 else 0.0
-                    running_task_accuracy = task_accuracy_calculator.result().accuracy
-                    print(f"Eval Batch {batch_idx + 1}: {batch_steps} steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, tf_acc={batch_tf_accuracy:.4f}, student_acc={batch_student_accuracy:.4f}, task_acc={running_task_accuracy:.4f} -> took {batch_elapsed:.2f}s")
-
-        steps = total_steps if total_steps > 0 else 1
-        avg_loss = total_loss / total_steps if total_steps > 0 else 0.0
-        avg_kl_loss = total_kl_loss / total_steps if total_steps > 0 else 0.0
-        avg_ce_loss = total_ce_loss / total_steps if total_steps > 0 else 0.0
-        teacher_forced_accuracy = total_teacher_forced_correct / total_steps if total_steps > 0 else 0.0
-        student_accuracy = total_student_correct / total_steps if total_steps > 0 else 0.0
-        metric_result = task_accuracy_calculator.result()
-
-        distribution = {
-            'topk_accuracy': distribution_totals['topk_hits'] / steps,
-            'teacher_student_overlap': distribution_totals['overlap_sum'] / steps,
-            'mean_target_rank': distribution_totals['target_rank_sum'] / steps,
-            'student_entropy': distribution_totals['student_entropy_sum'] / steps,
-            'teacher_entropy': distribution_totals['teacher_entropy_sum'] / steps,
-            'perplexity': math.exp(distribution_totals['ce_sum'] / steps),
-            'validity_rate': metric_result.validity_rate,
-            'termination_rate': terminated_count / eval_examples if eval_examples > 0 else 0.0,
-            'mean_length_ratio': length_ratio_sum / eval_examples if eval_examples > 0 else 0.0,
-        }
-
-        return {
-            'avg_loss': avg_loss,
-            'avg_kl_loss': avg_kl_loss,
-            'avg_ce_loss': avg_ce_loss,
-            'teacher_forced_accuracy': teacher_forced_accuracy,
-            'student_accuracy': student_accuracy,
-            'task_accuracy': metric_result.accuracy,
-            'confusion_matrices': metric_result.confusion or {},
-            'distribution': distribution,
-            'total_steps': total_steps,
-        }
+    # ── evaluation ────────────────────────────────────────────────────
 
     def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float, float, float]:
         self.model.eval()
-        results = self._evaluate_batches(batch_start, batch_end, verbose=True)
+        results = self.evaluator.evaluate_batches(batch_start, batch_end, verbose=True)
 
         self.logger.log_eval_epoch(
             epoch, results['avg_loss'], results['teacher_forced_accuracy'],
@@ -410,244 +243,76 @@ class Trainer:
             f"  top{self.eval_top_k}={dist['topk_accuracy']:.4f} overlap={dist['teacher_student_overlap']:.4f} mean_rank={dist['mean_target_rank']:.1f} teacher_H={dist['teacher_entropy']:.3f} student_H={dist['student_entropy']:.3f} ppl={dist['perplexity']:.3f} termination={dist['termination_rate']:.4f}")
         return results['avg_loss'], results['teacher_forced_accuracy'], results['student_accuracy'], results['task_accuracy']
 
-    def _eval_single_example(self, example: Dict) -> Tuple:
-        sentence_tokens = self._get_sentence_tokens(example)
-        steps = example['steps']
-        num_steps = len(steps)
+    def _run_mini_eval(self, batch_start: int, batch_end: int, epoch: int, current_batch: int):
+        print(f"\n--- Mini-eval on test batches {batch_start + 1}-{batch_end} ---")
+        self.model.eval()
+        results = self.evaluator.evaluate_batches(batch_start, batch_end)
 
-        if num_steps == 0:
-            return 0.0, 0.0, 0.0, 0, 0, 0, [], {}, False, 0
+        self.logger.log_mini_eval(
+            epoch, current_batch, results['teacher_forced_accuracy'],
+            results['student_accuracy'], results['task_accuracy'],
+            results['total_steps'], distribution=results['distribution'])
 
-        all_token_ids = []
-        all_target_logits = []
-        all_target_indices = []
-        for step in steps:
-            token_id, target_logits, target_index = self._prepare_step_data(step)
-            all_token_ids.append(token_id)
-            all_target_logits.append(target_logits)
-            all_target_indices.append(target_index)
+        print(f"Mini-eval: TF={results['teacher_forced_accuracy']:.4f}, Student={results['student_accuracy']:.4f}, Task={results['task_accuracy']:.4f} ({results['total_steps']} steps)")
+        print(f"--- Mini-eval done ---\n")
 
-        # Teacher-forced: single forward pass (all ground truth tokens as input)
-        full_input_ids = sentence_tokens + all_token_ids[:-1]
-        full_input_ids = self.model.remap_input_tokens(full_input_ids)
-        input_tensor = torch.tensor([full_input_ids], dtype=torch.long, device=self.device)
-        target_logits_tensor = torch.tensor(all_target_logits, dtype=torch.float32, device=self.device)
-        target_indices_tensor = torch.tensor(all_target_indices, dtype=torch.long, device=self.device)
+        self.model.train()
 
-        model_logits = self.model(input_tensor)
-        sentence_length = len(sentence_tokens)
-        prediction_logits = model_logits[0, sentence_length - 1:sentence_length - 1 + num_steps, :]
+    # ── loss and schedules at the current step ────────────────────────
 
-        kl_loss, ce_loss, total_loss = self._compute_loss(
-            prediction_logits, target_logits_tensor, target_indices_tensor, reduction='sum')
-
-        teacher_forced_correct = (torch.argmax(prediction_logits, dim=-1) == target_indices_tensor).sum().item()
-
-        # Eval-time distribution metrics — free, from the teacher-forced pass already computed.
-        distribution = step_distribution_stats(
-            prediction_logits, target_logits_tensor, target_indices_tensor, self.eval_top_k)
-        distribution['ce_sum'] = F.cross_entropy(
-            prediction_logits, target_indices_tensor, reduction='sum').item()
-
-        # Student: free-generation rollout (own predictions), capped at eval_cap_multiple x
-        # teacher length. Stops on the domain stop token -> natural-termination signal.
-        domain = self.domain
-        student_correct = 0
-        remapped_sentence_tokens = self.model.remap_input_tokens(sentence_tokens)
-        student_token_ids = []
-        student_tokens = []
-        generated_text = ""
-        terminated = False
-        max_rollout = max(num_steps, int(self.eval_cap_multiple * num_steps))
-
-        for step_index in range(max_rollout):
-            student_input_tensor = torch.tensor(
-                [remapped_sentence_tokens + student_token_ids], dtype=torch.long, device=self.device)
-            student_logits = self.model(student_input_tensor)[:, -1, :]
-            student_predicted_index = torch.argmax(student_logits[0]).item()
-            student_predicted_token_id = self.model.output_token_ids[student_predicted_index]
-            student_predicted_token = self.vocabulary['token_list'][student_predicted_index]
-            if step_index < num_steps and student_predicted_index == all_target_indices[step_index]:
-                student_correct += 1
-            student_token_ids.append(self.model.remap_input_tokens([student_predicted_token_id])[0])
-            student_tokens.append(student_predicted_token)
-            decoded = self.tokenizer.decode([student_predicted_token_id])
-            generated_text += decoded
-            if domain.is_stop(decoded, generated_text):
-                terminated = True
-                break
-
-        return (total_loss.item(), kl_loss.item(), ce_loss.item(), teacher_forced_correct,
-                student_correct, num_steps, student_tokens, distribution, terminated, len(student_tokens))
-
-    def _cosine_between(self, start: float, end: float) -> float:
-        """Cosine interpolation from `start` (step 0) to `end` (last step) — the schedule shape
-        every annealed dial shares."""
-        if self.total_training_steps <= 1:
-            return start
-        progress = self.current_step / self.total_training_steps
-        cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
-        return end + (start - end) * cosine_decay
+    def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
+                      target_indices: torch.Tensor, reduction: str = 'mean'):
+        return self.loss.compute(
+            student_logits, teacher_logits, target_indices,
+            student_temperature=self._get_current_temperature(),
+            teacher_temperature=self._get_current_teacher_temperature(),
+            kl_ratio=self._get_current_kl_ratio(),
+            reduction=reduction)
 
     def _get_current_temperature(self) -> float:
-        return self._cosine_between(self.distillation_temperature_start, self.distillation_temperature_end)
+        return self.schedules.student_temperature(self.current_step)
 
     def _get_current_teacher_temperature(self) -> float:
-        """The teacher's own softmax temperature — the entropy dial. Follows the student's
-        temperature unless teacher_temperature_start is set."""
-        if self.teacher_temperature_start is None:
-            return self._get_current_temperature()
-        return self._cosine_between(self.teacher_temperature_start, self.teacher_temperature_end)
+        return self.schedules.teacher_temperature(self.current_step)
 
     def _get_current_kl_ratio(self) -> float:
-        ratio = self._cosine_between(self.kl_ratio_start, self.kl_ratio_end)
-        if self.kl_ratio_cycle_epochs > 0 and self.kl_ratio_cycle_amplitude > 0:
-            progress_in_epochs = self.current_step / max(self.steps_per_epoch, 1)
-            ratio += self.kl_ratio_cycle_amplitude * math.sin(
-                2 * math.pi * progress_in_epochs / self.kl_ratio_cycle_epochs)
-        return min(1.0, max(0.0, ratio))
+        return self.schedules.kl_ratio(self.current_step)
 
     def _get_current_attention_noise(self) -> float:
-        return self._cosine_between(self.attention_noise_start, self.attention_noise_end)
+        return self.schedules.attention_noise(self.current_step)
 
     def _get_current_learning_rate(self) -> float:
-        if self.warmup_steps > 0 and self.current_step <= self.warmup_steps:
-            return self.learning_rate * (self.current_step / self.warmup_steps)
-        if self.total_training_steps <= self.warmup_steps:
-            return self.learning_rate
-        progress = (self.current_step - self.warmup_steps) / (self.total_training_steps - self.warmup_steps)
-        cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
-        return self.lr_min + (self.learning_rate - self.lr_min) * cosine_decay
+        return self.schedules.learning_rate(self.current_step)
 
     def _apply_learning_rate(self):
         current_lr = self._get_current_learning_rate()
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = current_lr
 
-    def _get_sentence_tokens(self, example: Dict) -> List[int]:
-        text = example['sentence'] + PROMPT_DELIMITER
-        return self.tokenizer.encode(text, add_special_tokens=False)
-
-    def _prepare_step_data(self, step: Dict) -> Tuple[int, List[float], int]:
-        token = step['token']
-        logit_vector = step['logits'][:self.vocab_size]
-        target_index = self.output_token_to_index.get(
-            token, step['predicted_token_index'])
-
-        token_ids = self.tokenizer.encode(token, add_special_tokens=False)
-        token_id = token_ids[0] if token_ids else self.tokenizer.unk_token_id
-
-        return token_id, logit_vector, target_index
-
-    def _create_tensors(self, input_ids: List[int], target_logits: List[float]) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_tensor = torch.tensor(
-            [input_ids], dtype=torch.long, device=self.device)
-        target_tensor = torch.tensor(
-            [target_logits], dtype=torch.float32, device=self.device)
-        return input_tensor, target_tensor
-
-    def _compute_loss(self, student_logits: torch.Tensor, teacher_logits: torch.Tensor,
-                       target_indices: torch.Tensor, reduction: str = 'mean'):
-        """Per-token distribution-matching term (the chosen divergence) mixed with per-token
-        cross-entropy. With every new dial at its default this is exactly the original
-        forward-KL + CE loss."""
-        student_temperature = self._get_current_temperature()
-        teacher_temperature = self._get_current_teacher_temperature()
-        student_log_probs = F.log_softmax(student_logits / student_temperature, dim=-1)
-        teacher_probs = F.softmax(teacher_logits / teacher_temperature, dim=-1)
-
-        divergence_per_token = self._divergence_per_token(student_log_probs, teacher_probs) * (student_temperature ** 2)
-        ce_per_token = F.cross_entropy(
-            student_logits / student_temperature, target_indices, reduction='none') * (student_temperature ** 2)
-
-        kl_ratio_per_token = self._kl_ratio_per_token(teacher_probs)
-        combined_per_token = kl_ratio_per_token * divergence_per_token + (1 - kl_ratio_per_token) * ce_per_token
-
-        if reduction == 'mean':
-            return divergence_per_token.mean(), ce_per_token.mean(), combined_per_token.mean()
-        return divergence_per_token.sum(), ce_per_token.sum(), combined_per_token.sum()
-
-    def _divergence_per_token(self, student_log_probs: torch.Tensor, teacher_probs: torch.Tensor) -> torch.Tensor:
-        """One number per token for the chosen divergence (the #38 zoo), summed over the vocabulary."""
-        if self.divergence == 'forward_kl':  # KL(teacher || student) — the classic Hinton direction
-            return F.kl_div(student_log_probs, teacher_probs, reduction='none').sum(dim=-1)
-        teacher_log_probs = torch.log(teacher_probs.clamp_min(1e-12))
-        student_probs = student_log_probs.exp()
-        if self.divergence == 'reverse_kl':  # KL(student || teacher) — mode-seeking
-            return (student_probs * (student_log_probs - teacher_log_probs)).sum(dim=-1)
-        if self.divergence == 'js':  # Jensen-Shannon: symmetric, bounded
-            mixture_log_probs = torch.log((0.5 * (student_probs + teacher_probs)).clamp_min(1e-12))
-            teacher_side = (teacher_probs * (teacher_log_probs - mixture_log_probs)).sum(dim=-1)
-            student_side = (student_probs * (student_log_probs - mixture_log_probs)).sum(dim=-1)
-            return 0.5 * teacher_side + 0.5 * student_side
-        if self.divergence == 'tvd':  # total variation distance
-            return 0.5 * (student_probs - teacher_probs).abs().sum(dim=-1)
-        raise ValueError(f"Unknown divergence {self.divergence!r}; use forward_kl, reverse_kl, js or tvd")
-
-    def _kl_ratio_per_token(self, teacher_probs: torch.Tensor) -> torch.Tensor:
-        """Weight of the divergence term per token. entropy_kl_weighting blends the scheduled
-        ratio with the teacher's normalized entropy at that token (0..1, over log V), so
-        confident tokens lean on cross-entropy and uncertain tokens on the divergence."""
-        scheduled_ratio = self._get_current_kl_ratio()
-        token_count = teacher_probs.shape[0]
-        if self.entropy_kl_weighting <= 0:
-            return torch.full((token_count,), scheduled_ratio, device=teacher_probs.device)
-        entropy = -(teacher_probs * torch.log(teacher_probs.clamp_min(1e-12))).sum(dim=-1)
-        normalized_entropy = entropy / math.log(teacher_probs.shape[-1])
-        weight = self.entropy_kl_weighting
-        return (1 - weight) * scheduled_ratio + weight * normalized_entropy
+    # ── checkpoints ───────────────────────────────────────────────────
 
     def save_checkpoint(self, epoch: int, train_loss: float, filepath: str = None,
                         include_optimizer: bool = False):
-        """Per-epoch checkpoints hold weights only (13.6 MB); the optimizer state (27 MB)
-        is written only into the resume checkpoint, which is the one place it is needed."""
-        start_time = time()
-
         if filepath is None:
             filepath = os.path.join(self.checkpoints_dir, f'checkpoint_epoch_{epoch}.pt')
-
-        checkpoint = {
-            'epoch': epoch,
-            'current_step': self.current_step,
-            'model_state_dict': self.model.state_dict(),
-            'train_loss': train_loss,
-        }
-        if include_optimizer:
-            checkpoint['optimizer_state_dict'] = self.optimizer.state_dict()
-
-        os.makedirs(self.checkpoints_dir, exist_ok=True)
-
-        torch.save(checkpoint, filepath)
-
-        elapsed_time = time() - start_time
-        print(f"Checkpoint saved: {filepath} -> took {elapsed_time:.2f}s\n")
+        save_checkpoint(filepath, self.model, self.optimizer, epoch, self.current_step,
+                        train_loss, include_optimizer=include_optimizer)
 
     def load_checkpoint(self, filepath: str) -> int:
         start_time = time()
-        checkpoint = torch.load(
-            filepath, map_location=self.device, weights_only=True)
+        checkpoint = load_checkpoint(filepath, self.model, self.device)
 
-        model_state = checkpoint['model_state_dict']
-        model_state.pop('rotary_embedding.cos_cached', None)
-        model_state.pop('rotary_embedding.sin_cached', None)
-        self.model.load_state_dict(model_state, strict=False)
-
-        self.optimizer = AdamW(self.model.parameters(), lr=self.learning_rate)
+        self.optimizer = AdamW(self.model.parameters(), lr=self.schedules.learning_rate_peak)
         if 'optimizer_state_dict' in checkpoint:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        batch_count = self.batch_handler.get_training_batches_radius()[1]
         epoch = checkpoint['epoch']
-
         if 'current_step' in checkpoint:
             self.current_step = checkpoint['current_step']
         else:
-            self.current_step = epoch * batch_count
+            self.current_step = epoch * self.schedules.steps_per_epoch
 
         self._apply_learning_rate()
-
-        elapsed_time = time() - start_time
         print(
-            f"Checkpoint loaded: {filepath} (epoch {epoch}, step {self.current_step}) -> took {elapsed_time:.2f}s\n")
-
+            f"Checkpoint loaded: {filepath} (epoch {epoch}, step {self.current_step}) -> took {time() - start_time:.2f}s\n")
         return epoch
