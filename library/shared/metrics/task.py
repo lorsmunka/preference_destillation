@@ -167,3 +167,44 @@ class PostGenerationMetric(TaskMetric):
             examples=self.examples,
             validity_rate=None,  # free-form: no structural-validity notion
         )
+
+
+class ExactAnswerMetric(TaskMetric):
+    """Single-answer domains: the text after `Answer:` up to the `;` must match exactly
+    (case-insensitive). An output with no parseable answer counts as wrong and invalid."""
+
+    name = "task_accuracy"
+
+    def __init__(self) -> None:
+        self.correct = 0
+        self.examples = 0
+        self.invalid = 0
+
+    def update(self, predicted_tokens: List[str], ground_truth_response: str) -> None:
+        predicted = self._extract_answer(_tokens_to_text(predicted_tokens))
+        expected = self._extract_answer(ground_truth_response)
+        if expected is None:
+            return
+        self.examples += 1
+        if predicted is None:
+            self.invalid += 1
+            return
+        if predicted == expected:
+            self.correct += 1
+
+    def result(self) -> MetricResult:
+        accuracy = self.correct / self.examples if self.examples else 0.0
+        validity_rate = (self.examples - self.invalid) / self.examples if self.examples else None
+        return MetricResult(
+            name=self.name,
+            accuracy=accuracy,
+            correct=self.correct,
+            total=self.examples,
+            examples=self.examples,
+            validity_rate=validity_rate,
+        )
+
+    def _extract_answer(self, text: str) -> Optional[str]:
+        # The teacher prompt ends in "Answer:", so the response may start with the word itself.
+        match = re.search(r"(?:Answer:)?\s*([^;\n]+);", text)
+        return match.group(1).strip().lower() if match else None
