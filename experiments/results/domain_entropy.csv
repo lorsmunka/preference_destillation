@@ -1,0 +1,8 @@
+key,domain,field,teacher,examples,steps,mean_nats,exp_H,median_nats,one_hot_share
+math_word_problem,math_word_problem,all,google_gemma-3-4b-it,256,8100,0.002774,1.002778,0.000043,0.996543
+post_generation,post_generation,all,google_gemma-3-4b-it,256,15948,1.005764,2.733996,0.850650,0.199774
+reddit_comment_sentiment,reddit_comment_sentiment,all,google_gemma-3-4b-it,256,9952,0.020330,1.020538,0.000002,0.963726
+reddit_comment_sentiment/tone,reddit_comment_sentiment,tone,google_gemma-3-4b-it,256,256,0.044190,1.045181,0.000033,0.906250
+reddit_comment_sentiment/sentiment,reddit_comment_sentiment,sentiment,google_gemma-3-4b-it,256,256,0.088575,1.092616,0.000988,0.796875
+reddit_comment_sentiment/safety,reddit_comment_sentiment,safety,google_gemma-3-4b-it,256,256,0.031518,1.032020,0.000028,0.929688
+reddit_comment_sentiment/toxicity,reddit_comment_sentiment,toxicity,google_gemma-3-4b-it,256,256,0.019718,1.019914,0.000010,0.957031

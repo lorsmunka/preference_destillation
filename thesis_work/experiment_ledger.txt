@@ -1,0 +1,55 @@
+========================================================================
+EXPERIMENT LEDGER — what was run, why, and what it said
+Same shape as the idea ledger: 2-4 sentences on the question, 2-4 on the
+design and result. Numbers live in experiments/results/; this file points
+at them. Status in the tag: PLANNED · RUNNING · DONE · KILLED.
+========================================================================
+
+E-00 DOMAIN ENTROPY BASELINE                              [DONE 2026-09-15]
+     How uncertain is the teacher on each domain, in a single number? This
+     is the x-axis every other experiment is summarized against, and it
+     settles the 0.021 / 0.023 dispute in the idea ledger.
+
+     python measure_entropy.py, 256 examples per domain from stored
+     logits, no model. exp(H): math 1.003, reddit 1.021, post-gen 2.73;
+     reddit by field: sentiment 1.09, tone 1.05, safety 1.03, toxicity
+     1.02. Seven points on the axis instead of three. Results in
+     experiments/results/domain_entropy.csv.
+
+E-01 ANNEALING DIRECTION x ENTROPY                        [PLANNED]
+     Does it matter whether the loss anneals CE->KL or KL->CE, and does
+     the answer depend on domain entropy? Idea #3 called direction
+     trivial; nothing in the literature indexes it by entropy, so this is
+     the cheapest unowned cell we have.
+
+     Five arms on kl_ratio_start->_end: 0.1->0.9, 0.9->0.1, flat 0.5, pure
+     CE, pure KL. Reddit and math at 10 seeds, post-gen at 3 (3h/run) —
+     115 runs, no new code. Read task accuracy and the distribution
+     metrics, best and final epoch, mean +/- std. The entropy law predicts
+     no separation where exp(H) ~ 1 and separation only on post-gen.
+     Script: experiments/anneal_direction.py.
+
+E-02 MULTI-TOKEN PREDICTION UNDER KD                      [PLANNED]
+     Meta (2404.19737) found MTP hurts below ~1.3B under hard labels, and
+     blamed sparse one-hot future targets. We have the teacher's full
+     distribution at t+1 and t+2 on disk: does a soft future target move
+     that crossover down to 3M from scratch?
+
+     Needs mtp_heads / mtp_weight on TrainingRun, one extra head per
+     horizon and one shifted divergence term — not built yet. Post-gen
+     only; classification outputs are too short. Arms: 0/1/2 heads x
+     hard vs soft future target. Confidence-gated emission at inference
+     is scooped for large models (ConfAdapt 2602.06019, P-MTP): demo
+     feature, not a claim.
+
+E-03 MUON vs ADAMW UNDER KD                               [PLANNED, ROW ONLY]
+     Does the optimizer interact with distillation at the tiny floor —
+     seed spread, rare-token accuracy, temperature? 2601.09865 (Jan 2026)
+     already runs Muon + KL distillation and wins 5/8 benchmarks, but on
+     a pretrained Llama 3.2 3B with LoRA, single runs, no seeds.
+
+     Needs an optimizer field on TrainingRun and ~50 lines of Muon in the
+     trainer, then one experiment file. AdamW gets an equal learning-rate
+     sweep or the comparison is void. From-scratch, full-parameter, 10
+     seeds, crossed with teacher temperature — a battery row, not a
+     headline.
