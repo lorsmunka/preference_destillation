@@ -30,3 +30,5 @@ Thumbs.db
 node_modules/
 # Archived run artifacts (see saves/runs-archive-manifest.tsv)
 saves/
+experiments/*.log
+convert_batches.log

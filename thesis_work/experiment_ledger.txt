@@ -16,7 +16,7 @@ E-00 DOMAIN ENTROPY BASELINE                              [DONE 2026-09-15]
      1.02. Seven points on the axis instead of three. Results in
      experiments/results/domain_entropy.csv.
 
-E-01 ANNEALING DIRECTION x ENTROPY                        [PLANNED]
+E-01 ANNEALING DIRECTION x ENTROPY                        [RUNNING reddit+math since 2026-09-15]
      Does it matter whether the loss anneals CE->KL or KL->CE, and does
      the answer depend on domain entropy? Idea #3 called direction
      trivial; nothing in the literature indexes it by entropy, so this is
