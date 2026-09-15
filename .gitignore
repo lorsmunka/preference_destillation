@@ -32,3 +32,6 @@ node_modules/
 saves/
 experiments/*.log
 convert_batches.log
+progress_server.log
+gemma4*_download.log
+sanity_*.log

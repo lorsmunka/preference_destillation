@@ -2,15 +2,24 @@ RUNNING BOARD — what the machine is doing right now, and where its logs are
 Updated every time something is started or finished. Times are local.
 
 RUNNING
-- batch conversion   python convert_batches.py
-                     started 2026-09-15 17:45 · log: convert_batches.log (repo root)
-                     151 GB jsonl -> ~30 GB npz, bit-exact, originals kept. Math done
-                     (497 files, 2.79 -> 0.55 GB); post-gen and reddit in progress, ~1 h.
 - E-01 reddit+math   python experiments/anneal_direction.py reddit math
-                     started 2026-09-15 18:00 · log: experiments/e01_reddit_math.log
-                     100 runs (5 arms x 10 seeds x 2 domains), ~3 min each, ~5 h.
+                     started 2026-09-15 18:00, killed by mistake at run 21 (20 kept),
+                     restarted 20:35 · log: experiments/e01_reddit_math.log (appended)
+                     100 runs (5 arms x 10 seeds x 2 domains), ~3 min each, ~4 h left.
+                     Graceful stop: press % in any window (pynput global hook).
                      Results -> experiments/results/e01_anneal_direction.csv when done.
                      Skips completed runs, so re-run the same command if interrupted.
+- dashboard          python progress.py  ->  http://localhost:8765   (pid 10120)
+                     live view of the current run, the experiment table with ETA, GPU,
+                     and the console tail. ~5 ms per 3 s poll, no GPU. Ctrl+C or kill to stop.
 
 FINISHED
-- (none yet)
+- Gemma 4 download   2026-09-15 19:35 -> 19:50 · google/gemma-4-12B-it-qat-w4a16-ct (10.3 GB,
+                     Google QAT 4-bit). The bf16 google/gemma-4-12B-it (24 GB) is also in the
+                     HF cache but cannot be mapped here (pagefile error 1455) — unused.
+                     Sanity check NOT yet run: loading it unpacks to bf16 unless
+                     run_compressed=True (added to ModelHandler, untested), and two attempts
+                     next to E-01 choked the GPU. Retry with a watchdog, or after E-01.
+- batch conversion   2026-09-15 17:45 -> 19:50 · 16,242 files, 161.6 GB jsonl -> 34.8 GB npz
+                     (4.6x), every file verified bit-exact. Originals still on disk,
+                     awaiting the word to delete (~162 GB).
