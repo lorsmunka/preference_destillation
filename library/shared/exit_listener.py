@@ -1,50 +1,32 @@
+"""Graceful exit for long runs. Two deliberate triggers, nothing global:
+
+- Ctrl+C in the run's own window (SIGINT), or
+- a file named STOP in the working directory — what the dashboard's Stop button creates.
+
+Either one sets `should_exit`; the training / generation loop checks it after every batch,
+saves a resume checkpoint, and returns. A leftover STOP file is cleared when a run starts
+so it can never kill the next one.
+"""
+
 import os
 import signal
-import sys
 
-STOP_FILE = "STOP"   # create this file in the working directory to request a graceful exit
-
-try:
-    from pynput import keyboard
-    PYNPUT_AVAILABLE = True
-except ImportError:
-    PYNPUT_AVAILABLE = False
+STOP_FILE = "STOP"
 
 
 class ExitListener:
-    def __init__(self, exit_key='%'):
+    def __init__(self):
         self.should_exit = False
-        self.exit_key = exit_key
-        self.listener = None
-        if os.path.exists(STOP_FILE):   # a leftover from an earlier stop must not kill this run
+        if os.path.exists(STOP_FILE):
             os.remove(STOP_FILE)
-
-        if PYNPUT_AVAILABLE:
-            try:
-                self.listener = keyboard.Listener(on_press=self._on_press)
-                self.listener.start()
-            except Exception:
-                self._setup_signal_handler()
-        else:
-            self._setup_signal_handler()
-
-    def _setup_signal_handler(self):
         signal.signal(signal.SIGINT, self._signal_handler)
-        print("Headless mode: press Ctrl+C for graceful exit")
+        print("Graceful exit: Ctrl+C here, or the dashboard's Stop button (creates a STOP file)")
 
     def _signal_handler(self, signum, frame):
         self.should_exit = True
         print("\nExit signal registered.")
 
-    def _on_press(self, key):
-        try:
-            if key.char == self.exit_key:
-                self.should_exit = True
-                print("Exit key registered.")
-        except AttributeError:
-            pass
-
-    def check_exit(self):
+    def check_exit(self) -> bool:
         if not self.should_exit and os.path.exists(STOP_FILE):
             self.should_exit = True
             os.remove(STOP_FILE)
@@ -52,5 +34,4 @@ class ExitListener:
         return self.should_exit
 
     def stop(self):
-        if self.listener:
-            self.listener.stop()
+        pass

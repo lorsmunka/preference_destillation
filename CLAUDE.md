@@ -52,7 +52,7 @@ edit its `RUNS` (a different architecture is just different `hidden_dim` / `num_
 stays re-runnable and doubles as the record of what the experiment was. Scripts there start
 with the repo-root `sys.path` line so they run without installing the package.
 
-Press `%` (or Ctrl+C in headless mode) for graceful exit (saves a temp checkpoint).
+Graceful exit: the dashboard's Stop button (`python progress.py`, creates a `STOP` file) or Ctrl+C in the run's window — the run saves a resume checkpoint and the script exits; re-running resumes.
 
 ## Configuration
 

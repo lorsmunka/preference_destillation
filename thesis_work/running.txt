@@ -4,9 +4,10 @@ Updated every time something is started or finished. Times are local.
 RUNNING
 - E-01 reddit+math   python experiments/anneal_direction.py reddit math
                      started 2026-09-15 18:00, killed by mistake at run 21 (20 kept),
-                     restarted 20:35 · log: experiments/e01_reddit_math.log (appended)
+                     restarted 20:35; stopped 00:09 by a stray % keypress (global hook) at run 38,
+                     resumed 2026-09-16 from its temp checkpoint · log: experiments/e01_reddit_math.log
                      100 runs (5 arms x 10 seeds x 2 domains), ~3 min each, ~4 h left.
-                     Graceful stop: the dashboard's Stop button, or press % in any window.
+                     Graceful stop: the dashboard's Stop button (or Ctrl+C in its window) — the % hook is gone.
                      Results -> experiments/results/e01_anneal_direction.csv when done.
                      Skips completed runs, so re-run the same command if interrupted.
 - dashboard          python progress.py  ->  http://localhost:8765   (pid 8288)
