@@ -1,0 +1,19 @@
+Sziasztok!
+
+Igen, alapvetően most ott tartok, hogy van egy kész desztillációs pipeline-om, amiben szinte bármilyen szűk domain definiálható. A definiált domainen képes desztillációs adatokat előállítani, illetve a tanítás és a student modell is konfigurálható.
+
+Amikor elkezdtem a projektet, abban a tudatban voltam, hogy domain-specifikus desztillációnál a Kullback-Leibler-divergencia és a cross-entropy veszteség vegyítése egy csökkentett ki- és bemeneti szótár mellett együttesen újításnak mondható (itt vannak jó eredményeim). Azóta viszont utánanéztem, és kiderült, hogy sem ez, sem sok más ötletem nem számít újdonságnak.
+
+Eddig több mint 50 ötletet lőttem le, mert valaki már publikálta. Van, amit épp két hete.
+
+A következő irányokban látok még esélyt valamiféle újításra:
+
+- Meglévő módszerek összehasonlítása kis modellméretnél, alacsony és magas entrópiájú domaineken (itt talán találok egy specifikus, nem triviális claim-et).
+- Egy új LLM-komponens beépítése és mérése: ha nem triviális módon jól teljesít egy feladaton, az is lehet claim.
+
+Van sok találatom arról, hogyan lehetne még jobbá tenni a desztillációt, tehát ha sikerül újítást találni, sok mindent meg tudok mérni. Ezt még keresem.
+
+Nekem szerdán vagy csütörtökön este 7 után teljesen jó lenne. Péntektől Excellence csapatépítőn leszek.
+
+Üdv,
+Örs

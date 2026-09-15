@@ -1,0 +1,206 @@
+========================================================================
+PROMISING LEAD #1 — THE ONE TO BUILD
+Written 2026-08-31, after the batch-7 verification lap (see idea_ledger
+#54-60). This is the working plan, not a survey. Ledger = what died.
+This file = what to do.
+========================================================================
+
+THE CLAIM (one sentence, the whole paper)
+-----------------------------------------
+Distillation buys DISTRIBUTIONAL FIDELITY and TASK ACCURACY at different
+rates — and on structured tasks, where the teacher has ~1 effective
+choice, it buys neither.
+
+Supporting frame: report EFFECTIVE BRANCHING FACTOR exp(H), not nats.
+  math    exp(0.0043) = 1.004 effective choices
+  reddit  exp(0.021)  = 1.02
+  post-gen exp(1.059) = 2.88
+"The teacher has one option here and three there." That sentence is the
+thesis, it is legible to a TDK jury, and it makes the structured-domain
+null obvious instead of disappointing.
+
+
+TITLES (1 is the pick; use 2's framing as subtitle/abstract)
+------------------------------------------------------------
+1. When the Teacher Has Only One Answer: Distillation on Structured Tasks
+2. What Survives at 3M Parameters? Distillation Practice on Structured
+   and Free-Form Domains
+3. Faithful but Wrong: Separating Distributional Fidelity from Task
+   Accuracy in Tiny Distilled Students
+4. Do Soft Labels Pay? A Measurement Study of Small Domain-Specific
+   Distillation
+5. One Choice or Three: Teacher Branching Factor and the Value of Soft
+   Labels
+
+
+WHY THIS SURVIVES (the margin, after the 2605.23857 kill)
+---------------------------------------------------------
+2605.23857 (Strong Teacher Not Needed, May 2026) already owns "KD benefit
+concentrates where uncertainty is high" and "KD is not label smoothing."
+CITE BOTH. Do not claim either. What it does NOT do:
+
+  (a) it keys on STUDENT baseline entropy, observationally.
+      We manipulate TEACHER entropy CAUSALLY, by re-tempering stored
+      logits — ranking preserved, only entropy dialed, no retrained
+      teacher, no confound. Muller 1906.02629 is the only prior causal
+      entropy manipulation and it is confounded (label smoothing
+      retrains the teacher and reshapes logit geometry).
+  (b) Llama3 0.7B-8B, all PRETRAINED. We are 3.4M from scratch.
+  (c) free-form pretraining only. The STRUCTURED vs FREE-FORM contrast
+      is untouched by anyone.
+  (d) it measures PPL / MMLU / GSM8K. NO distributional-fidelity metrics.
+      => the dissociation is INVISIBLE to them. This is the lead finding.
+
+Already half-measured in our own logs (postgen_kl_anneal_topk.csv):
+  pure KL t5to3 : top20 67.19  overlap 37.67  mean rank 418.6
+  anneal (n=2)  : top20 69.08 / 68.80  overlap 34.61  rank 486.3
+  pure CE       : top20 67.55  overlap 26.69  rank 1068.9
+Pure KL wins BOTH distribution metrics and LOSES top-20. That split is
+the paper.
+
+
+EXECUTION ORDER
+---------------
+STEP 0 — FREE, DO FIRST (no training, ~20 min)
+  Per-field teacher entropy from stored reddit logits at the four value
+  positions, plotted against measured per-field task accuracy:
+      safety 74%  tone 63%  toxicity 59%  sentiment 43%
+  Prediction: accuracy tracks per-field entropy (safety near-deterministic,
+  sentiment genuinely ambiguous). MUST chance-correct for class imbalance
+  (safety is skewed, which inflates it).
+  This is the cheapest possible test of the whole claim. If the four
+  points do not line up, the lead is in trouble and we learn it for free.
+
+STEP 1 — THE GATING CODE CHANGE (~5 lines)
+  Trainer._compute_loss currently divides BOTH student and teacher logits
+  by the same `temperature`. Add a separate teacher-only entropy
+  temperature. Without this the entropy dial does not exist.
+  TRAP: the loss is multiplied by temperature**2. If the dial changes
+  effective gradient scale, part of any "effect" is a learning-rate
+  effect. Handle explicitly and state it — this is where a reviewer kills
+  the paper.
+
+STEP 2 — GO/NO-GO (2 hours, 5 seeds)
+  Sweep teacher entropy on reddit. Reddit is CEILING-SATURATED (verified
+  in ideaD-data01024-s1 epoch 0: topk 0.9998, mean rank 1.05, validity
+  1.0, termination 1.0). Only teacher_student_overlap (0.32) and
+  student_entropy (0.17) are live. If those two do not MOVE when the dial
+  turns, the cheap-domain instrument fails and everything gets ~30x more
+  expensive. Find out before committing.
+
+STEP 3 — THE BATTERY (~30 GPU-hours on reddit, one weekend)
+  ~10 rows x 3 arms x 10 seeds. Candidate rows:
+    1  KL vs CE vs anneal ratio                    free, partly measured
+    2  distillation temperature                    knob exists
+    3  LABEL SMOOTHING CONTROL                     NOT OPTIONAL (below)
+    4  divergence zoo: fwd-KL / rev-KL / JS / TVD  our unique capability
+    5  top-k truncation k in {1,4,16,64,full}      free, post-hoc
+    6  output vocab size V (aux% knob)             data exists
+    7  noise regularization (embedding/attention)  predicted null w/ mechanism
+    8  optimizer AdamW vs Muon                     ~50 lines
+    9  depth vs width at matched params            free
+    10 data scale                                  NEEDS matched-step re-run
+                                                   (current sweep is confounded)
+  Row 3 is load-bearing: if uniform soft targets help as much as TEACHER
+  soft targets, there is no dark knowledge, only regularization, and the
+  claim evaporates. Note 2510.15516 already published this result — keep
+  the arm as a control, do not sell it as a finding.
+
+STEP 4 — PRE-REGISTER, THEN SPEND POST-GEN
+  Post-gen is ~3h/run, so the full battery is unaffordable there. BEFORE
+  touching it, write down which rows should FLIP when exp(H) goes 1.02 ->
+  2.88 and which should not. Then spend the ~12-15 affordable post-gen
+  runs testing ONLY those predictions.
+  This is cheaper AND stronger than running everything everywhere: it
+  converts "we ran many ablations" into "we had a theory that predicted
+  which ablations would flip."
+
+
+NON-NEGOTIABLES (where this genre dies)
+---------------------------------------
+- UNIFORM RECIPE + MATCHED TUNING BUDGET PER ARM. If Muon gets an LR
+  sweep and AdamW does not, the paper is worthless and a reviewer will
+  say so in one line. Cut ROWS before cutting protocol. 10 rows done
+  properly beats 20 done sloppily.
+- SEED NOISE FLOOR FIRST, then effect sizes with CIs, then Holm/
+  Bonferroni. Copy 2605.20798's protocol. Our 10-50 seeds vs the field's
+  3 is the one honest resolution advantage — do not waste it by skipping
+  the correction.
+- Measured seed noise so far: task_best std ~0.8-1.1pp at n=5. Effects
+  under ~2pp are not detectable at n=5; n=30 puts SE near 0.2pp.
+- SELECTION SPLIT != TEST SPLIT anywhere a choice is made.
+
+
+THE PRACTICAL PAYLOAD (the half that makes a journal care)
+----------------------------------------------------------
+Storage rule as a direct consequence of the law:
+  batches/reddit_comment_sentiment = 90 GB of full 525-dim logits.
+  At exp(H) = 1.02 the rule says store argmax only -> ~500 MB.
+  ~180x, measured on our own pipeline, with students that do not get
+  worse at 30-seed CIs.
+Shippable tool: should_i_distill.py — point it at ~100 teacher examples,
+it reports exp(H) and recommends whether soft labels will pay and what k
+to store. One day of work. This is what an engineer actually wants and
+nobody has published it.
+
+
+THE DEMO (TDK/OTDK)
+-------------------
+Live side-by-side on one Reddit comment:
+  Gemma 3 4B  — ~4 GB, seconds per output
+  our student — 13 MB, instant
+same JSON out, with a LIVE TEACHER-ENTROPY METER between them. The meter
+is the thesis: it shows why the tiny model is nearly free here. Then flip
+to post-gen and watch it break. Dramatizes the claim instead of
+decorating it.
+
+
+RISKS, RANKED
+-------------
+1. 2607.08268 (Sub-1B On-Device Distillation for STRUCTURED TEXT
+   ENRICHMENT) is the closest paper to our actual task and its PDF would
+   not parse in-session. READ IT BEFORE WRITING. Biggest unquantified
+   risk.
+2. RACE. Zhuang Liu's group (2605.23857) is in this lane and fast;
+   2608.15215 (Aug 15 2026) shows "laws about distribution shape" landing
+   now. Window is months. Stop searching, start measuring.
+3. Reddit ceiling saturation may make the cheap instrument useless
+   (Step 2 settles it).
+4. The temperature**2 gradient-scale confound (Step 1).
+5. Do NOT write "nobody works below 220M" — TinyStories is 1M-35M and
+   BabyLM runs 10M/100M-word tracks with distillation entries. Claim the
+   CONJUNCTION (distillation column x structured/deterministic tasks x
+   seed noise floor), nothing wider.
+
+
+READ BEFORE WRITING RELATED WORK
+--------------------------------
+  2605.23857  Strong Teacher Not Needed (the kill; cite as foundation)
+  2607.08268  Sub-1B On-Device Structured Distillation (closest task)
+  2510.12615  A Functional Perspective on KD (mis-summarized in ledger)
+  2608.15215  The Distributional View of KD (15 days old)
+  2510.15516  Revisiting KD: The Hidden Role of Dataset Size
+  2305.07759  TinyStories (ally: structure-before-content precedent)
+  2106.05945  Stanton, Does KD Really Work (fidelity != generalization)
+  1906.02629  Muller, When Does Label Smoothing Help
+  2605.20798  Most Transformer Mods Still Do Not Transfer (the protocol)
+  Menon ICML 2021, A Statistical Perspective on Distillation
+
+
+STANDING RULES (from ledger #60)
+--------------------------------
+- NO MORE METHOD IDEAS. Every "do X and it works better" in this project
+  has died (18 for 18). Every "here is the number nobody has" survived.
+- Convert, do not discard: a dead method usually has a live measurement
+  form. It costs only the verb.
+- Pre-filter before spending a search lap:
+    ends in "...and it works better"   -> predicted dead, skip.
+    ends in "...and here is the number" -> worth a lap.
+
+
+OPEN DECISION
+-------------
+DEADLINE. Asked four times, still unanswered. It decides 10 rows vs 5,
+and whether post-gen is in scope at all. Everything above assumes ~4-6
+weekends; compress rows first, protocol never.
+========================================================================

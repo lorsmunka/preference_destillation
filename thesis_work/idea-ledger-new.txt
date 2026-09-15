@@ -1,0 +1,994 @@
+========================================================================
+IDEA LEDGER — distillation thesis / novelty search
+A KILL RECORD. One entry = the idea in 2-4 sentences, then the verdict,
+owner and decisive finding in 2-4 sentences. Nothing else; durable
+material lives in findings.txt. Format rules at the end of this file.
+Rewritten from the long-form ledger 2026-09-06. Entries 1-53 were checked
+on or before 2026-08-26, 54-62 on 2026-08-31, 63-70 on 2026-09-05/06.
+
+Verdicts: SCOOPED (owned by prior work) · WOUNDED (mechanism owned, a
+narrow setting survives) · MEASURED (killed by our own experiment) ·
+DEAD (killed by argument, no citation needed) · ALIVE (still standing).
+========================================================================
+
+
+LOSS / SCHEDULE FAMILY
+------------------------------------------------------------------------
+
+1.  LOSS-SCHEDULE SWEEP                            [checked ≤2026-08-26]
+    Sweep the KL/CE mixing ratio, the temperature annealing schedule, and
+    the direction of annealing (KL→CE against CE→KL), looking for a
+    recipe that beats the default.
+
+    SCOOPED. The mechanism is Hinton, Annealing-KD, CTKD and DKD, and the
+    CE≈KL outcome is already predicted theoretically by Menon (ICML 2021).
+    Our own runs then measured CE≈KL directly, so the sweep confirms a
+    published prediction rather than finding anything.
+
+2.  SHARPNESS CROSSOVER                            [checked ≤2026-08-26]
+    Claim that KL is marginal on sharp domains and decisive on free-form
+    ones, so the value of the loss choice crosses over with how peaked the
+    teacher is.
+
+    SCOOPED by near-identical concurrent ICML 2026 work: Bridge-Garden
+    (2605.26246) and EGAD (2605.01732), both entropy-keyed, both verified
+    real. The observation survives only as our own cross-domain figure
+    (see #34), not as a claim.
+
+3.  CE→KL REVERSE-DIRECTION ANNEALING              [checked ≤2026-08-26]
+    Anneal from cross-entropy toward KL rather than the usual direction,
+    on the grounds that the reverse direction is the untested one.
+
+    WOUNDED and close to trivial. "Anneal toward the distribution you want
+    at the end" is almost a tautology, and the mixing-beats-pure result is
+    Bridge-Garden's. Same family as #1, #31, #36 and #58, all ruled
+    scoop-heavy.
+
+31. STEP-ALTERNATING LOSSES                        [checked ≤2026-08-26]
+    Instead of mixing KL and CE by a ratio, alternate them by step — every
+    second or third step uses KL — and ask whether loss-step annealing
+    beats loss annealing.
+
+    DEAD by algebra, no citation needed. Picking KL with probability p
+    gives E[grad] = p·grad_KL + (1−p)·grad_CE, which is exactly the
+    gradient of the p-weighted mixed loss: alternation is a
+    higher-variance estimator of the same objective, not a different one.
+    The only live corner is that Adam's second-moment statistics break the
+    equivalence — an optimizer footnote, an ablation column at most.
+
+36. OSCILLATING DIRECTIONAL ANNEALING              [checked ≤2026-08-26]
+    Descend the KL/CE ratio while superimposing ±10% cycles, borrowing the
+    cyclical-annealing trick from VAEs.
+
+    SCOOPED and mechanism-free here. Cyclical KL-weight annealing is Fu et
+    al. NAACL 2019 (1903.10145) plus follow-ups (2003.01889); it worked
+    there because of a real pathology (KL vanishing / posterior collapse)
+    that our two losses do not have, since CE's target *is* the teacher
+    argmax. Inherits #31's kill: cycle-averaged it is the base schedule.
+    Predicted null within seed noise.
+
+58. ENTROPY-BASED LOSS ANNEALING                   [checked 2026-08-31]
+    Key the KL/CE ratio to the teacher's entropy at each token rather than
+    to the training step, so the loss adapts to how much dark knowledge is
+    actually present.
+
+    DEAD — seven papers, 2023→2026: TSLD (NeurIPS 2023), EA-KD
+    (2311.13621), EGAD (2605.01732, our idea verbatim), Entropy-Aware
+    On-Policy (2603.07079, ICLR 2026), 2608.14685, SEAD (2606.28562), TIP
+    (2604.14084). Also inert on our domains by construction — an
+    entropy-keyed weight is a constant when entropy is constant, and
+    reddit and math are flat. SALVAGE: run it on post-gen only as a
+    confirmation arm for our own law, with reddit as the no-op control;
+    never write it up as a proposed method.
+
+
+VOCABULARY FAMILY
+------------------------------------------------------------------------
+
+4.  OUTPUT-VOCAB FLOOR / COLLAPSE CURVE            [checked ≤2026-08-26]
+    Find how small the output vocabulary can get before KL stops carrying
+    useful information — a collapse curve for dark knowledge against
+    vocabulary size.
+
+    WOUNDED. Kolesnikova (2205.02340) already plots KD quality against
+    vocabulary size and found no clean collapse, and Subclass Distillation
+    owns "few classes starve dark knowledge." Note this same paper returns
+    as a direct owner in #69.
+
+5.  BEST AUXILIARY-TOKEN SELECTION                 [checked ≤2026-08-26]
+    Choose which auxiliary tokens to keep by ranking them on teacher
+    probability mass rather than by frequency or hand-selection.
+
+    SCOOPED. Token selection by teacher mass is Sparse Logit Sampling
+    (2503.16870), Selective KD (2602.01395) and the top-K logit
+    distillation line.
+
+6.  RETAINED-MASS PREDICTOR                        [checked ≤2026-08-26]
+    A cheap forward pass measures how much teacher probability mass
+    survives vocabulary truncation, and predicts where KL will collapse —
+    so you know the safe vocabulary size without training.
+
+    MEASURED, no-go, on our own machine: both sharp and soft domains
+    retain ~99% of mass at their operating vocabulary, so retained mass
+    discriminates nothing. Entropy is the real discriminator. The metric
+    is also already named ("Don't Ignore the Tail", 2602.20816, ICML
+    2026). Same failure shape as #70 — see F-70b.
+
+17. PROGRESSIVE OUTPUT-VOCAB REDUCTION             [checked ≤2026-08-26]
+    Shrink the output vocabulary during training as a curriculum: start
+    wide so the student sees the full distribution, end narrow.
+
+    SCOOPED. DeepKD (2505.15133, Dynamic Top-K Masking) and PCD
+    (2505.24310, C2FL branch) already schedule KD output-support size
+    during training in both directions, as of May 2025. That we schedule
+    it in the shrinking direction is true but does not help once the
+    size-schedule axis itself is claimed; only a physically-shrinking-head
+    engineering delta survives.
+
+18. LEARNED / DIFFERENTIABLE OUTPUT VOCABULARY     [checked ≤2026-08-26]
+    Learn which tokens the output head should keep, end to end, instead of
+    selecting them by probability mass.
+
+    SCOOPED and benefit-null. VVD (NAACL 2019) owns
+    learned-selection-beats-frequency on input embeddings, so porting it
+    to a KD output head is an old technique in a new layer. Theory then
+    says the gain over mass-ranking is roughly zero, because the KL loss
+    is already mass-weighted.
+
+15. REDUCED INPUT-VOCAB ON MATH / POST-GEN         [checked ≤2026-08-26]
+    Close the thesis gap by applying the reduced input vocabulary to the
+    other two domains as well.
+
+    MATHEMATICALLY INERT — dropping unused embedding rows cannot change
+    any output. It is compression, not behaviour: it closes a gap in the
+    writeup and claims nothing.
+
+
+PROMPT / CONTEXT FAMILY
+------------------------------------------------------------------------
+
+7.  PROMPT INTERNALIZATION INTO A TINY STUDENT     [checked ≤2026-08-26]
+    Bake the task prompt into the weights of a from-scratch student, so it
+    performs the task without being told what the task is.
+
+    WOUNDED. The mechanism is Snell 2022, "Learning by Distilling
+    Context", verbatim, with SKIntern, PromptIntern and Gist Tokens piling
+    on. Only the tiny from-scratch scale is new.
+
+8.  CO-COMPRESSION INTERACTION                     [checked ≤2026-08-26]
+    Ask whether prompt internalization still works when the output
+    vocabulary is simultaneously starved to ~500 tokens and the student is
+    trained from scratch — the joint corner of two compressions.
+
+    ALIVE (thin). The joint corner is genuinely unmeasured, but it is an
+    existence proof and a combination rather than a new mechanism.
+
+24. TEACHER-PROMPT AS THE DOMINANT LEVER           [checked ≤2026-08-26]
+    Treat the teacher's prompt as the main thing that determines student
+    quality, and document the pitfalls of internalizing it.
+
+    SCOOPED. Snell 2022 (2209.15189) is the exact setup including the
+    capacity ceiling; the pitfalls paper already exists (GenPI 2411.15927,
+    NAACL 2025); prompt-as-lever is Distilling Step-by-Step and SCoTD; the
+    prompt-vs-generator decomposition is 2604.13977. Sliver: prompt-vs-
+    recipe attribution inside the reduced-vocab regime, a measurement only.
+
+65. MULTIPLE PROMPT INTERNALIZATION                [checked 2026-09-05]
+    Have the teacher answer the same input 4-5 times under different
+    prompts, then distil the ensemble, on the theory that this
+    manufactures dark knowledge where a single prompt gives none.
+
+    METHOD SCOOPED — 2206.13214 uses the phrase "multi-prompt
+    distillation" on a subjective task, 2506.03857 and 2603.21404 are
+    adjacent, and CLIP's 80 templates is the upstream canon. One live
+    thing survives: prompt-ensembling work says averaging HELPS while
+    multi-teacher work (2302.07215, NeurIPS 2024 ensemble-then-distill)
+    says averaging makes knowledge SHALLOWER, and our entropy law predicts
+    which regime applies. Budget-neutral to run (N/5 inputs × 5 prompts).
+    HARD GATE FIRST: 5 prompt variants on ~50 reddit examples — if every
+    variant returns the same argmax, nothing is manufactured and it dies
+    free.
+
+
+SYSTEMS / DEPLOYMENT FAMILY
+------------------------------------------------------------------------
+
+9.  TOOL-CALL TUTOR                                [checked ≤2026-08-26]
+    A tiny distilled expert that emits calculator or tool calls instead of
+    computing answers itself, packaged as a maths tutor.
+
+    SCOOPED — every verb is owned: Toolformer, Calc-X/Calcformers, PAL and
+    PoT, Agent Distillation (2505.17612).
+
+10. CHAIN OF TINY EXPERTS VS MoE ON EDGE           [checked ≤2026-08-26]
+    Compare a chain of small distilled experts against a mixture of
+    experts for on-device deployment.
+
+    SCOOPED and the premise is refuted. NVIDIA 2506.02153 and
+    Mixture-of-Modular-Experts 2407.19610 own the comparison, and
+    2606.21428 shows edge deployment is memory-bound rather than
+    compute-bound — which kills the entire "FLOPs is the constraint"
+    framing the idea rests on.
+
+19. SHARED BODY + SWAPPABLE PER-DOMAIN HEADS       [checked ≤2026-08-26]
+    One tiny shared transformer body with a reduced-vocabulary head per
+    domain, swapped at load time, so a device holds one body and many
+    tasks.
+
+    SCOOPED and the value proposition is killed. Classic MTL
+    shared-trunk/heads (MT-DNN, HydraNet, Apple 2024, MT-DNN+KD 1904.09482)
+    owns the structure; only reduced-vocab-head-as-unit at sub-10M is
+    unclaimed. Negative transfer at tiny scale (Stem Cell Hypothesis,
+    EMNLP 2021) then predicts independent experts beat the shared body,
+    removing the memory saving that motivated it.
+
+47. BAKED-IN "WILL I BE WRONG" HEAD                [checked ≤2026-08-26]
+    An auxiliary head trained alongside the student that flags likely
+    incorrect answers from internal features, ideally saying why.
+
+    MECHANISM OWNED AT EVERY LAYER: ConfidNet (1910.04851, NeurIPS 2019)
+    plus TPAMI follow-up owns the aux error head, Lookback Lens
+    (2407.07071) owns wrongness-from-attention, and P(True) (Kadavath
+    2207.05221) owns self-judged correctness — with a scale finding that
+    cuts against us. SALVAGE as a demo feature, not a claim: maths gives
+    free wrongness labels, and a logistic probe on the final hidden state
+    is a weekend of work.
+
+48. PHONE COMMITTEE                                [checked ≤2026-08-26]
+    Three or four geometrically different tiny students on one device,
+    rotating to a peer whenever the active one is unsure.
+
+    MECHANISM OWNED — learning-to-defer with multiple experts (2210.16955,
+    Mao NeurIPS 2023, 2310.14774, 2506.20650), routing/cascading survey
+    2603.04445, edge-cloud cascades 2512.20012. ONE SPRINKLE SURVIVES:
+    diversify students BY THE DISTILLATION DIVERGENCE ITSELF (reverse-KL
+    mode-seeking vs forward-KL mode-covering) and ask whether they make
+    complementary or nested errors — two-sided, and nearly free on top of
+    #38's runs. See F-48a for the diversity-source shootout.
+
+49. AUTOMATED COMMITTEE PIPELINE                   [checked ≤2026-08-26]
+    Overproduce ten diverse distills, select the four with maximum
+    correct-answer coverage, train a per-model wrongness gate, ship four
+    plus one, configurable.
+
+    EVERY STAGE HAS NAMED PRIOR ART — Caruana ICML 2004 ensemble selection
+    from libraries, submodular greedy max-coverage, META-DES (Pattern
+    Recognition 2015) for per-instance competence gating — so it is not
+    presentable as a method. But the central comparison IS contested:
+    Kondratyuk 2005.00570 (ensembles of smaller beat single large at
+    matched FLOPs) against "Deep ensembles work, but are they necessary?"
+    (NeurIPS 2022), both at vision scale and unmeasured in the tiny
+    regime. Conditionally TDK-worthy as an applied entry; see F-49a for
+    the execution requirements that decide whether it wins or embarrasses.
+
+51. MODEL-WITHIN-A-MODEL DRAFTER                   [checked ≤2026-08-26]
+    A small nested submodel inside the student, frozen or alternately
+    trained, used as a speculative-decoding drafter for the full model.
+
+    SCOOPED thoroughly. MatFormer (2310.07707) is a nested Matryoshka
+    submodel trained jointly and used explicitly as a speculative drafter;
+    LayerSkip (2404.16710), Draft & Verify (2309.08168), Medusa
+    (2401.10774), EAGLE (2401.15077), Kangaroo (2404.18911) and
+    DistillSpec (2310.08461) fill the rest. No sandbox sliver either:
+    speculative decoding pays when the TARGET is expensive, and a 14M
+    model is the drafter, not the target.
+
+67. SPECULATIVE DECODING WITH THE FIRST LAYERS     [checked 2026-09-06]
+    Use the first layer or two of a three-layer student to draft tokens
+    that the remaining layers then verify.
+
+    DEAD — exactly scooped. LayerSkip (2404.16710, ACL 2024, Meta) is this
+    idea by name: layer dropout plus a shared early-exit head so early
+    layers draft and the rest verify, up to 2.16× on LLaMA. SWIFT
+    (2410.06916) and Component-Aware Self-Speculative (2605.01106) sit
+    beside it, and #27 had already killed the distillation angle.
+
+
+INTERPRETABILITY / PROBING FAMILY
+------------------------------------------------------------------------
+
+11. CE-VS-KL REPRESENTATION COMPARISON             [checked ≤2026-08-26]
+    Two students reach the same accuracy under different losses — are they
+    the same model inside?
+
+    SCOOPED. Müller 2019 (soft targets change geometry at equal accuracy),
+    Stanton 2021 (accuracy ≠ internal fidelity) and Distilled Circuits
+    (2505.10822, generative, 2025) own it. Only accuracy-matched seed
+    baseline hygiene and the tiny sandbox survive.
+
+12. CALIBRATION TRANSFER + DEFERRAL CASCADE        [checked ≤2026-08-26]
+    Ask whether calibration survives distillation into a tiny
+    reduced-vocabulary student, and use the calibrated confidence to defer
+    hard inputs upward.
+
+    SCOOPED hard — calibration transfer via KD (2302.11472), teacher
+    calibration (2508.20224), Gatekeeper cascade (2502.19335), Müller
+    2019. The closed-vocabulary "clean ECE" pitch is also backwards:
+    classification is already the cleanest setting for calibration.
+
+28. WATCHER MODEL FROM ATTENTION PATTERNS          [checked ≤2026-08-26]
+    A second model predicts whether the student is about to be wrong by
+    reading its attention patterns.
+
+    SCOOPED and saturated 2024-2026: Lookback Lens (2407.07071), spectral
+    attention features (2502.17598), question-only probes that predict
+    accuracy before generation (2509.10625), self-failure circuits
+    (2512.20578), entropy-trace monitoring (2601.09001) — and the deferral
+    use case already died as #12. At 3 layers and 525 tokens, plain output
+    entropy probably predicts errors anyway, more cheaply than any probe.
+
+50. ATTENTION-SIGNATURE TOOL                       [checked ≤2026-08-26]
+    Characterize models by how they attend, and use attention diversity to
+    select or route committee members without needing labels.
+
+    SURVIVES THE OLD MECH-INTERP KILL BUT FACES TWO NEW ONES. Jain &
+    Wallace kills attention-as-explanation, not attention-as-predictive-
+    feature, so the reframe is legitimate — but computing attention
+    divergence requires running both models, which yields OUTPUT
+    DISAGREEMENT for free, a closer and stronger baseline; and circuit
+    seed-instability (2510.00845, ~21% feature reproducibility over three
+    seeds) predicts the signatures are seed-dominated. DECISION TEST, an
+    afternoon on #38's runs: the tool exists only if attention divergence
+    predicts true error complementarity AND adds over output disagreement.
+
+
+SCALE / CAPACITY FAMILY
+------------------------------------------------------------------------
+
+13. REASONING SCALE FLOOR                          [checked ≤2026-08-26]
+    Find the minimum model size and vocabulary at which reasoning
+    successfully distils into a small student.
+
+    SCOOPED. SCoTD (2306.14050) owns the question, and Teaching Arithmetic
+    to Small Transformers (2307.03381) already does sub-10M FROM-SCRATCH
+    verifiable multi-step arithmetic. Sub-10M is likely below the floor
+    anyway, so the curve is flat at chance. One fresh variable survives:
+    output-vocabulary size as a reasoning-capacity axis, rather than the
+    scale floor itself.
+
+32. MoE VIABILITY SUB-200M UNDER DISTILLATION      [checked ≤2026-08-26]
+    Ask whether a mixture of experts is viable below 200M parameters when
+    the training signal comes from a dense teacher rather than hard labels.
+
+    PREMISE REFUTED AS POSED — "Slicing and Dicing" (2605.11689) reports
+    all MoEs underperform dense at 10-20M active parameters under
+    Chinchilla-optimal data, overtaking only at ~20× Chinchilla; 2502.05172
+    and 2509.23678 agree. We sit orders of magnitude below the crossover.
+    SLIVER WORTH KEEPING, the best of its batch: every one of those scaling
+    laws trains on hard targets, and MoE's documented small-scale weakness
+    is data hunger — so "does distillation's higher information per example
+    move the MoE viability threshold down, and by how much?" is unanswered
+    and headline either way. Most expensive build on the board.
+
+45. SAME-ARCHITECTURE-AS-TEACHER STUDENT           [checked ≤2026-08-26]
+    Ask whether a student built like its teacher wins at matched parameter
+    count, given enough data and a small vocabulary.
+
+    OWNED — it is a subfield. AKD "Search to Distill" (1911.09074) found
+    exactly this (optimal students are teacher-dependent and
+    structure-similar), spawning NAS-for-KD (DisWOT 2303.15678, 2206.13130,
+    2001.11612); the mechanism is Abnar 2006.00555. WRONG LAB besides: at
+    48 dims, 1 head, 3 layers, Gemma's architectural identity is vacuous,
+    so a "mini-Gemma" arm degenerates into the vanilla student plus
+    trivia. Predicted null by degeneracy, which tests nothing.
+
+57. FRAMING CORRECTION — "NOBODY WORKS BELOW 220M" [checked 2026-08-31]
+    The ledger had been leaning on the claim that the small-scale regime
+    is empty.
+
+    FALSE — DO NOT WRITE IT. TinyStories (2305.07759) is 1M-35M parameters
+    with a published capability-emergence curve, dead centre of our range;
+    BabyLM (CoNLL 2023/24/25) is a recurring small-budget benchmark WITH
+    distillation entries (Baby Llama 2308.02019, BabyHGRN 2412.15978);
+    TinyHelen 2501.00522 likewise. THE GAP IS THE CONJUNCTION: tiny-scale
+    work is free-form and hard-label, distillation work is ≥0.6B and
+    pretrained. TinyStories is also an ally — its grammar-before-
+    consistency finding is the precedent for our validity/task gap (#43).
+
+
+TEACHER-SIDE / DATA-GENERATION FAMILY
+------------------------------------------------------------------------
+
+23. TEACHER REASONS, STUDENT EMITS ONLY THE ANSWER [checked ≤2026-08-26]
+    Let the teacher reason at length but train the student only on the
+    final answer, and ask whether teacher-side reasoning still helps.
+
+    OWNED as a headline — Wadhwa, "Mysteries of CoT-Augmented
+    Distillation" (2406.14511, EMNLP 2024) does it on small models
+    including how much reasoning can be masked before collapse; Dual-Head
+    (2509.21487) and the capacity-floor work (2502.18001, 2604.04037)
+    surround it. SLIVER: those all put reasoning tokens IN the student
+    target, whereas ours would transfer reasoning purely through the
+    answer's soft distribution — see #63 for the answer, which is
+    negative. Base task additionally near-scooped by 2607.08268.
+
+25. CONFIDENCE-CURATED DISTILLATION DATA           [checked ≤2026-08-26]
+    Use teacher confidence or entropy to decide which examples are worth
+    generating, cutting the cost of the teacher pass.
+
+    SCOOPED. LLM on a Budget (2511.11574) reports up to 80% fewer teacher
+    labels; Distill on a Diet (2606.25488) and sample selection by teacher
+    signal (2404.03693) cover the rest. Sliver is a reduced-vocab
+    generative measurement only.
+
+62. DOUBLE DISTILLATION                            [checked 2026-08-31]
+    Use two teachers — or take fewer labels from the expensive one and
+    make up the rest with a cheap one.
+
+    METHOD DEAD THREE WAYS: two teachers at once is textbook multi-teacher
+    KD (survey 2006.05525, 2302.07215, 2605.27967); sequential is TAKD
+    (1902.03393) and AMD (2407.04208); and "fewer labels from the
+    expensive teacher" is LLM on a Budget (2511.11574, already our #25),
+    Teaching-Assistant-in-the-Loop (2406.05322) and neural caching,
+    mechanism for mechanism. SURVIVING MEASUREMENT: the exchange rate
+    between cheap and expensive teacher labels, indexed by task entropy —
+    2605.23857 owns teacher strength but never indexes it by entropy. See
+    F-62a for the cost wall; PARKED for November, it is the follow-up
+    paper.
+
+70. TEACHER ENTROPY AS A PREDICTOR OF DISTILL QUALITY
+                                                   [checked 2026-09-06]
+    Measure the teacher's output distribution across sizes and families on
+    a fixed domain (Gemma 4B vs Qwen 4B) and forecast, without training a
+    student, which teacher yields the better small distill. A cheap pass
+    over stored logits would replace a training run per teacher.
+
+    SCOOPED, and the entropy variant was tested and LOST. GRACE
+    (2511.02833) scores a teacher before any student exists — 15 teachers
+    across LLaMA/OLMo/Qwen/Gemma/Phi, 1.5B-70B, 86% Spearman with
+    post-distillation quality — but its score is gradient-spectral, not
+    entropy, and it beats the distribution-spread baseline G-Vendi 86% to
+    44%. Our hypothesis has therefore already run as someone's baseline
+    and placed last: a published negative result, not an absence of
+    coverage. 2604.18963 separately owns the Gemma-3-12B vs Qwen3-8B
+    distillability comparison with calibration as the entropy dial (claims
+    from abstract only — PDF would not yield body text, flag as in #55).
+    Only opening: GRACE scores teachers globally, never per domain. See
+    F-70a and F-70b.
+
+
+STORAGE / PRECISION FAMILY
+------------------------------------------------------------------------
+
+16. MASS-GRADED LOGIT STORAGE PRECISION            [checked ≤2026-08-26]
+    Store the teacher's full distribution at graded bit-depth — more bits
+    for high-mass tokens, fewer for the tail.
+
+    SCOOPED and near-trivial: it is the KL-optimal solution, proven (ISIT
+    2021/2022 companders x^{2/3} and ArcSinh) and shipped (Arcee DistillKit
+    2024). The benefit is also suspect, since "Don't Ignore the Tail"
+    (2602.20816) says the tail carries the signal you would be degrading.
+
+52. THE LOGIT-STORAGE RULE                         [checked ≤2026-08-26]
+    Publish the required top-k for stored teacher logits as a function of
+    teacher entropy — the practical recipe for how much to keep.
+
+    ALIVE as a supporting chapter. Owned around it: 2502.08606 (LLM-scale
+    k-sweep) and 2503.16870 (truncated gradients are biased; sampling
+    beats truncating at matched storage), but the entropy-conditional rule,
+    the tiny from-scratch regime and seed CIs are unclaimed. Demoable
+    twice — rerun our own pipeline at the recommended k and show batches/
+    shrink ~50× with students unchanged, plus a shippable
+    how_much_to_store.py. Race risk ~zero, because boring is the point.
+    See F-52a for the experiment and its cost.
+
+
+METHOD / ARCHITECTURE FAMILY
+------------------------------------------------------------------------
+
+26. DISTIL GEMMA INTO A JEPA STUDENT               [checked ≤2026-08-26]
+    Replace the autoregressive student with a JEPA-style latent-prediction
+    architecture.
+
+    SCOOPED and premise-conflicting. "KD via JEPA latent prediction" is
+    owned at title level (JEP-KD 2403.18843) on top of the feature-KD genre
+    (FitNets, TinyBERT), and JEPA×language is owned by the LeCun orbit
+    itself (LLM-JEPA 2509.14252, VL-JEPA 2512.10942, JEPA-Reasoner
+    2512.19171). Deeper: a JEPA student has NO softmax head, which deletes
+    the reduced-vocabulary and logit-KL axis the thesis is built on, and
+    turns the JSON task into the classifier the thesis exists to avoid.
+
+27. DISTIL VIA SPECULATIVE DECODING                [checked ≤2026-08-26]
+    The student drafts its own training data and the teacher verifies or
+    replaces tokens, so the data lies on the student's own distribution.
+
+    SCOOPED at title level by SKD (2410.11325, Google, ICLR 2025) —
+    student drafts, teacher top-K accept/replace, interleaved sequence
+    becomes the training data — with GKD, MiniLLM, ImitKD, DistillSpec
+    (2310.08461) and SpecKD (2510.24021) around it. Also wrong for our
+    pipeline: it puts the teacher back in the training loop, destroying
+    the offline stored-distribution asset, and its motivation (exposure
+    bias in long free-form generation) nearly vanishes for short
+    deterministic JSON.
+
+29. ANSWER-SLOT AUXILIARY SUPERVISION              [checked ≤2026-08-26]
+    Reserve part of the output or hidden state to hold the fixed-length
+    final answer during training, with an auxiliary loss on it.
+
+    SCOOPED as a family: answer-head-beside-reasoning-head is Dual-Head KD
+    (2509.21487, already #23), auxiliary future prediction is MTP
+    (2404.19737), latent-target auxiliary losses are Hierarchical Latent
+    Prediction (2608.05806) and Coconut (2412.06769), deep supervision is
+    2015, and Allen-Zhu's Physics 2.1 owns the phenomenon. Sliver: the
+    intervention at the tiny floor as one audit row, where MTP's
+    small-scale conflict predicts a clean negative.
+
+30. NOISE REGULARIZATION FOR TINY DISTILLS         [checked ≤2026-08-26]
+    Add Gaussian noise to attention patterns or embeddings so the student
+    sees more examples before it overfits.
+
+    WOUNDED, and the mechanism kill is stronger than the citations. Every
+    injection point is owned — embeddings by NEFTune (2310.05914),
+    attention by Attention-Drop (2504.12088), noise-in-KD by SMART
+    (2310.01209) — but the real problem is that NEFTune works by stopping
+    overfitting so the model falls back on its PRETRAINED knowledge, and a
+    from-scratch 3.4M student has no prior to fall back on. Predicted null.
+    Two points in its favour from our own logs are recorded in F-30a.
+
+39. MULTI-TOKEN PREDICTION UNDER KD                [checked ≤2026-08-26]
+    Ask whether distillation moves the crossover below which multi-token
+    prediction hurts rather than helps.
+
+    ALIVE — the best architecture-flavoured candidate on this ledger. Meta
+    2404.19737 documents a clean crossover (MTP hurts below ~1.3B under
+    hard labels) and all MTP+distillation work is about speeding up large
+    pretrained models (2602.06019, 2603.23911, KAT-V1 2507.08297). Nobody
+    has trained a from-scratch sub-100M model with MTP under teacher-KL,
+    and the accepted failure story is signal sparsity of one-hot future
+    labels — which we can replace with the teacher's full distribution at
+    t+1 and t+2, already on disk. Either sign is a result; implementation
+    is one extra head and one shifted KL term.
+
+42. MUON AT TINY SCALE UNDER KL                    [checked ≤2026-08-26]
+    Test the Muon optimizer on tiny distilled students.
+
+    ADEQUATE-to-ALIVE, but only with pre-registered non-obvious
+    hypotheses: seed-variance contraction, a rare-class F1 interaction
+    (2509.26030 shows Muon wins on tail associative memory, and KD puts
+    mass exactly on rare tokens), and a temperature interaction. 2601.09865
+    states verbatim that Muon × logit-distillation is underexplored. As a
+    plain speed benchmark it degrades to weak; AdamW must get an equal LR
+    sweep.
+
+44. nGPT AS A KD STUDENT                           [checked ≤2026-08-26]
+    Use the hypersphere-normalized transformer as the student architecture.
+
+    ADEQUATE. The mechanism is genuinely KD-specific and unclaimed: nGPT
+    (2410.01131) has bounded logits, so matching a near-one-hot teacher
+    demands a logit gap around 11, which forces the learned scale up and
+    saturates every other cosine — and that scale is formally confounded
+    with the distillation temperature. But nGPT's baseline gains are
+    contested, the implementation is invasive, and the null-result risk is
+    the highest on the board.
+
+64. CURRICULUM / PRE-WIRED NEURONS                 [checked 2026-09-05]
+    Train on maths, then continue with fixed input and output neurons to
+    see whether addition is learned faster; or pre-wire a fixed-size
+    representation for all maths problems and reuse the domain knowledge.
+
+    DEAD — scooped and off-axis. GrokTransfer (2504.13292) is the first
+    half verbatim (weak-model embedding transfer on modular arithmetic and
+    sparse parity, ~5× speedup, XOR in one gradient step versus 80+), and
+    its embeddings are not even frozen, which answers the "fixed neurons"
+    detail against us. Abacus Embeddings (2405.17399, NeurIPS 2024) is the
+    second half. Both are architecture results on synthetic algorithmic
+    tasks, off the distillation axis entirely.
+
+68. BINARY OUTPUT HEAD                             [checked 2026-09-06]
+    Represent tokens as bit strings so the output head needs only two
+    logits, and distil dark knowledge into the bits — motivated by
+    vocabulary being a large share of a sub-100M model.
+
+    METHOD DEAD: the output head is 0.75% of our parameters, so binarizing
+    it saves 0.74% of the model (F-68a) — the motivation is right about
+    vocabulary in general but points at the wrong half. The mechanism is
+    also hierarchical softmax, Morin & Bengio 2005 and word2vec
+    (1301.3781, 1310.4546). ONE SHARP FINDING SURVIVES, in F-68b: an
+    independent-bits head saves parameters precisely because it cannot
+    represent correlations, and the dark knowledge destroyed equals exactly
+    the total correlation between bits — savings and loss are the same
+    quantity, and a targeted search returned explicit non-coverage in the
+    KD literature.
+
+69. DOMAIN-SPECIFIC RETOKENIZATION                 [checked 2026-09-06,
+                                                    TRIPLE-CHECKED]
+    Build a domain-perfect tokenizer that merges terms like "toxicity"
+    into single tokens, remap the teacher's distribution onto the new
+    sub-tokens programmatically, and cut input and output vocabulary ~90%.
+
+    METHOD DEAD — owned three times over by independent lines: Fast
+    Vocabulary Transfer (EMNLP 2022 industry; follow-up 2402.09977) does
+    domain tokenizer + vocabulary transfer + KD on vertical domains; KD of
+    Russian LMs with Reduction of Vocabulary (2205.02340, already our #4)
+    states that KL-based KD cannot be applied directly under vocabulary
+    mismatch and introduces the alignment techniques, at 17-49×
+    compression; Efficient Vocabulary Reduction for Small Language Models
+    (COLING 2025 industry) is vocabulary pruning plus KD for small models;
+    AdaptiVocab (2503.19693, COLM 2025) is the domain n-gram vocabulary.
+    Cross-tokenizer KD is itself a crowded subfield (2502.11104,
+    2603.22056, 2604.07466, 2503.20083, 2605.21699). TWO FRAMING ERRORS
+    worth remembering: "redistribute programmatically" is the open problem
+    rather than bookkeeping, and "can still output everything the teacher
+    could" is false without byte escapes. What survives is not the method
+    but F-69a — granularity as an entropy dial.
+
+
+SAFETY / LIFECYCLE / EXTRACTION FAMILY
+------------------------------------------------------------------------
+
+20. REDUCED VOCAB AS A HARD SAFETY GUARANTEE       [checked ≤2026-08-26]
+    Claim that a student physically cannot emit harmful output because the
+    harmful tokens are not in its vocabulary.
+
+    DEAD. It is a manual token filter with extra steps, bypassable by
+    coded language exactly as humans bypass word filters. "Cannot say
+    slurs because the vocabulary excludes them" is a regex, not a thesis.
+
+21. CONTINUAL OUTPUT-VOCAB EXPANSION UNDER DRIFT   [checked ≤2026-08-26]
+    Grow a deployed tiny expert's output vocabulary online as the data
+    drifts, without forgetting what it already knows.
+
+    SCOOPED at the mechanism level — Markov-Matrix zero-forgetting
+    expansion (2605.04308), ASR continual output-vocab expansion
+    (2401.04482) and the class-incremental distillation line all own it.
+    Surviving sliver is the capacity-versus-forgetting frontier at sub-10M,
+    where freeze-backbone zero-forgetting BREAKS because a tiny model must
+    move shared weights to absorb new tokens — a real "why scale matters"
+    reason, but a characterization rather than a method.
+
+22. REVERSE-COMPILE A TINY NET INTO RULES          [checked ≤2026-08-26]
+    Extract explicit code or rules from a trained tiny student.
+
+    WEAK FOR OUR DOMAINS. Sentiment extraction yields a trivial keyword
+    classifier, which undercuts the generative premise the thesis rests
+    on; maths extraction yields a broken heuristic, since the model gets
+    arithmetic wrong about 22% of the time. It only pays off on a task with
+    a clean hidden algorithm, which neither of ours is.
+
+
+CROSS-DOMAIN / FORK FAMILY
+------------------------------------------------------------------------
+
+35. HUNGARIAN MATHS TUTOR                          [checked ≤2026-08-26]
+    Give the teacher Hungarian phrasing and a persona, internalize it, and
+    ship a cheap intelligible Hungarian maths tutor.
+
+    COMPONENTS ALL OWNED and the combination is a substitution instance:
+    prompt internalization is mature (Askell 2021, GenPI 2411.15927,
+    Microsoft OPCD 2026), small maths distillation is crowded, and
+    Hungarian adaptation is active — Rácka (2601.01244, Jan 2026) swaps
+    32k tokenizer entries for 47% lower Hungarian fertility, claiming the
+    Hungarian-adapted-vocabulary axis at 4B this year, from a Hungarian
+    academic group. FATAL IN OUR PIPELINE regardless: from-scratch
+    students cannot produce free-form Hungarian when the best post-gen
+    student manages 4.7% autoregressive token accuracy in English.
+    A FORK, not an extension.
+
+59. TRANSFER TO A NON-LINGUISTIC LOGIC GAME        [checked 2026-08-31]
+    Distil on a language domain, transfer the student to chess, and beat
+    from-scratch initialization.
+
+    BOTH HALVES OWNED and null predicted by degeneracy. Language-to-chess
+    transfer is The Chess Transformer (2008.04057) from GPT-2 medium;
+    "distilled init beats from-scratch init" is standard, mechanism owned
+    by Abnar 2006.00555 (our #45). MECHANICAL KILL: 3.28M of our 3.4M
+    parameters IS the input embedding, discarded the moment the vocabulary
+    changes, leaving ~110K params of attention to transfer. WORTH
+    REMEMBERING: a chess engine is a natural entropy laboratory (forced
+    mate versus quiet position, with ground truth) if a
+    verifiably-caused entropy dial is ever needed.
+
+61. DIFFUSION × DISTILLATION                       [checked 2026-08-31]
+    Four variants: an AR teacher distilled into a diffusion student,
+    diffusion inside an LLM, diffusing an attention pattern, and diffusion
+    for speculative decoding.
+
+    ALL FOUR DEAD, four independent kills. Saturation: AR→diffusion is
+    scooped by name (2606.06712), diffusion×speculative-decoding is
+    carpet-bombed with 12+ papers, and diffusion-inside-an-LLM already has
+    surveys (2508.10875, 2508.09834) — when a topic has surveys the entry
+    window is closed. THE REAL KILL, which survives "I will regenerate the
+    data": our stored logits are causal conditionals p(x_t | x_<t), while a
+    masked diffusion student needs bidirectional masked marginals, which a
+    causal Gemma cannot produce at any data volume. Also contradicts
+    CLAUDE.md's stated reason for autoregressive generation.
+
+
+MEASUREMENT / PROGRAMME ENTRIES
+------------------------------------------------------------------------
+
+34. POST-GEN LOSS→METRIC DISSOCIATION              [checked ≤2026-08-26]
+    Each loss wins the metric nearest its own objective: annealing wins
+    top-20, pure KL wins overlap and mean rank, pure CE tanks mean rank.
+
+    SCOPED AS A PHENOMENON and near-tautological — CE supervises only the
+    target token so tail ordering is unsupervised, KL supervises the full
+    ranking, that tail structure IS dark knowledge (Hinton 2015), and the
+    target/non-target split is the DKD decomposition. KEEP AS A THESIS
+    FIGURE, not a research push: it ties the CE≈KL null to teacher entropy
+    across three domains on one pipeline. Data corrections and the
+    numbers are in F-34a.
+
+37. ENTROPY-GATED DISTILLATION                     [checked ≤2026-08-26]
+    The KD-versus-CE gap is a function of teacher entropy; measure the
+    dose-response curve causally by re-tempering stored logits.
+
+    HEADLINE DEAD, see #55 — scooped 2026-05-22 by 2605.23857. The margin
+    that survives is that they key on STUDENT baseline entropy
+    observationally while we would dial TEACHER entropy causally on stored
+    logits, ranking preserved and no teacher retrained. Müller 1906.02629
+    is the older causal manipulation but is confounded, since label
+    smoothing reshapes logit geometry and needs a retrained teacher.
+
+38. DIVERGENCE ZOO AT SUB-30M, OFFLINE             [checked ≤2026-08-26]
+    Does the reverse-KL advantage survive with no pretrained prior? With
+    stored logits, every token-level f-divergence is computable offline
+    and exactly.
+
+    ALIVE — STRONG. MiniLLM (2306.08543), GKD (2306.13649), DistiLLM 1 and
+    2 (2402.03898, 2503.07067) and f-distill (2307.15190) all use students
+    ≥120M and pretrained, mostly needing on-policy sampling. The mechanism
+    question has real content: mode-seeking assumes a capable student
+    choosing among modes, and a from-scratch 14M student may need
+    mode-covering first, which could flip the accepted ranking. A
+    well-error-barred null is itself publishable.
+
+40. KD-GROKKING PHASE DIAGRAM                      [checked ≤2026-08-26]
+    Do soft labels compress, eliminate, or transmit the memorization
+    plateau? Distil from teacher checkpoints taken pre-grok, mid and
+    post-grok.
+
+    ALIVE — STRONG, with race risk. 2511.04760 (Nov 2025) showed KD from a
+    grokked teacher accelerates grokking cross-distribution, but has no
+    same-distribution analysis, no temperature sweep, no pre-versus-post
+    teacher ablation and no seed counts; 2607.05104 has the many-seed
+    statistics but hard labels only. Label smoothing is the essential
+    control arm (2602.12039, 2501.04697). Needs a new tiny algorithmic
+    domain and grokking hyperparameter archaeology first; the 2511.04760
+    group is the obvious extender, 6-12 month window.
+
+41. VARIANCE-CONTRACTION AUDIT                     [checked ≤2026-08-26]
+    Does KD shrink the seed lottery? Measure σ²_KD/σ²_CE per metric across
+    alpha and temperature at 30-50 seeds.
+
+    ALIVE — STRONG and the most feasible on the board, since it re-runs
+    existing configs. 2305.17581 (NeurIPS 2023) PROVES KD partially reduces
+    gradient variance, a theory prediction never tested at the
+    outcome-distribution level, and 2510.12615 tests final-accuracy means
+    only. Framing discipline is required: this is "testing a NeurIPS theory
+    claim where only we can afford to", never "we ran more seeds". Natural
+    methodology backbone for #37-40.
+
+43. STRUCTURE-BEFORE-CONTENT ACQUISITION ORDER     [checked ≤2026-08-26]
+    Split the training KL into structure-token and content-token
+    components from stored logits, and test whether structure is acquired
+    first.
+
+    ALIVE. The acquisition-order literature is all hard-label pretraining
+    (2309.07311, 2109.06096, 2205.11758), and our own 100%-valid-JSON at
+    60%-task gap is the phenomenon. Hypothesis: teacher entropy ≈ 0 on
+    structure tokens means KD = CE there, and all KD value localizes on
+    content tokens. This is #37 at within-sequence granularity — the same
+    law at a second scale. The frequency confound must be controlled.
+
+53. THE COMPARISON BATTERY                         [checked ≤2026-08-26]
+    "Does X help on tiny domain-specific distills?" run as a systematic
+    battery rather than one cell at a time.
+
+    ALIVE — TDK-worthy, with an active genre precedent: Narang 2102.11972
+    (40+ modifications at T5-base) and, three months old, 2605.20798 (20
+    modifications at 1.2B/3B with a seed noise floor and Bonferroni, only
+    2/20 surviving). Four real differentiators: the distillation column
+    does not exist in either installment, both stop at ≥220M, their noise
+    floor uses n=3 seeds against our 30-50, and we have the entropy dial as
+    an explanatory variable rather than a scoreboard. THE UMBRELLA
+    PROPERTY: every plan item becomes a row, so no single null can sink it.
+    Non-negotiables in F-53a.
+
+56. *** THE SURVIVING CLAIM — HEADLINE ***         [checked 2026-08-31]
+    "Distillation buys distributional fidelity and task accuracy at
+    different rates — and on structured tasks, where the teacher has ~1
+    effective choice, it buys neither."
+
+    ALIVE and the strongest thing on this ledger. Untouched by 2605.23857
+    (accuracy and PPL only), by Stanton 2106.05945 (fidelity ≠
+    generalization, but never as a function of entropy or task type), and
+    by the whole entropy-method family (#58). Already half-measured in our
+    own logs, and it requires our instrument — in-eval distribution metrics
+    plus full stored logits — so it is not casually reachable by a larger
+    lab. Present it as effective branching factor exp(H), not nats: the
+    teacher has one option here and three there.
+
+66. THE COMPILATION / BENCHMARK PAPER              [checked 2026-09-05]
+    "Best approach at low versus high entropy for a small from-scratch
+    model" — a compilation paper that benchmarks the methods this ledger
+    has been killing.
+
+    ALIVE, and the strongest strategic reframe here. The genre exists
+    (2504.14366, 2404.19319; surveys 2402.13116, 2407.01885, 2410.20011)
+    and the closest precedent is the BabyLM Findings (2504.08165) with Baby
+    Llama (2308.02019), but the entropy-indexed version does not, and
+    entropy appears in KD only as a per-token weighting heuristic (EGAD
+    2605.01732), never as a domain property to index method choice by. THE
+    REFRAME: 60+ scooped entries stop being failures and become rows —
+    you cannot benchmark methods that do not exist. The real blocker is
+    that the entropy spread is n=2; both free fixes are in F-66a.
+
+
+META ENTRIES
+------------------------------------------------------------------------
+
+14. KNOB-TURNS                                     [checked ≤2026-08-26]
+    Teacher swap, data-scarcity curves, auxiliary-percentage sweeps, body
+    depth versus width.
+
+    NOT NOVELTY — standard ablations. Useful as robustness, no contribution
+    claim attaches to any of them.
+
+33. COMPONENT SCAN ADDENDUM                        [checked ≤2026-08-26]
+    A shallow scan of newer architectural components: Selective Attention
+    (2410.02703) and 2-simplicial attention (2507.02754).
+
+    NEITHER DISPLACES the stronger scale-down candidates. Selective
+    Attention is parameter-free with moderate-scale ablations only;
+    2-simplicial attention is a genuine new component but needs nontrivial
+    kernels. Noted for completeness, not pursued.
+
+46. EARLY-CURVE ACCURACY PREDICTION                [checked ≤2026-08-26]
+    Predict a run's final accuracy from its early learning curve, so bad
+    runs can be killed early.
+
+    OWNED AS A FIELD — learning-curve extrapolation and multi-fidelity
+    early stopping: Domhan IJCAI 2015, then Hyperband/ASHA, then LC-PFN
+    (NeurIPS 2023, 2310.20447), with 2404.04111 showing trivial one-epoch
+    discarding captures most of the benefit. The motivation also inverts in
+    our lab: three-minute convergence means we need it least. SALVAGE:
+    "are KD curves more predictable than CE curves" is a free
+    trajectory sub-analysis of #41.
+
+54. CITATION AUDIT OF THE LEDGER ITSELF            [checked 2026-08-31]
+    Verify that the load-bearing citations in this file are real and
+    correctly summarized.
+
+    19/19 REAL, correct titles, substantially correct summaries, NO
+    hallucinations. Two defects found: 2510.12615 was mis-summarized here
+    and is actually "A Functional Perspective on KD" (Mason-Williams et
+    al., 22 setups, hypothesis testing with random controls, "asymmetric
+    transfer of negative knowledge") — methodologically much closer to #53
+    than the ledger implied, and it MUST BE READ before writing related
+    work. 2510.15516 was underweighted: it explicitly disproves the
+    label-smoothing explanation of distillation, which is our #53 row-3
+    control arm, already published.
+
+55. *** THE SPINE'S HEADLINE IS DEAD ***           [checked 2026-08-31]
+    #37's entropy dose-response curve was the planned headline claim.
+
+    SCOOPED 2026-05-22 by 2605.23857, "Strong Teacher Not Needed? On
+    Distillation in LLM Pretraining" (Lu & Liu, Princeton): improvements
+    are localized to hard tokens where the baseline model is uncertain, and
+    distillation does not act as a uniform regularizer. So "KD benefit
+    concentrates where uncertainty is high" is now CITE, not claim.
+    RACE RISK MATERIAL — that group is in this exact lane; window is
+    months. UNVERIFIED, FLAGGED: the "label smoothing benefit ≈ log V − H"
+    formula came from search-engine synthesis only, arXiv HTML and PDF both
+    refused to yield text; treat as possibly confabulated.
+
+60. *** THE PATTERN — USE AS A PRE-FILTER ***      [checked 2026-08-31]
+    Sort this ledger by claim SHAPE rather than topic: method-shaped
+    ("do X and the student gets better") against measurement-shaped
+    ("here is the number nobody has").
+
+    METHOD-SHAPED: 28 checked, 28 dead. Three causes: methods are the
+    field's currency so better-resourced groups sweep that space;
+    instruments have a barrier to entry where ideas do not, and our stored
+    525-dim distributions, 6-minute runs and confound-free entropy dial are
+    the moat; and decisively, our scale FLIPS SIGN between the shapes —
+    3.4M is fatal for a method and is itself the contribution for a
+    measurement. PRE-FILTER, ten seconds instead of a search lap: ends in
+    "…and it works better" → predicted dead, do not search; ends in
+    "…and here is the number" → worth a lap. AND CONVERT, DO NOT DISCARD —
+    the conversion is almost always available and costs only the verb.
+    LIMIT, added #70: measurement-shaped is not a guarantee of survival.
+    #70 is measurement-shaped and died anyway, by having already been
+    measured with a negative result.
+
+63. ANSWER-ONLY DISTILLATION OF A REASONING TEACHER
+                                                   [checked 2026-09-05]
+    Distil only the final answer of a reasoning teacher, never the chain
+    of thought, and ask whether KL is the right loss to internalize the
+    reasoning.
+
+    ANSWERED, NOT AN IDEA — this closes the open question left on #23, and
+    the answer is no. A reasoning teacher that has already produced its
+    chain of thought is nearly deterministic at the answer token, so at our
+    measured entropy the soft-label distribution IS the one-hot label and
+    logit-KL has already degenerated into CE. You cannot internalize a
+    process through a channel that has collapsed to a point mass; see
+    F-63a. Measurable for free from stored logits, not a new training run.
+
+
+------------------------------------------------------------------------
+KILLED WITHOUT AN ENTRY NUMBER (batch 6, with killing citations)
+------------------------------------------------------------------------
+- MLA at tiny scale — 2506.09342 trains 30M MLA/MHA, 2509.16686 extends;
+  remaining KD sliver unmotivated since tiny models have no KV-cache
+  problem.
+- Linear / hybrid attention students — cross-architecture logit-KD exists
+  (MOHAWK 2408.10189, LoLCATs 2410.10254) and short sequences remove the
+  technique's point.
+- DeepSeek V4-lineage novelties — CSA/HCA is the dead DSA family, mHC is
+  the dead hyper-connections family, Engram is irrelevant at 25 tokens.
+- Byte-latent transformer 2412.09871 — needs a second entropy model,
+  smallest runs ~400M, dynamic patching conflicts with deterministic JSON.
+- Layer-history residuals (Kimi AttnRes 2603.15031) at depth 3 — one step
+  from the dead hyper-connections family.
+- Epoch-wise double descent under KD — theory already called it
+  (2012.00194, 2102.06849, 2402.10482) and it needs artificial label noise.
+- On-policy distillation below 30M — right question, wrong lab: teacher
+  forward passes during training destroy the 3-minute loop.
+- Top-k logit truncation as a HEADLINE — owned by 2502.08606 and
+  2503.16870; survives only as #52, a supporting chapter.
+- "When does KD help at all" — heavily grazed (2510.12615, 2510.15516);
+  only the entropy axis was open, and #55 closed that too.
+- Fidelity paradox as a headline — owned at 0.5B-7B by 2505.15442 (ACL
+  Findings 2025); our margin survives inside #56.
+- KD→grokking cross-distribution — claimed by 2511.04760; the
+  same-distribution phase diagram is #40.
+- TinyStories-style capability curve under KD — squeezed between 2305.07759
+  (which IS sequence-level distillation) and 2502.08606.
+
+
+------------------------------------------------------------------------
+STILL UNREAD — read before writing
+------------------------------------------------------------------------
+- 2607.08268 "Different Teachers, Different Capabilities: Sub-1B
+  On-Device Distillation for Structured Text Enrichment" — closest paper
+  to our actual task, PDF would not parse. Biggest unquantified risk.
+- 2510.12615 (Functional Perspective) — must be read properly, see #54.
+- 2608.15215 (Distributional View of KD) — the genre arriving.
+- 2604.18963 (Calibration Knob for LLM Distillability) — see #70, claims
+  are abstract-only.
+- The "log V − H" formula (#55) — unverified, possibly confabulated.
+
+
+------------------------------------------------------------------------
+THE ASSET (unchanged)
+------------------------------------------------------------------------
+A tested end-to-end pipeline with swappable teacher, domain and schedule,
+plus existing generated data — so any new idea is testable end to end in
+about a week. Full stored distributions and 3-minute runs are the moat
+(#60b); they are why measurement-shaped claims are reachable here and
+method-shaped ones are not.
+
+
+========================================================================
+HOW TO WRITE AN ENTRY (read before appending)
+========================================================================
+Entries 1-19 of the original ledger were three lines; entries 55-69 had
+grown to seventy. That happened because the file quietly took on a second
+job. Keep the two apart:
+
+THE LEDGER (this file) is a KILL RECORD. One entry =
+
+    N. IDEA NAME IN CAPS                            [checked YYYY-MM-DD]
+       2-4 sentences: what the idea was, in plain terms.
+
+       2-4 sentences: verdict, who owns it, the decisive finding, arXiv
+       IDs inline. Name the one surviving opening if there is one.
+
+Nothing else. If an entry needs more room, what it needs room for is
+almost never the idea — it is a FINDING, and findings go elsewhere.
+
+A FINDING is anything that outlives the dead idea and would be cited in
+the thesis on its own: our own measured numbers, a methodological trap, a
+formula, a cost wall, a live claim. Those belong in findings.txt, keyed
+F-<entry><letter>, cross-referenced from the entry in one clause.
+
+EXCEPTIONS — entries allowed to run longer: the ones that are ALIVE
+(#56, #66) and the ones carrying our own experimental data. Three or four
+out of seventy, not the default.
+
+PROVENANCE RULE: if a paper's body could not be read, say so in the entry,
+as #55, #70 and the unread list do. Never let a search-engine summary pass
+as a read paper.
+========================================================================

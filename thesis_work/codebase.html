@@ -1,0 +1,614 @@
+<title>Preference Distillation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+:root {
+  --ground:   #eceff2;
+  --surface:  #ffffff;
+  --ink:      #16212c;
+  --ink-soft: #4d5d6c;
+  --ink-dim:  #808f9c;
+  --rule:     #d4dce3;
+  --rule-lt:  #e6ebef;
+  --accent:   #1c5896;
+  --code-bg:  #151d25;
+  --code-ink: #d3dce4;
+  --c-key:    #7fb2e8;
+  --c-str:    #a6ce93;
+  --c-num:    #ddae6e;
+  --c-com:    #6c7f90;
+  --c-fn:     #d6a6cd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:   #101720;
+    --surface:  #18212b;
+    --ink:      #e1e8ee;
+    --ink-soft: #a1b1bf;
+    --ink-dim:  #718496;
+    --rule:     #2b3743;
+    --rule-lt:  #222d38;
+    --accent:   #6ca9e8;
+    --code-bg:  #0b1117;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:   #101720;
+  --surface:  #18212b;
+  --ink:      #e1e8ee;
+  --ink-soft: #a1b1bf;
+  --ink-dim:  #718496;
+  --rule:     #2b3743;
+  --rule-lt:  #222d38;
+  --accent:   #6ca9e8;
+  --code-bg:  #0b1117;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.page { max-width: 900px; margin: 0 auto; padding: 0 28px 72px; }
+
+header { padding: 40px 0 0; }
+h1 { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
+.sub { color: var(--ink-dim); font-size: 13.5px; margin: 0 0 26px; }
+
+/* tabs */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 30px;
+}
+.tab {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+h2 { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+h3 { font-size: 14px; font-weight: 600; margin: 30px 0 5px; }
+p { margin: 0 0 14px; max-width: 68ch; color: var(--ink-soft); }
+p.lead { color: var(--ink); margin-bottom: 18px; }
+code { font-family: "IBM Plex Mono", monospace; font-size: 0.88em; }
+p code, li code, td code {
+  background: var(--surface); border: 1px solid var(--rule-lt);
+  border-radius: 3px; padding: 0.05em 0.32em;
+}
+ul { margin: 0 0 16px; padding-left: 19px; max-width: 68ch; color: var(--ink-soft); }
+li { margin-bottom: 4px; }
+
+.block { margin: 0 0 22px; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.block__bar {
+  background: var(--surface); border-bottom: 1px solid var(--rule);
+  padding: 7px 13px; font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px; color: var(--ink-dim);
+}
+pre {
+  margin: 0; background: var(--code-bg); color: var(--code-ink);
+  padding: 14px 16px; overflow-x: auto; font-size: 12.9px; line-height: 1.62;
+}
+pre code { font-family: "IBM Plex Mono", monospace; background: none; border: none; padding: 0; }
+
+.hljs-keyword, .hljs-built_in { color: var(--c-key); }
+.hljs-string { color: var(--c-str); }
+.hljs-number, .hljs-literal { color: var(--c-num); }
+.hljs-comment { color: var(--c-com); font-style: italic; }
+.hljs-title, .hljs-title.class_, .hljs-title.function_ { color: var(--c-fn); }
+.hljs-params, .hljs-attr { color: var(--code-ink); }
+
+.tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; margin: 0 0 22px; }
+table { border-collapse: collapse; width: 100%; background: var(--surface); font-size: 13.5px; }
+th {
+  text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--ink-dim); padding: 8px 13px;
+  border-bottom: 1px solid var(--rule); white-space: nowrap;
+}
+td { padding: 7px 13px; border-bottom: 1px solid var(--rule-lt); vertical-align: top; color: var(--ink-soft); }
+tr:last-child td { border-bottom: none; }
+td.m { font-family: "IBM Plex Mono", monospace; font-size: 12.4px; color: var(--ink); white-space: nowrap; }
+td.n { text-align: right; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 640px) { .page { padding: 0 18px 56px; } .tab { padding: 8px 10px; font-size: 13px; } }
+</style>
+
+<div class="page">
+
+<header>
+  <h1>Preference Distillation</h1>
+  <p class="sub">Distilling Gemma 3 4B into a from-scratch transformer over a reduced vocabulary · codebase reference</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true"  aria-controls="p-overview"    id="t-overview">Overview</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="p-data"        id="t-data">Data generation</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="p-domains"     id="t-domains">Domains</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="p-training"    id="t-training">Training &amp; model</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="p-experiments" id="t-experiments">Experiments</button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="p-custom"      id="t-custom">Your own model</button>
+</div>
+
+<!-- ─────────────────────────────── OVERVIEW ── -->
+<section class="panel" role="tabpanel" id="p-overview" aria-labelledby="t-overview">
+  <h2>What the codebase does</h2>
+  <p class="lead">A teacher model answers a narrow task; its full output distribution is stored at every generated token. A small transformer is then trained from random initialisation to reproduce those distributions over a reduced vocabulary of about 525 tokens.</p>
+
+  <div class="block">
+    <div class="block__bar">pipeline</div>
+<pre><code class="language-bash">corpus.jsonl  →  generate_data.py  →  batches/   teacher answers + per-step logits
+batches/      →  train.py          →  runs/      checkpoints, logs, info.json
+runs/         →  analyze.py        →  tables     metrics read back from logs</code></pre>
+  </div>
+
+  <p>Each stage writes files the next one reads, so any stage can be re-run alone. Completed jobs and runs are skipped, so every script is safe to run again.</p>
+
+  <div class="block">
+    <div class="block__bar">repository</div>
+<pre><code class="language-bash">library/
+  shared/     paths, reduced-vocabulary builder, metrics, logging
+  domain/     one package per task + registry
+  model/      Transformer, StudentModel
+  data_gen/   teacher data generation
+  training/   Trainer, TrainingRunner, BatchHandler
+  tooling/    Analysis, Run / RunStore / Experiment, plots and tables
+  specs.py    TrainingRun, GenerationJob
+
+train.py  generate_data.py  analyze.py     entry scripts — edit the list at the top
+experiments/   one script per named experiment
+batches/       teacher data (JSONL)
+runs/          per-run artifacts</code></pre>
+  </div>
+
+  <p>Importing <code>library</code> does not import torch; that happens only when a model method runs.</p>
+</section>
+
+<!-- ────────────────────────── DATA GENERATION ── -->
+<section class="panel" role="tabpanel" id="p-data" aria-labelledby="t-data" hidden>
+  <h2>Generating teacher data</h2>
+  <p class="lead">A job names a domain and a size. Everything else has a default.</p>
+
+  <div class="block">
+    <div class="block__bar">generate_data.py</div>
+<pre><code class="language-python">from library import GenerationJob
+from library.domain import REDDIT_SENTIMENT
+
+JOBS = [
+    GenerationJob(
+        domain=REDDIT_SENTIMENT,
+        max_examples=8000,
+        batch_size=32,
+        description="Sentiment distillation data",
+    ),
+]</code></pre>
+  </div>
+
+  <p><code>python generate_data.py</code> writes one JSONL file per batch. Each record holds the input text, the teacher's response, and the full logit vector at every generation step.</p>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Field</th><th>Default</th><th>Purpose</th></tr>
+    <tr><td class="m">domain</td><td class="m">—</td><td>Domain object; supplies the prompt, stop token and vocabulary slice</td></tr>
+    <tr><td class="m">teacher_model</td><td class="m">google/gemma-3-4b-it</td><td>Any HuggingFace causal LM</td></tr>
+    <tr><td class="m">max_examples</td><td class="n">8000</td><td>How many corpus records to process</td></tr>
+    <tr><td class="m">batch_size</td><td class="n">32</td><td>Records per output file</td></tr>
+  </table>
+  </div>
+
+  <h3>Output layout</h3>
+  <div class="block">
+    <div class="block__bar">on disk</div>
+<pre><code class="language-bash">batches/&lt;domain&gt;/&lt;teacher_model&gt;/
+    info.json          status, so completed jobs are skipped
+    batch_0001.jsonl   text · teacher response · logits per step
+    batch_0002.jsonl
+    …</code></pre>
+  </div>
+
+  <p>The teacher name is part of the path, so data from different teachers never mixes. Press <code>%</code> (or Ctrl+C headless) to stop cleanly and keep what has been written.</p>
+</section>
+
+<!-- ─────────────────────────────── DOMAINS ── -->
+<section class="panel" role="tabpanel" id="p-domains" aria-labelledby="t-domains" hidden>
+  <h2>Configuring a domain</h2>
+  <p class="lead">A domain is one self-contained package holding the teacher prompt, the stop rule, the scoring metric, the structural check, and the domain's slice of the reduced vocabulary.</p>
+
+  <div class="block">
+    <div class="block__bar">library/domain/&lt;your_task&gt;/__init__.py</div>
+<pre><code class="language-python">class RedditSentimentDomain(Domain):
+    name = "reddit_comment_sentiment"
+    stop_token = "}"
+    max_steps = 50
+    max_input_tokens = 25
+
+    example_responses = [                 # seeds the hardest vocabulary section
+        '```json\n{\n    "tone": "aggressive", "sentiment": "negative" ... }',
+    ]
+    prompt_tokens = ["Analyze", "sentence", "JSON", "tone", "sentiment"]
+
+    def teacher_prompt(self, text: str) -> str:
+        return f'Analyze this sentence and return your evaluation as JSON:\n\n{text}'
+
+    def task_metric(self) -> ClassificationMetric:
+        return ClassificationMetric()
+
+    def structural_validity(self, output: str) -> bool:
+        try:
+            json.loads(output.replace("```json", "").replace("```", "").strip())
+            return True
+        except json.JSONDecodeError:
+            return False
+
+    def build_corpus(self, count=None) -> None:
+        from .corpus import build_corpus
+        build_corpus(self.corpus_path, count=count)</code></pre>
+  </div>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Member</th><th>Required</th><th>Purpose</th></tr>
+    <tr><td class="m">teacher_prompt()</td><td>yes</td><td>The prompt sent to the teacher</td></tr>
+    <tr><td class="m">task_metric()</td><td>yes</td><td>Fresh accumulator for end-task accuracy</td></tr>
+    <tr><td class="m">stop_token</td><td>yes</td><td>Where generation ends</td></tr>
+    <tr><td class="m">example_responses</td><td>yes</td><td>Tokens the student must be able to emit exactly</td></tr>
+    <tr><td class="m">structural_validity()</td><td>no</td><td>Well-formedness check; <code>None</code> for free-form tasks</td></tr>
+    <tr><td class="m">build_corpus()</td><td>no</td><td>Produces the input JSONL</td></tr>
+    <tr><td class="m">extra_auxiliary_tokens</td><td>no</td><td>Domain tokens prepended to the shared auxiliary bank</td></tr>
+    <tr><td class="m">max_seq_length</td><td>no</td><td>Defaults to input tokens + generation steps</td></tr>
+  </table>
+  </div>
+
+  <h3>The reduced output vocabulary</h3>
+  <p>Four ordered sections. The domain owns two of them; the rest is shared.</p>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Section</th><th>Source</th><th>Contents</th></tr>
+    <tr><td class="m">example</td><td>domain</td><td>Tokens from <code>example_responses</code> — the exact labels</td></tr>
+    <tr><td class="m">whitespace</td><td>shared</td><td>Whitespace variants, so formatting is expressible</td></tr>
+    <tr><td class="m">prompt</td><td>domain</td><td>Tokens from <code>prompt_tokens</code></td></tr>
+    <tr><td class="m">auxiliary</td><td>shared + domain</td><td>Common English words — the soft end</td></tr>
+  </table>
+  </div>
+
+  <p>Only the auxiliary bank is scaled by <code>auxiliary_token_percentage</code>, so the task stays expressible at every vocabulary size.</p>
+
+  <div class="block">
+    <div class="block__bar">using a domain</div>
+<pre><code class="language-python">from library.domain import REDDIT_SENTIMENT, MATH_WORD_PROBLEM, POST_GENERATION
+
+TrainingRun(domain=REDDIT_SENTIMENT, run_name="r1")     # built-in singleton
+TrainingRun(domain=MyDomain(), run_name="r2")            # your own subclass, no registration</code></pre>
+  </div>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Built-in domain</th><th>Task</th><th>Stop</th><th>Max steps</th></tr>
+    <tr><td class="m">reddit_comment_sentiment</td><td>Comment → JSON verdict (tone, sentiment, safety, toxicity)</td><td class="m">}</td><td class="n">50</td></tr>
+    <tr><td class="m">math_word_problem</td><td>Word problem → worked solution</td><td class="m">;</td><td class="n">350</td></tr>
+    <tr><td class="m">post_generation</td><td>Free-form continuation</td><td class="m">&lt;end&gt;</td><td class="n">150</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ────────────────────────── TRAINING & MODEL ── -->
+<section class="panel" role="tabpanel" id="p-training" aria-labelledby="t-training" hidden>
+  <h2>Training and model configuration</h2>
+  <p class="lead">One typed object per run. Only <code>domain</code> and <code>run_name</code> are required.</p>
+
+  <div class="block">
+    <div class="block__bar">train.py</div>
+<pre><code class="language-python">from library import TrainingRun
+from library.domain import REDDIT_SENTIMENT
+
+RUNS = [
+    TrainingRun(
+        domain=REDDIT_SENTIMENT,
+        run_name="sentiment-kl99to50",
+        experiment="loss-schedule",       # cohort tag for seed replicates
+
+        hidden_dim=48,                    # architecture
+        num_layers=3,
+        num_heads=1,
+        dropout=0.08,
+
+        epoch_count=3,                    # optimisation
+        batch_size=32,
+        learning_rate=0.0015,
+        lr_warmup_ratio=0.1,
+        max_training_examples=8000,
+        training_test_ratio=0.8,
+
+        auxiliary_token_percentage=1.0,   # output vocabulary size
+        kl_ratio_start=0.99,              # distillation schedule
+        kl_ratio_end=0.5,
+        distillation_temperature_start=1.0,
+        distillation_temperature_end=1.0,
+    ),
+]</code></pre>
+  </div>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Parameter</th><th>Default</th><th>Controls</th></tr>
+    <tr><td class="m">hidden_dim</td><td class="n">48</td><td>Model width</td></tr>
+    <tr><td class="m">num_layers</td><td class="n">3</td><td>Depth</td></tr>
+    <tr><td class="m">num_heads</td><td class="n">1</td><td>Attention heads</td></tr>
+    <tr><td class="m">dropout</td><td class="n">0.08</td><td>Regularisation</td></tr>
+    <tr><td class="m">epoch_count</td><td class="n">3</td><td>Passes over the data</td></tr>
+    <tr><td class="m">batch_size</td><td class="n">32</td><td>Examples per batch</td></tr>
+    <tr><td class="m">learning_rate</td><td class="n">0.0015</td><td>Step size</td></tr>
+    <tr><td class="m">lr_warmup_ratio</td><td class="n">0.1</td><td>Warm-up fraction</td></tr>
+    <tr><td class="m">max_training_examples</td><td class="n">8000</td><td>Data budget</td></tr>
+    <tr><td class="m">training_test_ratio</td><td class="n">0.8</td><td>Train/test split</td></tr>
+    <tr><td class="m">auxiliary_token_percentage</td><td class="n">1.0</td><td>Fraction of the soft vocabulary kept</td></tr>
+    <tr><td class="m">kl_ratio_start / _end</td><td class="n">0.99 / 0.5</td><td>Distribution-matching weight over training</td></tr>
+    <tr><td class="m">distillation_temperature_start / _end</td><td class="n">1.0 / 1.0</td><td>Softening over training</td></tr>
+    <tr><td class="m">eval_top_k</td><td class="n">20</td><td>k for top-k accuracy</td></tr>
+    <tr><td class="m">eval_cap_multiple</td><td class="n">2.0</td><td>Generation cap ÷ teacher length</td></tr>
+  </table>
+  </div>
+
+  <h3>The loss</h3>
+  <p>KL pulls the student toward the teacher's whole distribution; cross-entropy pulls it toward the chosen token. The ratio and temperature interpolate from their <code>_start</code> to their <code>_end</code> value across training.</p>
+
+  <div class="block">
+    <div class="block__bar">library/training/trainer.py</div>
+<pre><code class="language-python">def _compute_loss(self, student_logits, teacher_logits, target_indices, reduction='mean'):
+    temperature = self._get_current_temperature()
+    student_log_probs = F.log_softmax(student_logits / temperature, dim=-1)
+    teacher_probs = F.softmax(teacher_logits / temperature, dim=-1)
+
+    kl_loss = F.kl_div(student_log_probs, teacher_probs,
+                       reduction='batchmean') * (temperature ** 2)
+    ce_loss = F.cross_entropy(student_logits / temperature,
+                              target_indices, reduction=reduction) * (temperature ** 2)
+
+    kl_ratio = self._get_current_kl_ratio()
+    return kl_loss, ce_loss, kl_ratio * kl_loss + (1 - kl_ratio) * ce_loss</code></pre>
+  </div>
+
+  <h3>What a run produces</h3>
+  <div class="block">
+    <div class="block__bar">runs/&lt;run_name&gt;/</div>
+<pre><code class="language-bash">info.json          full config, status, model_info (confirmed vocabulary size)
+logs/*.jsonl       per-batch and per-epoch records
+checkpoints/*.pt   weights</code></pre>
+  </div>
+
+  <p>Distribution metrics — teacher and student entropy, top-k accuracy, distribution overlap, mean target rank, perplexity, termination rate, length ratio — are computed during evaluation and written to the logs, so analysis never reloads the model.</p>
+
+  <div class="block">
+    <div class="block__bar">analyze.py</div>
+<pre><code class="language-python">from library import Analysis, RunStore
+
+print(Analysis("sentiment-kl99to50").summary())
+print(Analysis.compare([r.name for r in RunStore().completed()]).sort("params").table())</code></pre>
+  </div>
+</section>
+
+<!-- ─────────────────────────── EXPERIMENTS ── -->
+<section class="panel" role="tabpanel" id="p-experiments" aria-labelledby="t-experiments" hidden>
+  <h2>Creating an experiment</h2>
+  <p class="lead">An experiment is one script: the runs it trains, and the analysis that reads them back. Completed runs are skipped, so it trains only what is missing and stays re-runnable.</p>
+
+  <div class="block">
+    <div class="block__bar">experiments/vocab_rank_sweep.py</div>
+<pre><code class="language-python">"""E1 — Does shrinking the output vocabulary relieve the output-rank bottleneck?
+
+    python experiments/vocab_rank_sweep.py
+
+5 vocabulary levels x 5 seeds = 25 runs, ~3 min each. Completed runs are skipped.
+"""
+
+from _common import seeded_run_training, write_rows, best_and_final
+
+from library import Analysis, TrainingRun
+from library.domain import REDDIT_SENTIMENT
+
+EXPERIMENT = "ideaA-vocab-rank-sweep"
+
+AUXILIARY_LEVELS = [(0.0, 64), (0.1, 113), (0.25, 193), (0.5, 300), (1.0, 525)]
+SEEDS = [1, 2, 3, 4, 5]
+
+MATCHED_BODY = dict(                      # held fixed across the sweep
+    domain=REDDIT_SENTIMENT,
+    hidden_dim=48, num_layers=3, num_heads=1, dropout=0.08,
+    epoch_count=3, batch_size=32, learning_rate=0.0015,
+    max_training_examples=8000,
+)
+
+runs = [
+    (seed, TrainingRun(
+        **MATCHED_BODY,
+        run_name=f"vocab-{int(level * 100)}pct-s{seed}",
+        experiment=EXPERIMENT,
+        auxiliary_token_percentage=level,
+        description=f"auxiliary {level}, expected V={expected_v}",
+    ))
+    for level, expected_v in AUXILIARY_LEVELS
+    for seed in SEEDS
+]
+
+seeded_run_training(runs)                 # trains what is missing, seeds each replicate</code></pre>
+  </div>
+
+  <h3>Reading the cohort back</h3>
+  <p>Runs sharing an <code>experiment</code> tag form a cohort, reported as mean ± std.</p>
+
+  <div class="block">
+    <div class="block__bar">same file, below the runs</div>
+<pre><code class="language-python">cohort = Analysis.experiment(EXPERIMENT)
+
+rows = []
+for level, expected_v in AUXILIARY_LEVELS:
+    for seed in SEEDS:
+        run = Analysis(f"vocab-{int(level * 100)}pct-s{seed}").run
+        best, final = best_and_final(run)
+        rows.append({
+            "run": run.name,
+            "auxiliary": level,
+            "vocab_size": run.total_parameters,
+            "task_accuracy_best": best.task_accuracy,
+            "task_accuracy_final": final.task_accuracy,
+            "teacher_entropy": final.teacher_entropy,
+        })
+
+write_rows("ideaA_vocab_sweep.csv",
+           ["run", "auxiliary", "vocab_size",
+            "task_accuracy_best", "task_accuracy_final", "teacher_entropy"],
+           rows)</code></pre>
+  </div>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Helper</th><th>From</th><th>Does</th></tr>
+    <tr><td class="m">seeded_run_training()</td><td class="m">experiments/_common.py</td><td>Trains <code>(seed, TrainingRun)</code> pairs, seeding torch before each; skips completed</td></tr>
+    <tr><td class="m">write_rows()</td><td class="m">experiments/_common.py</td><td>Writes to <code>results/</code>, replacing rows by key rather than discarding the file</td></tr>
+    <tr><td class="m">best_and_final()</td><td class="m">experiments/_common.py</td><td>Best-epoch and final-epoch eval records</td></tr>
+    <tr><td class="m">Analysis.experiment(tag)</td><td class="m">library</td><td>The cohort for a tag, as mean ± std</td></tr>
+  </table>
+  </div>
+
+  <p>Results land in <code>experiments/results/*.csv</code>. Because the script holds both the configuration and the analysis, it is also the permanent record of what the experiment was.</p>
+</section>
+
+<!-- ────────────────────────── YOUR OWN MODEL ── -->
+<section class="panel" role="tabpanel" id="p-custom" aria-labelledby="t-custom" hidden>
+  <h2>Substituting your own model</h2>
+  <p class="lead">Three separate substitution points: the teacher, the student architecture, and the task.</p>
+
+  <h3>1 · A different teacher</h3>
+  <p>Any HuggingFace causal LM. It is loaded with <code>AutoModelForCausalLM.from_pretrained</code> and its tokenizer defines the input vocabulary the student is compressed against.</p>
+
+  <div class="block">
+    <div class="block__bar">generate_data.py, then train.py</div>
+<pre><code class="language-python">GenerationJob(domain=REDDIT_SENTIMENT, teacher_model="Qwen/Qwen2.5-1.5B-Instruct")
+
+TrainingRun(domain=REDDIT_SENTIMENT, run_name="qwen-teacher",
+            teacher_model="Qwen/Qwen2.5-1.5B-Instruct")</code></pre>
+  </div>
+
+  <p>The teacher name is a path segment for <code>batches/</code>, the input vocabulary and the run, so two teachers never share data. Generate first, then train against those batches with the same <code>teacher_model</code> value.</p>
+
+  <h3>2 · A different student architecture</h3>
+  <p>Width, depth and heads are run parameters. Anything beyond that means constructing the model yourself — there is no model argument on <code>TrainingRun</code>.</p>
+
+  <div class="block">
+    <div class="block__bar">library/model/transformer.py</div>
+<pre><code class="language-python">Transformer(
+    domain=REDDIT_SENTIMENT,          # Domain object or name
+    teacher_model=DEFAULT_TEACHER_MODEL,
+    hidden_dim=48,
+    num_layers=3,
+    num_heads=1,
+    max_seq_length=None,              # defaults to domain.max_seq_length
+    dropout=0.08,
+    auxiliary_token_percentage=1.0,
+    input_vocabulary=None,            # compact input-id mapping
+)</code></pre>
+  </div>
+
+  <p><code>Transformer</code> is a plain <code>nn.Module</code>, built inside <code>TrainingRunner.run()</code> and handed to <code>Trainer</code>. To train a different architecture, construct it there and pass it in its place — the trainer only requires a module that maps remapped input ids to logits over the reduced output vocabulary.</p>
+
+  <div class="block">
+    <div class="block__bar">library/training/training_runner.py — the substitution point</div>
+<pre><code class="language-python">transformer = Transformer(
+    domain=self.domain,
+    teacher_model=self.teacher_model,
+    hidden_dim=self.config["hidden_dim"],
+    num_layers=self.config["num_layers"],
+    num_heads=self.config["num_heads"],
+    dropout=self.config["dropout"],
+    auxiliary_token_percentage=self.config.get("auxiliary_token_percentage", 1.0),
+    input_vocabulary=input_vocabulary,
+)
+
+trainer = Trainer(transformer, logger, self.exit_listener, batch_handler, trainer_config)</code></pre>
+  </div>
+
+  <p>Your module must expose <code>get_model_info()</code> for <code>info.json</code>, and keep the same input-id remapping and output vocabulary so the stored teacher logits still line up.</p>
+
+  <h3>3 · A different task</h3>
+  <p>Subclass <code>Domain</code> and pass the object. No registration is needed to generate data or train; the registry only resolves names for steps that run in a separate process.</p>
+
+  <div class="block">
+    <div class="block__bar">your script</div>
+<pre><code class="language-python">from library.domain import Domain
+
+class MyTaskDomain(Domain):
+    name = "my_task"
+    stop_token = "</s>"
+    max_steps = 40
+    max_input_tokens = 30
+    example_responses = ["..."]
+    def teacher_prompt(self, text): return f"..."
+    def task_metric(self): return MyMetric()
+
+domain = MyTaskDomain()
+
+GenerationJob(domain=domain, max_examples=4000)
+TrainingRun(domain=domain, run_name="my-task-baseline")
+Analysis("my-task-baseline").evaluate(domain=domain)</code></pre>
+  </div>
+
+  <h3>Where the parameters sit</h3>
+  <p>Useful context before changing the architecture: at the default configuration the input embedding dominates the parameter count.</p>
+
+  <div class="tbl">
+  <table>
+    <tr><th>Component</th><th>Parameters</th><th>Share</th></tr>
+    <tr><td>Input embedding (68,328 × 48)</td><td class="n">3,279,744</td><td class="n">96.00%</td></tr>
+    <tr><td>Transformer body (3 layers)</td><td class="n">110,928</td><td class="n">3.25%</td></tr>
+    <tr><td>Output head (525 tokens)</td><td class="n">25,725</td><td class="n">0.75%</td></tr>
+    <tr><td>Total</td><td class="n">3,416,397</td><td class="n">100%</td></tr>
+  </table>
+  </div>
+
+  <p>Changing <code>hidden_dim</code> or <code>num_layers</code> moves the 3.25%; changing the input vocabulary moves the rest.</p>
+</section>
+
+</div>
+
+<script>
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('.panel');
+
+  function select(index) {
+    tabs.forEach(function (tab, i) {
+      tab.setAttribute('aria-selected', i === index ? 'true' : 'false');
+      panels[i].hidden = i !== index;
+    });
+  }
+
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function () { select(index); });
+    tab.addEventListener('keydown', function (event) {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      var next = (index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+      select(next);
+      tabs[next].focus();
+    });
+  });
+
+  hljs.highlightAll();
+</script>

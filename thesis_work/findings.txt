@@ -1,0 +1,250 @@
+========================================================================
+FINDINGS — things that outlive the idea that produced them
+Started 2026-09-06. Keyed F-<ledger entry><letter>; the ledger entry
+cites the key in one clause and says nothing more.
+What belongs here: our own measured numbers, methodological traps,
+formulas, cost walls, live claims. What does not: why an idea died.
+========================================================================
+
+F-70a  CROSS-FAMILY TEACHER ENTROPY IS CONFOUNDED BY THE TOKENIZER
+       Per-token entropy is a function of tokenizer granularity: by the
+       chain rule, merging tokens packs the same content into fewer steps
+       and RAISES per-step entropy, splitting lowers it (see F-69a). So
+       comparing "Gemma 4B entropy vs Qwen 4B entropy on the same domain"
+       mixes model uncertainty with vocabulary granularity, and the two
+       cannot be separated from the numbers.
+       IT HITS US TWICE: our reduced ~525-token output vocabulary is built
+       FROM THE TEACHER'S TOKENIZER, so two teacher families are not even
+       scored over the same output space.
+       ESCAPES: (a) stay inside one family — Gemma 1B/4B/12B/27B share a
+       tokenizer; (b) normalize to bits-per-byte or sequence-level
+       entropy, the standard cross-tokenizer-fair measure.
+       APPLIES TO: any future teacher-swap experiment, #62 included.
+
+F-70b  A PREDICTOR IS ONLY WORTH ITS VALIDATION COST
+       Measuring teacher entropy is cheap — a few hundred examples of
+       stored logits. Validating that it predicts student quality requires
+       training students on EACH teacher, which means full data
+       regeneration per teacher: #62's parked wall, days-to-weeks, out for
+       November. GRACE (2511.02833) pays this differently — its score
+       needs student GRADIENTS, so it instantiates the student and runs a
+       backward pass. Ours would be cheaper to compute, but "cheaper and
+       42 Spearman points worse" is not a paper.
+       GENERAL FORM: for any "cheap pass predicts X" idea, price the
+       VALIDATION, not the measurement. #6 died the same way.
+
+F-69a  TOKENIZER GRANULARITY IS AN ENTROPY DIAL
+       Merging tokens raises per-step teacher entropy; splitting lowers
+       it; sequence entropy is conserved. Granularity is therefore a free,
+       continuous control on teacher entropy with the DOMAIN AND TEACHER
+       HELD FIXED — the fix for the n=2 entropy spread that blocks #66,
+       with no second teacher and no data regeneration.
+       COROLLARY: aggressive domain merging makes the model smaller AND
+       the distillation harder, because it destroys the near-one-hot
+       teacher that currently makes KL cheap. Compression is paid for in
+       distillation difficulty at a measurable exchange rate.
+       CHEAPEST TEST: build 3-4 tokenizers at different merge levels over
+       the reddit corpus, measure teacher entropy per tokenizer on
+       existing text. If entropy does not move, the line dies in an
+       afternoon.
+
+F-68a  PARAMETER BREAKDOWN OF THE 3.4M STUDENT  (measured 2026-09-06)
+       Default config: hidden_dim 48, 3 layers, input vocab 68,328,
+       output vocab 525.
+           input embedding    3,279,744   96.00%
+           transformer body     110,928    3.25%
+           output head           25,725    0.75%
+           TOTAL              3,416,397
+       Under a 90% input-vocab cut: 464,637 total, an 86.4% reduction.
+       CAUTION: "our model is 96% lookup table" is NOT a novel observation
+       — the literature states plainly that embeddings are 45-62% of GPT-2
+       and that the effect is pronounced at small scale. Ours is an
+       extreme instance of a published fact. Use it as context, never as a
+       claim.
+
+F-68b  BINARIZING A HEAD COSTS EXACTLY THE TOTAL CORRELATION
+       Hierarchical softmax with per-node parameters is exact but has V-1
+       internal nodes, so it saves nothing. A single shared head
+       predicting bits INDEPENDENTLY saves parameters precisely because it
+       cannot represent correlations between bits — and the dark knowledge
+       destroyed equals exactly the total correlation (multi-information)
+       between the bits under the teacher's distribution. The savings and
+       the loss are the same quantity.
+       ENTROPY TIE-IN: a near-point mass factorizes almost perfectly, so
+       binarization is nearly free where the teacher is confident and
+       expensive where it is not.
+       FREE TEST, ZERO TRAINING: fit the best product-of-Bernoullis to
+       each stored 525-way teacher distribution under a code assignment,
+       report the KL gap, sweep assignments (random / Huffman / semantic).
+
+F-63a  A COLLAPSED CHANNEL CANNOT CARRY A PROCESS
+       At reddit's teacher entropy the soft-label distribution is
+       effectively the one-hot label, so logit-KL has already degenerated
+       into CE. Answer-only distillation of a reasoning teacher therefore
+       cannot transmit the reasoning, and the reason is measurable from
+       stored logits rather than from a new training run.
+
+F-30a  OUR STUDENTS DO OVERFIT, AND KD BARELY SMOOTHS
+       Two points that argue FOR noise regularization (#30) even though
+       the mechanism is predicted absent: (a) these students genuinely
+       overfit in the test regime — task accuracy 62.7% -> 59.2% across
+       epochs at 2048 examples; (b) measured teacher entropy is near
+       one-hot, so KD contributes almost no smoothing of its own, which
+       makes the usual "KD already regularizes" objection weak here.
+       WHY IT STILL DIES: NEFTune-style noise works by stopping
+       overfitting to instruction-data specifics so the model falls back
+       on its PRETRAINED knowledge. A from-scratch 3.4M student has no
+       prior to fall back on, so the engine behind the published number is
+       structurally absent. Predicted null; a clean negative is
+       defensible, but it is not a paper.
+
+F-34a  POST-GEN LOSS x METRIC TABLE, AND ITS CORRECTION
+       Measured 2026-08-26 from stored logits. Post-gen top-20 at
+       V=26,659 (chance 0.075%): anneal 69.1 / 68.8 (n=2), pure KL t5to3
+       67.2, pure CE 67.6. Mean target rank: KL 419-486 vs CE 1069.
+       CORRECTION FOUND ON RE-READ: the original 3-row table omitted the
+       purekl-t5to3 arm (67.19 top-20 / 37.67 overlap / rank 418.6), which
+       is the temperature-matched comparison. With it, the anneal's top-20
+       lead shrinks from 4.7pp to 1.9pp and pure KL wins BOTH distribution
+       metrics. n=1 per arm except anneal (n=2, replicates 0.27pp apart);
+       47,911 scored steps per eval so measurement noise is tiny, seed
+       noise unknown.
+       WHY IT MATTERS: losses separate on exactly the one domain that has
+       dark knowledge, which ties the CE~=KL null (#1) to teacher entropy
+       across three domains on one pipeline. Thesis figure, not a push.
+
+F-48a  DIVERSITY-SOURCE SHOOTOUT
+       Rank diversity sources by complementarity per GPU-hour: checkpoints
+       of one run (Snapshot Ensembles 1704.00109, free) vs seeds vs
+       temperature vs distillation divergence (#38). The frame is owned by
+       hyper-deep ensembles (Wenzel 2006.13570); the fresh sliver is the
+       divergence column plus cost-normalized ranking under KD.
+       Decision-relevant for #49 — it tells the pipeline what to cook with.
+       SEED-RACING AFTER EPOCH 1 IS KILLED (by the researcher): learning
+       curves cross, our own logs show accuracy decaying across epochs, and
+       the saving is trivial at 3-minute runs. SALVAGE: "how often do seed
+       curves cross under KD vs CE" is free inside #41's grids (Spearman of
+       epoch-1 rank against final rank across 50 seeds) and quantifies
+       whether ANY early-kill heuristic is safe in this regime.
+
+F-49a  COMMITTEE EXECUTION REQUIREMENTS — WHERE IT WINS OR EMBARRASSES
+       Selection split must not be the test split (leakage is the classic
+       pipeline mistake). Report ORACLE coverage against REALIZED accuracy;
+       the router eats the headroom and that gap is the central DES metric.
+       Baselines: a dense 56M monolith at matched memory, always-run-all
+       voting (routing vs voting), and best-single-of-10 (selection-luck
+       control). Router labels are free on maths only.
+       MATCHED-TPS REFRAME: at matched throughput the committee is "4x
+       params held, 1x compute spent" — the MoE claim at model granularity
+       — and #32's scaling laws predict it LOSES, which makes matched-TPS
+       the sharper baseline and a coarse test of #32's sliver.
+       CENTRAL THREAT: effective TPS ~ TPS_single / (1 + p_flag x hops),
+       and p_flag ~ 1 - base accuracy. Maths at 21% accuracy flags almost
+       everything, so rotation degenerates into always-run-all voting;
+       cascade economics need a usually-right base (reddit ~60% is ok).
+       MONEY PLOT: sweep the checker threshold to get an
+       accuracy-vs-effective-TPS Pareto curve, with both baselines as
+       points on it.
+
+F-52a  THE LOGIT-STORAGE EXPERIMENT AND ITS COST
+       Post-hoc truncate stored logits at k in {1, 4, 16, 64, 256, full} x
+       seeds; reddit (prediction: k=1 is free at its entropy) plus post-gen
+       (the actual curve); optional RS-KD arm at matched storage budget.
+       COST: reddit is hours; post-gen is ~2 GPU-days at 3h per run —
+       post-gen is NOT a 3-minute domain, and that asymmetry drives most
+       scheduling decisions on this project.
+       DEMOABLE TWICE: (a) self-demonstrating — rerun our own pipeline at
+       the recommended k and show batches/ shrink ~50x with students
+       unchanged at 30-seed CIs; (b) a shippable how_much_to_store.py that
+       measures teacher entropy on 100 examples and returns a recommended k.
+
+F-53a  BATTERY NON-NEGOTIABLES
+       Uniform baseline recipe and a matched tuning budget per arm —
+       fairness is where this genre dies. Effect sizes with CIs plus
+       multiple-comparison correction (copy 2605.20798's protocol). And a
+       why-layer (entropy, capacity) connecting the survivors: a scoreboard
+       without explanation is a blog post.
+       RACE NOTE: 2605.20798's authors live at 1-3B pretraining, so KD at
+       the tiny floor is far from their lane.
+
+F-62a  SECOND-TEACHER COST WALL
+       Any second-teacher experiment needs full data regeneration: post-gen
+       ran ~23 s/example and reddit is 15,627 batches, so days to weeks.
+       Out of scope for the 2026-11 deadline; it is the follow-up paper.
+       MITIGATION IF EVER RUN: keep the second teacher inside the Gemma
+       family (3 1B, 12B or 27B) so the reduced-vocabulary machinery is
+       untouched — and see F-70a, because leaving the family also breaks
+       the entropy comparison.
+
+F-66a  THE ENTROPY AXIS IS n=2, AND BOTH FIXES ARE FREE
+       The benchmark direction (#66) is blocked because the entropy spread
+       is not a curve: maths 1.004 and reddit 1.02 are the same point, and
+       only post-gen at 2.88 differs. A two-point axis is not a benchmark
+       axis.
+       FREE FIX 1: per-field entropy from ALREADY-STORED reddit logits
+       (safety / tone / toxicity / sentiment) gives four more points at
+       zero compute. This is promising_lead1.txt Step 0, still never run,
+       and it now gates two directions at once.
+       FREE FIX 2: tokenizer granularity (F-69a) is a continuous dial that
+       moves teacher entropy with domain and teacher held fixed. Build 3-4
+       tokenizers at different merge levels, measure teacher entropy per
+       tokenizer on existing text. No retraining, no data regeneration.
+
+------------------------------------------------------------------------
+OWN NUMBERS (measured 2026-08-26 unless noted; reddit unless noted)
+------------------------------------------------------------------------
+- Teacher entropy: reddit near one-hot, maths 0.0043 nats, post-gen 1.059
+  nats. As effective branching factor exp(H): reddit 1.02, maths 1.004,
+  post-gen 2.88. Report exp(H), not nats — "the teacher has one option
+  here and three there" is the whole thesis in one sentence.
+  (Reddit's nat value is disputed in the sources; see the inconsistency
+  list below.)
+- REDDIT IS CEILING-SATURATED AS AN INSTRUMENT: teacher-forced 97-98%,
+  top-k accuracy 1.00, mean target rank 1.0. Three metrics pinned, so
+  reddit cannot separate hypotheses that live in them. Read fidelity from
+  teacher_student_overlap, student_entropy and perplexity instead.
+- Structural validity 100.00 +/- 0.00 against task accuracy ~60% = a 40pp
+  structure-versus-value gap, and it is NOT uniform: safety 74%, tone 63%,
+  toxicity 59%, sentiment 43%.
+- Data plateau arrives absurdly early: 256 examples -> 60.8%, 1024 ->
+  66.7%, against 81% at 50k. CAVEAT: that sweep held epochs fixed while
+  varying data, so the LR-schedule shape moved with data size. Confounded;
+  needs a matched-step re-run before it is claimable.
+- Students overfit at 2k examples: task 62.7% -> 59.2% over 3 epochs.
+- auxiliary_token_percentage is already a matched-body output-vocab knob:
+  V = 64 / 113 / 193 / 300 / 427 / 525 on reddit, 50..528 on maths. On
+  post-generation it is USELESS — the example section alone is 26,484
+  tokens, and aux% moves V only 26,505 -> 26,659.
+- CHANCE CORRECTION IS MANDATORY ACROSS V: top-20 overlap has chance
+  baseline k/V (31.3% at V=64, 17.7% at V=113), and excess-over-chance
+  REVERSES the early "smaller vocab buys fidelity" reading (0.084 at V=64
+  against 0.169 at V=113). Any cross-V fidelity comparison must be
+  chance-corrected before a claim is made.
+
+------------------------------------------------------------------------
+CODE FACTS THAT GATE THE PROGRAMME (verified from source 2026-08-31)
+------------------------------------------------------------------------
+- TEACHER AND STUDENT TEMPERATURE ARE COUPLED in Trainer._compute_loss —
+  both are divided by the same temperature variable — so the teacher-
+  entropy dial DOES NOT EXIST YET. About 5 lines to decouple. This is the
+  single change that gates the whole measurement programme (#37, #56).
+- temperature ** 2 multiplies both loss terms, which is a gradient-scale
+  confound whenever temperature is swept.
+- train_single_example does zero_grad / backward / step PER EXAMPLE, so
+  batch_size=32 is a file chunk, not a gradient batch. Effective batch = 1,
+  ~61 ms/example, GPU idle. Real batching is likely 5-10x and is the
+  difference between "we ran 5 seeds" and "we ran 50".
+- Student parameter split at the default config: see F-68a.
+
+------------------------------------------------------------------------
+OPEN NUMERIC INCONSISTENCIES — resolve before any of this is written up
+------------------------------------------------------------------------
+- Reddit teacher entropy appears as 0.023 nats (ledger lines 300, 365,
+  632, 672, 734), 0.021 (237, 716, 853, 886, and entries 63/65/68) and
+  "0.02" (620). exp(H) is quoted as 1.02, which is consistent with both.
+  Unresolved; pick one from runs/*/logs and propagate.
+- Ledger line 37 gives the sharp-vs-soft discriminator as "(0.02 vs
+  0.79)" while post-gen is 1.06 nats everywhere else. 0.79 appears once
+  and is never reconciled.
+- The "label smoothing benefit ~ log V - H" formula (#55) is still
+  UNVERIFIED and possibly confabulated.

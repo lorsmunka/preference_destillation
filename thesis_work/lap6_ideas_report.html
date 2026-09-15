@@ -1,0 +1,456 @@
+<title>Lap Six Scouting Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --paper: #F4F6F5;
+    --card: #FCFDFC;
+    --ink: #182220;
+    --muted: #55605C;
+    --line: #D6DDDA;
+    --accent: #2E6284;
+    --accent-soft: #E3ECF2;
+    --strong: #1E7A4E;
+    --strong-soft: #E2F0E8;
+    --adequate: #96660F;
+    --adequate-soft: #F4ECDA;
+    --dead: #7A817E;
+    --dead-soft: #E9ECEA;
+    --eli5-bg: #EDF1EF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101817;
+      --card: #17201E;
+      --ink: #DCE4E1;
+      --muted: #93A09B;
+      --line: #2A3532;
+      --accent: #7FB2D4;
+      --accent-soft: #1B2C38;
+      --strong: #6CC397;
+      --strong-soft: #163023;
+      --adequate: #D8A94E;
+      --adequate-soft: #33290F;
+      --dead: #8A948F;
+      --dead-soft: #232B28;
+      --eli5-bg: #1C2624;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101817;
+    --card: #17201E;
+    --ink: #DCE4E1;
+    --muted: #93A09B;
+    --line: #2A3532;
+    --accent: #7FB2D4;
+    --accent-soft: #1B2C38;
+    --strong: #6CC397;
+    --strong-soft: #163023;
+    --adequate: #D8A94E;
+    --adequate-soft: #33290F;
+    --dead: #8A948F;
+    --dead-soft: #232B28;
+    --eli5-bg: #1C2624;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Public Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 3rem 1.25rem 5rem;
+  }
+  main { max-width: 46rem; margin: 0 auto; }
+  h1, h2, h3 {
+    font-family: "Newsreader", Georgia, serif;
+    text-wrap: balance;
+    line-height: 1.15;
+    margin: 0;
+  }
+  h1 { font-size: 2.6rem; font-weight: 600; }
+  h2 { font-size: 1.6rem; font-weight: 600; margin-top: 3.5rem; margin-bottom: 1rem; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  .eyebrow {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .lede { font-size: 1.12rem; color: var(--muted); margin-top: 1rem; max-width: 40rem; }
+  .lede strong { color: var(--ink); }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  th {
+    text-align: left;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  td { padding: 0.55rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .chip {
+    display: inline-block;
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 0.12rem 0.5rem;
+    border-radius: 99px;
+    white-space: nowrap;
+  }
+  .chip.strong { color: var(--strong); background: var(--strong-soft); }
+  .chip.adequate { color: var(--adequate); background: var(--adequate-soft); }
+  .chip.dead { color: var(--dead); background: var(--dead-soft); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.5rem 1.75rem;
+    margin-top: 1.5rem;
+  }
+  .card.spine { border-color: var(--accent); border-width: 1.5px; }
+  .card-head { display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap; }
+  .rank {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .card h3 { font-size: 1.3rem; font-weight: 600; flex: 1 1 auto; }
+  .eli5 {
+    background: var(--eli5-bg);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin: 1rem 0;
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 1.08rem;
+    line-height: 1.5;
+  }
+  .eli5 .tag {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  .facts { display: grid; gap: 0.7rem; margin-top: 1rem; font-size: 0.93rem; }
+  .facts p { margin: 0; }
+  .facts .label {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.1rem;
+  }
+  .meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.1rem;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--line);
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .meta span b { color: var(--ink); font-weight: 600; }
+  code {
+    font-family: "Spline Sans Mono", monospace;
+    font-size: 0.85em;
+    background: var(--eli5-bg);
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+  }
+  .honesty {
+    border-left: 3px solid var(--adequate);
+    background: var(--card);
+    border-radius: 0 8px 8px 0;
+    padding: 1.1rem 1.4rem;
+    margin-top: 3rem;
+    font-size: 0.93rem;
+  }
+  .honesty p { margin: 0.4rem 0; }
+  .footnote { color: var(--muted); font-size: 0.82rem; margin-top: 3rem; }
+</style>
+
+<main>
+  <div class="eyebrow">Preference distillation · idea lap 6 · 2026-08-26</div>
+  <h1>Lap Six Scouting Report</h1>
+  <p class="lede">
+    Three parallel literature agents (frontier architectures, open problems inside distillation,
+    tiny-model training phenomena; ~60 searches and paper fetches), hostile-filtered, plus my own
+    spot-checks. <strong>This is the first lap where the surviving questions need your rig</strong> —
+    full stored teacher logits and 3-minute training runs are load-bearing for every top candidate,
+    not just an unclaimed corner nobody bothered with. Full detail with citations is in
+    <code>thesis_work/idea_ledger.txt</code>, entries #37–44.
+  </p>
+
+  <h2>The board</h2>
+  <div class="table-wrap"><table>
+    <tr><th>#</th><th>Idea</th><th>Verdict</th><th>Cost</th><th>Main risk</th></tr>
+    <tr><td>1</td><td>The entropy dial (spine: 3 experiments, 1 claim)</td><td><span class="chip strong">STRONG</span></td><td>~2 weeks</td><td>"just a temperature sweep" framing</td></tr>
+    <tr><td>2</td><td>Divergence zoo at 14M, offline</td><td><span class="chip strong">STRONG</span></td><td>~1 week</td><td>everything ties</td></tr>
+    <tr><td>3</td><td>Multi-token prediction under distillation</td><td><span class="chip strong">STRONG</span></td><td>~1–2 weeks</td><td>students too weak on post-gen</td></tr>
+    <tr><td>4</td><td>Grokking phase diagram under distillation</td><td><span class="chip strong">STRONG</span></td><td>~3–4 weeks</td><td>race (gap is 9 months old)</td></tr>
+    <tr><td>5</td><td>Does distillation shrink the seed lottery?</td><td><span class="chip strong">STRONG</span></td><td>days</td><td>reads as "just error bars" if misframed</td></tr>
+    <tr><td>6</td><td>Muon optimizer at tiny scale under KL</td><td><span class="chip adequate">ADEQUATE</span></td><td>~1 week</td><td>reads as benchmarking</td></tr>
+    <tr><td>7</td><td>nGPT as a distillation student</td><td><span class="chip adequate">ADEQUATE</span></td><td>~2 weeks</td><td>contested baseline, null risk</td></tr>
+    <tr><td>8</td><td>Top-k logit truncation entropy-law</td><td><span class="chip adequate">ADEQUATE</span></td><td>days</td><td>mostly owned already</td></tr>
+  </table></div>
+
+  <h2>№ 1 — the recommended spine</h2>
+  <div class="card spine">
+    <div class="card-head">
+      <span class="rank">01</span>
+      <h3>The entropy dial</h3>
+      <span class="chip strong">STRONG</span>
+    </div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      A teacher who is always 100% sure teaches you nothing beyond the answer key — copying their
+      confidence pattern only helps when they're sometimes unsure. Everyone believes this;
+      nobody has ever drawn the actual curve. You can draw it three ways with data already on your disk.
+    </div>
+    <div class="facts">
+      <p><span class="label">The one-sentence claim</span>
+      The value of distillation over plain answer-copying is set by teacher entropy — shown across
+      domains, within sequences, and causally.</p>
+      <p><span class="label">The three experiments</span>
+      ① <b>Across domains</b> — already half-measured: your teachers sit at 0.004 / 0.023 / 1.06 nats,
+      and CE ties KL on the first two but separates on the third. ② <b>Within sequences</b> — split the
+      training KL into structure-token vs content-token parts from stored logits; structure tokens have
+      ~zero teacher entropy, so all of KD's value should localize on content tokens (this is also your
+      "perfect JSON, wrong values" gap, explained). ③ <b>Causally</b> — re-temper the <em>same</em>
+      stored logits to dial entropy continuously on one domain, same data, same eval, and plot the
+      KD−CE gap against entropy with 20–50-seed error bars per point.</p>
+      <p><span class="label">Why it's open</span>
+      <a href="https://arxiv.org/abs/2005.10419">Menon 2021</a> implies it in theory but never measures it.
+      Adaptive methods (<a href="https://arxiv.org/abs/2603.07079">2603.07079</a>,
+      <a href="https://arxiv.org/pdf/2605.01732">2605.01732</a>) exploit the intuition per-token without
+      stating the law. The closest causal predecessor is famous —
+      <a href="https://arxiv.org/abs/1906.02629">Müller 2019</a>, label-smoothed teachers distill worse —
+      but it's confounded: label smoothing reshapes the teacher's whole logit geometry and requires
+      retraining it. Re-tempering stored logits keeps the teacher, the data, and the ranking fixed and
+      moves <em>only</em> entropy. My spot-check, not the agents': Müller must be cited as the confounded
+      predecessor, and that's a strength, not a threat.</p>
+      <p><span class="label">How it dies</span>
+      A reviewer says "this is the classic temperature ablation." Two honest defenses: the endpoint is
+      anchored by construction (at τ→0 KD literally equals your CE), so the contribution is the
+      <em>shape</em> of the curve — and the metric split, because your own post-gen table shows entropy
+      may gate distributional fidelity without gating task accuracy. That refinement is the non-obvious part.
+      If the curve turns out featureless-linear with no metric split, the result thins out.</p>
+    </div>
+    <div class="meta">
+      <span>Cost: <b>~2 weeks</b></span>
+      <span>New code: <b>loss logging split + analysis</b></span>
+      <span>Uses: <b>stored logits + seed budget</b></span>
+      <span>Ledger: <b>#37 + #43</b></span>
+    </div>
+  </div>
+
+  <h2>The other candidates</h2>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">02</span><h3>Divergence zoo at 14M, offline</h3><span class="chip strong">STRONG</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      Big-model papers found that a student should imitate its teacher's <em>favorite</em> answers
+      (reverse KL) rather than its <em>whole spread</em> (forward KL). But those students were already
+      well-educated before distillation started. Does the advice hold for a student born knowing nothing?
+    </div>
+    <div class="facts">
+      <p><span class="label">Why it's open</span>
+      MiniLLM (<a href="https://arxiv.org/abs/2306.08543">2306.08543</a>), GKD
+      (<a href="https://arxiv.org/abs/2306.13649">2306.13649</a>), DistiLLM 1/2
+      (<a href="https://arxiv.org/abs/2402.03898">2402.03898</a>,
+      <a href="https://arxiv.org/abs/2503.07067">2503.07067</a>): every student ≥120M and pretrained,
+      most needing expensive on-policy sampling. With full stored logits you compute forward/reverse
+      KL, JS, skew, TVD offline and exactly — no sampling noise, no pretraining confound. Mode-seeking
+      assumes a capable student choosing among modes; a from-scratch 14M student may need coverage
+      first, which could flip the accepted ranking.</p>
+      <p><span class="label">How it dies</span>
+      Everything ties on post-gen too. Even then, "the celebrated divergence choice is a large-model
+      phenomenon, n=30 seeds" is a citable negative. Reverse KL is gradient-unstable off-policy —
+      use DistiLLM's skew fix and say so.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>~1 week</b></span><span>New code: <b>a few loss functions</b></span><span>Shares infra with №1</span><span>Ledger: <b>#38</b></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">03</span><h3>Multi-token prediction under distillation</h3><span class="chip strong">STRONG</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      Predicting two words ahead makes big models better and small models <em>worse</em> — Meta measured
+      the crossover at ~1.3B and said so. Their explanation: the training signal for future words is too
+      thin at small scale. Your disk holds the teacher's full probability spread for those future words.
+      Does that rescue it?
+    </div>
+    <div class="facts">
+      <p><span class="label">Why it's open</span>
+      The crossover is documented (<a href="https://arxiv.org/abs/2404.19737">2404.19737</a>: 300M and
+      600M get worse, gains only ≥1.3B). All MTP+distillation work since is about speeding up big
+      pretrained models (<a href="https://arxiv.org/abs/2602.06019">2602.06019</a>,
+      <a href="https://arxiv.org/pdf/2507.08297">KAT-V1 at 40B</a>). Nobody has trained from-scratch
+      &lt;100M MTP under teacher-KL. Either sign is a result: soft targets move the crossover down, or
+      MTP's small-scale failure is capacity, not signal sparsity.</p>
+      <p><span class="label">How it dies</span>
+      Must run on post-gen (classification outputs are too short and deterministic), where your students
+      are weakest — deltas could drown in noise. The seed budget is the answer, but it's a real risk.
+      Implementation is genuinely small: one extra head, one KL term against logits shifted one position.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>~1–2 weeks</b></span><span>New code: <b>extra head + loss term</b></span><span>Uses: <b>stored future logits, free</b></span><span>Ledger: <b>#39</b></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">04</span><h3>Grokking phase diagram under distillation</h3><span class="chip strong">STRONG</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      Tiny models on arithmetic famously memorize first and only "get it" much later (grokking).
+      If the student instead copies a teacher's soft probabilities — does the long confused phase shrink,
+      vanish, or get <em>inherited</em>? And does it matter whether the teacher had already "gotten it"
+      when you copied?
+    </div>
+    <div class="facts">
+      <p><span class="label">Why it's open</span>
+      <a href="https://arxiv.org/abs/2511.04760">2511.04760</a> (Nov 2025) showed KD from a grokked
+      teacher accelerates grokking <em>across</em> distributions — but no same-distribution analysis, no
+      temperature/α sweep, no pre-grok vs post-grok teacher ablation, no seed counts. The many-seed
+      statistics exist only for hard labels (<a href="https://arxiv.org/abs/2607.05104">2607.05104</a>,
+      n=10 at 12K params). Distilling from a <em>pre-grok</em> teacher checkpoint is a clean causal test
+      of what soft labels actually carry; label smoothing is the essential control arm
+      (<a href="https://arxiv.org/abs/2501.04697">2501.04697</a>).</p>
+      <p><span class="label">How it dies</span>
+      Race: the 2511.04760 group is the obvious one to extend their own paper — the window is maybe
+      6–12 months. Also needs one new tiny algorithmic domain (modular addition) plus grokking
+      hyperparameter archaeology before the real experiment starts.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>~3–4 weeks</b></span><span>New code: <b>one algorithmic domain + tiny teacher</b></span><span>Most "inspiring", highest risk</span><span>Ledger: <b>#40</b></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">05</span><h3>Does distillation shrink the seed lottery?</h3><span class="chip strong">STRONG</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      A NeurIPS theorem says distillation reduces gradient noise. If true, fifty identical runs with
+      different seeds should land closer together under KL than under CE. Nobody has ever checked —
+      because nobody else can afford fifty runs per configuration. You can, before lunch.
+    </div>
+    <div class="facts">
+      <p><span class="label">Why it's open</span>
+      <a href="https://arxiv.org/abs/2305.17581">2305.17581</a> proves partial variance reduction but
+      validates only mean accuracy. The 3,900-model audit
+      (<a href="https://arxiv.org/abs/2510.12615">2510.12615</a>) tests means too. The measurable:
+      σ²(KL)/σ²(CE) per metric, across α and temperature, plus trajectory statistics
+      (time-to-valid-JSON, time-to-accuracy) — at 30–50 seeds. Zero new infrastructure.</p>
+      <p><span class="label">How it dies</span>
+      Framing. As "we ran more seeds" it's nothing; as "testing a NeurIPS theory prediction at the
+      outcome level, which only this rig can afford" it stands. Best used as the statistical backbone
+      of №1–4 rather than alone.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>days (2.5 GPU-hrs per config)</b></span><span>New code: <b>none</b></span><span>Ledger: <b>#41</b></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">06</span><h3>Muon at tiny scale under KL</h3><span class="chip adequate">ADEQUATE</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      The optimizer that broke the speed records and trained Kimi K2 — a 2026 paper literally calls its
+      combination with distillation "underexplored". But "we tried an optimizer" is boring unless you
+      pre-commit to the non-obvious questions: does it shrink seed spread, and does it interact with the
+      rare tokens that only soft targets reward?
+    </div>
+    <div class="facts">
+      <p><span class="label">Why it's open</span>
+      No Muon study exists below 30M or under a logit-distillation loss
+      (<a href="https://arxiv.org/abs/2601.09865">2601.09865</a> says so verbatim). Muon wins on
+      tail/rare-class memory (<a href="https://arxiv.org/pdf/2509.26030">2509.26030</a>), and KD soft
+      targets put mass exactly on rare tokens — a checkable interaction on your rare-class F1.</p>
+      <p><span class="label">How it dies</span>
+      Reads as benchmarking; AdamW must get an equally honest LR sweep or reviewers kill it.
+      ~50 lines of PyTorch either way.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>~1 week</b></span><span>Ledger: <b>#42</b></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">07</span><h3>nGPT as a distillation student</h3><span class="chip adequate">ADEQUATE</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      A transformer whose vectors all live on a sphere can't easily shout — its output scores are capped.
+      Your teacher is nearly always shouting (99%+ confident). Can a capped student imitate a shouting
+      teacher at all? Nobody has ever distilled into one.
+    </div>
+    <div class="facts">
+      <p><span class="label">Why it's open</span>
+      nGPT (<a href="https://arxiv.org/abs/2410.01131">2410.01131</a>) bounds logits to cosine × learned
+      scale s_z; matching 99% mass on one of 525 tokens forces a logit gap of ~11, saturating everything
+      else, and s_z is formally confounded with distillation temperature. Zero nGPT+distillation hits
+      anywhere. The best pure-mechanism story of the batch.</p>
+      <p><span class="label">How it dies</span>
+      nGPT's own headline gains are contested (the speedrun community never adopted it), the
+      implementation is invasive (re-normalize weights every step), and the null-result risk is the
+      highest on the board.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>~2 weeks</b></span><span>Ledger: <b>#44</b></span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="rank">08</span><h3>Top-k truncation entropy-law</h3><span class="chip adequate">ADEQUATE</span></div>
+    <div class="eli5"><span class="tag">Like you're five</span>
+      Real pipelines save only the teacher's top-20 guesses to save disk. You saved everything, so you
+      can measure exactly what throwing the rest away costs — but the big labs already measured most of
+      this, so it's a supporting chapter, not a headline.
+    </div>
+    <div class="facts">
+      <p><span class="label">What's left</span>
+      <a href="https://arxiv.org/abs/2502.08606">Apple's scaling laws</a> did the k-sweep and
+      <a href="https://arxiv.org/abs/2503.16870">2503.16870</a> proved top-k gradients are biased.
+      Unclaimed: required k as a function of teacher entropy (prediction: k=1 suffices at 0.004 nats;
+      how much does 1.06 nats need?) — which plugs straight into №1's story.</p>
+    </div>
+    <div class="meta"><span>Cost: <b>days</b></span><span>Ledger: <b>batch-6 killed list, sliver kept</b></span></div>
+  </div>
+
+  <h2>Checked and killed this lap</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Idea</th><th>Killed by</th></tr>
+    <tr><td>MLA (latent KV) at tiny scale</td><td><a href="https://arxiv.org/abs/2506.09342">2506.09342</a> already trains 30M MLA models; tiny models have no KV-cache problem anyway</td></tr>
+    <tr><td>Linear-attention students (Kimi Linear etc.)</td><td>MOHAWK / LoLCATs own cross-architecture logit-KD; 25-token sequences remove the point</td></tr>
+    <tr><td>DeepSeek V4 novelties (CSA/HCA, mHC, Engram)</td><td>same families as already-dead DSA / hyper-connections; Engram is million-token retrieval</td></tr>
+    <tr><td>Byte-latent transformer</td><td>needs a second entropy-model; smallest runs ~400M; conflicts with deterministic JSON</td></tr>
+    <tr><td>Epoch-wise double descent under KD</td><td>theory already called the outcome (<a href="https://arxiv.org/abs/2012.00194">2012.00194</a> and successors)</td></tr>
+    <tr><td>On-policy distillation below 30M</td><td>right question, wrong lab — live teacher passes destroy the 3-minute loop, which is the whole edge</td></tr>
+    <tr><td>Fidelity paradox as headline</td><td>owned at 0.5B–7B by <a href="https://arxiv.org/abs/2505.15442">2505.15442</a>; seed-level margin survives inside №5</td></tr>
+    <tr><td>Grokking-under-KD, cross-distribution</td><td>claimed nine months ago by <a href="https://arxiv.org/abs/2511.04760">2511.04760</a> (the same-distribution gap is №4)</td></tr>
+    <tr><td>TinyStories-style capability curve under KD</td><td>squeezed between TinyStories itself and Apple's scaling laws; too close to dead capacity-crossover</td></tr>
+  </table></div>
+
+  <div class="honesty">
+    <p><b>How much to trust this.</b> Each candidate survived one adversarial search lap by an agent
+    instructed to kill its own ideas, plus my spot-checks (the Müller confound on №1 was mine, not
+    theirs). That is one lap — batches 1–5 taught us that second laps find owners. Before committing to
+    any of these, spend half a day trying to kill it yourself.</p>
+    <p><b>Why this lap is different from 1–5.</b> Every earlier batch died the same way: phenomenon
+    owned, only our sandbox unclaimed. Here the top candidates <em>require</em> the sandbox's two assets
+    — full stored logits and 50-seed replication — so the rig is the instrument, not the excuse.</p>
+    <p><b>What I'd do first.</b> №5 this week (zero new code, and it becomes the methodology for
+    everything else), №1's causal sweep next (the temperature knob already exists in
+    <code>TrainingRun</code>). Decide on №4 only after checking arXiv for a 2511.04760 follow-up.</p>
+  </div>
+
+  <p class="footnote">Auto-generated companion to <code>thesis_work/idea_ledger.txt</code> entries
+  #37–44 · agents ran 2026-08-26 · verdict chips: STRONG = pursue-worthy as headline ·
+  ADEQUATE = chapter or conditional · sources linked inline.</p>
+</main>

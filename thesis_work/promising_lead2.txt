@@ -1,0 +1,102 @@
+========================================================================
+PROMISING LEAD #2 — TEACHER PRICE x TASK ENTROPY
+"Double distillation" reframed. Logged 2026-08-31.
+STATUS: a good BATTERY ROW, not a headline. Requires a second teacher =
+full data regeneration => almost certainly OUT OF SCOPE for a November
+deadline. Park it; it is the natural follow-up paper.
+========================================================================
+
+THE ORIGINAL QUESTION (as asked)
+--------------------------------
+"Double distillation - distilling from two models, needing less data from
+a more expensive model. How extensively has this been studied?"
+
+ANSWER: three readings, all three owned.
+  (1) two teachers at once = multi-teacher KD. Textbook. Survey
+      2006.05525; 2302.07215; 2605.27967 (Teacher-Informed Mixture
+      Priors, 2026); ledger #48 already had 2204.00548 / 2402.14035 /
+      2012.06048.
+  (2) sequential / teacher-assistant = TAKD (Mirzadeh 1902.03393),
+      IJCAI 2023, AMD 2407.04208. Known result: more TAs in the chain ->
+      better student.
+  (3) "less data from the expensive model" = THE ACTUAL IDEA, and the
+      most thoroughly owned:
+      - LLM on a Budget 2511.11574 (active KD, informative subset for the
+        expensive teacher, UP TO 80% FEWER SAMPLES) - already ledger #25
+      - Teaching-Assistant-in-the-Loop 2406.05322 (KD from imperfect
+        teachers in LOW-BUDGET scenarios, verbatim)
+      - Active LLM-based KD 2502.15685
+      - NEURAL CACHING: "online distillation of a strong model into a
+        weak one; when the weak model's confidence is low the strong
+        model answers and its output augments a cache that refines the
+        weak model" = the idea mechanism-for-mechanism
+      - cascade economy: MoT 2310.03094 (GPT-4 quality at ~40-47% cost),
+        RouteLLM, C3PO 2511.07396, survey 2603.04445
+  FILTER CHECK (#60): method-shaped ("do X and it is cheaper") ->
+  predicted dead before searching. Tally 23/23.
+
+
+THE SURVIVING MEASUREMENT (why this file exists)
+------------------------------------------------
+Flip it from a method to a measurement and something real is left:
+
+  WHAT IS THE EXCHANGE RATE BETWEEN CHEAP-TEACHER AND EXPENSIVE-TEACHER
+  LABELS, AND DOES IT DEPEND ON TASK ENTROPY?
+
+Our law makes a specific, falsifiable, economically useful prediction:
+  - if the expensive teacher's advantage is mostly BETTER-CALIBRATED
+    UNCERTAINTY, then
+  - on structured tasks (exp(H) ~ 1) both teachers emit the same single
+    answer -> the cheap teacher should be nearly free
+  - on ambiguous tasks (exp(H) ~ 3) the expensive teacher's spread over
+    the plausible options is exactly where the value is -> paying pays
+  => "here is when to pay for a better teacher" - the practitioner's real
+  question, and the natural companion to the storage rule in lead #1.
+
+WHY IT IS NOT SCOOPED: 2605.23857 (Strong Teacher Not Needed) varies
+teacher STRENGTH (params / training tokens) on free-form LLM pretraining
+and finds weak teachers work + strong teachers can saturate or reverse.
+It never indexes that by TASK ENTROPY, and never touches structured
+tasks. The interaction is open.
+
+WHY IT IS NOT A HEADLINE: it grafts an entropy interaction onto an axis
+2605.23857 already owns, and ledger #14 already calls teacher-swap a
+knob-turn. It is a ROW beside the divergence zoo and the storage rule -
+the row that makes the practical chapter concrete.
+
+
+COST (the reason this is parked)
+--------------------------------
+Needs a SECOND TEACHER => full data regeneration for every domain in the
+comparison. Reference cost from our own logs: post-generation ran ~23
+s/example (123 batches, ~500 MB each, Apr 18-20). Reddit is 15,627
+batches. Regeneration is days-to-weeks, not hours.
+Candidate second teachers (same tokenizer family = no vocab rebuild):
+Gemma 3 1B (cheaper) and/or Gemma 3 12B / 27B (dearer). Staying inside
+the Gemma family keeps the reduced-vocabulary machinery untouched, which
+is the difference between a week and a month of engineering.
+
+
+IF IT EVER RUNS — DESIGN NOTES
+------------------------------
+- Hold EVERYTHING but the teacher fixed: same corpus, same student, same
+  schedule, same seeds. The whole point is a clean price comparison.
+- Report the SUBSTITUTION CURVE, not a winner: student quality vs
+  (fraction of labels from the expensive teacher), one curve per domain.
+  The interesting object is where the curves for exp(H)=1.02 and
+  exp(H)=2.88 diverge.
+- Mandatory control: the cheap teacher ALONE at matched total label
+  count. Otherwise "mixing helps" is confounded with "more data helps".
+- Cite LLM on a Budget (2511.11574) and neural caching up front as the
+  method prior art; we measure the exchange rate they assume.
+
+
+========================================================================
+NOVEMBER DEADLINE — SCOPE CONSEQUENCE (added 2026-08-31)
+Publication target is November 2026; today is 2026-08-31. ~9 weekends.
+This lead requires data regeneration and is therefore OUT for November.
+It is the follow-up paper, not this one. Lead #1 (fidelity vs accuracy
+dissociation + the free per-field and mass-legibility measurements)
+is the November candidate because its two strongest experiments cost
+ZERO training time.
+========================================================================
