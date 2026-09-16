@@ -52,7 +52,7 @@ edit its `RUNS` (a different architecture is just different `hidden_dim` / `num_
 stays re-runnable and doubles as the record of what the experiment was. Scripts there start
 with the repo-root `sys.path` line so they run without installing the package.
 
-Graceful exit: the dashboard's Stop button (`python progress.py`, creates a `STOP` file) or Ctrl+C in the run's window — the run saves a resume checkpoint and the script exits; re-running resumes.
+Graceful exit: the dashboard's Stop button (`python progress.py`, creates a `STOP` file), Ctrl+C in the run's window, or the thermal guard (GPU at or above `GPU_TEMPERATURE_LIMIT`, 85 C, on two checks) — the run saves a resume checkpoint and the script exits; re-running resumes. The reason lands in `queue/last_stop.json` and on the dashboard.
 
 ## Configuration
 

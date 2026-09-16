@@ -34,6 +34,12 @@ DROPOUT = 0.15
 # Mid-epoch evaluation
 MINI_EVAL_FREQUENCY = 1000
 MINI_EVAL_BATCH_COUNT = 10
+
+# Thermal guard (library.shared.exit_listener): a run stops gracefully when the GPU is at
+# or above this on two consecutive checks. The RTX 4070 throttles at 94 C and shuts down
+# at 99 C, so 85 keeps well under the card's own limits. Checked every N batches.
+GPU_TEMPERATURE_LIMIT = 85
+GPU_TEMPERATURE_CHECK_EVERY = 30
 BATCH_SIZE = 32
 
 def sanitize_model_name(model_name: str) -> str:

@@ -1,15 +1,11 @@
-RUNNING
-- (nothing — shut down for the night 2026-09-16 ~00:45 on request; the machine only
-  runs experiments while monitored)
-
-STOPPED, RESUMABLE
+RUNNING   (2026-09-16 morning, user present)
+- dashboard          python progress.py  ->  http://localhost:8765
 - E-01 reddit+math   python experiments/anneal_direction.py reddit math
-                     stopped gracefully via the dashboard at ~63/100; the interrupted
-                     run left a temp checkpoint. Re-running the same command resumes.
-- dashboard          python progress.py  (start it first next time)
+                     resumed 2026-09-16 morning from 61/100 · log: experiments/e01_reddit_math.log
+                     Stop: dashboard button. Thermal guard now active (85 C).
 
 TOMORROW
-- Start the dashboard, resume E-01 (~37 runs, ~2 h). When it finishes its script prints the mean +/- std table into the log and
+- (running) When E-01 finishes its script prints the mean +/- std table into the log and
   writes experiments/results/e01_anneal_direction.csv. Then: flip E-01 to DONE in
   experiment_ledger.txt, commit runs/e01-* (info.json + logs) and the CSV.
 - GPU is free after that: run the Gemma 4 sanity check
