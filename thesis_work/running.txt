@@ -1,14 +1,8 @@
 RUNNING   (2026-09-16 morning, user present)
 - dashboard          python progress.py  ->  http://localhost:8765
-- E-01 reddit+math   python experiments/anneal_direction.py reddit math
-                     resumed 2026-09-16 morning from 61/100 · log: experiments/e01_reddit_math.log
-                     Stop: dashboard button.
 
 TOMORROW
-- (running) When E-01 finishes its script prints the mean +/- std table into the log and
-  writes experiments/results/e01_anneal_direction.csv. Then: flip E-01 to DONE in
-  experiment_ledger.txt, commit runs/e01-* (info.json + logs) and the CSV.
-- GPU is free after that: run the Gemma 4 sanity check
+- GPU is free: run the Gemma 4 sanity check
   (python sanity_check_teacher.py; run_compressed load is untested — watch the first
   minute for "Decompressing"). Then decide E-01 post-gen arms (15 runs, ~3 h each).
 - Data-order seeding decision (shuffle batches per seed or not) before post-gen.
@@ -16,6 +10,8 @@ TOMORROW
 - tokenizer_fingerprint_pre_upgrade.txt in the repo root is a one-off check file; delete.
 
 FINISHED
+- E-01 reddit+math   2026-09-15 18:00 -> 2026-09-16 · 100/100 runs · null on both domains,
+                     noise floor +/-1.8 pp · experiments/results/e01_anneal_direction.csv
 - Gemma 4 download   2026-09-15 19:35 -> 19:50 · google/gemma-4-12B-it-qat-w4a16-ct (10.3 GB,
                      Google QAT 4-bit). The bf16 google/gemma-4-12B-it (24 GB) is also in the
                      HF cache but cannot be mapped here (pagefile error 1455) — unused.

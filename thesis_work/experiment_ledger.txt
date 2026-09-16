@@ -16,18 +16,24 @@ E-00 DOMAIN ENTROPY BASELINE                              [DONE 2026-09-15]
      1.02. Seven points on the axis instead of three. Results in
      experiments/results/domain_entropy.csv.
 
-E-01 ANNEALING DIRECTION x ENTROPY                        [RUNNING reddit+math since 2026-09-15]
+E-01 ANNEALING DIRECTION x ENTROPY            [DONE reddit+math 2026-09-16 · post-gen PLANNED]
      Does it matter whether the loss anneals CE->KL or KL->CE, and does
      the answer depend on domain entropy? Idea #3 called direction
      trivial; nothing in the literature indexes it by entropy, so this is
      the cheapest unowned cell we have.
 
-     Five arms on kl_ratio_start->_end: 0.1->0.9, 0.9->0.1, flat 0.5, pure
-     CE, pure KL. Reddit and math at 10 seeds, post-gen at 3 (3h/run) —
-     115 runs, no new code. Read task accuracy and the distribution
-     metrics, best and final epoch, mean +/- std. The entropy law predicts
-     no separation where exp(H) ~ 1 and separation only on post-gen.
-     Script: experiments/anneal_direction.py.
+     Five arms on kl_ratio_start->_end (0.1->0.9, 0.9->0.1, flat 0.5, pure
+     CE, pure KL), reddit and math at 10 seeds each, 100 runs, ~3.3 min
+     per run. RESULT: a clean null on both domains. Reddit task accuracy
+     (final) 59.8-62.0% across arms with seed std 1.7-2.5 pp; math
+     21.8-23.6% with std 0.9-2.2 pp; distribution overlap identical within
+     0.7 pp on both. No arm separates from any other by more than one seed
+     standard deviation, on accuracy or on fidelity — exactly what exp(H)
+     of 1.02 and 1.003 predicted. The measured noise floor (+/-1.8 pp
+     reddit, +/-1.7 pp math at n=10) is the number every later row is
+     judged against. Post-gen arms (3 seeds, 3 h/run) are the decisive
+     half and are still to run. Results: experiments/results/
+     e01_anneal_direction.csv. Script: experiments/anneal_direction.py.
 
 E-02 MULTI-TOKEN PREDICTION UNDER KD                      [PLANNED]
      Meta (2404.19737) found MTP hurts below ~1.3B under hard labels, and
