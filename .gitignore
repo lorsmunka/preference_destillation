@@ -37,3 +37,6 @@ gemma4*_download.log
 sanity_*.log
 STOP
 queue/
+
+# Run artifacts stay on disk (and in saves/); git keeps the results CSVs and the code that made them
+runs/

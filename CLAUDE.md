@@ -33,7 +33,8 @@ generate_data.py   data-generation entry — edit the JOBS list
 analyze.py         analytics/eval entry — Analysis / RunStore
 experiments/ one script per named experiment: its RUNS plus the analysis that reads
              them back (e.g. postgen_kl_anneal.py), with measured tables in results/
-runs/        per-run artifacts: info.json, logs/ (JSONL), checkpoints/
+runs/        per-run artifacts: info.json, logs/ (JSONL), checkpoints/ — on disk only (gitignored);
+             what git keeps is experiments/results/*.csv
 batches/     distillation data — batch_N.npz (bf16 logits, bit-exact vs the teacher; legacy .jsonl still readable)
 ```
 
