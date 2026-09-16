@@ -1,0 +1,75 @@
+SZAKDOLGOZAT (v1, 2026-09-16) : cím, absztrakt, terv
+Laczkó Örs · Óbudai Egyetem NIK · BSc mérnökinformatikus · leadás: 2026. november
+Kapcsolódó: TDK/OTDK · a régi vázlat: thesis.md · ötletek: idea-ledger-new.txt ·
+kísérletek: experiment_ledger.txt
+
+========================================================================
+CÍM
+========================================================================
+HU:  Nagy nyelvi modellek doménspecifikus desztillációja alapoktól tanított kis modellekbe
+EN:  Domain-Specific Distillation of Large Language Models into Small From-Scratch Students
+
+========================================================================
+ABSZTRAKT (v1 - beadható vázlat, ~200 szó)
+========================================================================
+A nagy nyelvi modellek általános képességei sok szűk, ismétlődő feladatnál aránytalanul
+drágák. A dolgozat egy kutatási környezetet mutat be, amely egy nagy tanítómodell
+(Gemma 3 4B, illetve Gemma 4 12B) doménspecifikus viselkedését néhány millió paraméteres,
+alapoktól tanított autoregresszív tanulómodellekbe desztillálja. A tanulómodell a tanító
+teljes kimeneti eloszlását tanulja meg egy feladatra szűkített, mintegy 500 tokenes
+szótár felett; a tanító eloszlásai bit-pontosan tárolva állnak rendelkezésre, így a
+tanítási döntések (veszteségfüggvény, hőmérséklet, divergencia, zaj) utólag, új
+adatgenerálás nélkül vizsgálhatók.
+
+A rendszerre építve a dolgozat szisztematikusan méri, hogy a kis modellek tanításának
+ismert technikái közül melyek működnek ebben a szélsőségesen kis, alapoktól tanított
+tartományban. Öt, eltérő nehézségű domainen (strukturált JSON osztályozás, matematikai
+szöveges feladatok, szabad szöveggenerálás és annak megítélése, hosszú szövegből való
+visszakeresés) vizsgálja a veszteségarány és a hőmérséklet ütemezését, a
+divergenciaválasztást, az entrópiához kötött súlyozást és a figyelemre adott zajt,
+mindegyiket tíz véletlenmaggal, mért zajszinttel. A magyarázó változó a tanító kimeneti
+entrópiája: a hipotézis szerint ez jelzi előre, mely technikáknak van hatása egy adott
+domainen, és melyeknek nincs.
+
+Az eredmény egy újrafelhasználható desztillációs környezet, valamint egy táblázat arról,
+hogy a tanító bizonytalansága hogyan határozza meg a desztilláció hasznát.
+
+------------------------------------------------------------------------
+ABSTRACT (EN, same content)
+------------------------------------------------------------------------
+Large language models are disproportionately expensive for narrow, repetitive tasks.
+This thesis presents a research bench that distils the domain-specific behaviour of a
+large teacher (Gemma 3 4B, later Gemma 4 12B) into autoregressive students of a few
+million parameters, trained from scratch. The student learns the teacher's full output
+distribution over a task-specific vocabulary of about 500 tokens; the teacher's
+distributions are stored bit-exactly, so training decisions (loss, temperature,
+divergence, noise) can be studied afterwards without regenerating data.
+
+On this bench the thesis systematically measures which known small-model training
+techniques survive in this extreme from-scratch regime. Across five domains of differing
+difficulty (structured JSON classification, maths word problems, free-form post
+generation and its judgement, long-context recall) it studies loss-ratio and temperature
+scheduling, the choice of divergence, entropy-keyed weighting and attention noise, each at
+ten seeds with a measured noise floor. The explanatory variable is the teacher's output
+entropy: the hypothesis is that it predicts which techniques matter on a given domain and
+which do not.
+
+The result is a reusable distillation bench and a table of how a teacher's uncertainty
+determines what distillation buys.
+
+========================================================================
+TERV (a minimum, ami a dolgozatban lesz)
+========================================================================
+1. Bevezetés          miért kis, doménspecifikus modellek; miért generálás, nem osztályozás
+2. Háttér             desztilláció, dark knowledge, szűkített szótár, entrópia
+3. A rendszer         domain-absztrakció, tárolt tanítói eloszlások (bf16), a tanulómodell,
+                      ütemezhető tanítási paraméterek, naplózás, elemzés, élő műszerfal
+4. Domainek           reddit JSON · matek · posztgenerálás · megítélt posztgenerálás ·
+                      hosszú szövegű visszakeresés (Virág); mindegyik az entrópia-tengelyen
+5. Módszer            véletlenmagok, zajszint, mi számít hatásnak, a kísérletsorozat felépítése
+6. Eredmények         technikánként egy sor: az entrópiából adódó jóslat, majd a mért eredmény
+7. Értékelés          mi vitt át, mi nem, és miért; az entrópia-szabály hatóköre és korlátai
+8. Demó               élő példa a kis modellekkel
+
+Mérföldkövek:  E-01 irány x entrópia (fut) · Gemma 4 tanító ellenőrzése · posztgenerálási
+karok · új domainek adatgenerálása · a kísérletsorozat többi sora · írás (3 hét tartalék)
