@@ -40,3 +40,5 @@ queue/
 
 # Run artifacts stay on disk (and in saves/); git keeps the results CSVs and the code that made them
 runs/
+models/
+reshard.log

@@ -19,9 +19,9 @@ from itertools import islice
 from library.data_gen.model_handler import ModelHandler
 from library.domain import registered_domains, get_domain
 
-TEACHER = sys.argv[1] if len(sys.argv) > 1 else "google/gemma-4-12B-it-qat-w4a16-ct"
+TEACHER = sys.argv[1] if len(sys.argv) > 1 else "google/gemma-4-12B-it"
 EXAMPLES_PER_DOMAIN = 4
-FOUR_BIT = False   # the w4a16 checkpoint is already 4-bit; bitsandbytes only for bf16 teachers that would not fit
+FOUR_BIT = "12B" in TEACHER or "27b" in TEACHER.lower() or "31B" in TEACHER   # bf16 teachers that would not fit a 12 GB card
 GEMMA_4 = "gemma-4" in TEACHER.lower()
 
 

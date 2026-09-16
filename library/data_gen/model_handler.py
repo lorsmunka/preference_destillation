@@ -2,13 +2,14 @@ from time import time
 from typing import Dict, List, Tuple, Optional
 
 import torch
-from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, CompressedTensorsConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 from library.shared.vocabulary import (
     build_vocabulary,
     get_response_tokens,
     extract_logits_as_vector,
 )
+from library.shared.config import teacher_weights_path
 from library.shared.device import get_device
 from library.domain import as_domain
 
@@ -35,18 +36,18 @@ class ModelHandler:
 
     def load_tokenizer_and_model(self):
         start_time = time()
-        print(f"Loading tokenizer and model{' (4-bit NF4)' if self.load_in_4bit else ''}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        weights = teacher_weights_path(self.model_name)   # local re-sharded copy when one exists
+        print(f"Loading tokenizer and model{' (4-bit NF4)' if self.load_in_4bit else ''} from {weights}...")
+        self.tokenizer = AutoTokenizer.from_pretrained(weights)
         load_kwargs = dict(device_map="auto", dtype=torch.bfloat16)
         if self.load_in_4bit:
+            # bitsandbytes NF4 keeps the weights 4-bit at runtime (~7 GB for 12B). Note that
+            # compressed-tensors checkpoints (e.g. *-qat-w4a16-ct) cannot be used instead: this
+            # transformers stack unpacks them to bf16 on the first forward pass.
             load_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True, bnb_4bit_quant_type="nf4",
                 bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
-        elif self.is_compressed_tensors_checkpoint():
-            # Already-quantized (e.g. Google's QAT w4a16) checkpoints: keep the weights packed
-            # on the GPU. The default would unpack them to bf16 — 24 GB for a 12B model.
-            load_kwargs["quantization_config"] = CompressedTensorsConfig(run_compressed=True)
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name, **load_kwargs)
+        self.model = AutoModelForCausalLM.from_pretrained(weights, **load_kwargs)
         if self.thinking:
             self.thought_end_token_id = self.find_thought_end_token()
         elapsed_time = time() - start_time
@@ -54,11 +55,6 @@ class ModelHandler:
             f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
 
         self.create_vocabulary()
-
-    def is_compressed_tensors_checkpoint(self) -> bool:
-        quantization = getattr(AutoConfig.from_pretrained(self.model_name), "quantization_config", None)
-        method = quantization.get("quant_method") if isinstance(quantization, dict) else getattr(quantization, "quant_method", None)
-        return method == "compressed-tensors"
 
     def find_thought_end_token(self) -> int:
         """The special token that closes Gemma 4's thinking channel. Fails loudly on a

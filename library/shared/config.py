@@ -17,6 +17,18 @@ BATCHES_DIR = PROJECT_ROOT / "batches"
 MODEL_NAME = "google/gemma-3-4b-it"
 DEFAULT_TEACHER_MODEL = MODEL_NAME
 
+# Teachers whose weights are loaded from a local directory (see reshard_teacher.py) while the
+# HF id keeps being used for every path and name. Relative to the project root.
+TEACHER_LOCAL_PATHS = {
+    "google/gemma-4-12B-it": PROJECT_ROOT / "models" / "gemma-4-12B-it",
+}
+
+
+def teacher_weights_path(model_name: str) -> str:
+    """Where to load `model_name` from: its local re-sharded copy if one exists, else the HF id."""
+    local = TEACHER_LOCAL_PATHS.get(model_name)
+    return str(local) if local is not None and local.is_dir() else model_name
+
 PROMPT_DELIMITER = "\n\n"
 
 MIN_SENTENCE_LENGTH = 3
