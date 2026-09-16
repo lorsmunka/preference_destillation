@@ -10,4 +10,3 @@ pandas
 tqdm
 compressed-tensors>=0.18    # loads the w4a16 (QAT 4-bit) Gemma 4 teacher
 protobuf
-nvidia-ml-py                # GPU temperature for the thermal guard (exit_listener) and the dashboard

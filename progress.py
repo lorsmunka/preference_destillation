@@ -21,8 +21,6 @@ from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from library.shared.config import GPU_TEMPERATURE_LIMIT   # torch-free import
-
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 STOP_PATH = Path("STOP")    # library.shared.exit_listener watches this file
 RUNS_DIR = Path("runs")
@@ -302,8 +300,7 @@ def build_state():
     name = current_run(infos)
     state = {"now": datetime.now().isoformat(timespec="seconds"), "gpu": GPU, "run": None,
              "stop_pending": STOP_PATH.exists(), "queues": queue_states(infos),
-             "last_stop": read_json(QUEUE_DIR / "last_stop.json"),
-             "temperature_limit": GPU_TEMPERATURE_LIMIT}
+             "last_stop": read_json(QUEUE_DIR / "last_stop.json")}
 
     log_path = newest_console_log()
     state["console"] = {"file": str(log_path) if log_path else None,
@@ -452,10 +449,9 @@ function render(s){lastState=s;const r=s.run;
  const m=r.last;$('metrics').innerHTML=[['loss',f(m.loss)],['KL',f(m.kl_loss)],['CE',f(m.ce_loss)],['token acc',pct(m.accuracy)],['LR',f(m.learning_rate,6)],['KL ratio',f(m.kl_ratio,3)],['temp / teacher',f(m.temperature,2)+' / '+f(m.teacher_temperature,2)],['attn noise',f(m.attention_noise,3)],['steps in batch',m.steps??'—'],['batch time',f(m.time_seconds,2)+' s']].map(([k,v])=>`<div><span>${k}</span><b class="mono">${v}</b></div>`).join('');
  draw(r.chart);
  $('evals').innerHTML='<tr><th>epoch</th><th>task</th><th>student</th><th>TF</th><th>overlap</th><th>H stu</th><th>H tea</th></tr>'+r.evals.map(e=>`<tr><td>${e.epoch+1}</td><td>${pct(e.task_accuracy)}</td><td>${pct(e.student_accuracy)}</td><td>${pct(e.teacher_forced_accuracy)}</td><td>${pct(e.overlap)}</td><td>${f(e.student_entropy,3)}</td><td>${f(e.teacher_entropy,3)}</td></tr>`).join('');
- const g=s.gpu,lim=s.temperature_limit;const hot=g.available&&g.temperature>=lim-5;
- $('gpu').innerHTML=g.available?`<div class="tick">${g.utilization.toFixed(0)}% util · ${(g.memory_used/1024).toFixed(1)} / ${(g.memory_total/1024).toFixed(1)} GB · <b style="color:${g.temperature>=lim?'#f2a8a8':hot?'#f0b35c':'inherit'}">${g.temperature.toFixed(0)}°C</b> <span class="tick">(guard stops runs at ${lim}°C)</span></div><div class="bar gpu"><i style="width:${g.utilization}%"></i></div><div class="bar"><i style="width:${g.memory_used/g.memory_total*100}%;background:${g.temperature>=lim?'#e06c6c':hot?'#f0b35c':''}"></i></div>`:'nvidia-smi unavailable';
+ const g=s.gpu;$('gpu').innerHTML=g.available?`<div class="tick">${g.utilization.toFixed(0)}% util · ${(g.memory_used/1024).toFixed(1)} / ${(g.memory_total/1024).toFixed(1)} GB · ${g.temperature.toFixed(0)}°C</div><div class="bar gpu"><i style="width:${g.utilization}%"></i></div><div class="bar"><i style="width:${g.memory_used/g.memory_total*100}%"></i></div>`:'nvidia-smi unavailable';
  const ls=s.last_stop;const recent=ls&&ls.at&&(Date.now()-Date.parse(ls.at))<6*3600*1000;
- $('banner').hidden=!recent;if(recent){$('banner').textContent=`Last stop: ${ls.reason} · ${ls.at.replace('T',' ')}`;$('banner').style.background=/temperature/i.test(ls.reason)?'#3a1f1f':'#1f2a3a';}
+ $('banner').hidden=!recent;if(recent){$('banner').textContent=`Last stop: ${ls.reason} · ${ls.at.replace('T',' ')}`;$('banner').style.background='#1f2a3a';}
  const e=s.experiment;if(e){$('explabel').textContent=`Experiment ${e.tag} — ${e.completed}/${e.total} runs completed`;
   const rem=e.total-e.completed;$('eta').textContent=e.mean_minutes?`mean ${e.mean_minutes.toFixed(1)} min/run · ${rem} left ≈ ${(rem*e.mean_minutes/60).toFixed(1)} h · ETA ${new Date(Date.now()+rem*e.mean_minutes*60000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`:'';
   $('script').textContent=e.script||'(no experiments/*.py declares this tag)';$('docstring').textContent=e.docstring||'';$('ledger').textContent=e.ledger||'(no ledger entry)';

@@ -2,7 +2,7 @@ RUNNING   (2026-09-16 morning, user present)
 - dashboard          python progress.py  ->  http://localhost:8765
 - E-01 reddit+math   python experiments/anneal_direction.py reddit math
                      resumed 2026-09-16 morning from 61/100 · log: experiments/e01_reddit_math.log
-                     Stop: dashboard button. Thermal guard now active (85 C).
+                     Stop: dashboard button.
 
 TOMORROW
 - (running) When E-01 finishes its script prints the mean +/- std table into the log and
