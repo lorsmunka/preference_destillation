@@ -216,7 +216,7 @@ def make_record(rng: random.Random) -> Dict:
             ast.parse(source)
         except SyntaxError:
             continue
-        if not 15 <= len(program.lines) <= 80:
+        if not 15 <= len(program.lines) <= 72:
             continue
         kind, question, answer = make_question(rng, program)
         numbered = "\n".join(f"{index + 1:>2}: {line}" for index, line in enumerate(program.lines))

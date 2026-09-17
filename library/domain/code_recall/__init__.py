@@ -20,7 +20,7 @@ class CodeRecallDomain(Domain):
     name = "code_recall"
     stop_token = ";"
     max_steps = 10
-    max_input_tokens = 900
+    max_input_tokens = 1024
 
     # Every possible answer in the exact output shape (identifier pieces tokenize into
     # sub-words, so the vocabulary carries the pieces the answers are made of).
