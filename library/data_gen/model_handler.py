@@ -2,7 +2,7 @@ from time import time
 from typing import Dict, List, Tuple, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, DynamicCache
 
 from library.shared.vocabulary import (
     build_vocabulary,
@@ -15,6 +15,7 @@ from library.domain import as_domain
 
 
 MAX_THINKING_TOKENS = 1024
+THOUGHT_SCAFFOLD = "thought\n<channel|>"
 
 
 class ModelHandler:
@@ -31,6 +32,7 @@ class ModelHandler:
         self.vocabulary: Optional[dict] = None
         self.response_tokens: Optional[List[str]] = None
         self.thought_end_token_id: Optional[int] = None
+        self.last_generated_text = ""   # kept even when the example is rejected, for diagnostics
 
         self.load_tokenizer_and_model()
 
@@ -48,6 +50,7 @@ class ModelHandler:
                 load_in_4bit=True, bnb_4bit_quant_type="nf4",
                 bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
         self.model = AutoModelForCausalLM.from_pretrained(weights, **load_kwargs)
+        self.end_token_ids = self.find_end_token_ids()
         if self.thinking:
             self.thought_end_token_id = self.find_thought_end_token()
         elapsed_time = time() - start_time
@@ -55,6 +58,16 @@ class ModelHandler:
             f"Loaded tokenizer and model -> took {elapsed_time:.2f} seconds.\n")
 
         self.create_vocabulary()
+
+    def find_end_token_ids(self) -> set:
+        """EOS plus the end-of-turn token of whichever Gemma generation this is; generation
+        stops on any of them (the domain's own stop token normally fires first)."""
+        ids = {self.tokenizer.eos_token_id} if self.tokenizer.eos_token_id is not None else set()
+        vocabulary = self.tokenizer.get_vocab()
+        for token in ("<turn|>", "<end_of_turn>"):
+            if token in vocabulary:
+                ids.add(vocabulary[token])
+        return ids
 
     def find_thought_end_token(self) -> int:
         """The special token that closes Gemma 4's thinking channel. Fails loudly on a
@@ -108,15 +121,30 @@ class ModelHandler:
 
         steps = []
         generated_text = ""
-        current_sequence = inputs['input_ids']
+        sequence = inputs['input_ids']
         thinking = ""
         if self.thinking:
-            current_sequence, thinking = self.generate_thinking(current_sequence)
+            sequence, thinking = self.generate_thinking(sequence)
 
+        # KV-cached decoding: the prompt (and thought) is fed once, then one token per step —
+        # the same path model.generate() takes. Re-feeding the whole prefix every step, as the
+        # old loop did, gave different (worse) logits on Gemma 4 through bitsandbytes.
+        cache = DynamicCache()
+        pending = sequence
         last_token_decoded = ""
+        skipped_scaffold = ""   # Gemma 4 sometimes opens "thought\n<channel|>" before answering, thinking or not
         while not self.is_stop(last_token_decoded, generated_text) and len(steps) <= self.max_generation_steps:
-            token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence = self.generate_single_step(
-                current_sequence)
+            token_repr, token_decoded, logit_vector, predicted_token_index, next_token_id = self.generate_single_step(
+                pending, cache, total_length=sequence.shape[1])
+            if next_token_id in self.end_token_ids:
+                break   # end of sequence / end of turn: not part of the response
+
+            if not steps and skipped_scaffold is not None and THOUGHT_SCAFFOLD.startswith(skipped_scaffold + token_decoded):
+                skipped_scaffold += token_decoded   # advance past the scaffold without recording it
+                pending = torch.tensor([[next_token_id]], device=sequence.device)
+                sequence = torch.cat([sequence, pending], dim=1)
+                continue
+            skipped_scaffold = None
 
             steps.append({
                 "token": token_repr,
@@ -125,10 +153,12 @@ class ModelHandler:
             })
 
             generated_text += token_decoded
-            current_sequence = new_sequence
+            pending = torch.tensor([[next_token_id]], device=sequence.device)
+            sequence = torch.cat([sequence, pending], dim=1)
             last_token_decoded = token_decoded
 
         elapsed_time = time() - start_time
+        self.last_generated_text = generated_text
 
         response_tokens = self.tokenizer.tokenize(generated_text)
         print(
@@ -155,28 +185,24 @@ class ModelHandler:
             example["thinking"] = thinking
         return example, None
 
-    def generate_single_step(self, current_sequence: torch.Tensor) -> Tuple[str, str, List[float], int, torch.Tensor]:
-        current_inputs = {
-            'input_ids': current_sequence,
-            'attention_mask': torch.ones_like(current_sequence)
-        }
-
+    def generate_single_step(self, pending: torch.Tensor, cache: DynamicCache,
+                             total_length: int) -> Tuple[str, str, List[float], int, int]:
+        """Feed the not-yet-cached tokens (`pending`) through the model with the KV cache and
+        return the next token plus the full logit vector over the reduced vocabulary."""
+        attention_mask = torch.ones((1, total_length), dtype=torch.long, device=pending.device)
         with torch.no_grad():
-            logits = self.model(**current_inputs).logits[0, -1, :]
+            output = self.model(input_ids=pending, attention_mask=attention_mask,
+                                past_key_values=cache, use_cache=True)
+        logits = output.logits[0, -1, :]
 
-        logit_vector = extract_logits_as_vector(
-            logits, self.vocabulary)
-        predicted_token_index = int(
-            max(range(len(logit_vector)), key=lambda i: logit_vector[i]))
+        logit_vector = extract_logits_as_vector(logits, self.vocabulary)
+        predicted_token_index = int(max(range(len(logit_vector)), key=lambda i: logit_vector[i]))
 
         next_token_id = torch.argmax(logits).item()
         token_repr = self.tokenizer.convert_ids_to_tokens([next_token_id])[0]
         token_decoded = self.tokenizer.decode([next_token_id])
 
-        new_sequence = torch.cat([current_sequence, torch.tensor(
-            [[next_token_id]], device=current_sequence.device)], dim=1)
-
-        return token_repr, token_decoded, logit_vector, predicted_token_index, new_sequence
+        return token_repr, token_decoded, logit_vector, predicted_token_index, next_token_id
 
     def prepare_inputs_for_device(self, text: str) -> Dict[str, torch.Tensor]:
         inputs = self.tokenizer(text, return_tensors="pt")

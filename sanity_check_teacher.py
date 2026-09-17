@@ -2,8 +2,10 @@
 with it — see the answers, the thinking traces, and whether the reduced vocabulary would
 accept the outputs.
 
-    python sanity_check_teacher.py                       # Gemma 4 12B-it, 4-bit, 4 examples per domain
-    python sanity_check_teacher.py google/gemma-3-4b-it  # a different teacher
+    python sanity_check_teacher.py                            # Gemma 4 12B-it, 4-bit, 4 examples per domain
+    python sanity_check_teacher.py google/gemma-3-4b-it       # a different teacher
+    python sanity_check_teacher.py raw reddit_comment_sentiment math_word_problem
+                                                              # only these domains; "raw" = no chat template
 
 Prints, per domain: the prompt tail, the response, the thinking trace (when enabled), and
 any tokens the domain's reduced vocabulary would reject.
@@ -19,7 +21,10 @@ from itertools import islice
 from library.data_gen.model_handler import ModelHandler
 from library.domain import registered_domains, get_domain
 
-TEACHER = sys.argv[1] if len(sys.argv) > 1 else "google/gemma-4-12B-it"
+ARGUMENTS = sys.argv[1:]
+TEACHER = next((a for a in ARGUMENTS if "/" in a), "google/gemma-4-12B-it")
+RAW_PROMPT = "raw" in ARGUMENTS                                   # skip the chat template (Gemma 3 style)
+ONLY_DOMAINS = [a for a in ARGUMENTS if "/" not in a and a != "raw"]
 EXAMPLES_PER_DOMAIN = 4
 FOUR_BIT = "12B" in TEACHER or "27b" in TEACHER.lower() or "31B" in TEACHER   # bf16 teachers that would not fit a 12 GB card
 GEMMA_4 = "gemma-4" in TEACHER.lower()
@@ -38,7 +43,7 @@ def run(domain_name: str, thinking: bool):
         example, skip_reason = handler.generate_training_example(text)
         print(f"\n--- input: {text[:140]!r}")
         if example is None:
-            print(f"    SKIPPED: {skip_reason}")
+            print(f"    SKIPPED: {skip_reason}   raw text: {handler.last_generated_text[:300]!r}")
             continue
         if example.get("thinking"):
             print(f"    thinking ({len(example['thinking'])} chars): {example['thinking'][:300]!r}")
@@ -50,10 +55,10 @@ def run(domain_name: str, thinking: bool):
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
-    for domain_name in registered_domains():
+    for domain_name in ONLY_DOMAINS or registered_domains():
         run(domain_name, thinking=False)
-        if GEMMA_4 and domain_name in ("math_word_problem", "long_context_recall"):
-            run(domain_name, thinking=True)
+        if GEMMA_4 and not ONLY_DOMAINS and domain_name in ("long_context_recall",):
+            run(domain_name, thinking=True)   # maths thinking dropped: 5-17 min per example and off-format
 
 
 if __name__ == "__main__":

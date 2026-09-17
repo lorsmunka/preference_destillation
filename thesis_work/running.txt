@@ -2,14 +2,12 @@ RUNNING
 - (nothing — shut down 2026-09-17 on request)
 
 TOMORROW
-- Gemma 4 sanity check DONE (sanity_gemma4.log): model fine (~7 GB NF4, 30 s load;
-  Virág 4/4 correct at 1.3 s/example) but reddit / post-gen / maths outputs mostly
-  REJECTED by vocabularies + prompts shaped around Gemma 3's formatting (compact JSON,
-  scaffold echoes, rare words, code fences, generation past end-of-turn). Maths
-  thinking mode: 5-17 min/example and off-format — dropped.
-  NEXT STEP (proposed, not started): rerun reddit + maths with chat_template=False and
-  print raw responses even when rejected; then fix stop-on-EOS, prompt formats, and a
-  same-teacher vocab seed pass for free-form domains.
+- Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
+  (no KV cache -> corrupted tokens under bitsandbytes); fixed, verified against
+  model.generate token-for-token. Now reddit 4/4, maths 4/4 (arithmetic correct), Virág
+  4/4 (thinking 3/4, ~100 s each). Post-gen / judged: 0/4 — the free-form vocabulary is
+  built from Gemma 3's sample posts; needs a same-teacher vocab seed pass + "no code
+  fence" before any Gemma 4 post-gen data. Maths thinking mode dropped (5-17 min each).
 - E-01 post-gen arms (15 runs, ~3 h each): python experiments/anneal_direction.py postgen
 - Data-order seeding decision (shuffle batches per seed or not) before post-gen.
 - The 162 GB of legacy .jsonl batches still sit beside the .npz files — delete when ready.

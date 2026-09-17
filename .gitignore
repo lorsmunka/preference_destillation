@@ -42,3 +42,4 @@ queue/
 runs/
 models/
 reshard.log
+diag_*.log
