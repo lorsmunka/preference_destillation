@@ -3,6 +3,7 @@
 from typing import Dict, List, Union
 
 from .base import Domain
+from .code_recall import CodeRecallDomain
 from .long_context_recall import LongContextRecallDomain
 from .math_word_problem import MathWordProblemDomain
 from .post_generation import PostGenerationDomain
@@ -36,5 +37,5 @@ def as_domain(value: Union[str, Domain]) -> Domain:
     return get_domain(value)
 
 
-for _domain in (RedditSentimentDomain(), MathWordProblemDomain(), PostGenerationDomain(), RedditCommentWithFeedbackDomain(), LongContextRecallDomain()):
+for _domain in (RedditSentimentDomain(), MathWordProblemDomain(), PostGenerationDomain(), RedditCommentWithFeedbackDomain(), LongContextRecallDomain(), CodeRecallDomain()):
     register_domain(_domain)
