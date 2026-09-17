@@ -1,5 +1,9 @@
-RUNNING
-- (nothing — shut down 2026-09-17 on request)
+RUNNING   (2026-09-17, user present)
+- dashboard          python progress.py  ->  http://localhost:8765
+- Virág data gen     python generate_data.py  (JOBS: long_context_recall x Gemma 4 12B NF4, 5000 ex)
+                     started ~13:00 · log: generate_virag_gemma4.log · ~1 s/example, ~85 min
+                     -> batches/long_context_recall/google_gemma-4-12B-it/batch_N.npz
+                     Stop: dashboard button (STOP file); resume by re-running the same command.
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
@@ -11,7 +15,6 @@ TOMORROW
 - E-01 post-gen arms (15 runs, ~3 h each): python experiments/anneal_direction.py postgen
 - Data-order seeding decision (shuffle batches per seed or not) before post-gen.
 - The 162 GB of legacy .jsonl batches still sit beside the .npz files — delete when ready.
-- tokenizer_fingerprint_pre_upgrade.txt in the repo root is a one-off check file; delete.
 
 FINISHED
 - E-01 reddit+math   2026-09-15 18:00 -> 2026-09-16 · 100/100 runs · null on both domains,

@@ -8,17 +8,20 @@ import json
 import os
 
 from library import GenerationJob
-from library.domain import REDDIT_SENTIMENT
+from library.domain import LONG_CONTEXT_RECALL
 from library.data_gen.generator import DistillationDataGenerator
 from library.shared import ExitListener, get_output_dir
 from library.shared.queue_file import write_queue
 
 JOBS = [
     GenerationJob(
-        domain=REDDIT_SENTIMENT,
-        max_examples=8000,
+        domain=LONG_CONTEXT_RECALL,
+        teacher_model="google/gemma-4-12B-it",
+        load_in_4bit=True,          # 24 GB bf16 -> ~7 GB NF4; weights come from models/gemma-4-12B-it (re-sharded)
+        chat_template=True,
+        max_examples=5000,
         batch_size=32,
-        description="Example sentiment distillation-data generation",
+        description="Virág long-context recall, Gemma 4 12B teacher, no thinking",
     ),
 ]
 
