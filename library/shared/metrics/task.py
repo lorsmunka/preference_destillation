@@ -30,14 +30,19 @@ def _tokens_to_text(tokens: List[str]) -> str:
 
 
 class ClassificationMetric(TaskMetric):
+    """Closed-field JSON classification. `categories` / `values` default to the reddit
+    sentiment fields; a domain with extra closed fields passes its own."""
     name = "task_accuracy"
 
-    def __init__(self) -> None:
+    def __init__(self, categories: Optional[List[str]] = None,
+                 values: Optional[Dict[str, List[str]]] = None) -> None:
+        self.categories = list(categories or CATEGORIES)
+        self.values = dict(values or CATEGORY_VALUES)
         self.correct = 0
         self.total = 0
         self.examples = 0
         self.invalid = 0
-        self.confusion = {category: Counter() for category in CATEGORIES}
+        self.confusion = {category: Counter() for category in self.categories}
 
     def update(self, predicted_tokens: List[str], ground_truth_response: str) -> None:
         predicted = self._parse(_tokens_to_text(predicted_tokens))
@@ -51,13 +56,13 @@ class ClassificationMetric(TaskMetric):
         if predicted is None:
             # Structural failure: count every ground-truth field as wrong (was silently dropped).
             self.invalid += 1
-            for category in CATEGORIES:
+            for category in self.categories:
                 if category in ground_truth:
                     self.total += 1
                     self.confusion[category][(ground_truth[category], INVALID_LABEL)] += 1
             return
 
-        for category in CATEGORIES:
+        for category in self.categories:
             if category in ground_truth:
                 self.total += 1
                 predicted_value = predicted.get(category, "")
@@ -85,15 +90,15 @@ class ClassificationMetric(TaskMetric):
         except json.JSONDecodeError:
             return None
         result = {}
-        for category in CATEGORIES:
+        for category in self.categories:
             if category in data:
                 result[category] = str(data[category]).lower()
         return result or None
 
     def _confusion_matrices(self) -> Dict[str, Dict[str, Dict[str, int]]]:
         matrices: Dict[str, Dict[str, Dict[str, int]]] = {}
-        for category in CATEGORIES:
-            values = CATEGORY_VALUES[category]
+        for category in self.categories:
+            values = self.values[category]
             matrix = {}
             for true_value in values:
                 row = {pred: self.confusion[category].get((true_value, pred), 0) for pred in values}
@@ -209,39 +214,3 @@ class ExactAnswerMetric(TaskMetric):
         match = re.search(r"(?:Answer:)?\s*([^;\n]+);", text)
         return match.group(1).strip().lower() if match else None
 
-
-class JudgedPostMetric(TaskMetric):
-    """Post + JSON verdict: accuracy = the student's `approve` matches the teacher's;
-    an output whose verdict does not parse counts as wrong and invalid."""
-
-    name = "task_accuracy"
-
-    def __init__(self) -> None:
-        self.correct = 0
-        self.examples = 0
-        self.invalid = 0
-
-    def update(self, predicted_tokens: List[str], ground_truth_response: str) -> None:
-        from library.domain.post_generation_judged import parse_judgment
-        expected = parse_judgment(ground_truth_response)
-        if expected is None:
-            return
-        self.examples += 1
-        predicted = parse_judgment(_tokens_to_text(predicted_tokens))
-        if predicted is None:
-            self.invalid += 1
-            return
-        if predicted["approve"] == expected["approve"]:
-            self.correct += 1
-
-    def result(self) -> MetricResult:
-        accuracy = self.correct / self.examples if self.examples else 0.0
-        validity_rate = (self.examples - self.invalid) / self.examples if self.examples else None
-        return MetricResult(
-            name=self.name,
-            accuracy=accuracy,
-            correct=self.correct,
-            total=self.examples,
-            examples=self.examples,
-            validity_rate=validity_rate,
-        )

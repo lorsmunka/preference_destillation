@@ -11,14 +11,14 @@ from .registry import get_domain, register_domain, registered_domains, as_domain
 from .reddit_comment_sentiment import RedditSentimentDomain
 from .math_word_problem import MathWordProblemDomain
 from .post_generation import PostGenerationDomain
-from .post_generation_judged import PostGenerationJudgedDomain
+from .reddit_comment_with_feedback import RedditCommentWithFeedbackDomain
 from .long_context_recall import LongContextRecallDomain
 
 # Registered singletons — the ergonomic, no-magic-string way to say `domain=...`.
 REDDIT_SENTIMENT = get_domain("reddit_comment_sentiment")
 MATH_WORD_PROBLEM = get_domain("math_word_problem")
 POST_GENERATION = get_domain("post_generation")
-POST_GENERATION_JUDGED = get_domain("post_generation_judged")
+REDDIT_COMMENT_WITH_FEEDBACK = get_domain("reddit_comment_with_feedback")
 LONG_CONTEXT_RECALL = get_domain("long_context_recall")
 
 __all__ = [
@@ -30,11 +30,11 @@ __all__ = [
     "RedditSentimentDomain",
     "MathWordProblemDomain",
     "PostGenerationDomain",
-    "PostGenerationJudgedDomain",
+    "RedditCommentWithFeedbackDomain",
     "LongContextRecallDomain",
     "REDDIT_SENTIMENT",
     "MATH_WORD_PROBLEM",
     "POST_GENERATION",
-    "POST_GENERATION_JUDGED",
+    "REDDIT_COMMENT_WITH_FEEDBACK",
     "LONG_CONTEXT_RECALL",
 ]

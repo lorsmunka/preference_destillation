@@ -6,7 +6,7 @@ from .base import Domain
 from .long_context_recall import LongContextRecallDomain
 from .math_word_problem import MathWordProblemDomain
 from .post_generation import PostGenerationDomain
-from .post_generation_judged import PostGenerationJudgedDomain
+from .reddit_comment_with_feedback import RedditCommentWithFeedbackDomain
 from .reddit_comment_sentiment import RedditSentimentDomain
 
 _REGISTRY: Dict[str, Domain] = {}
@@ -36,5 +36,5 @@ def as_domain(value: Union[str, Domain]) -> Domain:
     return get_domain(value)
 
 
-for _domain in (RedditSentimentDomain(), MathWordProblemDomain(), PostGenerationDomain(), PostGenerationJudgedDomain(), LongContextRecallDomain()):
+for _domain in (RedditSentimentDomain(), MathWordProblemDomain(), PostGenerationDomain(), RedditCommentWithFeedbackDomain(), LongContextRecallDomain()):
     register_domain(_domain)
