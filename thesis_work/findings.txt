@@ -236,6 +236,18 @@ CODE FACTS THAT GATE THE PROGRAMME (verified from source 2026-08-31)
   difference between "we ran 5 seeds" and "we ran 50".
 - Student parameter split at the default config: see F-68a.
 
+F-V1   VIRÁG (long_context_recall) x GEMMA 4 12B: TEACHER IS A NEAR-ORACLE
+       Generated 2026-09-17: 4,968 examples, 156 batches, 43 MB npz, 0 rejected by the
+       596-token vocabulary, ~1 s/example (NF4, no thinking), mean 4.1 answer tokens.
+       Teacher accuracy against the generator's ground truth: 4,962/4,968 = 99.88%.
+       Every error is the same confusion: a "sport" question answered with an INSTRUMENT
+       (6/483 on sport; 100% on the other nine attributes). Cause: the two templates share
+       the verb "plays" ("plays tennis on weekends" vs "plays the trumpet"). Kept as is —
+       it is the one explainable ambiguity in the domain, and the student inherits exactly it.
+       WHY IT MATTERS: on this domain the teacher's errors are known and tiny, so a student's
+       mistakes are its own retrieval failures, not inherited noise — the clean case for
+       measuring what a 3-layer/1-head attention can find in a 200-300 token page.
+
 ------------------------------------------------------------------------
 OPEN NUMERIC INCONSISTENCIES — resolve before any of this is written up
 ------------------------------------------------------------------------

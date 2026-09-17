@@ -1,9 +1,6 @@
 RUNNING   (2026-09-17, user present)
 - dashboard          python progress.py  ->  http://localhost:8765
-- Virág data gen     python generate_data.py  (JOBS: long_context_recall x Gemma 4 12B NF4, 5000 ex)
-                     started ~13:00 · log: generate_virag_gemma4.log · ~1 s/example, ~85 min
-                     -> batches/long_context_recall/google_gemma-4-12B-it/batch_N.npz
-                     Stop: dashboard button (STOP file); resume by re-running the same command.
+- (nothing else)
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
@@ -17,6 +14,8 @@ TOMORROW
 - The 162 GB of legacy .jsonl batches still sit beside the .npz files — delete when ready.
 
 FINISHED
+- Virág data gen     2026-09-17 · Gemma 4 12B NF4 · 4,968 examples / 156 batches / 43 MB ·
+                     0 rejected · teacher 99.88% vs ground truth (F-V1) · ~85 min
 - E-01 reddit+math   2026-09-15 18:00 -> 2026-09-16 · 100/100 runs · null on both domains,
                      noise floor +/-1.8 pp · experiments/results/e01_anneal_direction.csv
 - Gemma 4 download   2026-09-15 19:35 -> 19:50 · google/gemma-4-12B-it-qat-w4a16-ct (10.3 GB,
