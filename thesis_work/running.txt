@@ -1,9 +1,11 @@
-RUNNING   (2026-09-17, user present)
-- dashboard          python progress.py  ->  http://localhost:8765
+RUNNING
+- (nothing — paused 2026-09-17 afternoon; user away)
+
+STOPPED, RESUMABLE
 - E-01 post-gen      python experiments/anneal_direction.py postgen
-                     started 2026-09-17 ~14:40 · log: experiments/e01_postgen.log
-                     15 runs (5 arms x 3 seeds), ~3 h each — multi-session; Stop via the dashboard,
-                     re-run the same command to resume. Results -> e01_anneal_direction.csv.
+                     first run (e01-postgen-ce-to-kl-s1) stopped gracefully after epoch 6/10
+                     with a temp checkpoint; re-running the command resumes it. 0/15 done.
+- dashboard          python progress.py
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
