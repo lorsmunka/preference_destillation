@@ -6,3 +6,4 @@ reddit_comment_sentiment/tone,reddit_comment_sentiment,tone,google_gemma-3-4b-it
 reddit_comment_sentiment/sentiment,reddit_comment_sentiment,sentiment,google_gemma-3-4b-it,256,256,0.088575,1.092616,0.000988,0.796875
 reddit_comment_sentiment/safety,reddit_comment_sentiment,safety,google_gemma-3-4b-it,256,256,0.031518,1.032020,0.000028,0.929688
 reddit_comment_sentiment/toxicity,reddit_comment_sentiment,toxicity,google_gemma-3-4b-it,256,256,0.019718,1.019914,0.000010,0.957031
+long_context_recall,long_context_recall,all,google_gemma-4-12B-it,256,1070,0.000140,1.000140,0.000003,1.000000
