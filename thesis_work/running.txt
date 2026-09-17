@@ -1,8 +1,7 @@
-RUNNING   (2026-09-17 evening, user present)
-- dashboard          python progress.py  ->  http://localhost:8765
-- E-01 post-gen      python experiments/anneal_direction.py postgen
-                     resumed from run 1 epoch 6 · log: experiments/e01_postgen.log · 15 runs x ~3 h
-                     Stop via the dashboard; the same command resumes.
+RUNNING   (nothing — shut down 2026-09-17 21:18, user asleep)
+- E-01 post-gen      STOPPED at run 2 of 15 (ce-to-kl seed 2, epoch 4); resume checkpoint saved.
+                     Resume: python experiments/anneal_direction.py postgen   (+ python progress.py)
+                     log: experiments/e01_postgen.log · ~3 h per run
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
