@@ -129,35 +129,40 @@ def describe(domain_name, tokenizers, entropies):
 
 
 PAGE = """<!doctype html><html><head><meta charset="utf-8"><title>Domains</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#eceff2;--panel:#fff;--ink:#16212c;--dim:#5b6b7a;--faint:#8797a5;--rule:#d3dbe2;--acc:#1c5896;--code:#151d25;--codeink:#d3dce4;--ok:#2f7a3d;--bad:#a83a3a;--mono:"IBM Plex Mono",Consolas,monospace}
-@media(prefers-color-scheme:dark){:root{--bg:#101720;--panel:#18212b;--ink:#e1e8ee;--dim:#a1b1bf;--faint:#74869a;--rule:#2b3743;--acc:#6ca9e8;--code:#0b1117;--ok:#7fd48a;--bad:#f2a8a8}}
-body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.55 -apple-system,"Segoe UI",sans-serif}
-.wrap{max-width:1040px;margin:0 auto;padding:26px 24px 60px}h1{font-size:21px;margin:0 0 4px}.sub{color:var(--faint);font-size:12.5px;margin:0 0 18px}
-.tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--rule);margin-bottom:22px}.tab{background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;padding:8px 13px;font:inherit;font-size:13.5px;color:var(--dim);cursor:pointer}
-.tab[aria-selected=true]{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}
-h2{font-size:17px;margin:0 0 4px}h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:22px 0 8px}
-p{max-width:70ch;color:var(--dim);margin:0 0 10px}
-table{border-collapse:collapse;width:100%;background:var(--panel);font-size:13px;border:1px solid var(--rule);border-radius:4px}th{text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);padding:7px 11px;border-bottom:1px solid var(--rule)}td{padding:6px 11px;border-bottom:1px solid var(--rule);vertical-align:top}tr:last-child td{border-bottom:none}td.m{font-family:var(--mono);font-size:12px}td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
-pre{background:var(--code);color:var(--codeink);padding:12px 14px;border-radius:4px;font:12.5px/1.55 var(--mono);white-space:pre-wrap;word-break:break-word;margin:0 0 10px;max-height:340px;overflow:auto}
-.ex{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ex pre{max-height:380px}
-select{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--panel);color:var(--ink);max-width:100%}
-.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}.badge{display:inline-block;font:11px var(--mono);padding:2px 7px;border:1px solid var(--rule);border-radius:3px;color:var(--dim);margin-right:6px}
+:root{--bg:#f5f5f5;--surface:#fff;--ink:rgba(0,0,0,.87);--dim:rgba(0,0,0,.6);--faint:rgba(0,0,0,.38);--rule:rgba(0,0,0,.12);--primary:#1565c0;--primary-soft:#e3f2fd;--code:#263238;--codeink:#eceff1;--ok:#2e7d32;--bad:#c62828;--mono:"Roboto Mono",Consolas,monospace;--shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.24)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 Roboto,"Segoe UI",sans-serif}
+.appbar{background:var(--primary);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2)}.appbar .in{max-width:1040px;margin:0 auto;padding:18px 24px 0}
+.appbar h1{font-size:20px;font-weight:500;margin:0;letter-spacing:.01em}.appbar .sub{color:rgba(255,255,255,.75);font-size:12.5px;margin:2px 0 12px}
+.tabs{display:flex;flex-wrap:wrap;gap:0}.tab{background:none;border:none;border-bottom:2px solid transparent;padding:12px 18px;font:500 13px Roboto,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);cursor:pointer;transition:background .15s}
+.tab:hover{background:rgba(255,255,255,.08)}.tab[aria-selected=true]{color:#fff;border-bottom-color:#fff}
+.wrap{max-width:1040px;margin:0 auto;padding:22px 24px 60px}
+.card{background:var(--surface);border-radius:8px;box-shadow:var(--shadow);padding:18px 22px;margin:0 0 16px}
+h2{font-size:20px;font-weight:500;margin:0 0 6px}h3{font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+p{max-width:72ch;color:var(--dim);margin:0 0 10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th{text-align:left;font-size:12px;font-weight:500;color:var(--dim);padding:8px 12px;border-bottom:1px solid var(--rule)}td{padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top}tr:last-child td{border-bottom:none}td.m{font-family:var(--mono);font-size:12.5px}td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+pre{background:var(--code);color:var(--codeink);padding:12px 14px;border-radius:6px;font:12.5px/1.55 var(--mono);white-space:pre-wrap;word-break:break-word;margin:0 0 10px;max-height:340px;overflow:auto}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:14px}.ex pre{max-height:380px}
+select{font:14px Roboto,sans-serif;padding:9px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--surface);color:var(--ink);max-width:100%;outline:none}select:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-soft)}
+.ok{color:var(--ok);font-weight:500}.bad{color:var(--bad);font-weight:500}
+.badge{display:inline-block;font:500 11px Roboto,sans-serif;letter-spacing:.04em;padding:3px 10px;border-radius:12px;background:var(--primary-soft);color:var(--primary);margin-right:6px}
 @media(max-width:760px){.ex{grid-template-columns:1fr}}
-</style></head><body><div class="wrap">
-<h1>Domains</h1><p class="sub">Every registered task, its teacher prompt, vocabulary, datasets and real examples · generated __DATE__ by domains_report.py · local file</p>
-<div class="tabs" id="tabs"></div><div id="panel"></div>
+</style></head><body>
+<div class="appbar"><div class="in"><h1>Domains</h1><p class="sub">Every registered task, its teacher prompt, vocabulary, datasets and real examples · generated __DATE__ by domains_report.py · local file</p><div class="tabs" id="tabs"></div></div></div>
+<div class="wrap"><div id="panel"></div>
 <script>
 const DOMAINS=__DATA__;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const f=(v,d=3)=>v==null?'—':Number(v).toFixed(d);
 function render(i){const d=DOMAINS[i];document.querySelectorAll('.tab').forEach((t,j)=>t.setAttribute('aria-selected',j===i));
- let h=`<h2>${esc(d.name)} <span class="badge">${esc(d.class)}</span></h2><p>${esc(d.doc)}</p>`;
- h+=`<h3>Spec</h3><table><tr><th>stop token</th><th>max steps</th><th>max input tokens</th><th>task metric</th><th>structural check</th></tr><tr><td class="m">${esc(JSON.stringify(d.stop_token))}</td><td class="n">${d.max_steps}</td><td class="n">${d.max_input_tokens}</td><td class="m">${esc(d.metric)}</td><td>${d.structural_validity?'yes':'no (free-form)'}</td></tr></table>`;
- h+=`<h3>Teacher prompt</h3><pre>${esc(d.prompt)}</pre>`;
- h+=`<h3>Datasets on disk</h3><table><tr><th>teacher</th><th class="n">batches</th><th class="n">examples</th><th class="n">output vocab</th><th class="n">teacher H (nats)</th><th class="n">exp(H)</th><th class="n">one-hot steps</th></tr>`+d.datasets.map(s=>`<tr><td class="m">${esc(s.teacher||'(none yet — vocab shown for the default teacher)')}</td><td class="n">${s.batches}</td><td class="n">${s.examples.toLocaleString()}</td><td class="n">${s.vocab_size}</td><td class="n">${f(s.entropy_nats,4)}</td><td class="n">${f(s.exp_H,3)}</td><td class="n">${s.one_hot==null?'—':(s.one_hot*100).toFixed(1)+'%'}</td></tr>`).join('')+`</table>`;
- const fk=Object.keys(d.fields_exp_H||{});if(fk.length){h+=`<h3>exp(H) per output field</h3><table><tr>${fk.map(k=>`<th>${esc(k)}</th>`).join('')}</tr><tr>${fk.map(k=>`<td class="n">${f(d.fields_exp_H[k],3)}</td>`).join('')}</tr></table>`;}
- d.datasets.forEach((s,si)=>{if(!s.examples_list.length)return;h+=`<h3>Examples — ${esc(s.teacher)}</h3><p>Pick one of the first ${s.examples_list.length} stored examples. Input on the left, the teacher's response on the right${s.examples_list[0].truth!==undefined?', with the generator\\'s ground truth':''}.</p><select id="sel-${i}-${si}" onchange="showEx(${i},${si},this.value)">${s.examples_list.map((e,k)=>`<option value="${k}">${k+1}. ${esc(e.input.replace(/\\s+/g,' ').slice(0,90))}${e.correct===false?'  ✗':''}</option>`).join('')}</select><div id="ex-${i}-${si}" style="margin-top:8px"></div>`;});
+ let h=`<div class="card"><h2>${esc(d.name)} <span class="badge">${esc(d.class)}</span></h2><p>${esc(d.doc)}</p></div>`;
+ h+=`<div class="card"><h3>Spec</h3><table><tr><th>stop token</th><th>max steps</th><th>max input tokens</th><th>task metric</th><th>structural check</th></tr><tr><td class="m">${esc(JSON.stringify(d.stop_token))}</td><td class="n">${d.max_steps}</td><td class="n">${d.max_input_tokens}</td><td class="m">${esc(d.metric)}</td><td>${d.structural_validity?'yes':'no (free-form)'}</td></tr></table></div>`;
+ h+=`<div class="card"><h3>Teacher prompt</h3><pre>${esc(d.prompt)}</pre></div>`;
+ h+=`<div class="card"><h3>Datasets on disk</h3><table><tr><th>teacher</th><th class="n">batches</th><th class="n">examples</th><th class="n">output vocab</th><th class="n">teacher H (nats)</th><th class="n">exp(H)</th><th class="n">one-hot steps</th></tr>`+d.datasets.map(s=>`<tr><td class="m">${esc(s.teacher||'(none yet — vocab shown for the default teacher)')}</td><td class="n">${s.batches}</td><td class="n">${s.examples.toLocaleString()}</td><td class="n">${s.vocab_size}</td><td class="n">${f(s.entropy_nats,4)}</td><td class="n">${f(s.exp_H,3)}</td><td class="n">${s.one_hot==null?'—':(s.one_hot*100).toFixed(1)+'%'}</td></tr>`).join('')+`</table>`;
+ const fk=Object.keys(d.fields_exp_H||{});if(fk.length){h+=`<h3 style="margin-top:16px">exp(H) per output field</h3><table><tr>${fk.map(k=>`<th>${esc(k)}</th>`).join('')}</tr><tr>${fk.map(k=>`<td class="n">${f(d.fields_exp_H[k],3)}</td>`).join('')}</tr></table>`;}
+ h+=`</div>`;
+ d.datasets.forEach((s,si)=>{if(!s.examples_list.length)return;h+=`<div class="card"><h3>Examples — ${esc(s.teacher)}</h3><p>Pick one of the first ${s.examples_list.length} stored examples. Input on the left, the teacher's response on the right${s.examples_list[0].truth!==undefined?', with the generator\\'s ground truth':''}.</p><select id="sel-${i}-${si}" onchange="showEx(${i},${si},this.value)">${s.examples_list.map((e,k)=>`<option value="${k}">${k+1}. ${esc(e.input.replace(/\\s+/g,' ').slice(0,90))}${e.correct===false?'  ✗':''}</option>`).join('')}</select><div id="ex-${i}-${si}" style="margin-top:12px"></div></div>`;});
  document.getElementById('panel').innerHTML=h;d.datasets.forEach((s,si)=>{if(s.examples_list.length)showEx(i,si,0);});}
 function showEx(i,si,k){const e=DOMAINS[i].datasets[si].examples_list[k];let extra='';
  if(e.truth!==undefined)extra+=`<div style="margin:6px 0">ground truth: <b class="m">${esc(e.truth)}</b> <span class="badge">${esc(e.attribute)}</span> ${e.correct?'<span class="ok">teacher correct</span>':'<span class="bad">teacher wrong</span>'}</div>`;
