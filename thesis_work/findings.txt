@@ -248,6 +248,18 @@ F-V1   VIRÁG (long_context_recall) x GEMMA 4 12B: TEACHER IS A NEAR-ORACLE
        mistakes are its own retrieval failures, not inherited noise — the clean case for
        measuring what a 3-layer/1-head attention can find in a 200-300 token page.
 
+F-E1   E-01: ANNEAL DIRECTION IS A NULL AT exp(H)~1 AND A STRICT ORDERING AT exp(H) 2.73
+       Five kl_ratio arms (0.1->0.9, 0.9->0.1, flat 0.5, pure CE, pure KL). Reddit and
+       math, 10 seeds each: no arm separates from any other by more than one seed std
+       on task accuracy or overlap (noise floor +/-1.8 pp). Post-gen, 3 seeds: final
+       overlap pure KL .305 > CE->KL .298 > flat .291 > KL->CE .284 > pure CE .264 with
+       seed std 0.001-0.002; mean target rank 694 / 743 / 769 / 806 / 1071. Task
+       accuracy there is structural validity and sits at 0.99-1.00 on all arms.
+       WHY IT MATTERS: the same dial that does nothing on the near-deterministic domains
+       orders the arms at ~7 seed std on the high-entropy one, in the direction "more KL
+       late is better". That is the entropy-indexed claim in one table, and the reason
+       every later experiment reports fidelity, not only accuracy, on post-gen.
+
 ------------------------------------------------------------------------
 OPEN NUMERIC INCONSISTENCIES — resolve before any of this is written up
 ------------------------------------------------------------------------

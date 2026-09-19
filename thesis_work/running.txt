@@ -1,8 +1,5 @@
-RUNNING   (2026-09-19, user present)
+RUNNING   (2026-09-20, user present)
 - dashboard          python progress.py  ->  http://localhost:8765
-- E-01 post-gen      python experiments/anneal_direction.py postgen
-                     resumed from run 9 epoch 7 (flat-50 seed 2) · log: experiments/e01_postgen.log · 7 runs left
-                     Stop via the dashboard; the same command resumes.
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
@@ -17,6 +14,8 @@ TOMORROW
 FINISHED
 - Virág data gen     2026-09-17 · Gemma 4 12B NF4 · 4,968 examples / 156 batches / 43 MB ·
                      0 rejected · teacher 99.88% vs ground truth (F-V1) · ~85 min
+- E-01 post-gen      2026-09-17 -> 2026-09-20 (stopped nightly) · 15/15 runs · fidelity orders the
+                     arms strictly, more KL late = better (F-E1) · experiments/results/e01_anneal_direction.csv
 - E-01 reddit+math   2026-09-15 18:00 -> 2026-09-16 · 100/100 runs · null on both domains,
                      noise floor +/-1.8 pp · experiments/results/e01_anneal_direction.csv
 - Gemma 4 download   2026-09-15 19:35 -> 19:50 · google/gemma-4-12B-it-qat-w4a16-ct (10.3 GB,

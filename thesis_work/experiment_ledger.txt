@@ -16,7 +16,7 @@ E-00 DOMAIN ENTROPY BASELINE                              [DONE 2026-09-15]
      1.02. Seven points on the axis instead of three. Results in
      experiments/results/domain_entropy.csv.
 
-E-01 ANNEALING DIRECTION x ENTROPY            [DONE reddit+math 2026-09-16 · post-gen PLANNED]
+E-01 ANNEALING DIRECTION x ENTROPY            [DONE 2026-09-20 · all three domains]
      Does it matter whether the loss anneals CE->KL or KL->CE, and does
      the answer depend on domain entropy? Idea #3 called direction
      trivial; nothing in the literature indexes it by entropy, so this is
@@ -31,9 +31,18 @@ E-01 ANNEALING DIRECTION x ENTROPY            [DONE reddit+math 2026-09-16 · po
      standard deviation, on accuracy or on fidelity — exactly what exp(H)
      of 1.02 and 1.003 predicted. The measured noise floor (+/-1.8 pp
      reddit, +/-1.7 pp math at n=10) is the number every later row is
-     judged against. Post-gen arms (3 seeds, 3 h/run) are the decisive
-     half and are still to run. Results: experiments/results/
-     e01_anneal_direction.csv. Script: experiments/anneal_direction.py.
+     judged against. POST-GEN (exp(H) 2.73, 3 seeds, 15 runs, 2026-09-17
+     -> 09-20): task accuracy (structural validity) is 0.99-1.00 on every
+     arm and says nothing; the fidelity metrics separate cleanly and
+     monotonically. Final overlap: pure KL .305 > CE->KL .298 > flat .291
+     > KL->CE .284 > pure CE .264, seed std 0.001-0.002; mean target rank
+     694 / 743 / 769 / 806 / 1071 (std 6-15). Direction matters here:
+     CE->KL beats KL->CE by 1.4 pp overlap and 62 rank at ~7 seed std,
+     and every step toward more KL late helps. So the entropy split is
+     real: on exp(H)~1 domains the arms are indistinguishable, on the
+     2.73 domain the ordering is strict — the row the study is built on
+     (F-E1). Results: experiments/results/e01_anneal_direction.csv.
+     Script: experiments/anneal_direction.py.
 
 E-02 MULTI-TOKEN PREDICTION UNDER KD                      [PLANNED]
      Meta (2404.19737) found MTP hurts below ~1.3B under hard labels, and
