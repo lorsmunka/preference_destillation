@@ -1,5 +1,4 @@
-RUNNING   (2026-09-20, user present)
-- dashboard          python progress.py  ->  http://localhost:8765
+RUNNING   (nothing — shut down 2026-09-20 00:50, user away)
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
