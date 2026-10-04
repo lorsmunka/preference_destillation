@@ -38,8 +38,10 @@ VALIDATION (an item that fails any check is dropped, reason logged)
     the slice is S07, which is about remainders)
   - every numeric literal in a function appears in its text, as digits or
     as a number word (two, dozen, twice, half...); start-up range 0..99
-  - the text's unused numbers match the label: distractor "number" needs
-    exactly one unused number, every other label needs zero
+  - the text's unused DIGIT numbers match the label: distractor "number"
+    needs exactly one, every other label needs zero (number words in prose,
+    "the two classes", are fine; changed after the pilot, where writers
+    twisted sentences to avoid them)
   - 1 to 3 follow-ups optional; each must read state (no standalone question)
 
 SLICES (10 cells, one writing agent pair each)
@@ -93,9 +95,12 @@ PRUNING (in this order; every stage logs in / out / dropped-by-reason)
   5. test leak   against any of the 1,000 SVAMP problems: sequence ratio
                  > 0.8, or trigram Jaccard > 0.5 (stricter on purpose)
   6. shape cap   shape = the operations in solve(), in the order computed,
-                 follow-ups after "|", e.g. "add>mul|sub". No shape above 8% of the kept
-                 items; the excess is dropped most-redundant first (highest
-                 nearest-neighbour Jaccard), seeded
+                 follow-ups after "|", e.g. "add>mul|sub". Inside each slice no
+                 full shape above 25% of the slice; the excess is dropped most-
+                 redundant first (highest nearest-neighbour sequence ratio).
+                 Changed after the pilot from a global 8% cap on the problem
+                 shape, which would have cut most one-step subtraction (S01-S04
+                 all share it; SVAMP is 77% one-step)
   Counts at each stage go to items/build_log.json — the report reads that.
 
 SPLITS
