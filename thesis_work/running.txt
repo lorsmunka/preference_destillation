@@ -1,5 +1,38 @@
 RUNNING   (nothing — shut down 2026-09-20 00:50, user away)
 
+PLAN   (agreed 2026-10-04 — practical turn: two demo domains + one standardised table)
+Direction: build the math tutor and the code finder as model + harness agents, run the
+same E-01 arms on them, and let the combined table produce the findings. Math first.
+
+Math tutor design (agreed):
+- Item = word problem + answer + Python function that computes it, plus up to 3
+  follow-ups, each with its own function taking the previous state. Answer = what the
+  code returns; coherence across follow-ups is checked by execution, never trusted.
+- Writing: ~10 style/sub-domain agents, each owning a slice (taxonomy cell: change /
+  combine / compare / equal groups / partition, unknown position, grade band, distractor
+  style, contexts). Two sources: agents search online for datasets/exemplars, agents
+  write from memory conditioned on exemplars. Claude writes inputs; Gemma 4 12B stays teacher.
+- Dedup: normalise (numbers -> N, names -> NAME), drop exact matches and > ~0.8 word-
+  trigram Jaccard; second dedup on the function's operation chain for structure balance.
+- Real datasets (SVAMP, ASDiv, MAWPS, GSM8K grade 2-4 integer subset): exemplars + the
+  real-world held-out test. Never trained on. Also hold out whole operation-chain shapes.
+- No scaffold in the prompt (v1 handed over A=? B=? C=A+B=?). Start with 1-2 digit numbers.
+- Provenance stated in the thesis (TinyGSM precedent, 2312.09241).
+
+Steps (one commit each, each approved):
+ 1. Spec the math_tutor domain in the ledger (schema, slices, dedup, prompts, outputs, holdouts)
+ 2. Datasets: download, filter, split exemplars / real test, licences
+ 3. Schema + validator module (execute functions, state flow, normalise, dedup), 20 hand items
+ 4. Writing workflow: ~10 slice agents -> 10k items (budget OK; needs explicit go for fan-out)
+ 5. Gemma 4 check on 50 items vs function answers; pick student output format
+ 6. math_tutor Domain class, vocabulary, metric, templateness baseline, domains page
+ 7. Data generation through Gemma 4 (~3 h GPU, user present)
+ 8. Training: five E-01 arms x 3 seeds + held-out structures + real-benchmark eval
+ 9. Tutor harness: multi-turn loop with state, live demo
+10. Code finder: steps 5-9 on code_recall (fix prompt first: 2/8 explained instead of answering)
+11. Write-up from the combined table
+After the work: a LOCAL html page explaining each step taken, visual where it helps (never published).
+
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
   (no KV cache -> corrupted tokens under bitsandbytes); fixed, verified against
