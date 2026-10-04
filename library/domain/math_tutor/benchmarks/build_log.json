@@ -66,10 +66,20 @@
       "in_range": 1449
     },
     "harvest": {
-      "downloaded": 0,
+      "downloaded": 918,
       "dropped_by_reason": {},
-      "in_range": 0,
-      "by_site": {}
+      "in_range": 918,
+      "by_site": {
+        "engageny.org": 325,
+        "im.kendallhunt.com": 184,
+        "thenational.academy": 167,
+        "gov.uk": 158,
+        "ies.ed.gov": 28,
+        "nationsreportcard.gov": 21,
+        "tasks.illustrativemathematics.org": 19,
+        "dera.ioe.ac.uk": 15,
+        "en.wikibooks.org": 1
+      }
     }
   },
   "rules": {
@@ -108,50 +118,68 @@
     }
   },
   "seeds": {
-    "candidates": 2608,
+    "candidates": 3526,
     "dropped_by_reason": {
-      "exact duplicate": 768,
-      "near-duplicate": 442,
-      "too close to a SVAMP problem": 88
+      "exact duplicate": 811,
+      "near-duplicate": 473,
+      "too close to a SVAMP problem": 89
     },
-    "count": 1310,
+    "count": 2153,
     "by_set": {
       "asdiv": 1067,
-      "mawps": 243
+      "mawps": 243,
+      "harvest": 843
     },
     "by_steps": {
-      "1": 915,
-      "2": 346,
-      "3": 49
+      "1": 1531,
+      "2": 539,
+      "3": 83
     },
     "by_shape": {
-      "sub": 341,
-      "add": 262,
-      "mul": 200,
-      "div": 112,
-      "add>add": 107,
-      "sub>sub": 46,
-      "sub>add": 36,
-      "add>sub": 32,
-      "add>mul": 26,
-      "add>div": 22,
-      "sub>div": 21,
-      "mul>add": 21,
-      "sub>mul": 20,
-      "add>add>sub": 19,
-      "mul>sub": 11,
-      "add>add>add": 9,
-      "mul>mul>add": 8,
-      "mul>mul": 3,
+      "sub": 505,
+      "add": 367,
+      "mul": 348,
+      "div": 303,
+      "add>add": 125,
+      "sub>sub": 70,
+      "sub>add": 50,
+      "mul>add": 47,
+      "add>sub": 44,
+      "add>mul": 40,
+      "mul>sub": 34,
+      "sub>div": 28,
+      "add>div": 27,
+      "sub>mul": 27,
+      "add>add>sub": 21,
+      "mul>mul>add": 14,
+      "add>add>add": 13,
+      "mul>div": 13,
+      "div>add": 11,
+      "mul>mul": 9,
+      "div>mul": 8,
+      "mod": 8,
+      "mul>mul>sub": 5,
+      "add>add>mul": 4,
       "add>sub>add": 3,
-      "add>add>mul": 3,
-      "mul>mul>sub": 2,
+      "div>sub": 3,
+      "div>div": 3,
+      "sub>mul>add": 2,
+      "add>mul>sub": 2,
+      "mul>sub>div": 2,
+      "mul>add>add": 2,
+      "add>div>mul": 2,
+      "mul>div>add": 2,
       "add>sub>div": 1,
-      "div>mul": 1,
       "sub>sub>add": 1,
       "sub>add>sub": 1,
       "sub>sub>sub": 1,
-      "sub>mul>add": 1
+      "sub>add>div": 1,
+      "add>add>div": 1,
+      "mul>sub>sub": 1,
+      "mul>add>sub": 1,
+      "mul>add>mul": 1,
+      "mul>mul>mul": 1,
+      "div>mul>add": 1
     }
   }
 }
