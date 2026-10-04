@@ -33,11 +33,14 @@ class CodeRecallDomain(Domain):
     ]
 
     def teacher_prompt(self, text: str) -> str:
+        # Gemma 4 explained itself first on 2/8 sanity examples and drops the final ";" unless
+        # it is shown one (as on math_tutor): one example line, and no explanation.
         return (
             "Read the numbered Python program and answer the question with one line number, "
-            "identifier or value taken from it. Format exactly: Answer: <value>;\n\n"
-            f"Program:\n{text}\n\n"
-            "Answer:"
+            "identifier or value taken from it. Reply with exactly one line: Answer: followed by "
+            "the value and a semicolon, for example:\nAnswer: 12;\n"
+            "No explanation, nothing after the semicolon.\n\n"
+            f"Program:\n{text}"
         )
 
     def task_metric(self) -> ExactAnswerMetric:
@@ -45,6 +48,10 @@ class CodeRecallDomain(Domain):
 
     def structural_validity(self, output: str) -> bool:
         return re.search(r"Answer:\s*[^;\n]+;", "Answer:" + output) is not None
+
+    def answer_matches(self, response: str, ground_truth) -> Optional[bool]:
+        match = re.search(r"Answer:\s*([^;\n]+)", response)
+        return match is not None and match.group(1).strip().lower() == str(ground_truth).strip().lower()
 
     def build_corpus(self, count: Optional[int] = None) -> None:
         from .corpus import build_corpus
