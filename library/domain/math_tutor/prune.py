@@ -8,7 +8,8 @@ in, how many went out, and why each dropped item was dropped:
                words in the same order; reordered or reworded problems survive)
   5 test leak  against any of the 1,000 SVAMP problems: word-sequence ratio > 0.8, or
                word-trigram Jaccard > 0.5 (stricter: a shared skeleton is enough)
-  6 shape cap  no problem shape above 8% of the kept items; the most redundant go first
+  6 shape cap  inside a slice, no full shape (follow-ups included) above 25% of the
+               slice; the most redundant go first
 
 Then each kept item gets its split: held-out shape, test (10% per slice) or train.
 
@@ -38,8 +39,8 @@ BENCHMARKS_DIR = PACKAGE_DIR / "benchmarks"
 NEAR_DUPLICATE = 0.8       # word-sequence ratio
 TOO_CLOSE_TO_TEST = 0.5    # word-trigram Jaccard, on top of NEAR_DUPLICATE against SVAMP
 REDUNDANCY_FLOOR = 0.5     # shape cap: nearest neighbours below this count as 0
-SHAPE_CAP_SHARE = 0.08
-SHAPE_CAP_FLOOR = 50       # below ~600 items the 8% cap would bite on a handful of items
+SHAPE_CAP_SHARE = 0.25     # of the item's slice, per full shape
+SHAPE_CAP_FLOOR = 50       # small slices are not capped below this
 TEST_SHARE = 0.10
 HELDOUT_SHAPES: List[str] = []  # problem shapes never trained on; chosen after the writing run
 SEED = 0
@@ -172,16 +173,21 @@ def prune() -> None:
             clean.append(item)
     pipeline.record("test leak", distinct, clean, drops)
 
-    # 6 shape cap: the items most like another kept item are dropped first
-    cap = max(math.ceil(SHAPE_CAP_SHARE * len(clean)), SHAPE_CAP_FLOOR)
+    # 6 shape cap, inside each slice on the full shape (follow-ups included): one structure
+    # may not crowd out the rest of its slice. Across slices a shared shape is legitimate
+    # (S01-S04 are all one-step add/sub), so there is no global cap. Within a crowded
+    # cell, the items most like another kept item are dropped first.
+    slice_sizes = Counter(item["slice"] for item in clean)
+    caps = {name: max(math.ceil(SHAPE_CAP_SHARE * size), SHAPE_CAP_FLOOR) for name, size in slice_sizes.items()}
     redundancy_index = WordSequenceIndex(REDUNDANCY_FLOOR, (words_by_id[item["id"]] for item in clean))
     for item in clean:
         redundancy_index.add(item["id"], words_by_id[item["id"]])
     by_shape = defaultdict(list)
     for item in clean:
-        by_shape[item["problem_shape"]].append(item)
+        by_shape[(item["slice"], item["shape"])].append(item)
     over_cap_ids, drops = set(), []
-    for shape, shape_items in by_shape.items():
+    for (slice_name, shape), shape_items in sorted(by_shape.items()):
+        cap = caps[slice_name]
         if len(shape_items) <= cap:
             continue
         redundancy = {}
@@ -193,9 +199,9 @@ def prune() -> None:
         for item in ranked[:len(shape_items) - cap]:
             over_cap_ids.add(item["id"])
             neighbour, score = redundancy[item["id"]]
-            drops.append(drop_record(item, "shape over cap", f"{shape}: nearest {neighbour} sequence={score:.2f}"))
+            drops.append(drop_record(item, "shape over cap", f"{slice_name} {shape}: nearest {neighbour} sequence={score:.2f}"))
     capped = [item for item in clean if item["id"] not in over_cap_ids]
-    pipeline.record("shape cap", clean, capped, drops, {"cap": cap})
+    pipeline.record("shape cap", clean, capped, drops, {"cap_by_slice": dict(sorted(caps.items()))})
 
     # splits, by family, so later rewordings and renumberings follow their original
     families_by_slice = defaultdict(list)

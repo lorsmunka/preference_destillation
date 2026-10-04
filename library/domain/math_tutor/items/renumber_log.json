@@ -2,16 +2,19 @@
   "built": "2026-10-04",
   "copies_per_item_target": 3,
   "seed": 0,
-  "items": 20,
-  "copies": 60,
+  "items": 169,
+  "copies": 499,
   "outcomes": {
-    "ok": 20
+    "ok": 167,
+    "a written number is also implied by a word": 2
   },
   "items_by_copies_made": {
-    "3": 20
+    "0": 2,
+    "1": 1,
+    "3": 166
   },
   "copies_by_split": {
-    "test": 30,
-    "train": 30
+    "train": 438,
+    "test": 61
   }
 }

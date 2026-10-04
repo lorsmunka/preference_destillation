@@ -22,7 +22,7 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .items import TENS, UNITS, constants_allowed, text_numbers, validate
+from .items import TENS, UNITS, code_literals, constants_allowed, digit_numbers, text_numbers, validate
 
 ITEMS_DIR = Path(__file__).resolve().parent / "items"
 COPIES_PER_ITEM = 3
@@ -67,11 +67,15 @@ def slots_of(item: Dict) -> Optional[List[int]]:
     """The values that can change, or None when a value is ambiguous: written in the text
     but also implied by a word like "twice" somewhere, so the code's copy of it could be either."""
     texts = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
+    sources = [item["solve"]] + [follow_up["solve"] for follow_up in item["follow_ups"]]
+    used = {value for source in sources for value in code_literals(source)}
     written = {value for text in texts for value in text_numbers(text) if value > 1}
+    digits = {value for text in texts for value in digit_numbers(text) if value > 1}
+    slots = (written & used) | (digits - used)   # the numbers the code uses, plus digit distractors
     implied = set().union(*(constants_allowed(text) for text in texts))
-    if written & implied:
+    if slots & implied:
         return None
-    return sorted(written)
+    return sorted(slots)
 
 
 def draw(old: int, taken: set, random_generator: random.Random) -> Optional[int]:

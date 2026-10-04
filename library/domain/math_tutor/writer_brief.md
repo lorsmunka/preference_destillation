@@ -19,7 +19,7 @@ and some are given follow-up questions in a conversation, so the rules below mat
 - `id`: the prefix you were given, then a 4-digit counter.
 - `slice`, `unknown`: from the slice table below.
 - `grade`: 2, 3 or 4. `context`: one word for the setting (bakery, farm, bus...).
-- `distractor`: `none` | `number` (exactly one extra number the solution does not use) |
+- `distractor`: `none` | `number` (exactly one extra number, written in digits, that the solution does not use) |
   `sentence` (an extra sentence with no number) | `keyword` (wording that points to the
   wrong operation, e.g. "fewer" in a problem solved by adding).
 - `source`: what you were told to put there.
@@ -37,8 +37,11 @@ and some are given follow-up questions in a conversation, so the rules below mat
 - Every number in the code must appear in that turn's text, as digits ("7") or a word
   ("seven", "twenty-one", "a dozen", "twice", "half", "a week"). 0 and 1 are always allowed.
 - Numbers in the text are at most 99. Answers may go up to 999.
-- Text numbers the code does not use must match the label: `distractor: number` needs
-  exactly one, everything else needs none. Follow-ups never have unused numbers.
+- Numbers written in digits that the code does not use must match the label:
+  `distractor: number` needs exactly one, everything else needs none. Follow-ups never
+  have unused digit numbers. Number words in ordinary prose ("the two classes", "three
+  days") are fine; write every quantity the problem is about, and the distractor, in digits
+  or in words the code uses.
 - A follow-up must use `state[...]`. Store every quantity a follow-up needs in the
   returned dict (`return {**state, 'left': left, 'answer': left}` keeps earlier ones).
 - One turn has 1 to 3 operations.
@@ -71,8 +74,9 @@ The model must learn to read, not to recognise templates. A problem that is anot
 with new names or numbers is worthless (it will be deleted automatically).
 
 - Write every problem individually. Vary sentence count (1-4), sentence order, where the
-  question sits, how the question is asked ("How many...", "What is...", "Find...",
-  "How much...").
+  question sits, how the question is asked. At least a third of your questions should not
+  start with "How many" ("What is...", "Find...", "How much...", "How far...", "Work out...",
+  "...how many does she have?", a question in the middle of the text).
 - Vary the verbs and nouns of the story; use all of your assigned contexts.
 - Names from many cultures, rarely repeated. Sometimes no name at all ("a teacher").
 - Mix the unknown positions, grades, distractor styles and follow-up counts evenly

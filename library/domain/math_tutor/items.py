@@ -63,6 +63,17 @@ def text_numbers(text: str) -> List[int]:
     return numbers
 
 
+def digit_numbers(text: str) -> List[int]:
+    return [int(token) for token in re.findall(r"\d+", text)]
+
+
+def code_literals(source: str) -> List[int]:
+    """Whole-number literals written in a solve() source (no execution needed)."""
+    import ast
+    return [node.value for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Constant) and type(node.value) is int]
+
+
 def constants_allowed(text: str) -> set:
     words = re.findall(r"[a-z]+", text.lower())
     return {value for word in words for value in CONSTANT_WORDS.get(word, ())}
@@ -79,7 +90,9 @@ def check_turn(text: str, execution, turn: int, distractor: str) -> Optional[str
     for literal in execution.literals:
         if literal not in allowed:
             return f"turn {turn}: {literal} is in the code but not in the text"
-    unused = Counter(n for n in written if n > 1) - Counter(execution.literals)
+    # Only digits count as unused: number words in ordinary prose ("the two classes") are
+    # fine, so a distractor number has to be written in digits.
+    unused = Counter(n for n in digit_numbers(text) if n > 1) - Counter(execution.literals)
     unused_count = sum(unused.values())
     expected = 1 if (turn == 0 and distractor == "number") else 0
     if unused_count != expected:
