@@ -29,6 +29,8 @@ Steps (one commit each, each approved):
  3. Schema + validator module (execute functions, state flow, normalise, dedup), 20 hand items
     DONE 2026-10-04 -> items.py / prune.py / validator_cases.py (24/24), 20 hand items;
     near-dup is now word-sequence ratio > 0.8 (trigram Jaccard let one-word swaps through)
+ 3b. Renumber: DONE 2026-10-04 -> renumber.py, 3 copies per item, slot values half..double,
+    text + code swapped together and re-validated (20 hand items -> 60 copies)
  4. Writing workflow: ~10 slice agents -> 10k items (budget OK; needs explicit go for fan-out)
  5. Gemma 4 check on 50 items vs function answers; pick student output format
  6. math_tutor Domain class, vocabulary, metric, templateness baseline, domains page
