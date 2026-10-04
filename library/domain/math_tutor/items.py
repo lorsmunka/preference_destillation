@@ -131,3 +131,35 @@ def validate(item: Dict) -> Tuple[Optional[Dict], Optional[str]]:
     validated["problem_shape"] = shapes[0]
     validated["family"] = item.get("family", item["id"])
     return validated, None
+
+
+def main() -> None:
+    """python -m library.domain.math_tutor.items [file.jsonl]
+    Checks one file of items (a writer's self-check), or every file in items/raw/."""
+    import json
+    import sys
+    from pathlib import Path
+
+    paths = [Path(sys.argv[1])] if len(sys.argv) > 1 else sorted((Path(__file__).resolve().parent / "items" / "raw").glob("*.jsonl"))
+    for path in paths:
+        valid, failures = 0, []
+        for line_number, line in enumerate(open(path, encoding="utf-8"), start=1):
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError as error:
+                failures.append(f"line {line_number}: not valid json ({error.msg})")
+                continue
+            validated, reason = validate(item)
+            if validated:
+                valid += 1
+            else:
+                failures.append(f"line {line_number} {item.get('id', '?')}: {reason}")
+        print(f"{path.name}: {valid} valid, {len(failures)} failing")
+        for failure in failures:
+            print("  " + failure)
+
+
+if __name__ == "__main__":
+    main()
