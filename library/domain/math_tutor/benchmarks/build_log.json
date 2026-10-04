@@ -1,0 +1,151 @@
+{
+  "built": "2026-10-04",
+  "sources": {
+    "svamp": {
+      "role": "test",
+      "files": {
+        "SVAMP.json": "https://raw.githubusercontent.com/arkilpatel/SVAMP/main/SVAMP.json"
+      },
+      "licence": "MIT",
+      "citation": "Patel, Bhattamishra, Goyal (2021). Are NLP Models really able to Solve Simple Math Word Problems? NAACL."
+    },
+    "asdiv": {
+      "role": "seeds",
+      "files": {
+        "ASDiv.xml": "https://raw.githubusercontent.com/chaochun/nlu-asdiv-dataset/master/dataset/ASDiv.xml"
+      },
+      "licence": "CC BY-NC 4.0",
+      "citation": "Miao, Liang, Su (2020). A Diverse Corpus for Evaluating and Developing English Math Word Problem Solvers. ACL."
+    },
+    "mawps": {
+      "role": "seeds",
+      "files": {
+        "train.csv": "https://raw.githubusercontent.com/arkilpatel/SVAMP/main/data/cv_mawps/fold0/train.csv",
+        "dev.csv": "https://raw.githubusercontent.com/arkilpatel/SVAMP/main/data/cv_mawps/fold0/dev.csv"
+      },
+      "licence": "MIT (the copy in the SVAMP repository; fold0 train + dev = all 1,921)",
+      "citation": "Koncel-Kedziorski, Roy, Amini, Kushman, Hajishirzi (2016). MAWPS: A Math Word Problem Repository. NAACL."
+    }
+  },
+  "sets": {
+    "svamp": {
+      "downloaded": 1000,
+      "dropped_by_reason": {
+        "number above 99": 220,
+        "answer above 999": 19,
+        "not whole numbers all the way": 13,
+        "no operation": 1,
+        "equation disagrees with the dataset's answer": 1
+      },
+      "in_range": 746
+    },
+    "asdiv": {
+      "downloaded": 2305,
+      "dropped_by_reason": {
+        "grade 5-6": 371,
+        "no single arithmetic equation": 360,
+        "number above 99": 244,
+        "not whole numbers all the way": 138,
+        "more than 3 steps": 18,
+        "not plain arithmetic": 9,
+        "equation disagrees with the dataset's answer": 4,
+        "answer above 999": 2
+      },
+      "in_range": 1159
+    },
+    "mawps": {
+      "downloaded": 1921,
+      "dropped_by_reason": {
+        "number above 99": 228,
+        "not whole numbers all the way": 224,
+        "more than 3 steps": 12,
+        "answer above 999": 5,
+        "equation disagrees with the dataset's answer": 2,
+        "not plain arithmetic": 1
+      },
+      "in_range": 1449
+    }
+  },
+  "rules": {
+    "max_number": 99,
+    "max_answer": 999,
+    "max_steps": 3,
+    "max_grade": 4,
+    "near_duplicate_jaccard": 0.8,
+    "too_close_to_test_jaccard": 0.5
+  },
+  "test": {
+    "set": "svamp",
+    "count": 746,
+    "by_steps": {
+      "1": 577,
+      "2": 169
+    },
+    "by_shape": {
+      "sub": 322,
+      "add": 106,
+      "div": 104,
+      "add>sub": 56,
+      "mul": 45,
+      "sub>sub": 33,
+      "add>add": 23,
+      "mul>sub": 10,
+      "sub>add": 9,
+      "add>mul": 8,
+      "sub>div": 8,
+      "add>div": 7,
+      "sub>mul": 5,
+      "mul>add": 5,
+      "div>mul": 3,
+      "mul>div": 1,
+      "div>sub": 1
+    }
+  },
+  "seeds": {
+    "candidates": 2608,
+    "dropped_by_reason": {
+      "exact duplicate": 840,
+      "near-duplicate": 90,
+      "too close to a SVAMP problem": 73
+    },
+    "count": 1605,
+    "by_set": {
+      "asdiv": 1100,
+      "mawps": 505
+    },
+    "by_steps": {
+      "1": 1192,
+      "2": 363,
+      "3": 50
+    },
+    "by_shape": {
+      "sub": 430,
+      "add": 365,
+      "mul": 240,
+      "div": 157,
+      "add>add": 119,
+      "sub>sub": 47,
+      "sub>add": 36,
+      "add>sub": 32,
+      "add>mul": 28,
+      "sub>div": 22,
+      "add>div": 22,
+      "mul>add": 21,
+      "add>add>sub": 20,
+      "sub>mul": 20,
+      "mul>sub": 11,
+      "add>add>add": 9,
+      "mul>mul>add": 8,
+      "mul>mul": 4,
+      "add>sub>add": 3,
+      "add>add>mul": 3,
+      "mul>mul>sub": 2,
+      "add>sub>div": 1,
+      "div>mul": 1,
+      "sub>sub>add": 1,
+      "sub>add>sub": 1,
+      "sub>sub>sub": 1,
+      "sub>mul>add": 1
+    }
+  }
+}

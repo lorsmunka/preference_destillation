@@ -44,3 +44,6 @@ models/
 reshard.log
 diag_*.log
 generate_*.log
+
+# Downloaded public datasets (re-fetchable; the filtered sets live under library/domain/*/benchmarks/)
+datasets/
