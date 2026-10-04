@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Tutor Build</title>
+<style>
+:root {
+  --bg: #f7f7f5; --card: #ffffff; --fg: #1d1d1f; --muted: #6b6b70; --border: #e2e2de;
+  --accent: #2f6fdb; --accent-soft: #e6eefc; --good: #2e8b57; --bad: #c0392b; --warn: #b7791f;
+  --bar: #9db8ec; --bar2: #f0b78a; --code: #f1f1ee; --mark: #fff1a8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141416; --card: #1d1d20; --fg: #ececee; --muted: #9a9aa2; --border: #2e2e33;
+    --accent: #7aa7ff; --accent-soft: #1f2b45; --good: #5cc28a; --bad: #ff7b6b; --warn: #e3b25a;
+    --bar: #3d5f9e; --bar2: #9a6a45; --code: #26262a; --mark: #5a4f12;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141416; --card: #1d1d20; --fg: #ececee; --muted: #9a9aa2; --border: #2e2e33;
+  --accent: #7aa7ff; --accent-soft: #1f2b45; --good: #5cc28a; --bad: #ff7b6b; --warn: #e3b25a;
+  --bar: #3d5f9e; --bar2: #9a6a45; --code: #26262a; --mark: #5a4f12;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 80px; }
+h1 { font-size: 26px; margin: 0 0 4px; }
+.sub { color: var(--muted); margin: 0 0 20px; }
+.chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 16px 0; }
+.chip { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.chip b { display: block; font-size: 22px; }
+.chip span { color: var(--muted); font-size: 13px; }
+details.step { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin: 12px 0; }
+details.step > summary { cursor: pointer; padding: 14px 16px; font-weight: 600; list-style: none; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+details.step > summary::-webkit-details-marker { display: none; }
+details.step > summary::before { content: "▸"; color: var(--muted); }
+details.step[open] > summary::before { content: "▾"; }
+details.step > summary .num { color: var(--accent); }
+details.step > summary .key { color: var(--muted); font-weight: 400; font-size: 14px; }
+.body { padding: 0 16px 16px; }
+details.sub { border-top: 1px solid var(--border); padding: 8px 0; }
+details.sub > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.tldr { margin: 4px 0 10px; padding-left: 18px; }
+.tldr li { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 8px 0; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; }
+pre, code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12.5px; }
+pre { background: var(--code); border-radius: 8px; padding: 10px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 6px 0; }
+.bars { margin: 8px 0; }
+.bar-row { display: grid; grid-template-columns: minmax(90px, 28%) 1fr 70px; gap: 8px; align-items: center; margin: 3px 0; font-size: 13px; }
+.bar-row .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { background: var(--code); border-radius: 4px; height: 16px; position: relative; overflow: hidden; }
+.bar-fill { background: var(--bar); height: 100%; border-radius: 4px; }
+.bar-fill.alt { background: var(--bar2); }
+.bar-row .value { text-align: right; font-variant-numeric: tabular-nums; }
+.cap-line { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--bad); }
+.funnel .bar-row { grid-template-columns: minmax(110px, 26%) 1fr 160px; }
+.drop { color: var(--bad); font-size: 12px; }
+.tag { display: inline-block; padding: 0 6px; border-radius: 5px; font-size: 12px; background: var(--accent-soft); color: var(--accent); margin-right: 4px; }
+.good { color: var(--good); } .bad { color: var(--bad); } .warn { color: var(--warn); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+textarea { width: 100%; min-height: 70px; background: var(--code); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font: inherit; }
+.tokens span { display: inline-block; padding: 1px 4px; margin: 1px; border-radius: 4px; background: var(--code); font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+.tokens span.hit { background: var(--mark); }
+.tokens span.ph { color: var(--accent); font-weight: 700; }
+.score { font-size: 20px; font-weight: 700; }
+.note { color: var(--muted); font-size: 13px; }
+.pipeline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.pipeline .node { background: var(--accent-soft); color: var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; }
+.pipeline .arrow { color: var(--muted); }
+.theme { float: right; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 4px 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const DATA = /*DATA*/null;
+
+// ---------- tiny DOM helpers ----------
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (key === "class") node.className = value;
+    else if (key === "html") node.innerHTML = value;
+    else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
+    else node.setAttribute(key, value);
+  }
+  for (const child of children.flat()) {
+    if (child === null || child === undefined || child === false) continue;
+    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+  }
+  return node;
+}
+const fmt = n => (n === null || n === undefined) ? "–" : Number(n).toLocaleString("en-US");
+const pct = (a, b) => b ? `${Math.round(100 * a / b)}%` : "–";
+
+function step(num, title, key, ...content) {
+  return el("details", { class: "step" },
+    el("summary", {}, el("span", { class: "num" }, num), el("span", {}, title), el("span", { class: "key" }, key)),
+    el("div", { class: "body" }, ...content));
+}
+function sub(title, ...content) {
+  return el("details", { class: "sub" }, el("summary", {}, title), ...content);
+}
+function tldr(...lines) { return el("ul", { class: "tldr" }, lines.map(line => el("li", { html: line }))); }
+function table(columns, rows) {
+  return el("div", { class: "scroll" }, el("table", {},
+    el("thead", {}, el("tr", {}, columns.map(c => el("th", { class: c.n ? "n" : "" }, c.label)))),
+    el("tbody", {}, rows.map(row => el("tr", {}, columns.map(c => {
+      const value = typeof c.get === "function" ? c.get(row) : row[c.get];
+      return el("td", { class: c.n ? "n" : "" }, value instanceof Node ? value : (c.n ? fmt(value) : (value ?? "–")));
+    }))))));
+}
+function bars(items, options = {}) {
+  const max = options.max || Math.max(1, ...items.map(i => i.value));
+  return el("div", { class: "bars" }, items.map(item => {
+    const track = el("div", { class: "bar-track" }, el("div", { class: "bar-fill" + (item.alt ? " alt" : ""), style: `width:${100 * item.value / max}%` }));
+    if (options.cap) track.append(el("div", { class: "cap-line", style: `left:${100 * options.cap / max}%`, title: `cap ${options.cap}` }));
+    return el("div", { class: "bar-row" }, el("span", { class: "label", title: item.label }, item.label), track,
+      el("span", { class: "value" }, item.text || fmt(item.value)));
+  }));
+}
+function pre(text) { return el("pre", {}, text); }
+function json(value) { return pre(JSON.stringify(value, null, 2)); }
+function missing(what) { return el("p", { class: "note" }, `Not built yet: ${what}.`); }
+
+// ---------- similarity, the same algorithm as library/domain/math_tutor/similarity.py ----------
+const NUMBER_WORDS = new Set("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty thirty forty fifty sixty seventy eighty ninety hundred thousand dozen".split(" "));
+const NOT_NAMES = new Set("I Mr Mrs Ms Dr Miss Monday Tuesday Wednesday Thursday Friday Saturday Sunday January February March April May June July August September October November December Christmas Halloween Easter Thanksgiving Valentine English American Spanish".split(" "));
+function nameWords(texts) {
+  const names = new Set();
+  for (const text of texts) for (const sentence of text.split(/[.?!]\s+/)) {
+    const words = sentence.match(/[A-Za-z]+/g) || [];
+    words.slice(1).forEach(w => { if (w[0] === w[0].toUpperCase() && !NOT_NAMES.has(w)) names.add(w); });
+  }
+  return names;
+}
+function normaliseText(text, names) {
+  const out = [];
+  for (const word of text.match(/[A-Za-z]+(?:'[a-z]+)?|\d+(?:[.,]\d+)*/g) || []) {
+    if (/^\d/.test(word) || NUMBER_WORDS.has(word.toLowerCase())) { if (out[out.length - 1] !== "N") out.push("N"); }
+    else if (names.has(word)) out.push("NAME");
+    else out.push(word.toLowerCase());
+  }
+  return out;
+}
+// difflib.SequenceMatcher with no junk: repeatedly take the longest common run, recurse on both sides
+function matchingBlocks(a, b) {
+  const b2j = new Map();
+  b.forEach((word, j) => { if (!b2j.has(word)) b2j.set(word, []); b2j.get(word).push(j); });
+  const blocks = [], queue = [[0, a.length, 0, b.length]];
+  while (queue.length) {
+    const [alo, ahi, blo, bhi] = queue.pop();
+    let besti = alo, bestj = blo, best = 0, j2len = new Map();
+    for (let i = alo; i < ahi; i++) {
+      const next = new Map();
+      for (const j of b2j.get(a[i]) || []) {
+        if (j < blo) continue;
+        if (j >= bhi) break;
+        const k = (j2len.get(j - 1) || 0) + 1;
+        next.set(j, k);
+        if (k > best) { besti = i - k + 1; bestj = j - k + 1; best = k; }
+      }
+      j2len = next;
+    }
+    if (best) {
+      blocks.push([besti, bestj, best]);
+      if (alo < besti && blo < bestj) queue.push([alo, besti, blo, bestj]);
+      if (besti + best < ahi && bestj + best < bhi) queue.push([besti + best, ahi, bestj + best, bhi]);
+    }
+  }
+  return blocks;
+}
+function similarityPlayground(original) {
+  const left = el("textarea", {}, original);
+  const right = el("textarea", {}, "A baker made 48 muffins and sold 21 of them in the evening. How many muffins are left?");
+  const out = el("div", {});
+  function render() {
+    const names = nameWords([left.value, right.value]);
+    const a = normaliseText(left.value, names), b = normaliseText(right.value, names);
+    const blocks = matchingBlocks(a, b);
+    const matched = blocks.reduce((s, blk) => s + blk[2], 0);
+    const ratio = (a.length + b.length) ? 2 * matched / (a.length + b.length) : 1;
+    const hitA = new Set(), hitB = new Set();
+    blocks.forEach(([i, j, k]) => { for (let x = 0; x < k; x++) { hitA.add(i + x); hitB.add(j + x); } });
+    const show = (words, hits) => el("div", { class: "tokens" }, words.map((w, i) =>
+      el("span", { class: (hits.has(i) ? "hit " : "") + (w === "N" || w === "NAME" ? "ph" : "") }, w)));
+    const verdict = ratio > 0.8 ? el("span", { class: "bad" }, "near-duplicate → the later one is dropped") : el("span", { class: "good" }, "different enough → both kept");
+    out.replaceChildren(
+      el("p", {}, el("span", { class: "score" }, ratio.toFixed(2)), "  ", verdict,
+        el("span", { class: "note" }, `  (${matched} words match in order, ${a.length} + ${b.length} words: 2·${matched} / ${a.length + b.length})`)),
+      el("p", { class: "note" }, "Normalised, matched runs highlighted:"), show(a, hitA), show(b, hitB));
+  }
+  left.addEventListener("input", render); right.addEventListener("input", render); render();
+  return el("div", {}, el("div", { class: "grid2" }, left, right), out);
+}
+
+// ---------- page ----------
+function render() {
+  const app = document.getElementById("app");
+  const human = DATA.human, writing = DATA.writing, pruning = DATA.pruning, renumber = DATA.renumber, storage = DATA.storage;
+  const stages = pruning ? pruning.log.stages : [];
+  const written = writing.files.reduce((s, f) => s + f.written, 0);
+  const valid = writing.files.reduce((s, f) => s + f.valid, 0);
+  const kept = pruning ? pruning.log.kept : 0;
+  const copies = renumber && renumber.log ? renumber.log.copies : 0;
+  const seedsLog = human ? human.log.seeds : null;
+
+  const themeButton = el("button", { class: "theme", onclick: () => {
+    const root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  } }, "◐ theme");
+  app.append(themeButton, el("h1", {}, "Math tutor — how the data was built"),
+    el("p", { class: "sub" }, `Generated ${DATA.generated} from the build logs. Every number below is read from the files, not typed.`));
+
+  app.append(el("div", { class: "chips" },
+    [["Human test (SVAMP)", human ? human.log.test.count : null], ["Human seeds", seedsLog ? seedsLog.count : null],
+     ["Written by agents", written], ["Pass the validator", valid], ["Kept after pruning", kept],
+     ["Renumbered copies", copies], ["Problems for training", kept + copies]].map(([label, value]) =>
+      el("div", { class: "chip" }, el("b", {}, fmt(value)), el("span", {}, label)))));
+
+  // the whole funnel at a glance
+  if (pruning) {
+    const rows = stages.map(s => ({ label: s.stage, value: s.out,
+      text: `${fmt(s.out)}${s.in > s.out ? `  (−${fmt(s.in - s.out)})` : ""}` }));
+    rows.push({ label: "+ renumbered", value: kept + copies, text: fmt(kept + copies), alt: true });
+    const funnel = bars(rows, { max: Math.max(kept + copies, stages.length ? stages[0].in : 1) });
+    funnel.classList.add("funnel");
+    app.append(el("p", { class: "note" }, "From raw agent output to training problems:"), funnel);
+  }
+
+  // 1 spec
+  const sliceRows = Object.entries(DATA.slices).map(([id, what]) => ({ id, what }));
+  app.append(step("1", "Spec", "one item = word problem + solve() + up to 3 follow-ups",
+    tldr("Answer = what <code>solve()</code> returns. Never typed by anyone.",
+      "Follow-ups: <code>solve(state)</code> continues from the previous turn's dict.",
+      "10 slices = the classic word-problem taxonomy (change, combine, compare, groups, division, rates, multi-step).",
+      "Spec file: <code>thesis_work/domain_specs.txt</code>."),
+    sub("The 10 slices", table([{ label: "slice", get: "id" }, { label: "what", get: "what" }], sliceRows)),
+    storage && storage.example ? sub("A real stored item", json(storage.example)) : null,
+    storage && storage.turns.length ? sub("What the teacher and student see, turn by turn",
+      ...storage.turns.map((t, i) => el("div", {}, el("span", { class: "tag" }, `turn ${i}`), pre(t)))) : null,
+    sub("Teacher prompt (chosen format: working lines)", pre(DATA.prompts.working)),
+    sub("Output format examples", pre(DATA.example_responses.slice(1, 4).join("\n\n")))));
+
+  // 2 human sets
+  if (human) {
+    const sets = Object.entries(human.log.sets).map(([name, s]) => ({ name, ...s,
+      role: name === "svamp" ? "test" : "seeds", licence: (human.log.sources[name] || {}).licence || (name === "harvest" ? "per item" : "") }));
+    const reasons = [];
+    for (const set of sets) for (const [reason, count] of Object.entries(set.dropped_by_reason || {}))
+      reasons.push({ label: `${set.name}: ${reason}`, value: count });
+    app.append(step("2", "Human problems", `${fmt(human.log.test.count)} test · ${fmt(seedsLog.count)} seeds`,
+      tldr("SVAMP = the human test. Never trained on, never shown to a writer.",
+        "ASDiv + MAWPS (+ harvested open-licence problems) = seeds the training set grows from.",
+        "Range filter: 1–3 operations, whole numbers all the way, numbers ≤ 99, answer ≤ 999, grade ≤ 4.",
+        "Each dataset equation → <code>solve()</code>, kept only if it reproduces the dataset's own answer."),
+      table([{ label: "set", get: "name" }, { label: "role", get: "role" }, { label: "downloaded", get: "downloaded", n: 1 },
+        { label: "in range", get: "in_range", n: 1 }, { label: "kept %", get: r => pct(r.in_range, r.downloaded), n: 1 }, { label: "licence", get: "licence" }], sets),
+      sub("Why problems were dropped", bars(reasons.sort((a, b) => b.value - a.value))),
+      sub("Seed dedup", tldr(`${fmt(seedsLog.candidates)} candidates → <b>${fmt(seedsLog.count)}</b> seeds`,
+          "Same rules as the synthetic items (step 5). The human sets are partly templated themselves: many MAWPS problems are ASDiv ones with new names and numbers."),
+        bars(Object.entries(seedsLog.dropped_by_reason).map(([label, value]) => ({ label, value }))),
+        table([{ label: "seed set", get: "set" }, { label: "count", get: "count", n: 1 }],
+          Object.entries(seedsLog.by_set).map(([set, count]) => ({ set, count })))),
+      sub("Test set shapes (operations in order)", bars(Object.entries(human.log.test.by_shape).map(([label, value]) => ({ label, value })))),
+      sub("Examples", human.test_example ? el("div", {}, el("span", { class: "tag" }, "test"), json(human.test_example)) : null,
+        ...human.seed_examples.filter(Boolean).map(s => el("div", {}, el("span", { class: "tag" }, `seed · ${s.set}`), json(s)))),
+      sub("One dropped example per reason", table([{ label: "reason", get: "reason" }, { label: "set", get: "set" }, { label: "problem", get: "problem" }], human.drop_examples)),
+      sub("Licences and citations", table([{ label: "set", get: r => r[0] }, { label: "licence", get: r => r[1].licence }, { label: "citation", get: r => r[1].citation }],
+        Object.entries(human.log.sources)))));
+  } else app.append(step("2", "Human problems", "", missing("benchmarks")));
+
+  // 3 validator
+  app.append(step("3", "Validator", `${DATA.validator_cases.length} broken-on-purpose cases, all caught`,
+    tldr("<code>solve()</code> is never run by Python: a 60-line interpreter walks its syntax tree.",
+      "Allowed: assignments, + − × // %, whole-number literals, <code>state['x']</code>, one returned dict with <code>'answer'</code>. Everything else is refused, so agent code cannot hang or touch anything.",
+      "Every value 0..999, no negatives, // exact (only S07 may leave remainders).",
+      "Every number in the code must be in that turn's text (digits, or words like seven / a dozen / twice).",
+      "Unused digit numbers must match the distractor label; follow-ups must read state."),
+    sub("The cases (python -m library.domain.math_tutor.validator_cases)",
+      table([{ label: "case", get: "case" }, { label: "validator says", get: "result" }], DATA.validator_cases))));
+
+  // 4 writing
+  const matrix = writing.matrix;
+  const bySource = {};
+  matrix.forEach(c => { const s = (bySource[c.source] = bySource[c.source] || { written: 0, valid: 0, kept: 0 }); s.written += c.written; s.valid += c.valid; s.kept += c.kept; });
+  app.append(step("4", "Writing", `${fmt(written)} items by agents · ${pct(valid, written)} valid`,
+    tldr("<b>memory</b>: written from scratch per slice, each batch its own contexts and style emphasis.",
+      "<b>seeded</b>: each human seed rewritten into a new story with the same operations.",
+      "<b>harvest</b>: real problems copied word for word from openly licensed sources → become seeds.",
+      "<b>online</b> (pilot only): retired — the writer found little usable text and credited loosely related pages.",
+      "Every writer self-checks with the validator before finishing. Brief: <code>library/domain/math_tutor/writer_brief.md</code>."),
+    table([{ label: "source", get: r => r[0] }, { label: "written", get: r => r[1].written, n: 1 }, { label: "valid", get: r => r[1].valid, n: 1 },
+      { label: "kept after pruning", get: r => r[1].kept, n: 1 }, { label: "kept %", get: r => pct(r[1].kept, r[1].written), n: 1 }], Object.entries(bySource)),
+    sub("Per slice and source", table([{ label: "slice", get: "slice" }, { label: "source", get: "source" }, { label: "written", get: "written", n: 1 },
+      { label: "valid", get: "valid", n: 1 }, { label: "kept", get: "kept", n: 1 }], matrix)),
+    sub("Raw files", table([{ label: "file", get: "file" }, { label: "written", get: "written", n: 1 }, { label: "valid", get: "valid", n: 1 }], writing.files)),
+    writing.writing_log ? sub("Agent runs", json(writing.writing_log)) : null));
+
+  // 5 pruning
+  if (pruning) {
+    const sim = DATA.similarity;
+    const capRows = [];
+    app.append(step("5", "Pruning", `${fmt(stages.length ? stages[0].in : 0)} → ${fmt(kept)} kept`,
+      el("div", { class: "pipeline" }, stages.map((s, i) => [i ? el("span", { class: "arrow" }, "→") : null,
+        el("span", { class: "node", title: JSON.stringify(s.dropped_by_reason) }, `${s.stage} ${fmt(s.out)}`)]).flat()),
+      table([{ label: "stage", get: "stage" }, { label: "in", get: "in", n: 1 }, { label: "out", get: "out", n: 1 },
+        { label: "dropped because", get: s => Object.entries(s.dropped_by_reason).map(([r, c]) => `${r}: ${c}`).join(" · ") || "–" }], stages),
+      sub("1 · execute", tldr("The validator (step 3) on every raw item. Broken JSON counts as a drop too.")),
+      sub("2 · normalise", tldr("Lowercase, punctuation out, every number (digits or words) → <b>N</b>, every name → <b>NAME</b>.",
+          "Names = words capitalised mid-sentence anywhere in the collection (minus days, months, Mr/Mrs…)."),
+        table([{ label: "problem", get: "problem" }, { label: "normalised", get: "normalised" }], stages[1] && stages[1].examples ? stages[1].examples : [])),
+      sub("3 · exact", tldr("Same normalised word list as an earlier item → drop. Catches 'same problem, new numbers / names'.")),
+      sub("4 · near-dup: word-sequence ratio > 0.8",
+        tldr("Ratio = 2 × (words that match in the same order) / (words in both). Same algorithm as Python's difflib.",
+          "Drops 80%-the-same-in-order; keeps reorderings and rewordings — they are real variety.",
+          "First tried trigram Jaccard > 0.8: it let a one-word swap through (0.68). Switched after the pilot.",
+          "Fast and exact at 100k+: each problem is only compared with problems sharing one of its rarest words (prefix filtering); matches brute force on all seeds."),
+        table([{ label: "vs: " + sim.original, get: "text" }, { label: "sequence", get: r => el("b", { class: r.sequence > 0.8 ? "bad" : "good" }, r.sequence.toFixed(2)), n: 1 },
+          { label: "trigram J", get: "trigram", n: 1 }], sim.rows),
+        el("p", { class: "note" }, "Try it — edit either problem:"), similarityPlayground(sim.original)),
+      sub("5 · test leak", tldr("Against all 1,000 SVAMP problems: sequence ratio > 0.8 <b>or</b> trigram Jaccard > 0.5 (a shared skeleton is enough).",
+        "Online harvesters also avoid the 11 sites ASDiv (and so SVAMP) was scraped from.")),
+      sub("6 · shape cap", tldr("Shape = operations in the order computed, follow-ups after |, e.g. <code>mul>sub|add</code>.",
+          "Inside each slice no full shape above 25% of the slice; the most redundant (closest neighbour) go first.",
+          "Why per slice: S01–S04 all share one-step add/sub — a global cap would have cut most of them (SVAMP is 77% one-step)."),
+        ...Object.entries(pruning.shapes_by_slice).map(([slice, shapes]) => {
+          const total = shapes.reduce((s, x) => s + x[1], 0);
+          const cap = (stages[5] && stages[5].cap_by_slice || {})[slice];
+          return el("div", {}, el("span", { class: "tag" }, `${slice} · ${fmt(total)} kept · cap ${fmt(cap)}`),
+            bars(shapes.map(([label, value]) => ({ label, value })), { cap, max: Math.max(cap || 0, ...shapes.map(s => s[1])) }));
+        })),
+      sub("One dropped example per reason", table([{ label: "reason", get: "reason" }, { label: "detail", get: "detail" }, { label: "problem", get: "problem" }], pruning.drop_examples)),
+      sub("Splits", tldr("By family: a test item's rewordings and renumberings stay in test. Held-out shapes are chosen after the full run."),
+        table([{ label: "split", get: r => r[0] }, { label: "items", get: r => r[1], n: 1 }], Object.entries(pruning.log.by_split)))));
+  } else app.append(step("5", "Pruning", "", missing("items/build_log.json")));
+
+  // 6 renumber
+  if (renumber && renumber.log) {
+    app.append(step("6", "Renumber", `${fmt(renumber.log.items)} items → ${fmt(renumber.log.copies)} copies`,
+      tldr("Same words, new numbers: each number the code uses (and each digit distractor) gets a value between half and double the old one.",
+        "Text and code change together in every turn; <code>solve()</code> is re-run; the copy is kept only if it passes the full validator.",
+        "Implied numbers (twice, a week) stay fixed. Copies keep the family and split."),
+      table([{ label: "outcome", get: r => r[0] }, { label: "items", get: r => r[1], n: 1 }], Object.entries(renumber.log.outcomes)),
+      renumber.original ? sub("An item and its copies",
+        el("div", {}, el("span", { class: "tag" }, "original"), pre([renumber.original.problem, ...renumber.original.follow_ups.map(f => "  → " + f.question)].join("\n") + `\nanswers ${JSON.stringify(renumber.original.answers)}`)),
+        ...renumber.copies.map((c, i) => el("div", {}, el("span", { class: "tag" }, `copy ${i + 1}`),
+          pre([c.problem, ...c.follow_ups.map(f => "  → " + f.question)].join("\n") + `\nanswers ${JSON.stringify(c.answers)}`)))) : null));
+  }
+
+  // 7 storage
+  app.append(step("7", "Storage", "where everything lives",
+    tldr("<code>items/raw/</code>: what agents wrote — appended, never rewritten by the pipeline.",
+      "Everything else under <code>items/</code> and <code>benchmarks/</code> is rebuilt by a zero-argument command.",
+      "<code>corpus.jsonl</code> (gitignored): one line per turn, train first, test last."),
+    table([{ label: "file", get: "path" }, { label: "KB", get: "kb", n: 1 }, { label: "lines", get: "lines", n: 1 }], storage.files),
+    pre("python -m library.domain.math_tutor.benchmarks   # human sets -> benchmarks/\npython -m library.domain.math_tutor.prune        # raw -> items.jsonl, dropped.jsonl, build_log.json\npython -m library.domain.math_tutor.renumber     # items -> renumbered.jsonl\npython -m library.domain.math_tutor.items        # validate raw files\npython math_tutor_report.py                      # this page")));
+
+  // 8 teacher
+  if (DATA.teacher) {
+    app.append(step("8", "Teacher check", DATA.teacher.headline || "",
+      tldr(...(DATA.teacher.tldr || [])),
+      ...(DATA.teacher.tables || []).map(t => sub(t.title, table(t.columns.map(c => ({ label: c, get: c, n: typeof t.rows[0][c] === "number" })), t.rows)))));
+  }
+}
+render();
+</script>
+</body>
+</html>

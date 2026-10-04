@@ -64,6 +64,12 @@
         "not plain arithmetic": 1
       },
       "in_range": 1449
+    },
+    "harvest": {
+      "downloaded": 0,
+      "dropped_by_reason": {},
+      "in_range": 0,
+      "by_site": {}
     }
   },
   "rules": {

@@ -22,6 +22,8 @@ from typing import Dict, List, Optional
 
 from library.shared.config import PROJECT_ROOT
 from .functions import NotAllowed, equation_to_solve, execute, trace_equation
+from .harvest import HARVEST_DIR, check_harvested
+from .prune import reason_category
 from .similarity import TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
 
 DOWNLOAD_DIR = PROJECT_ROOT / "datasets" / "math"
@@ -203,12 +205,37 @@ def build_benchmarks() -> None:
         log["sets"][name] = {"downloaded": len(records), "dropped_by_reason": dict(reasons.most_common()),
                              "in_range": len(kept[name])}
 
+    # Harvested problems (copied from openly licensed sources by the harvest agents) join
+    # the seed candidates after ASDiv and MAWPS, under the same dedup and SVAMP rules.
+    kept["harvest"], harvest_reasons, harvest_count = [], Counter(), 0
+    for path in sorted(HARVEST_DIR.glob("*.jsonl")):
+        for line in open(path, encoding="utf-8"):
+            if not line.strip():
+                continue
+            harvest_count += 1
+            record = json.loads(line)
+            reason = check_harvested(record)
+            if reason:
+                harvest_reasons[reason_category(reason)] += 1
+                dropped.append({"id": record.get("id"), "set": "harvest", "stage": "range", "reason": reason,
+                                "problem": record.get("problem")})
+                continue
+            execution = execute(record["solve"], allow_remainders=True)
+            kept["harvest"].append({
+                "id": record["id"], "set": "harvest", "problem": record["problem"], "solve": record["solve"],
+                "answer": execution.result["answer"], "shape": ">".join(execution.operations),
+                "steps": len(execution.operations), "grade": record.get("grade"),
+                "site": record["site"], "url": record["url"], "licence": record["licence"]})
+    log["sets"]["harvest"] = {"downloaded": harvest_count, "dropped_by_reason": dict(harvest_reasons.most_common()),
+                              "in_range": len(kept["harvest"]),
+                              "by_site": dict(Counter(item["site"] for item in kept["harvest"]).most_common())}
+
     # Seeds: drop anything close to any SVAMP problem (all 1,000, kept or not), then
     # anything that repeats an earlier seed. ASDiv goes first, so a MAWPS copy is the one dropped.
     # Same definitions as the synthetic items (prune.py): exact = same normalised words,
     # near = word-sequence ratio > 0.8, too close to SVAMP = that or trigram Jaccard > 0.5.
     name_words = collect_name_words(record["problem"] for records in raw.values() for record in records)
-    candidates = kept["asdiv"] + kept["mawps"]
+    candidates = kept["asdiv"] + kept["mawps"] + kept["harvest"]
     words_by_id = {record["id"]: normalise(record["problem"], name_words) for record in raw["svamp"] + candidates}
     test_trigrams = TrigramIndex()
     test_sequences = WordSequenceIndex(NEAR_DUPLICATE, words_by_id.values())
@@ -243,7 +270,7 @@ def build_benchmarks() -> None:
     log["test"] = {"set": "svamp", "count": len(test),
                    "by_steps": dict(sorted(Counter(item["steps"] for item in test).items())),
                    "by_shape": dict(Counter(item["shape"] for item in test).most_common())}
-    log["seeds"] = {"candidates": len(kept["asdiv"]) + len(kept["mawps"]),
+    log["seeds"] = {"candidates": len(candidates),
                     "dropped_by_reason": dict(seed_reasons.most_common()), "count": len(seeds),
                     "by_set": dict(Counter(item["set"] for item in seeds)),
                     "by_steps": dict(sorted(Counter(item["steps"] for item in seeds).items())),
