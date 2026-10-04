@@ -31,7 +31,14 @@ Steps (one commit each, each approved):
  9. Tutor harness: multi-turn loop with state, live demo
 10. Code finder: steps 5-9 on code_recall (fix prompt first: 2/8 explained instead of answering)
 11. Write-up from the combined table
-After the work: a LOCAL html page explaining each step taken, visual where it helps (never published).
+After the work: a LOCAL html report (never published). User's spec (2026-10-04):
+- TL;DR style, no long passages, but extensive in content.
+- Linear sequence of interactive blocks, one per step / sub-step, in the order done.
+- Must show: where the problems come from (per source and per slice), how many at each
+  stage (written -> executed -> deduped -> kept), how and where they are stored (file
+  paths, record schema with a real example), and the pruning/dedup algorithm explained
+  visually (normalisation, trigram Jaccard threshold, operation-chain balance, what got
+  dropped and why, with counts). Visual where it helps; numbers in tables/charts.
 
 TOMORROW
 - Gemma 4 12B teacher: WORKING (2026-09-17). The rejections were our generation loop
