@@ -21,8 +21,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from library.shared.config import PROJECT_ROOT
-from .functions import NotAllowed, equation_to_solve, operation_shape, run_solve, trace_equation
-from .similarity import TrigramIndex, collect_name_words, normalise, word_trigrams
+from .functions import NotAllowed, equation_to_solve, execute, trace_equation
+from .similarity import TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
 
 DOWNLOAD_DIR = PROJECT_ROOT / "datasets" / "math"
 OUTPUT_DIR = Path(__file__).resolve().parent / "benchmarks"
@@ -31,8 +31,8 @@ MAX_NUMBER = 99
 MAX_ANSWER = 999
 MAX_STEPS = 3
 MAX_GRADE = 4
-NEAR_DUPLICATE = 0.8
-TOO_CLOSE_TO_TEST = 0.5
+NEAR_DUPLICATE = 0.8       # word-sequence ratio
+TOO_CLOSE_TO_TEST = 0.5    # word-trigram Jaccard, on top of NEAR_DUPLICATE against SVAMP
 
 SOURCES = {
     "svamp": {
@@ -163,9 +163,10 @@ def check(record: Dict) -> Optional[str]:
 
 def to_item(record: Dict) -> Dict:
     solve = equation_to_solve(record["equation"])
+    execution = execute(solve)
     item = {"id": record["id"], "set": record["set"], "problem": record["problem"], "solve": solve,
-            "answer": run_solve(solve)["answer"], "shape": operation_shape(solve)}
-    item["steps"] = item["shape"].count(">") + 1
+            "answer": execution.result["answer"], "shape": ">".join(execution.operations),
+            "steps": len(execution.operations)}
     for optional in ("grade", "type"):
         if optional in record:
             item[optional] = record[optional]
@@ -185,8 +186,8 @@ def build_benchmarks() -> None:
 
     log = {"built": date.today().isoformat(), "sources": SOURCES, "sets": {},
            "rules": {"max_number": MAX_NUMBER, "max_answer": MAX_ANSWER, "max_steps": MAX_STEPS,
-                     "max_grade": MAX_GRADE, "near_duplicate_jaccard": NEAR_DUPLICATE,
-                     "too_close_to_test_jaccard": TOO_CLOSE_TO_TEST}}
+                     "max_grade": MAX_GRADE, "near_duplicate_sequence_ratio": NEAR_DUPLICATE,
+                     "too_close_to_test_trigram_jaccard": TOO_CLOSE_TO_TEST}}
     dropped, kept = [], {}
     for name, records in raw.items():
         reasons = Counter()
@@ -204,23 +205,34 @@ def build_benchmarks() -> None:
 
     # Seeds: drop anything close to any SVAMP problem (all 1,000, kept or not), then
     # anything that repeats an earlier seed. ASDiv goes first, so a MAWPS copy is the one dropped.
+    # Same definitions as the synthetic items (prune.py): exact = same normalised words,
+    # near = word-sequence ratio > 0.8, too close to SVAMP = that or trigram Jaccard > 0.5.
     name_words = collect_name_words(record["problem"] for records in raw.values() for record in records)
-    test_index, seed_index = TrigramIndex(), TrigramIndex()
+    candidates = kept["asdiv"] + kept["mawps"]
+    words_by_id = {record["id"]: normalise(record["problem"], name_words) for record in raw["svamp"] + candidates}
+    test_trigrams = TrigramIndex()
+    test_sequences = WordSequenceIndex(NEAR_DUPLICATE, words_by_id.values())
+    seed_sequences = WordSequenceIndex(NEAR_DUPLICATE, words_by_id.values())
     for record in raw["svamp"]:
-        test_index.add(record["id"], word_trigrams(normalise(record["problem"], name_words)))
-    seeds, seed_reasons = [], Counter()
-    for item in kept["asdiv"] + kept["mawps"]:
-        trigrams = word_trigrams(normalise(item["problem"], name_words))
-        test_id, test_score = test_index.most_similar(trigrams)
-        seed_id, seed_score = seed_index.most_similar(trigrams)
-        if test_score > TOO_CLOSE_TO_TEST:
-            reason, detail = "too close to a SVAMP problem", f"{test_id} J={test_score:.2f}"
-        elif seed_score == 1.0:
-            reason, detail = "exact duplicate", seed_id
+        test_trigrams.add(record["id"], word_trigrams(words_by_id[record["id"]]))
+        test_sequences.add(record["id"], words_by_id[record["id"]])
+    seeds, seed_reasons, first_by_words = [], Counter(), {}
+    for item in candidates:
+        words = words_by_id[item["id"]]
+        trigram_id, trigram_score = test_trigrams.most_similar(word_trigrams(words))
+        test_id, test_score = test_sequences.most_similar(words)
+        seed_id, seed_score = seed_sequences.most_similar(words)
+        if test_score > NEAR_DUPLICATE:
+            reason, detail = "too close to a SVAMP problem", f"{test_id} sequence={test_score:.2f}"
+        elif trigram_score > TOO_CLOSE_TO_TEST:
+            reason, detail = "too close to a SVAMP problem", f"{trigram_id} trigram J={trigram_score:.2f}"
+        elif tuple(words) in first_by_words:
+            reason, detail = "exact duplicate", first_by_words[tuple(words)]
         elif seed_score > NEAR_DUPLICATE:
-            reason, detail = "near-duplicate", f"{seed_id} J={seed_score:.2f}"
+            reason, detail = "near-duplicate", f"{seed_id} sequence={seed_score:.2f}"
         else:
-            seed_index.add(item["id"], trigrams)
+            first_by_words[tuple(words)] = item["id"]
+            seed_sequences.add(item["id"], words)
             seeds.append(item)
             continue
         seed_reasons[reason] += 1

@@ -1,0 +1,234 @@
+{
+  "built": "2026-10-04",
+  "rules": {
+    "near_duplicate_sequence_ratio": 0.8,
+    "too_close_to_test_trigram_jaccard": 0.5,
+    "redundancy_floor": 0.5,
+    "shape_cap_share": 0.08,
+    "shape_cap_floor": 50,
+    "test_share": 0.1,
+    "heldout_shapes": [],
+    "seed": 0
+  },
+  "raw_files": {
+    "hand.jsonl": 20
+  },
+  "stages": [
+    {
+      "stage": "execute",
+      "in": 20,
+      "out": 20,
+      "dropped_by_reason": {},
+      "out_by_slice": {
+        "S01": 2,
+        "S02": 2,
+        "S03": 2,
+        "S04": 2,
+        "S05": 2,
+        "S06": 2,
+        "S07": 2,
+        "S08": 2,
+        "S09": 2,
+        "S10": 2
+      },
+      "out_by_source": {
+        "hand": 20
+      }
+    },
+    {
+      "stage": "normalise",
+      "in": 20,
+      "out": 20,
+      "dropped_by_reason": {},
+      "out_by_slice": {
+        "S01": 2,
+        "S02": 2,
+        "S03": 2,
+        "S04": 2,
+        "S05": 2,
+        "S06": 2,
+        "S07": 2,
+        "S08": 2,
+        "S09": 2,
+        "S10": 2
+      },
+      "out_by_source": {
+        "hand": 20
+      },
+      "examples": [
+        {
+          "problem": "Lena has 14 stickers. Her brother gives her 9 more. How many stickers does Lena have now?",
+          "normalised": "NAME has N stickers her brother gives her N more how many stickers does NAME have now"
+        },
+        {
+          "problem": "Some ducks were on the pond. 8 more ducks landed, and now there are 23 ducks. How many ducks were on the pond at first?",
+          "normalised": "some ducks were on the pond N more ducks landed and now there are N ducks how many ducks were on the pond at first"
+        },
+        {
+          "problem": "A baker made 36 muffins and sold 19 of them in the morning. How many muffins are left?",
+          "normalised": "a baker made N muffins and sold N of them in the morning how many muffins are left"
+        },
+        {
+          "problem": "Omar had 52 marbles. He is 9 years old. After a game he had 37 marbles. How many marbles did he lose?",
+          "normalised": "omar had N marbles NAME is N years old after a game he had N marbles how many marbles did he lose"
+        },
+        {
+          "problem": "There are 27 red apples and 18 green apples in a basket. How many apples are in the basket?",
+          "normalised": "there are N red apples and N green apples in a basket how many apples are in the basket"
+        }
+      ]
+    },
+    {
+      "stage": "exact",
+      "in": 20,
+      "out": 20,
+      "dropped_by_reason": {},
+      "out_by_slice": {
+        "S01": 2,
+        "S02": 2,
+        "S03": 2,
+        "S04": 2,
+        "S05": 2,
+        "S06": 2,
+        "S07": 2,
+        "S08": 2,
+        "S09": 2,
+        "S10": 2
+      },
+      "out_by_source": {
+        "hand": 20
+      }
+    },
+    {
+      "stage": "near-dup",
+      "in": 20,
+      "out": 20,
+      "dropped_by_reason": {},
+      "out_by_slice": {
+        "S01": 2,
+        "S02": 2,
+        "S03": 2,
+        "S04": 2,
+        "S05": 2,
+        "S06": 2,
+        "S07": 2,
+        "S08": 2,
+        "S09": 2,
+        "S10": 2
+      },
+      "out_by_source": {
+        "hand": 20
+      }
+    },
+    {
+      "stage": "test leak",
+      "in": 20,
+      "out": 20,
+      "dropped_by_reason": {},
+      "out_by_slice": {
+        "S01": 2,
+        "S02": 2,
+        "S03": 2,
+        "S04": 2,
+        "S05": 2,
+        "S06": 2,
+        "S07": 2,
+        "S08": 2,
+        "S09": 2,
+        "S10": 2
+      },
+      "out_by_source": {
+        "hand": 20
+      }
+    },
+    {
+      "stage": "shape cap",
+      "in": 20,
+      "out": 20,
+      "dropped_by_reason": {},
+      "out_by_slice": {
+        "S01": 2,
+        "S02": 2,
+        "S03": 2,
+        "S04": 2,
+        "S05": 2,
+        "S06": 2,
+        "S07": 2,
+        "S08": 2,
+        "S09": 2,
+        "S10": 2
+      },
+      "out_by_source": {
+        "hand": 20
+      },
+      "cap": 50
+    }
+  ],
+  "kept": 20,
+  "by_split": {
+    "test": 10,
+    "train": 10
+  },
+  "by_slice": {
+    "S01": 2,
+    "S02": 2,
+    "S03": 2,
+    "S04": 2,
+    "S05": 2,
+    "S06": 2,
+    "S07": 2,
+    "S08": 2,
+    "S09": 2,
+    "S10": 2
+  },
+  "by_source": {
+    "hand": 20
+  },
+  "by_problem_shape": {
+    "sub": 5,
+    "mul": 4,
+    "add": 3,
+    "div": 3,
+    "mul>sub": 2,
+    "add>sub>div": 1,
+    "mod": 1,
+    "mul>sub>div": 1
+  },
+  "by_grade": {
+    "2": 7,
+    "3": 8,
+    "4": 5
+  },
+  "by_distractor": {
+    "none": 17,
+    "number": 1,
+    "keyword": 1,
+    "sentence": 1
+  },
+  "by_context": {
+    "toys": 2,
+    "shop": 2,
+    "pond": 1,
+    "bakery": 1,
+    "games": 1,
+    "garden": 1,
+    "school": 1,
+    "library": 1,
+    "cards": 1,
+    "farm": 1,
+    "bus": 1,
+    "party": 1,
+    "art": 1,
+    "trip": 1,
+    "crafts": 1,
+    "zoo": 1,
+    "work": 1,
+    "savings": 1
+  },
+  "by_follow_up_count": {
+    "0": 5,
+    "1": 13,
+    "2": 2
+  },
+  "turns": 37
+}

@@ -71,8 +71,8 @@
     "max_answer": 999,
     "max_steps": 3,
     "max_grade": 4,
-    "near_duplicate_jaccard": 0.8,
-    "too_close_to_test_jaccard": 0.5
+    "near_duplicate_sequence_ratio": 0.8,
+    "too_close_to_test_trigram_jaccard": 0.5
   },
   "test": {
     "set": "svamp",
@@ -104,39 +104,39 @@
   "seeds": {
     "candidates": 2608,
     "dropped_by_reason": {
-      "exact duplicate": 840,
-      "near-duplicate": 90,
-      "too close to a SVAMP problem": 73
+      "exact duplicate": 768,
+      "near-duplicate": 442,
+      "too close to a SVAMP problem": 88
     },
-    "count": 1605,
+    "count": 1310,
     "by_set": {
-      "asdiv": 1100,
-      "mawps": 505
+      "asdiv": 1067,
+      "mawps": 243
     },
     "by_steps": {
-      "1": 1192,
-      "2": 363,
-      "3": 50
+      "1": 915,
+      "2": 346,
+      "3": 49
     },
     "by_shape": {
-      "sub": 430,
-      "add": 365,
-      "mul": 240,
-      "div": 157,
-      "add>add": 119,
-      "sub>sub": 47,
+      "sub": 341,
+      "add": 262,
+      "mul": 200,
+      "div": 112,
+      "add>add": 107,
+      "sub>sub": 46,
       "sub>add": 36,
       "add>sub": 32,
-      "add>mul": 28,
-      "sub>div": 22,
+      "add>mul": 26,
       "add>div": 22,
+      "sub>div": 21,
       "mul>add": 21,
-      "add>add>sub": 20,
       "sub>mul": 20,
+      "add>add>sub": 19,
       "mul>sub": 11,
       "add>add>add": 9,
       "mul>mul>add": 8,
-      "mul>mul": 4,
+      "mul>mul": 3,
       "add>sub>add": 3,
       "add>add>mul": 3,
       "mul>mul>sub": 2,

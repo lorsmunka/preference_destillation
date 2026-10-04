@@ -1,9 +1,15 @@
 """How alike two word problems are, after the parts that do not change the problem are
-taken out: numbers become N, names become NAME, case and punctuation are dropped. What is
-left is compared as sets of word trigrams (Jaccard). The same words in a new order share
-few trigrams, so a reworded problem survives; a copy with new numbers or a new name does not.
+taken out: numbers become N, names become NAME, case and punctuation are dropped.
+
+Two measures on what is left:
+- word-sequence ratio (difflib): the share of words that match in the same order. One or
+  two words swapped in a 17-word problem gives 0.83-0.94; the same words reordered ~0.4.
+  This is the near-duplicate test: "80% the same, in order".
+- word-trigram Jaccard: shared three-word runs. Used as an extra, stricter test-leak check.
 """
 
+import difflib
+import math
 import re
 from collections import Counter
 from typing import Dict, Iterable, List, Optional, Set, Tuple
@@ -73,20 +79,83 @@ class TrigramIndex:
     def __init__(self):
         self.trigrams_by_id: Dict[str, Set[Tuple[str, ...]]] = {}
         self.ids_by_trigram: Dict[Tuple[str, ...], List[str]] = {}
+        self.order_by_id: Dict[str, int] = {}
 
     def add(self, item_id: str, trigrams: Set[Tuple[str, ...]]) -> None:
         self.trigrams_by_id[item_id] = trigrams
+        self.order_by_id[item_id] = len(self.order_by_id)
         for trigram in trigrams:
             self.ids_by_trigram.setdefault(trigram, []).append(item_id)
 
-    def most_similar(self, trigrams: Set[Tuple[str, ...]]) -> Tuple[Optional[str], float]:
+    def most_similar(self, trigrams: Set[Tuple[str, ...]], exclude: Optional[str] = None) -> Tuple[Optional[str], float]:
+        """The stored problem closest to these trigrams and its Jaccard; ties go to the one
+        stored first, so results do not depend on set iteration order."""
         shared_counts = Counter()
         for trigram in trigrams:
             shared_counts.update(self.ids_by_trigram.get(trigram, ()))
         best_id, best_score = None, 0.0
         for candidate_id, shared in shared_counts.items():
+            if candidate_id == exclude:
+                continue
             candidate = self.trigrams_by_id[candidate_id]
             score = shared / (len(trigrams) + len(candidate) - shared)
-            if score > best_score:
+            if score > best_score or (score == best_score and best_id is not None
+                                      and self.order_by_id[candidate_id] < self.order_by_id[best_id]):
                 best_id, best_score = candidate_id, score
+        return best_id, best_score
+
+
+def sequence_ratio(first: List[str], second: List[str]) -> float:
+    return difflib.SequenceMatcher(None, first, second, autojunk=False).ratio()
+
+
+class WordSequenceIndex:
+    """Finds the stored problem whose word sequence is most like a new one, comparing only
+    problems that could reach `threshold`. A sequence ratio of r needs a shared word share
+    (multiset Jaccard) of at least r / (2 - r), and two word sets that share that much must
+    share one of their rarest words (prefix filtering, Bayardo et al. 2007). So each
+    problem is filed under its few rarest words only, and a common run like "how many N"
+    never makes everything a candidate. Word rarity is counted once over all `vocabulary`."""
+
+    def __init__(self, threshold: float, vocabulary: Iterable[List[str]]):
+        self.threshold = threshold
+        self.word_share = threshold / (2 - threshold)
+        self.frequency = Counter(token for words in vocabulary for token in self.tokens_unsorted(words))
+        self.words_by_id: Dict[str, List[str]] = {}
+        self.order_by_id: Dict[str, int] = {}
+        self.ids_by_token: Dict[Tuple[str, int], List[str]] = {}
+
+    @staticmethod
+    def tokens_unsorted(words: List[str]) -> List[Tuple[str, int]]:
+        seen = Counter()
+        tokens = []
+        for word in words:
+            tokens.append((word, seen[word]))
+            seen[word] += 1
+        return tokens
+
+    def prefix(self, words: List[str]) -> List[Tuple[str, int]]:
+        tokens = sorted(self.tokens_unsorted(words), key=lambda token: (self.frequency[token], token))
+        length = len(tokens) - math.ceil(self.word_share * len(tokens)) + 1
+        return tokens[:max(length, 1)]
+
+    def add(self, item_id: str, words: List[str]) -> None:
+        self.words_by_id[item_id] = words
+        self.order_by_id[item_id] = len(self.order_by_id)
+        for token in self.prefix(words):
+            self.ids_by_token.setdefault(token, []).append(item_id)
+
+    def most_similar(self, words: List[str], exclude: Optional[str] = None) -> Tuple[Optional[str], float]:
+        """The closest stored problem among those that could reach the threshold, and its
+        ratio (0.0 and None when no stored problem could). Ties go to the one stored first."""
+        candidates = {candidate for token in self.prefix(words) for candidate in self.ids_by_token.get(token, ())}
+        candidates.discard(exclude)
+        best_id, best_score = None, 0.0
+        for candidate in sorted(candidates, key=self.order_by_id.get):
+            other = self.words_by_id[candidate]
+            if min(len(words), len(other)) * 2 / (len(words) + len(other)) < self.threshold:
+                continue  # too different in length to reach the threshold
+            score = sequence_ratio(words, other)
+            if score > best_score:
+                best_id, best_score = candidate, score
         return best_id, best_score
