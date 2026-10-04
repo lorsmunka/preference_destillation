@@ -1,0 +1,161 @@
+{
+  "date": "2026-10-04",
+  "teacher": "google/gemma-4-12B-it, NF4 (bitsandbytes), chat template, greedy, RTX 4070",
+  "sample": "75 turns: 25 first turns + 25 follow-ups from the pilot items, 25 SVAMP problems (seed 0)",
+  "headline": "working lines 71/74 correct (96%) vs answer only 61/70 (87%) -> working lines",
+  "tldr": [
+    "Chosen output: calculation lines, then <code>Answer: N;</code>. More accurate (SVAMP 23/24 vs 14/20), and the harness can check every line.",
+    "First pass found three fixable problems: Gemma left out the final ; (prompt now shows an example), wrote 35-23=12 without spaces (added to the vocabulary), and opened with a second spelling of its empty thought channel (now skipped).",
+    "Gemma is wrong on ~4-8% of turns, mostly follow-ups; every disputed item checked by hand was correct, so the error is the teacher's.",
+    "Batched generation (16 at a time): 71/73 outputs identical to one-at-a-time, the 2 others split at near-ties (top-2 logit margin 0.9 and 1.9); 3.3x faster on the 4070."
+  ],
+  "tables": [
+    {
+      "title": "Second pass, after the fixes (batched generation)",
+      "columns": [
+        "format",
+        "set",
+        "turn",
+        "n",
+        "kept",
+        "correct",
+        "ends with ;",
+        "lines correct"
+      ],
+      "rows": [
+        {
+          "format": "answer",
+          "set": "svamp",
+          "turn": "first",
+          "n": 25,
+          "kept": 20,
+          "correct": 14,
+          "ends with ;": 20,
+          "lines correct": "-"
+        },
+        {
+          "format": "answer",
+          "set": "synthetic",
+          "turn": "first",
+          "n": 25,
+          "kept": 25,
+          "correct": 24,
+          "ends with ;": 25,
+          "lines correct": "-"
+        },
+        {
+          "format": "answer",
+          "set": "synthetic",
+          "turn": "follow-up",
+          "n": 25,
+          "kept": 25,
+          "correct": 23,
+          "ends with ;": 25,
+          "lines correct": "-"
+        },
+        {
+          "format": "working",
+          "set": "svamp",
+          "turn": "first",
+          "n": 25,
+          "kept": 24,
+          "correct": 23,
+          "ends with ;": 24,
+          "lines correct": "23/24"
+        },
+        {
+          "format": "working",
+          "set": "synthetic",
+          "turn": "first",
+          "n": 25,
+          "kept": 25,
+          "correct": 24,
+          "ends with ;": 25,
+          "lines correct": "25/25"
+        },
+        {
+          "format": "working",
+          "set": "synthetic",
+          "turn": "follow-up",
+          "n": 25,
+          "kept": 25,
+          "correct": 24,
+          "ends with ;": 25,
+          "lines correct": "23/25"
+        }
+      ]
+    },
+    {
+      "title": "First pass, before the fixes (answers read without requiring ;)",
+      "columns": [
+        "format",
+        "set",
+        "turn",
+        "correct"
+      ],
+      "rows": [
+        {
+          "format": "answer",
+          "set": "svamp",
+          "turn": "first",
+          "correct": "22/25"
+        },
+        {
+          "format": "answer",
+          "set": "synthetic",
+          "turn": "first",
+          "correct": "24/25"
+        },
+        {
+          "format": "answer",
+          "set": "synthetic",
+          "turn": "follow-up",
+          "correct": "23/25"
+        },
+        {
+          "format": "working",
+          "set": "svamp",
+          "turn": "first",
+          "correct": "23/25"
+        },
+        {
+          "format": "working",
+          "set": "synthetic",
+          "turn": "first",
+          "correct": "24/25"
+        },
+        {
+          "format": "working",
+          "set": "synthetic",
+          "turn": "follow-up",
+          "correct": "22/25"
+        }
+      ]
+    },
+    {
+      "title": "Batched vs one at a time (working format, 73 kept by both)",
+      "columns": [
+        "measure",
+        "value"
+      ],
+      "rows": [
+        {
+          "measure": "identical outputs",
+          "value": "71/73"
+        },
+        {
+          "measure": "diverged (near-ties)",
+          "value": "2, top-2 margins 0.875 / 1.875"
+        },
+        {
+          "measure": "max |logit diff| before divergence, any of 500 tokens",
+          "value": "4.92 (NF4)"
+        },
+        {
+          "measure": "time for 75",
+          "value": "45.5 s batched vs 148.7 s single (3.3x)"
+        }
+      ]
+    }
+  ]
+}

@@ -21,14 +21,16 @@ PROMPTS = {
         "Solve the maths word problem. If there are follow-up questions, answer only the last one; "
         "earlier answers are given and correct.\n"
         "Write each calculation on its own line as: number operator number = result, using only + - * /. "
-        "Then write the last line exactly as: Answer: <number>;\n"
-        "No words, no units, nothing after the semicolon.\n\n{text}"
+        "Then write the last line as Answer: followed by the number and a semicolon, for example:\n"
+        "6 * 4 = 24\n24 - 9 = 15\nAnswer: 15;\n"
+        "The semicolon is required. No words, no units, nothing after the semicolon.\n\n{text}"
     ),
     "answer": (
         "Solve the maths word problem. If there are follow-up questions, answer only the last one; "
         "earlier answers are given and correct.\n"
-        "Reply with exactly one line: Answer: <number>;\n"
-        "No working, no words, no units.\n\n{text}"
+        "Reply with exactly one line: Answer: followed by the number and a semicolon, for example:\n"
+        "Answer: 15;\n"
+        "The semicolon is required. No working, no words, no units.\n\n{text}"
     ),
 }
 
@@ -41,6 +43,7 @@ EXAMPLE_RESPONSES = [
     "3 * 24 = 72\n72 - 35 = 37\nAnswer: 37;",
     "56 / 7 = 8\nAnswer: 8;",
     "45 + 8 = 53\n53 - 1 = 52\n52 / 8 = 6\nAnswer: 6;",
+    "35-23=12\n4*6=24\n8/2=4\n3+4=7\nAnswer: 7;",   # Gemma sometimes drops the spaces
 ]
 
 
