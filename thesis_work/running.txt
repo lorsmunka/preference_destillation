@@ -51,6 +51,11 @@ Steps (one commit each, each approved):
  6. math_tutor Domain class, vocabulary, metric, templateness baseline, domains page
  7. Data generation through Gemma 4 (~3 h GPU, user present)
  8. Training: five E-01 arms x 3 seeds + held-out structures + real-benchmark eval
+    OPEN: the student's input vocabulary has no unknown-token slot (remap_input_tokens
+    raises on an unseen token), so SVAMP / held-out eval would crash on new words. Measure
+    SVAMP token coverage vs the final corpus; fix with a trained UNK (token dropout) or by
+    adding eval texts' tokens. Also size the student: E-01 math used hidden 48 x 3 layers,
+    2,048 examples; the tutor has ~200k turns.
  9. Tutor harness: multi-turn loop with state, live demo
 10. Code finder: steps 5-9 on code_recall (fix prompt first: 2/8 explained instead of answering)
 11. Write-up from the combined table
