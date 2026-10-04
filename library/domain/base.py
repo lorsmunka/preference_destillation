@@ -54,6 +54,12 @@ class Domain(ABC):
         that have no structural notion (overridden only by structured domains)."""
         return None
 
+    def answer_matches(self, response: str, ground_truth) -> Optional[bool]:
+        """Whether a teacher response gets the known answer right, for domains whose corpus
+        carries one. Stored as a flag next to each example (never used to drop it); None
+        means the domain cannot check."""
+        return None
+
     def is_stop(self, last_token_decoded: str, generated_text: str) -> bool:
         """Stop condition during generation. Unifies the old per-domain dispatch
         (ModelHandler.is_stop / inference.has_stop_token)."""

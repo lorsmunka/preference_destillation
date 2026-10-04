@@ -17,7 +17,10 @@ class SavingHandler:
     def save_batch(self, batch_examples):
         start_time = time()
 
-        path = write_batch(os.path.join(self.output_dir, f"batch_{self.logger.batch_count}.npz"), batch_examples)
+        # Numbered by the examples saved so far, rounded up: a final partial batch gets the next
+        # number instead of overwriting the last full one (which cost Virag 32 of 5,000 examples).
+        index = -(-self.logger.successful_sentence_count // self.logger.batch_size)
+        path = write_batch(os.path.join(self.output_dir, f"batch_{index}.npz"), batch_examples)
 
         elapsed_time = time() - start_time
         print(f"\nSaved batch to {path} -> took {elapsed_time:.2f} seconds.\n")

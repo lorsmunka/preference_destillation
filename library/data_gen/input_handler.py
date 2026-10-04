@@ -12,13 +12,14 @@ class InputHandler:
     def load_inputs(self, file_path: str):
         start_time = time()
         print("Loading inputs...")
-        inputs = []
+        records = []
         with open(file_path, "r", encoding="utf-8") as file:
             for line in file:
-                data = json.loads(line.strip())
-                inputs.append(data["text"])
+                records.append(json.loads(line.strip()))
 
-        self.inputs = inputs
+        self.records = records   # whole corpus records; a domain with ground truth puts "answer" there
+        self.inputs = [record["text"] for record in records]
+        inputs = self.inputs
         self.input_count = len(inputs)
 
         elapsed_time = time() - start_time
@@ -27,3 +28,7 @@ class InputHandler:
 
     def get_input(self, index):
         return self.inputs[index]
+
+    def get_ground_truth(self, index):
+        """The corpus record's "answer", when the domain has one (else None)."""
+        return self.records[index].get("answer")

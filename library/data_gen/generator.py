@@ -29,6 +29,7 @@ class DistillationDataGenerator:
         self.model_name = self.config["model_name"]
         self.max_examples = self.config["max_examples"]
         self.batch_size = self.config["batch_size"]
+        self.generation_batch_size = self.config.get("generation_batch_size", 1)
 
         self.config["started_at"] = datetime.now(timezone.utc).isoformat()
 
@@ -52,32 +53,49 @@ class DistillationDataGenerator:
         batch_processed = 0
         batch_skip_reasons = {}
 
-        for i in range(self.logger.processed_sentence_count, self.input_handler.input_count):
+        index = self.logger.processed_sentence_count
+        while index < self.input_handler.input_count:
             if self.logger.successful_sentence_count >= self.max_examples:
                 print(f"Reached max_examples limit ({self.max_examples})")
                 break
 
-            text = self.input_handler.get_input(i)
-            training_example, skip_reason = self.model_handler.generate_training_example(text)
-
-            self.logger.processed_sentence_count += 1
-            batch_processed += 1
-
-            if training_example is not None:
-                batch_examples.append(training_example)
-                self.logger.successful_sentence_count += 1
+            # One input at a time (the original loop), or `generation_batch_size` together
+            group = list(range(index, min(index + self.generation_batch_size, self.input_handler.input_count)))
+            texts = [self.input_handler.get_input(i) for i in group]
+            if self.generation_batch_size == 1:
+                outcomes = [self.model_handler.generate_training_example(texts[0])]
             else:
-                batch_skip_reasons[skip_reason] = batch_skip_reasons.get(skip_reason, 0) + 1
+                outcomes = self.model_handler.generate_training_examples(texts)
+            index = group[-1] + 1
 
-            if len(batch_examples) == self.batch_size:
-                batch_examples, batch_processed, batch_skip_reasons, batch_start_time = self.save_batch(
-                    batch_examples, batch_processed, batch_skip_reasons, batch_start_time)
+            stop_requested = False
+            for i, (training_example, skip_reason) in zip(group, outcomes):
+                self.logger.processed_sentence_count += 1
+                batch_processed += 1
 
-                if self.exit_listener.check_exit():
-                    self.logger.save()
-                    break
+                if training_example is not None:
+                    ground_truth = self.input_handler.get_ground_truth(i)
+                    if ground_truth is not None:   # kept either way; the flag is for analysis
+                        training_example["ground_truth"] = ground_truth
+                        training_example["answer_correct"] = self.domain.answer_matches(
+                            training_example["model_response"], ground_truth)
+                    batch_examples.append(training_example)
+                    self.logger.successful_sentence_count += 1
+                else:
+                    batch_skip_reasons[skip_reason] = batch_skip_reasons.get(skip_reason, 0) + 1
 
-            sleep(0.1)
+                if len(batch_examples) == self.batch_size:
+                    batch_examples, batch_processed, batch_skip_reasons, batch_start_time = self.save_batch(
+                        batch_examples, batch_processed, batch_skip_reasons, batch_start_time)
+                    if self.exit_listener.check_exit():
+                        stop_requested = True
+                        break
+            if stop_requested:   # right after a saved batch; the rest of this group is redone on resume
+                self.logger.save()
+                break
+
+            if self.generation_batch_size == 1:
+                sleep(0.1)
 
         if batch_examples:
             self.saving_handler.save_batch(batch_examples)
@@ -89,7 +107,7 @@ class DistillationDataGenerator:
             self.config,
             status=status,
             examples_generated=self.logger.successful_sentence_count,
-            batches_written=self.logger.batch_count,
+            batches_written=-(-self.logger.successful_sentence_count // self.batch_size),
         )
 
         self.logger.save()

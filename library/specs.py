@@ -76,6 +76,7 @@ class GenerationJob:
     load_in_4bit: bool = False       # NF4 via bitsandbytes — how a 12B teacher fits a 12 GB card
     chat_template: bool = False      # wrap the domain prompt in the tokenizer's chat template (Gemma 4 expects it)
     thinking: bool = False           # Gemma 4 thinking mode; the trace is stored as text, only the answer gets logits
+    generation_batch_size: int = 1   # inputs generated together (left-padded model.generate); 1 = the one-at-a-time loop
     description: str = ""
 
     def __post_init__(self):
@@ -92,5 +93,6 @@ class GenerationJob:
             "load_in_4bit": self.load_in_4bit,
             "chat_template": self.chat_template,
             "thinking": self.thinking,
+            "generation_batch_size": self.generation_batch_size,
             "description": self.description,
         }

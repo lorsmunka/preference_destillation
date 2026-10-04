@@ -70,6 +70,10 @@ class MathTutorDomain(Domain):
     def structural_validity(self, output: str) -> bool:
         return re.search(r"Answer:\s*\d+;", output) is not None
 
+    def answer_matches(self, response: str, ground_truth) -> Optional[bool]:
+        match = re.search(r"Answer:\s*(\d+)", response)
+        return match is not None and int(match.group(1)) == int(ground_truth)
+
     def build_corpus(self, count: Optional[int] = None) -> None:
         from .corpus import build_corpus
         build_corpus(self.corpus_path, count=count)
