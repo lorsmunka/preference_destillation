@@ -60,7 +60,7 @@ SLICES (10 cells, one writing agent pair each)
   museum, toys); balance is checked after writing, not trusted.
 
 SOURCES (training only; revised 2026-10-04: we need ~10x v1's 16k examples)
-  A. seeded  agents rework the 1,605 human seeds (ASDiv + MAWPS, see HUMAN
+  A. seeded  agents rework the 1,310 human seeds (ASDiv + MAWPS, see HUMAN
              SETS): new wording, context, names, plus a solve(); "source"
              keeps the seed id
   B. memory  writes from scratch per slice, given 5-10 seeds as style refs
@@ -83,11 +83,15 @@ PRUNING (in this order; every stage logs in / out / dropped-by-reason)
                  (name list + capitalised mid-sentence words), strip
                  punctuation; "Mia has 7 apples." -> "NAME has N apples"
   3. exact       identical normalised text -> keep the first
-  4. near-dup    word-trigram Jaccard > 0.8 against any kept item -> drop
-                 (candidate pairs from an inverted trigram index, then
-                 the exact Jaccard; same words in a new order survive)
-  5. test leak   trigram Jaccard > 0.5 against any real-benchmark test
-                 item -> drop (stricter on purpose)
+  4. near-dup    word-sequence ratio > 0.8 against any kept item -> drop
+                 ("80% the same words in the same order", difflib on the
+                 normalised words). One word swapped in a 17-word problem
+                 0.94, two swapped 0.83, reordered 0.39, reworded 0.34.
+                 Changed 2026-10-04 from trigram Jaccard > 0.8, which let a
+                 one-word swap through (0.68). Candidates come from shared
+                 rare words (prefix filtering, exact: matches brute force)
+  5. test leak   against any of the 1,000 SVAMP problems: sequence ratio
+                 > 0.8, or trigram Jaccard > 0.5 (stricter on purpose)
   6. shape cap   shape = the operations in solve(), in the order computed,
                  follow-ups after "|", e.g. "add>mul|sub". No shape above 8% of the kept
                  items; the excess is dropped most-redundant first (highest
@@ -112,13 +116,14 @@ HUMAN SETS (built 2026-10-04: python -m library.domain.math_tutor.benchmarks)
   SVAMP           1,000       746  test (MIT)
   ASDiv           2,305     1,159  seeds (CC BY-NC 4.0)
   MAWPS           1,921     1,449  seeds (MIT, SVAMP repo copy)
-  Seeds dedup (ASDiv first): 2,608 -> 1,605. Dropped 840 exact duplicates
-  after normalisation, 90 near-duplicates, 73 too close to SVAMP. The human
-  sets are partly templated themselves: 544 MAWPS problems are ASDiv ones
-  with new names and numbers.
+  Seeds dedup (ASDiv first, same rules as PRUNING): 2,608 -> 1,310 (1,067
+  ASDiv, 243 MAWPS). Dropped 768 exact duplicates after normalisation, 442
+  near-duplicates, 88 too close to SVAMP. The human sets are partly
+  templated themselves: 657 MAWPS problems are ASDiv ones with new names
+  and numbers.
   Test: 577 one-step, 169 two-step; 322 pure subtraction, 45 pure
   multiplication, so accuracy is reported per shape.
-  Seeds: 1,192 / 363 / 50 at 1 / 2 / 3 steps; grade 1-4 where labelled.
+  Seeds: 915 / 346 / 49 at 1 / 2 / 3 steps; grade 1-4 where labelled.
 
 TURNS (what the teacher and the student see)
   An item with k follow-ups becomes k+1 records. Earlier turns carry the
@@ -149,7 +154,7 @@ STORAGE
                                        shape, split (tracked)
     items/dropped.jsonl                every drop with stage and reason (tracked)
     items/build_log.json               counts per stage, slice, source (tracked)
-    benchmarks/seeds.jsonl             1,605 ASDiv + MAWPS seeds (tracked)
+    benchmarks/seeds.jsonl             1,310 ASDiv + MAWPS seeds (tracked)
     benchmarks/real_test.jsonl         746 SVAMP, the human test (tracked)
     benchmarks/dropped.jsonl           every drop with stage + reason (tracked)
     benchmarks/build_log.json          counts, rules, licences, citations
