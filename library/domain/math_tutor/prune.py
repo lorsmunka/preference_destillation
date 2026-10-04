@@ -15,7 +15,8 @@ Then each kept item gets its split: held-out shape, test (10% per slice) or trai
 
     python -m library.domain.math_tutor.prune
 
-Reads items/raw/*.jsonl (written by the agents, never modified here) and rebuilds
+Reads items/raw/*.jsonl and the rewordings in items/reword/*.jsonl (written by the
+agents, never modified here) and rebuilds
 items/items.jsonl, items/dropped.jsonl and items/build_log.json from them.
 """
 
@@ -29,6 +30,7 @@ from pathlib import Path
 from typing import Dict, List
 
 from .items import validate
+from .reword import read_rewordings
 from .similarity import TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -58,6 +60,8 @@ def read_raw() -> List[Dict]:
                 item = {"id": f"{path.stem}:{line_number}", "_broken_json": True}
             item.setdefault("id", f"{path.stem}:{line_number}")
             items.append(item)
+    # Rewordings come last, so an original always wins against its own rewording.
+    items += read_rewordings({item["id"]: item for item in items if not item.get("_broken_json")})
     return items
 
 
@@ -115,6 +119,9 @@ def prune() -> None:
     for item in raw:
         if item.get("_broken_json"):
             drops.append(drop_record(item, "not valid json"))
+            continue
+        if item.get("_reword_error"):
+            drops.append(drop_record(item, "rewording does not fit its original", item["_reword_error"]))
             continue
         validated, message = validate(item)
         if validated:

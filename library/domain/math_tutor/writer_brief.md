@@ -111,3 +111,26 @@ Create the file you were given (it must not exist yet; if it does, stop and say 
 write one JSON object per line, UTF-8, no blank lines. Use `\n` inside the code strings.
 When done, run the check, fix failures in your own file, run it again, and report:
 items written, items valid, anything that was hard.
+
+## Rewording (a separate job)
+
+You get items that already passed. For each one, write new text only — the problem and
+each follow-up question — that keeps the maths exactly: the same solve() code will be
+reused unchanged, so every number the code uses must still appear (as digits, or as the
+same number word), with the same role, and a digit distractor stays a digit distractor.
+
+- Really rewrite: new sentence structure and order, new verbs, other names; you may change
+  the objects and the setting (muffins -> stickers, bakery -> library) as long as every
+  number keeps its meaning. A rewording that keeps 80% of the original's words in the same
+  order is deleted automatically.
+- Keep the follow-up count and order; each new follow-up question asks for the same thing.
+- One compact JSON object per line, ids as given (`<original id>~w1`, `~w2`, ...):
+
+```json
+{"id": "S05-hand-0010~w1", "of": "S05-hand-0010",
+ "problem": "Each of the 9 rows on the school bus has 4 seats. The bus was just painted yellow. What is the total number of seats?",
+ "follow_up_questions": ["After twenty-nine children board, how many seats are left empty?"]}
+```
+
+Check your file with `python -m library.domain.math_tutor.reword <your file>` and fix
+every failure.
