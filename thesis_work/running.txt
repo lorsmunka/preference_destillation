@@ -32,7 +32,15 @@ Steps (one commit each, each approved):
  3b. Renumber: DONE 2026-10-04 -> renumber.py, 3 copies per item, slot values half..double,
     text + code swapped together and re-validated (20 hand items -> 60 copies)
  4. Writing workflow: ~10 slice agents -> 10k items (budget OK; needs explicit go for fan-out)
+    PILOT DONE 2026-10-04: 150 items, all valid, ~1.9k Sonnet tokens/item. Online writers retired
+    (1/11 pages usable, URLs over-credited) -> online HARVESTERS copy open-licence problems into
+    seeds (user, 2026-10-04). Full run on Opus 5.5 (user). Run A launched: 4 harvesters + 80
+    memory writers (10 slices x 8 batches x 100). Then: merge harvest -> seeded writers x2 ->
+    prune -> reword pass -> prune -> renumber.
  5. Gemma 4 check on 50 items vs function answers; pick student output format
+    DONE 2026-10-04: working lines 71/74 (96%) vs answer-only 61/70 -> working lines
+    (teacher_check.json). Gemma wrong on ~4-8% of turns: kept, flagged answer_correct.
+    IDEA (user): train on correct-only vs all, out of curiosity — flag makes it free.
  6. math_tutor Domain class, vocabulary, metric, templateness baseline, domains page
  7. Data generation through Gemma 4 (~3 h GPU, user present)
  8. Training: five E-01 arms x 3 seeds + held-out structures + real-benchmark eval
