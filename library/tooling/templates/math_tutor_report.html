@@ -263,6 +263,9 @@ function render() {
       table([{ label: "set", get: "name" }, { label: "role", get: "role" }, { label: "downloaded", get: "downloaded", n: 1 },
         { label: "in range", get: "in_range", n: 1 }, { label: "kept %", get: r => pct(r.in_range, r.downloaded), n: 1 }, { label: "licence", get: "licence" }], sets),
       sub("Why problems were dropped", bars(reasons.sort((a, b) => b.value - a.value))),
+      human.log.sets.harvest ? sub("Harvested (copied word for word from open sources)",
+        tldr("Online harvesters replaced the pilot's online writers: real problems, verbatim, with URL and licence; only explicit open licences or public domain; never the 11 sites ASDiv was scraped from."),
+        bars(Object.entries(human.log.sets.harvest.by_site || {}).map(([label, value]) => ({ label, value })))) : null,
       sub("Seed dedup", tldr(`${fmt(seedsLog.candidates)} candidates → <b>${fmt(seedsLog.count)}</b> seeds`,
           "Same rules as the synthetic items (step 5). The human sets are partly templated themselves: many MAWPS problems are ASDiv ones with new names and numbers."),
         bars(Object.entries(seedsLog.dropped_by_reason).map(([label, value]) => ({ label, value }))),
@@ -340,6 +343,17 @@ function render() {
       sub("Splits", tldr("By family: a test item's rewordings and renumberings stay in test. Held-out shapes are chosen after the full run."),
         table([{ label: "split", get: r => r[0] }, { label: "items", get: r => r[1], n: 1 }], Object.entries(pruning.log.by_split)))));
   } else app.append(step("5", "Pruning", "", missing("items/build_log.json")));
+
+  // templateness
+  if (DATA.templateness && DATA.templateness.length) {
+    const rows = DATA.templateness.map(r => ({ ...r, median_nn: Number(r.median_nn), over: Number(r["nn_over_0.8"]), distinct: Number(r.distinct) }));
+    app.append(step("5b", "Templateness", "how alike a problem is to its closest neighbour",
+      tldr("Same measure on every set: 2,000-problem sample, normalised, each problem's nearest neighbour by word-sequence ratio.",
+        "1.0 = an exact template copy. v1 was built from 260 templates; SVAMP is ten deliberate variations of each of 100 problems."),
+      bars(rows.map(r => ({ label: r.set, value: r.median_nn, text: r.median_nn.toFixed(2) })), { max: 1 }),
+      table([{ label: "set", get: "set" }, { label: "problems", get: r => Number(r.problems), n: 1 }, { label: "distinct", get: r => r.distinct.toFixed(3), n: 1 },
+        { label: "median NN", get: r => r.median_nn.toFixed(3), n: 1 }, { label: "NN > 0.8", get: r => (100 * r.over).toFixed(1) + "%", n: 1 }], rows)));
+  }
 
   // 6 renumber
   if (renumber && renumber.log) {

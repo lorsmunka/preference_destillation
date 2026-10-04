@@ -1,5 +1,5 @@
 set,problems,sample,distinct,median_nn,nn_over_0.8
 v1 templates (math_word_problem corpus),500000,2000,0.502,1.0,0.982
 SVAMP test (human),746,746,0.977,0.912,0.744
-"seeds (human, deduped)",1310,1310,1.0,0.54,0.001
-math_tutor kept items,169,169,1.0,0.458,0.0
+"seeds (human, deduped)",2153,2000,1.0,0.542,0.008
+math_tutor kept items,7676,2000,1.0,0.382,0.0

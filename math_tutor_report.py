@@ -145,6 +145,14 @@ def storage():
     return {"files": rows, "example": example, "turns": turns}
 
 
+def templateness():
+    path = Path("experiments") / "results" / "math_templateness.csv"
+    if not path.exists():
+        return []
+    import csv
+    return list(csv.DictReader(open(path, encoding="utf-8")))
+
+
 def build():
     data = {
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -157,6 +165,7 @@ def build():
         "renumber": renumber_example(),
         "storage": storage(),
         "teacher": read_json(PACKAGE / "teacher_check.json"),
+        "templateness": templateness(),
         "prompts": PROMPTS,
         "example_responses": EXAMPLE_RESPONSES,
     }
