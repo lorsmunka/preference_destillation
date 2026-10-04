@@ -1,0 +1,17 @@
+{
+  "built": "2026-10-04",
+  "copies_per_item_target": 3,
+  "seed": 0,
+  "items": 20,
+  "copies": 60,
+  "outcomes": {
+    "ok": 20
+  },
+  "items_by_copies_made": {
+    "3": 20
+  },
+  "copies_by_split": {
+    "test": 30,
+    "train": 30
+  }
+}
