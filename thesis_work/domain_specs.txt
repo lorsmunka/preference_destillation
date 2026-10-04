@@ -1,0 +1,136 @@
+========================================================================
+DOMAIN SPECS — what each demo domain is, before any code is written
+One section per domain. Decisions marked [step N] are settled at that step
+of the PLAN in running.txt; everything else here is agreed.
+========================================================================
+
+MATH TUTOR (math_tutor)                                   [SPEC 2026-10-04]
+
+Agent = model + harness. The model is the distilled student; the harness
+holds the conversation state (problem, earlier answers) and checks each
+turn. This domain is the model's side: one turn in, one answer out.
+
+ITEM (one json line, the unit everything else is built from)
+  {
+    "id":         "S05-mem-0042",
+    "slice":      "S05",                     taxonomy cell, see SLICES
+    "unknown":    "product",                 position of the unknown
+    "grade":      3,                         2 | 3 | 4
+    "distractor": "none",                    none | number | sentence | keyword
+    "context":    "bakery",
+    "source":     "memory",                  memory | online:<url>
+    "problem":    "Mia bakes 4 trays of 6 muffins. How many muffins is that?",
+    "solve":      "def solve():\n    trays = 4\n    per_tray = 6\n    muffins = trays * per_tray\n    return {'muffins': muffins, 'answer': muffins}",
+    "follow_ups": [
+      {"question": "She sells 9 of them. How many are left?",
+       "solve": "def solve(state):\n    left = state['muffins'] - 9\n    return {**state, 'left': left, 'answer': left}"}
+    ]
+  }
+  Answers are never written by the agent. The validator executes solve()
+  and each follow-up's solve(state) on the previous turn's returned dict,
+  and stores answer, shape and split next to the item.
+
+VALIDATION (an item that fails any check is dropped, reason logged)
+  - every function runs in a sandbox (no imports, no I/O, 1 s limit) and
+    returns a dict with an integer "answer"
+  - every intermediate and final value is an integer 0..999 (no negatives,
+    no fractions; division must use // or %, and // must be exact unless
+    the slice is S07, which is about remainders)
+  - every numeric literal in a function appears in its text, as digits or
+    as a number word (two, dozen, twice, half...); start-up range 0..99
+  - the text's unused numbers match the label: distractor "number" needs
+    exactly one unused number, every other label needs zero
+  - 1 to 3 follow-ups optional; each must read state (no standalone question)
+
+SLICES (10 cells, one writing agent pair each)
+  S01 change, join        result | change | start unknown          G2
+  S02 change, separate    result | change | start unknown          G2
+  S03 combine             whole | part unknown                     G2
+  S04 compare, additive   difference | larger | smaller unknown,   G2-3
+                          consistent and inconsistent wording
+  S05 equal groups        product                                  G3
+  S06 partitive division  group size unknown (sharing)             G3
+  S07 quotative division  group count, remainder, round up         G3-4
+  S08 multiplicative cmp  "3 times as many", "a third as many"     G3-4
+  S09 rates and money     price x quantity, change from a note     G3-4
+  S10 multi-step mixed    2-3 operations across S01-S09            G4
+  Distractor and context are rotated inside every slice (about 20
+  contexts: shop, bakery, farm, school, sport, zoo, library, bus, party,
+  garden, camping, music, art, pets, games, market, kitchen, beach,
+  museum, toys); balance is checked after writing, not trusted.
+
+SOURCES (two agents per slice)
+  memory   writes from scratch, given 5-10 real exemplars of its slice
+           from the step-2 datasets as style references
+  online   searches the web for openly licensed problems of its slice,
+           writes adapted items (new wording, new numbers, never verbatim),
+           records the URL in "source"
+  Pilot first [step 4]: 1 slice x 2 sources x 50 items to measure yield,
+  duplicate rate and cost, then the full run. Target 15k written -> ~10k kept.
+
+PRUNING (in this order; every stage logs in / out / dropped-by-reason)
+  1. execute     the VALIDATION checks above
+  2. normalise   lowercase, digits and number words -> N, names -> NAME
+                 (name list + capitalised mid-sentence words), strip
+                 punctuation; "Mia has 7 apples." -> "NAME has N apples"
+  3. exact       identical normalised text -> keep the first
+  4. near-dup    word-trigram Jaccard > 0.8 against any kept item -> drop
+                 (candidate pairs from an inverted trigram index, then
+                 the exact Jaccard; same words in a new order survive)
+  5. test leak   trigram Jaccard > 0.5 against any real-benchmark test
+                 item -> drop (stricter on purpose)
+  6. shape cap   shape = the operations in solve(), in order, follow-ups
+                 after "|", e.g. "mul|sub". No shape above 8% of the kept
+                 items; the excess is dropped most-redundant first (highest
+                 nearest-neighbour Jaccard), seeded
+  Counts at each stage go to items/build_log.json — the report reads that.
+
+SPLITS
+  train          the rest
+  test           10% of items, random, stratified by slice
+  heldout_shape  2-3 whole shapes never trained on, chosen after step 4
+                 from shapes with >= 100 items (compositional test)
+  real           SVAMP / ASDiv / MAWPS / GSM8K, filtered to integer answers,
+                 <= 3 operations, grade 2-4 [step 2]. Exemplars come from
+                 these sets, the real test never does; never trained on.
+
+TURNS (what the teacher and the student see)
+  An item with k follow-ups becomes k+1 records. Earlier turns carry the
+  correct answers, the state the harness would hold:
+    Problem: Mia bakes 4 trays of 6 muffins. How many muffins is that?
+    Answer: 24
+    Follow-up: She sells 9 of them. How many are left?
+  No scaffold (v1 handed over A=? B=? C=A+B=?). The teacher is told the
+  output format, the student sees only the text plus the delimiter.
+  Output, candidate A (lean):  "24 - 9 = 15\nAnswer: 15;"
+  Output, candidate B:         "Answer: 15;"
+  A gives the student working lines and the harness something to check;
+  picked on Gemma 4's accuracy and format adherence on 50 items [step 5].
+  Stop token ";". Inputs <= 256 tokens, outputs <= 64.
+
+METRICS
+  task accuracy     final answer == executed answer, per turn and overall
+  line validity     share of outputs whose every "a op b = c" line is true
+                    (candidate A only)
+  by slice, by shape, held-out shapes, real benchmark; plus the usual
+  fidelity metrics (overlap, mean target rank) from the eval pass.
+
+STORAGE
+  library/domain/math_tutor/
+    items/raw/<slice>_<source>.jsonl   as written by the agents (tracked;
+                                       costly to remake, appended never wiped)
+    items/items.jsonl                  validated + pruned, with answer,
+                                       shape, split (tracked)
+    items/dropped.jsonl                every drop with stage and reason (tracked)
+    items/build_log.json               counts per stage, slice, source (tracked)
+    benchmarks/exemplars.jsonl         real problems used as style refs (tracked)
+    benchmarks/real_test.jsonl         real held-out test (tracked)
+    corpus.jsonl                       turns for data gen (gitignored, rebuilt)
+  datasets/math/<name>/                raw downloads (gitignored, re-fetchable)
+  batches/math_tutor/<teacher>/        teacher logits, as for every domain
+
+PROVENANCE (for the thesis)
+  Inputs written by Claude agents, answers computed by executing the
+  agents' code, outputs and logits from Gemma 4 12B. Same split as TinyGSM
+  (arXiv 2312.09241: GPT-3.5 wrote problems and Python solutions). Real
+  benchmarks are only a style reference and the held-out test.

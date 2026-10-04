@@ -21,6 +21,7 @@ Math tutor design (agreed):
 
 Steps (one commit each, each approved):
  1. Spec the math_tutor domain in the ledger (schema, slices, dedup, prompts, outputs, holdouts)
+    DONE 2026-10-04 -> thesis_work/domain_specs.txt
  2. Datasets: download, filter, split exemplars / real test, licences
  3. Schema + validator module (execute functions, state flow, normalise, dedup), 20 hand items
  4. Writing workflow: ~10 slice agents -> 10k items (budget OK; needs explicit go for fan-out)
