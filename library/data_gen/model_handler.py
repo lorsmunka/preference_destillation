@@ -2,7 +2,7 @@ from time import time
 from typing import Dict, List, Tuple, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, DynamicCache
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, DynamicCache, LogitsProcessor
 
 from library.shared.vocabulary import (
     build_vocabulary,
@@ -15,7 +15,26 @@ from library.domain import as_domain
 
 
 MAX_THINKING_TOKENS = 1024
-THOUGHT_SCAFFOLD = "thought\n<channel|>"
+# Gemma 4 sometimes opens an empty thought channel before answering, thinking or not, in
+# either of these spellings; it is skipped, not recorded.
+THOUGHT_SCAFFOLDS = ("thought\n<channel|>", "<|channel>thought\n<channel|>")
+
+
+def continues_scaffold(prefix: str) -> bool:
+    return any(scaffold.startswith(prefix) for scaffold in THOUGHT_SCAFFOLDS)
+
+
+class ReducedLogitsRecorder(LogitsProcessor):
+    """Keeps each step's logits over the reduced vocabulary only (one small CPU row per
+    sequence per step) and passes the scores on unchanged, so greedy decoding is untouched."""
+
+    def __init__(self, token_ids: List[int]):
+        self.token_ids = token_ids
+        self.rows: List[torch.Tensor] = []
+
+    def __call__(self, input_ids, scores):
+        self.rows.append(scores[:, self.token_ids].float().cpu())
+        return scores
 
 
 class ModelHandler:
@@ -139,7 +158,7 @@ class ModelHandler:
             if next_token_id in self.end_token_ids:
                 break   # end of sequence / end of turn: not part of the response
 
-            if not steps and skipped_scaffold is not None and THOUGHT_SCAFFOLD.startswith(skipped_scaffold + token_decoded):
+            if not steps and skipped_scaffold is not None and continues_scaffold(skipped_scaffold + token_decoded):
                 skipped_scaffold += token_decoded   # advance past the scaffold without recording it
                 pending = torch.tensor([[next_token_id]], device=sequence.device)
                 sequence = torch.cat([sequence, pending], dim=1)
@@ -158,29 +177,70 @@ class ModelHandler:
             last_token_decoded = token_decoded
 
         elapsed_time = time() - start_time
+        print(f"\tGenerated training example length of {len(steps)} tokens -> took {elapsed_time:.2f} seconds.")
+        return self.finish_example(text, generated_text, steps, thinking)
+
+    def generate_training_examples(self, texts: List[str]) -> List[Tuple[Optional[Dict], Optional[str]]]:
+        """Several examples in one batched greedy model.generate call (left padding), for
+        throughput. Same prompt, stop, scaffold and vocabulary rules as
+        generate_training_example; the per-step logits come from ReducedLogitsRecorder.
+        Thinking mode is not batched."""
+        if self.thinking:
+            raise ValueError("batched generation does not support thinking mode")
+        start_time = time()
+        self.tokenizer.padding_side = "left"
+        prompts = [self.build_prompt(text) for text in texts]
+        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True)
+        device = get_device()
+        if device != "cpu":
+            inputs = {key: value.to(device) for key, value in inputs.items()}
+        token_list = self.vocabulary["token_list"]
+        recorder = ReducedLogitsRecorder([self.vocabulary["token_to_id"][token] for token in token_list])
+        with torch.no_grad():
+            output = self.model.generate(
+                **inputs, do_sample=False, max_new_tokens=self.max_generation_steps + 8,
+                logits_processor=[recorder], stop_strings=[self.domain_handler.stop_token],
+                tokenizer=self.tokenizer, eos_token_id=sorted(self.end_token_ids),
+                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id)
+        new_tokens = output[:, inputs["input_ids"].shape[1]:].tolist()
+
+        results = []
+        for row_index, text in enumerate(texts):
+            steps, generated_text, skipped_scaffold, last_token_decoded = [], "", "", ""
+            for position, token_id in enumerate(new_tokens[row_index]):
+                if self.is_stop(last_token_decoded, generated_text) or len(steps) > self.max_generation_steps:
+                    break
+                if token_id in self.end_token_ids:
+                    break
+                token_decoded = self.tokenizer.decode([token_id])
+                if not steps and skipped_scaffold is not None and continues_scaffold(skipped_scaffold + token_decoded):
+                    skipped_scaffold += token_decoded
+                    continue
+                skipped_scaffold = None
+                logit_vector = recorder.rows[position][row_index].tolist()
+                steps.append({
+                    "token": self.tokenizer.convert_ids_to_tokens([token_id])[0],
+                    "logits": logit_vector,
+                    "predicted_token_index": int(max(range(len(logit_vector)), key=logit_vector.__getitem__)),
+                })
+                generated_text += token_decoded
+                last_token_decoded = token_decoded
+            results.append(self.finish_example(text, generated_text, steps, ""))
+        print(f"\tGenerated {len(texts)} examples together -> took {time() - start_time:.2f} seconds.")
+        return results
+
+    def finish_example(self, text: str, generated_text: str, steps: List[Dict], thinking: str) -> Tuple[Optional[Dict], Optional[str]]:
+        """The checks every generated example passes before it is kept."""
         self.last_generated_text = generated_text
-
         response_tokens = self.tokenizer.tokenize(generated_text)
-        print(
-            f"\tGenerated training example length of {len(response_tokens)} tokens -> took {elapsed_time:.2f} seconds.")
-
         if not all(token in self.response_tokens for token in response_tokens):
-            unexpected_tokens = [
-                token for token in response_tokens if token not in self.response_tokens]
-            print(
-                f"\tSkipped: Generated response contains unexpected tokens: {unexpected_tokens}")
+            unexpected_tokens = [token for token in response_tokens if token not in self.response_tokens]
+            print(f"\tSkipped: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None, "unexpected_tokens"
-
         if len(response_tokens) > self.max_generation_steps:
-            print(
-                f"\tSkipped: Generated response is too long ({len(response_tokens)} tokens).")
+            print(f"\tSkipped: Generated response is too long ({len(response_tokens)} tokens).")
             return None, "too_long"
-
-        example = {
-            "sentence": text,
-            "model_response": generated_text,
-            "steps": steps
-        }
+        example = {"sentence": text, "model_response": generated_text, "steps": steps}
         if self.thinking:
             example["thinking"] = thinking
         return example, None
