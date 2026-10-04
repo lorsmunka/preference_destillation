@@ -59,14 +59,23 @@ SLICES (10 cells, one writing agent pair each)
   garden, camping, music, art, pets, games, market, kitchen, beach,
   museum, toys); balance is checked after writing, not trusted.
 
-SOURCES (two agents per slice)
-  memory   writes from scratch, given 5-10 real exemplars of its slice
-           from the step-2 datasets as style references
-  online   searches the web for openly licensed problems of its slice,
-           writes adapted items (new wording, new numbers, never verbatim),
-           records the URL in "source"
+SOURCES (training only; revised 2026-10-04: we need ~10x v1's 16k examples)
+  A. seeded  agents rework the 1,605 human seeds (ASDiv + MAWPS, see HUMAN
+             SETS): new wording, context, names, plus a solve(); "source"
+             keeps the seed id
+  B. memory  writes from scratch per slice, given 5-10 seeds as style refs
+     online  searches the web for openly licensed problems of its slice,
+             writes adapted items (never verbatim), records the URL
+  Then two expansion layers on every kept item:
+  - reword   an agent rewrites it 2-3 ways, same solve() (wording variety)
+  - renumber a script redraws the numbers, re-runs solve(), keeps valid
+             ones: integer, 0..999, exact division (arithmetic variety)
+  Targets: ~15k written -> ~10k kept -> ~30k after reword -> ~100k after
+  renumber, ~200k turns. v1 was 260 templates for 500k problems; this is
+  ~30k wordings for ~100k. Renumbered copies are attached after dedup
+  (numbers normalise to N, so dedup would see them as one problem).
   Pilot first [step 4]: 1 slice x 2 sources x 50 items to measure yield,
-  duplicate rate and cost, then the full run. Target 15k written -> ~10k kept.
+  duplicate rate and cost, then the full run.
 
 PRUNING (in this order; every stage logs in / out / dropped-by-reason)
   1. execute     the VALIDATION checks above
@@ -79,8 +88,8 @@ PRUNING (in this order; every stage logs in / out / dropped-by-reason)
                  the exact Jaccard; same words in a new order survive)
   5. test leak   trigram Jaccard > 0.5 against any real-benchmark test
                  item -> drop (stricter on purpose)
-  6. shape cap   shape = the operations in solve(), in order, follow-ups
-                 after "|", e.g. "mul|sub". No shape above 8% of the kept
+  6. shape cap   shape = the operations in solve(), in the order computed,
+                 follow-ups after "|", e.g. "add>mul|sub". No shape above 8% of the kept
                  items; the excess is dropped most-redundant first (highest
                  nearest-neighbour Jaccard), seeded
   Counts at each stage go to items/build_log.json — the report reads that.
@@ -90,9 +99,26 @@ SPLITS
   test           10% of items, random, stratified by slice
   heldout_shape  2-3 whole shapes never trained on, chosen after step 4
                  from shapes with >= 100 items (compositional test)
-  real           SVAMP / ASDiv / MAWPS / GSM8K, filtered to integer answers,
-                 <= 3 operations, grade 2-4 [step 2]. Exemplars come from
-                 these sets, the real test never does; never trained on.
+  real           746 SVAMP problems, human-written only (see HUMAN SETS).
+                 Never trained on, never shown to a writer; single turn.
+  Synthetic test and held-out shapes are cut by family BEFORE reword and
+  renumber: every copy of a test item stays in test.
+
+HUMAN SETS (built 2026-10-04: python -m library.domain.math_tutor.benchmarks)
+  Range filter: 1-3 operations, whole non-negative numbers all the way,
+  numbers <= 99, answer <= 999, grade <= 4; the dataset's equation becomes
+  solve() and must reproduce the dataset's answer.
+             downloaded  in range  role
+  SVAMP           1,000       746  test (MIT)
+  ASDiv           2,305     1,159  seeds (CC BY-NC 4.0)
+  MAWPS           1,921     1,449  seeds (MIT, SVAMP repo copy)
+  Seeds dedup (ASDiv first): 2,608 -> 1,605. Dropped 840 exact duplicates
+  after normalisation, 90 near-duplicates, 73 too close to SVAMP. The human
+  sets are partly templated themselves: 544 MAWPS problems are ASDiv ones
+  with new names and numbers.
+  Test: 577 one-step, 169 two-step; 322 pure subtraction, 45 pure
+  multiplication, so accuracy is reported per shape.
+  Seeds: 1,192 / 363 / 50 at 1 / 2 / 3 steps; grade 1-4 where labelled.
 
 TURNS (what the teacher and the student see)
   An item with k follow-ups becomes k+1 records. Earlier turns carry the
@@ -123,8 +149,10 @@ STORAGE
                                        shape, split (tracked)
     items/dropped.jsonl                every drop with stage and reason (tracked)
     items/build_log.json               counts per stage, slice, source (tracked)
-    benchmarks/exemplars.jsonl         real problems used as style refs (tracked)
-    benchmarks/real_test.jsonl         real held-out test (tracked)
+    benchmarks/seeds.jsonl             1,605 ASDiv + MAWPS seeds (tracked)
+    benchmarks/real_test.jsonl         746 SVAMP, the human test (tracked)
+    benchmarks/dropped.jsonl           every drop with stage + reason (tracked)
+    benchmarks/build_log.json          counts, rules, licences, citations
     corpus.jsonl                       turns for data gen (gitignored, rebuilt)
   datasets/math/<name>/                raw downloads (gitignored, re-fetchable)
   batches/math_tutor/<teacher>/        teacher logits, as for every domain

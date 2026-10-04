@@ -23,6 +23,9 @@ Steps (one commit each, each approved):
  1. Spec the math_tutor domain in the ledger (schema, slices, dedup, prompts, outputs, holdouts)
     DONE 2026-10-04 -> thesis_work/domain_specs.txt
  2. Datasets: download, filter, split exemplars / real test, licences
+    DONE 2026-10-04 -> 746 SVAMP test, 1,605 seeds (benchmarks/build_log.json)
+    Revised: ~100k problems via seeded + written + reword + renumber (spec SOURCES);
+    cloud 5090 time for data gen, user buying it
  3. Schema + validator module (execute functions, state flow, normalise, dedup), 20 hand items
  4. Writing workflow: ~10 slice agents -> 10k items (budget OK; needs explicit go for fan-out)
  5. Gemma 4 check on 50 items vs function answers; pick student output format
