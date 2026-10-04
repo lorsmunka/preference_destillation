@@ -8,20 +8,35 @@ import json
 import os
 
 from library import GenerationJob
-from library.domain import LONG_CONTEXT_RECALL
+from library.domain import CODE_RECALL, MATH_TUTOR
 from library.data_gen.generator import DistillationDataGenerator
 from library.shared import ExitListener, get_output_dir
 from library.shared.queue_file import write_queue
 
 JOBS = [
+    # Cloud RTX 5090 (32 GB), plan step 7: bf16 teacher, batched. thesis_work/cloud_runbook.md.
+    # Build the corpora first (python -c "from library.domain import MATH_TUTOR, CODE_RECALL;
+    # MATH_TUTOR.build_corpus(); CODE_RECALL.build_corpus()"). On the 12 GB 4070 use
+    # load_in_4bit=True and generation_batch_size=16 instead.
     GenerationJob(
-        domain=LONG_CONTEXT_RECALL,
+        domain=CODE_RECALL,
         teacher_model="google/gemma-4-12B-it",
-        load_in_4bit=True,          # 24 GB bf16 -> ~7 GB NF4; weights come from models/gemma-4-12B-it (re-sharded)
+        load_in_4bit=False,
         chat_template=True,
-        max_examples=5000,
+        max_examples=10000,
         batch_size=32,
-        description="Virág long-context recall, Gemma 4 12B teacher, no thinking",
+        generation_batch_size=16,   # try 32 on the 5090 once memory is seen
+        description="code_recall (code finder), Gemma 4 12B bf16, batched",
+    ),
+    GenerationJob(
+        domain=MATH_TUTOR,
+        teacher_model="google/gemma-4-12B-it",
+        load_in_4bit=False,
+        chat_template=True,
+        max_examples=1_000_000,     # the whole corpus: train turns first, then test turns
+        batch_size=32,
+        generation_batch_size=16,
+        description="math_tutor turns, working-lines format, Gemma 4 12B bf16, batched",
     ),
 ]
 
