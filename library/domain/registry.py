@@ -5,6 +5,7 @@ from typing import Dict, List, Union
 from .base import Domain
 from .code_recall import CodeRecallDomain
 from .math_tutor import MathTutorDomain
+from .math_tutor.agentic import ANNOTATIONS, TEACHER_MODES, MathTutorAgenticDomain
 from .long_context_recall import LongContextRecallDomain
 from .math_word_problem import MathWordProblemDomain
 from .post_generation import PostGenerationDomain
@@ -40,3 +41,8 @@ def as_domain(value: Union[str, Domain]) -> Domain:
 
 for _domain in (RedditSentimentDomain(), MathWordProblemDomain(), PostGenerationDomain(), RedditCommentWithFeedbackDomain(), LongContextRecallDomain(), CodeRecallDomain(), MathTutorDomain()):
     register_domain(_domain)
+
+# The agentic tutor: one registered variant per annotation format and teacher mode.
+for _annotation in ANNOTATIONS:
+    for _teacher in TEACHER_MODES:
+        register_domain(MathTutorAgenticDomain(_annotation, _teacher))

@@ -62,7 +62,10 @@ class DistillationDataGenerator:
             # One input at a time (the original loop), or `generation_batch_size` together
             group = list(range(index, min(index + self.generation_batch_size, self.input_handler.input_count)))
             texts = [self.input_handler.get_input(i) for i in group]
-            if self.generation_batch_size == 1:
+            if getattr(self.domain, "teacher", "generate") == "forced":   # gold targets, teacher soft labels
+                targets = [self.input_handler.get_target(i) for i in group]
+                outcomes = self.model_handler.score_training_examples(texts, targets)
+            elif self.generation_batch_size == 1:
                 outcomes = [self.model_handler.generate_training_example(texts[0])]
             else:
                 outcomes = self.model_handler.generate_training_examples(texts)

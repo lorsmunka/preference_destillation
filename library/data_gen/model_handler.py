@@ -229,6 +229,49 @@ class ModelHandler:
         print(f"\tGenerated {len(texts)} examples together -> took {time() - start_time:.2f} seconds.")
         return results
 
+    def score_training_examples(self, texts: List[str], targets: List[str]) -> List[Tuple[Optional[Dict], Optional[str]]]:
+        """Teacher-forced: the teacher reads a given target (a gold answer) after the prompt in
+        one forward pass, and its distribution over the reduced vocabulary is kept at every
+        target position. No generation, so the targets stay correct; the teacher supplies the
+        soft labels. Rows are left-padded with explicit positions, and only the last positions'
+        logits are computed (logits_to_keep), so the full vocabulary is never materialised for
+        the prompt."""
+        start_time = time()
+        prompt_ids = [self.tokenizer(self.build_prompt(text))["input_ids"] for text in texts]
+        target_ids = [self.tokenizer(target, add_special_tokens=False)["input_ids"] for target in targets]
+        sequences = [prompt + target for prompt, target in zip(prompt_ids, target_ids)]
+        length = max(len(sequence) for sequence in sequences)
+        keep = max(len(target) for target in target_ids) + 1
+        pad = self.tokenizer.pad_token_id if self.tokenizer.pad_token_id is not None else self.tokenizer.eos_token_id
+        device = get_device()
+        input_ids = torch.tensor([[pad] * (length - len(s)) + s for s in sequences], device=device)
+        attention_mask = torch.tensor([[0] * (length - len(s)) + [1] * len(s) for s in sequences], device=device)
+        position_ids = (attention_mask.cumsum(-1) - 1).clamp(min=0)
+        token_list = self.vocabulary["token_list"]
+        reduced_ids = torch.tensor([self.vocabulary["token_to_id"][token] for token in token_list], device=device)
+        with torch.no_grad():
+            logits = self.model(input_ids=input_ids, attention_mask=attention_mask, position_ids=position_ids,
+                                logits_to_keep=keep).logits
+            reduced = logits[:, :, reduced_ids].float().cpu()
+
+        results = []
+        for row, (text, target, ids) in enumerate(zip(texts, targets, target_ids)):
+            # the logits predicting target token j sit at window position keep - len(ids) - 1 + j
+            offset = keep - len(ids) - 1
+            steps, agree = [], 0
+            for j, token_id in enumerate(ids):
+                logit_vector = reduced[row, offset + j].tolist()
+                predicted = int(max(range(len(logit_vector)), key=logit_vector.__getitem__))
+                token = self.tokenizer.convert_ids_to_tokens([token_id])[0]
+                agree += token_list[predicted] == token
+                steps.append({"token": token, "logits": logit_vector, "predicted_token_index": predicted})
+            example, reason = self.finish_example(text, target, steps, "")
+            if example is not None:
+                example["teacher_agreement"] = round(agree / max(len(ids), 1), 4)
+            results.append((example, reason))
+        print(f"\tScored {len(texts)} gold targets together -> took {time() - start_time:.2f} seconds.")
+        return results
+
     def finish_example(self, text: str, generated_text: str, steps: List[Dict], thinking: str) -> Tuple[Optional[Dict], Optional[str]]:
         """The checks every generated example passes before it is kept."""
         self.last_generated_text = generated_text

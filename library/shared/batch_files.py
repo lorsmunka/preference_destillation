@@ -106,6 +106,8 @@ def write_batch(path, records: List[dict]) -> Path:
         "tokens": [[step["token"] for step in record["steps"]] for record in records],
         "thinking": [record.get("thinking", "") for record in records],   # teacher's reasoning trace, text only
     }
+    if any(record.get("teacher_agreement") is not None for record in records):
+        meta["teacher_agreement"] = [record.get("teacher_agreement") for record in records]   # teacher-forced: argmax == gold share
     if any(record.get("ground_truth") is not None for record in records):
         meta["ground_truths"] = [record.get("ground_truth") for record in records]   # e.g. the executed answer
         meta["answer_correct"] = [record.get("answer_correct") for record in records]   # teacher right? None = not checkable
@@ -137,6 +139,8 @@ def _read_npz(path: Path) -> List[dict]:
         record = {"sentence": sentence, "model_response": response, "steps": steps}
         if thinking[example_index]:
             record["thinking"] = thinking[example_index]
+        if meta.get("teacher_agreement") and meta["teacher_agreement"][example_index] is not None:
+            record["teacher_agreement"] = meta["teacher_agreement"][example_index]
         if meta.get("ground_truths") and meta["ground_truths"][example_index] is not None:
             record["ground_truth"] = meta["ground_truths"][example_index]
             record["answer_correct"] = meta["answer_correct"][example_index]

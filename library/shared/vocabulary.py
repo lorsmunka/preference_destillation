@@ -124,7 +124,11 @@ _vocabulary_cache: Dict[str, dict] = {}
 
 
 def _example_tokens(tokenizer, domain: "Domain") -> List[str]:
-    """Unique tokens (order preserved) across the domain's example responses."""
+    """Unique tokens (order preserved) across the domain's example responses. A domain whose
+    response vocabulary is too large to list as example texts gives its tokens directly
+    (`example_tokens`, a list of tokenizer token strings)."""
+    if getattr(domain, "example_tokens", None):
+        return list(domain.example_tokens)
     seen = set()
     unique = []
     for response in domain.example_responses:

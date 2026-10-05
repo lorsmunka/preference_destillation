@@ -29,6 +29,10 @@ class InputHandler:
     def get_input(self, index):
         return self.inputs[index]
 
+    def get_target(self, index):
+        """The corpus record's gold "target" text (teacher-forced scoring), or None."""
+        return self.records[index].get("target")
+
     def get_ground_truth(self, index):
         """The corpus record's "answer", when the domain has one (else None)."""
         return self.records[index].get("answer")
