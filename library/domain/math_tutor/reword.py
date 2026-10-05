@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from .items import validate
+from .similarity import NEAR_DUPLICATE, collect_name_words, normalise, sequence_ratio
 
 ITEMS_DIR = Path(__file__).resolve().parent / "items"
 REWORD_DIR = ITEMS_DIR / "reword"
@@ -93,11 +94,24 @@ def write_targets() -> int:
     return count
 
 
+def too_close(problem: str, others: List[Tuple[str, str]]) -> Optional[str]:
+    """The pruning would delete a rewording 80% the same (in order) as its original or as a
+    sibling rewording; say so here, where the writer can still fix it."""
+    names = collect_name_words([problem] + [text for _, text in others])
+    words = normalise(problem, names)
+    for label, text in others:
+        score = sequence_ratio(words, normalise(text, names))
+        if score > NEAR_DUPLICATE:
+            return f"too close to {label} (similarity {score:.2f} > {NEAR_DUPLICATE}); rewrite it more"
+    return None
+
+
 def main() -> None:
     originals = raw_items_by_id()
     paths = [Path(sys.argv[1])] if len(sys.argv) > 1 else sorted(REWORD_DIR.glob("*.jsonl"))
     for path in paths:
         valid, failures = 0, []
+        siblings: Dict[str, List[Tuple[str, str]]] = {}
         for line_number, line in enumerate(open(path, encoding="utf-8"), start=1):
             if not line.strip():
                 continue
@@ -109,6 +123,11 @@ def main() -> None:
             item, error = expand(record, originals)
             if item is not None:
                 validated, error = validate(item)
+            if not error:
+                original = originals[record["of"]]
+                earlier = siblings.setdefault(record["of"], [])
+                error = too_close(record["problem"], [("the original", original["problem"])] + earlier)
+                earlier.append((f"rewording {record['id']}", record["problem"]))
             if error:
                 failures.append(f"line {line_number} {record.get('id', '?')}: {error}")
             else:

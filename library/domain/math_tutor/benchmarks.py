@@ -24,7 +24,7 @@ from library.shared.config import PROJECT_ROOT
 from .functions import NotAllowed, equation_to_solve, execute, trace_equation
 from .harvest import HARVEST_DIR, check_harvested
 from .prune import reason_category
-from .similarity import TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
+from .similarity import NEAR_DUPLICATE, TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
 
 DOWNLOAD_DIR = PROJECT_ROOT / "datasets" / "math"
 OUTPUT_DIR = Path(__file__).resolve().parent / "benchmarks"
@@ -33,7 +33,6 @@ MAX_NUMBER = 99
 MAX_ANSWER = 999
 MAX_STEPS = 3
 MAX_GRADE = 4
-NEAR_DUPLICATE = 0.8       # word-sequence ratio
 TOO_CLOSE_TO_TEST = 0.5    # word-trigram Jaccard, on top of NEAR_DUPLICATE against SVAMP
 
 SOURCES = {

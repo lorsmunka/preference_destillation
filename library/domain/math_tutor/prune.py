@@ -31,14 +31,13 @@ from typing import Dict, List
 
 from .items import validate
 from .reword import read_rewordings
-from .similarity import TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
+from .similarity import NEAR_DUPLICATE, TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 ITEMS_DIR = PACKAGE_DIR / "items"
 RAW_DIR = ITEMS_DIR / "raw"
 BENCHMARKS_DIR = PACKAGE_DIR / "benchmarks"
 
-NEAR_DUPLICATE = 0.8       # word-sequence ratio
 TOO_CLOSE_TO_TEST = 0.5    # word-trigram Jaccard, on top of NEAR_DUPLICATE against SVAMP
 REDUNDANCY_FLOOR = 0.5     # shape cap: nearest neighbours below this count as 0
 SHAPE_CAP_SHARE = 0.25     # of the item's slice, per full shape

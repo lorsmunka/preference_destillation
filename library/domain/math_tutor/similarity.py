@@ -14,6 +14,10 @@ import re
 from collections import Counter
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+# Two problems whose word-sequence ratio is above this are near-duplicates (pruning, seeds,
+# rewording self-check all use it).
+NEAR_DUPLICATE = 0.8
+
 NUMBER_WORDS = {
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
     "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
