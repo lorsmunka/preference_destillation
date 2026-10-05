@@ -47,3 +47,7 @@ generate_*.log
 
 # Downloaded public datasets (re-fetchable; the filtered sets live under library/domain/*/benchmarks/)
 datasets/
+
+# math_tutor: large derived files, rebuilt byte-identically by prune / renumber (~10 min)
+library/domain/math_tutor/items/items.jsonl
+library/domain/math_tutor/items/renumbered.jsonl

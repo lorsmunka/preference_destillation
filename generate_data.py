@@ -4,8 +4,11 @@ Jobs are typed `GenerationJob` objects: pass a Domain object as `domain=` (no ma
 strings), everything else has a default. Completed jobs (by info.json status) are skipped.
 """
 
+import gc
 import json
 import os
+
+import torch
 
 from library import GenerationJob
 from library.domain import CODE_RECALL, MATH_TUTOR
@@ -55,6 +58,8 @@ def main():
                     print(f"Skipping completed: {job.domain.name} ({job.teacher_model})")
                     continue
         DistillationDataGenerator(job, exit_listener).run()
+        gc.collect()                     # free this job's teacher before the next one loads
+        torch.cuda.empty_cache()
     exit_listener.stop()
     print("Done.")
 

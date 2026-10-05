@@ -173,6 +173,22 @@ STORAGE
   datasets/math/<name>/                raw downloads (gitignored, re-fetchable)
   batches/math_tutor/<teacher>/        teacher logits, as for every domain
 
+BUILD RESULT (2026-10-05; numbers from the build logs)
+  human     SVAMP test 746 · seeds 2,153 (ASDiv 1,067, MAWPS 243, harvested 843
+            from open-licence school material: EngageNY, IM, Oak, gov.uk STA/DfE,
+            IES, NAEP, dera, Wikibooks)
+  written   12,476 items by Claude agents (Sonnet pilot 150, Opus runs A-D), all
+            valid; 10 slices x 8 memory batches x 100, seeded x2 over every seed
+  reworded  21,694 (two per train item, Opus, text only, code reused)
+  pruned    34,170 -> 34,002 (7 exact, 161 near-duplicates, 0 test leaks, 0 over cap)
+  splits    train 32,377 · test 1,210 · held-out shapes 415 (add>mul, sub>div, sub>add)
+  renumber  96,544 copies -> 130,546 problems
+  turns     295,458 train + 10,931 test for the teacher; 3,648 held-out turns are
+            scored against executed answers only
+  templateness (median nearest neighbour, 2,000 sample): 0.40 vs seeds 0.54,
+            SVAMP 0.91, v1 templates 1.00
+  agent tokens ~38M over 8 runs (items/writing_log.json)
+
 PROVENANCE (for the thesis)
   Inputs written by Claude agents, answers computed by executing the
   agents' code, outputs and logits from Gemma 4 12B. Same split as TinyGSM

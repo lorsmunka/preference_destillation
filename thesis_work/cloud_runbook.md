@@ -28,14 +28,19 @@ huggingface-cli login            # your token; the Gemma 4 licence must be accep
 ```
 No `models/` folder on the cloud → weights load from the HF id `google/gemma-4-12B-it`.
 
-## 3. Corpora (gitignored, rebuilt deterministically)
+## 3. Corpora (gitignored, rebuilt deterministically, ~10 min)
 ```
+python -m library.domain.math_tutor.prune        # raw + rewordings -> items.jsonl
+python -m library.domain.math_tutor.renumber     # -> renumbered.jsonl
 python -c "from library.domain import MATH_TUTOR, CODE_RECALL; MATH_TUTOR.build_corpus(); CODE_RECALL.build_corpus()"
 ```
+Expect: 34,002 items, 96,544 copies, 295,458 train + 10,931 test turns (code_recall 10,000).
+To fit a time budget, cap the train turns: `MATH_TUTOR.build_corpus(count=N)` (they are
+shuffled, so any prefix is a random sample; test turns always come last).
 
 ## 4. Check before the long run (~5 min)
-- 64 turns of each domain through the real generator path; look at kept / answer_correct
-  (scratchpad smoke script, adapted: `generator_smoke.py`).
+- `python generation_check.py`: 64 inputs of each job through the real generator path into a
+  temporary folder; prints kept / skipped / answer_correct, seconds per input, peak GPU memory.
 - Watch `nvidia-smi`: if memory stays under ~26 GB at batch 16, set
   `generation_batch_size=32` in `generate_data.py`.
 
