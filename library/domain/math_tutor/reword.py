@@ -75,6 +75,24 @@ def read_rewordings(originals: Optional[Dict[str, Dict]] = None) -> List[Dict]:
     return items
 
 
+TARGETS_PATH = ITEMS_DIR / "reword_targets.jsonl"
+
+
+def write_targets() -> int:
+    """Freeze the train items to be reworded into reword_targets.jsonl (one per line, only
+    what a rewording agent needs), so agents read fixed line ranges while prune.py may run."""
+    count = 0
+    with open(TARGETS_PATH, "w", encoding="utf-8") as file:
+        for line in open(ITEMS_DIR / "items.jsonl", encoding="utf-8"):
+            item = json.loads(line)
+            if item["split"] != "train":
+                continue
+            target = {key: item[key] for key in ("id", "slice", "distractor", "problem", "solve", "follow_ups")}
+            file.write(json.dumps(target, ensure_ascii=False) + "\n")
+            count += 1
+    return count
+
+
 def main() -> None:
     originals = raw_items_by_id()
     paths = [Path(sys.argv[1])] if len(sys.argv) > 1 else sorted(REWORD_DIR.glob("*.jsonl"))
