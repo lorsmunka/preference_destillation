@@ -189,6 +189,24 @@ BUILD RESULT (2026-10-05; numbers from the build logs)
             SVAMP 0.91, v1 templates 1.00
   agent tokens ~38M over 8 runs (items/writing_log.json)
 
+AGENTIC MATH TUTOR v1 (agreed 2026-10-05)
+  The tutor is an agent: the distilled student plus a harness. Turn types:
+    route    newest message -> first output token <solution> or <explanation>
+    solve    clean history + <message> -> <solution> named steps + Answer </solution>
+    explain  history + open thread + <message> -> <explanation> free text </explanation>
+  History: past turns typed (<task>/<solution> main line, <question>/<explanation> side
+  thread). When a message routes to <solution>, the side thread leaves the model's context
+  (the harness keeps the full transcript). A thread open + a new task: route with the
+  thread visible, then solve from the clean history (two-phase, one extra token-step).
+  Annotation formats (annotations.py, rendered from the executed solve() trace):
+    answer "Answer: 5" · working "13 - 8 = 5" · named "money left = 13 - 8 = 5" ·
+    code "money_left = left - cost" (the harness runs it: program-of-thought tool use).
+  Named/code labels are the writers' variable names (9,763 distinct, 2.3% generic);
+  rewordings reuse the original's names, so they need a relabel pass first.
+  Teacher data per format: generated (Gemma writes it) or teacher-forced (Gemma scores the
+  gold text in one forward pass: correct targets + soft labels). Explanations: teacher only.
+  Flags: answer_correct, route_correct. Routing test: ~100 hand-written messages.
+
 PROVENANCE (for the thesis)
   Inputs written by Claude agents, answers computed by executing the
   agents' code, outputs and logits from Gemma 4 12B. Same split as TinyGSM

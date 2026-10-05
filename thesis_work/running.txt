@@ -7,6 +7,29 @@ RUNNING   nothing. No GPU in use, no agents.
           python generation_check.py first, then python generate_data.py (code_recall, math_tutor).
           Step 8 open items below (unknown tokens, student size).
 
+PLAN v2 (agreed 2026-10-05) — AGENTIC DISTILLATION, one agent: the agentic math tutor
+Thesis: part 1 = the method and its dynamics across domains (E-00, E-01, F-E1, done);
+part 2 = distilling an agent (model + harness) on one domain, the math tutor. Code finder
+dropped (future work). Keep every layer modular so a tutor v2 can swap any one of them:
+  A items        problem + executable solve() + follow-ups (done, 34k / 130k problems)
+  B annotation   how a solution is written: answer | working | named | code (gold from
+                 solve(); teacher-generated; teacher-forced on gold); explanations (teacher)
+  C conversation tagged blocks <task> <solution> <question> <explanation>, newest input as
+                 <message>; route = the first output token; a new task drops the side thread
+  D technique    TrainingRun dials: anneal, divergence, temperature, attention noise, size
+Studies (x3 seeds): 1 annotation (4 formats x gold-CE vs teacher-KD) · 2 E-01 arms per turn
+type (route / solve / explain) · 3 student size · 4 regularisers. ~70 runs.
+v1 build order:
+ 1. plan + spec (this)                                   DONE 2026-10-05
+ 2. annotations.py: gold renderers answer/working/named/code from the solve() trace  DONE 2026-10-05
+ 3. conversation.py: tagged turns, clean history, route / solve / explain turns
+ 4. teacher prompts per annotation + teacher-forced scoring mode (GPU check)
+ 5. explain threads: Gemma-as-pupil questions (sampled) + teacher explanations (GPU check)
+ 6. relabel pass for rewordings' variable names (cloud)
+ 7. output vocabularies per annotation (exact for gold, seed pass for explanations)
+ 8. cloud run
+ 9. training studies + harness (route, solve, explain, line check / run code, re-ask)
+
 PLAN   (agreed 2026-10-04 — practical turn: two demo domains + one standardised table)
 Direction: build the math tutor and the code finder as model + harness agents, run the
 same E-01 arms on them, and let the combined table produce the findings. Math first.
