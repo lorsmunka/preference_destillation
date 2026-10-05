@@ -44,7 +44,7 @@ REDUNDANCY_FLOOR = 0.5     # shape cap: nearest neighbours below this count as 0
 SHAPE_CAP_SHARE = 0.25     # of the item's slice, per full shape
 SHAPE_CAP_FLOOR = 50       # small slices are not capped below this
 TEST_SHARE = 0.10
-HELDOUT_SHAPES: List[str] = []  # problem shapes never trained on; chosen after the writing run
+HELDOUT_SHAPES: List[str] = ["add>mul", "sub>div", "sub>add"]  # never trained on; compositional test (2026-10-05)
 SEED = 0
 
 

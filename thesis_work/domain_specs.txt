@@ -107,7 +107,13 @@ SPLITS
   train          the rest
   test           10% of items, random, stratified by slice
   heldout_shape  2-3 whole shapes never trained on, chosen after step 4
-                 from shapes with >= 100 items (compositional test)
+                 from shapes with >= 100 items (compositional test).
+                 CHOSEN 2026-10-05: add>mul (182 items), sub>div (123), sub>add
+                 (109) = 414 items, 3.3%. Their parts and reverse orders stay in
+                 training (mul>add 247, add>div 177, add>sub 149). Not chosen:
+                 add>sub>div (S07's round-up idiom) and div>mod (remainders).
+                 Follow-up turns of other items can still chain these operations
+                 across turns; only the single-turn composition is unseen.
   real           746 SVAMP problems, human-written only (see HUMAN SETS).
                  Never trained on, never shown to a writer; single turn.
   Synthetic test and held-out shapes are cut by family BEFORE reword and
