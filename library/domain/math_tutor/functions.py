@@ -10,6 +10,7 @@ intermediate value is checked on the way.
 """
 
 import ast
+import copy
 from fractions import Fraction
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
@@ -21,11 +22,21 @@ class NotAllowed(ValueError):
     """The equation or function breaks one of the domain's rules; the message says which."""
 
 
+class Step(NamedTuple):
+    """One line of solve(), as the annotations render it."""
+    name: str        # what it sets: a variable, or a key computed inside the returned dict
+    code: str        # the expression as written, state['x'] shown as plain x: "cost + 5"
+    filled: str      # the same expression with every name replaced by its value: "12 + 5"
+    value: int
+    computes: bool   # False for a plain fact ("trays = 4") or a copy ("x = state['y']")
+
+
 class Execution(NamedTuple):
     result: Dict[str, int]   # the dict solve() returned, "answer" included
     operations: List[str]    # every operation in the order computed: ["mul", "sub"]
     literals: List[int]      # every number written in the code
     reads_state: bool        # whether it used anything from the previous turn
+    steps: List[Step]        # every assignment (and computed return value), in order
 
 
 def parse_solve(source: str, takes_state: bool) -> ast.FunctionDef:
@@ -47,24 +58,67 @@ def parse_solve(source: str, takes_state: bool) -> ast.FunctionDef:
 
 
 class Interpreter:
-    def __init__(self, state: Optional[Dict[str, int]], allow_remainders: bool):
+    def __init__(self, state: Optional[Dict[str, int]], allow_remainders: bool, trace: bool = False):
         self.state = state
+        self.trace = trace   # record Steps for the annotations (off for plain validation: it is slower)
         self.allow_remainders = allow_remainders
         self.variables: Dict[str, int] = {}
         self.operations: List[str] = []
         self.literals: List[int] = []
         self.reads_state = False
+        self.steps: List[Step] = []
 
     def run(self, function: ast.FunctionDef) -> Dict[str, int]:
         for statement in function.body[:-1]:
             if isinstance(statement, ast.Assign) and len(statement.targets) == 1 and isinstance(statement.targets[0], ast.Name):
-                self.assign(statement.targets[0].id, self.evaluate(statement.value))
+                name, expression = statement.targets[0].id, statement.value
+                filled = self.filled(expression) if self.trace else ""
+                self.assign(name, self.evaluate(expression))
+                self.record(name, expression, filled)
             elif isinstance(statement, ast.AugAssign) and isinstance(statement.target, ast.Name):
-                current = self.read_variable(statement.target.id)
-                self.assign(statement.target.id, self.operate(statement.op, current, self.evaluate(statement.value)))
+                name = statement.target.id
+                current = self.read_variable(name)
+                expression = ast.BinOp(left=ast.Name(id=name, ctx=ast.Load()), op=statement.op, right=statement.value)
+                filled = self.filled(expression) if self.trace else ""
+                self.assign(name, self.operate(statement.op, current, self.evaluate(statement.value)))
+                self.record(name, expression, filled)
             else:
                 raise NotAllowed(f"{type(statement).__name__} statement not allowed")
         return self.returned_dict(function.body[-1].value)
+
+    # --- the step trace, for annotations; it never changes what is computed --------------
+    def record(self, name: str, expression, filled: str) -> None:
+        if not self.trace:
+            return
+        computes = any(isinstance(node, ast.BinOp) for node in ast.walk(expression))
+        self.steps.append(Step(name, self.as_code(expression), filled, self.variables[name], computes))
+
+    @staticmethod
+    def as_code(expression) -> str:
+        """The expression with state['x'] written as x (the previous turn's quantity by name)."""
+        class PlainNames(ast.NodeTransformer):
+            def visit_Subscript(self, node):
+                if isinstance(node.value, ast.Name) and node.value.id == "state" and isinstance(node.slice, ast.Constant):
+                    return ast.copy_location(ast.Name(id=node.slice.value, ctx=ast.Load()), node)
+                return self.generic_visit(node)
+        return ast.unparse(PlainNames().visit(copy.deepcopy(expression)))
+
+    def filled(self, expression) -> str:
+        """The expression with every name and state['x'] replaced by its current value."""
+        interpreter = self
+
+        class Values(ast.NodeTransformer):
+            def visit_Name(self, node):
+                if node.id in interpreter.variables:
+                    return ast.copy_location(ast.Constant(interpreter.variables[node.id]), node)
+                return node
+
+            def visit_Subscript(self, node):
+                if (isinstance(node.value, ast.Name) and node.value.id == "state" and interpreter.state is not None
+                        and isinstance(node.slice, ast.Constant) and node.slice.value in interpreter.state):
+                    return ast.copy_location(ast.Constant(interpreter.state[node.slice.value]), node)
+                return self.generic_visit(node)
+        return ast.unparse(Values().visit(copy.deepcopy(expression)))
 
     def assign(self, name: str, value: int) -> None:
         if name == "state":
@@ -86,7 +140,10 @@ class Interpreter:
                     raise NotAllowed("only **state may be unpacked")
                 result.update(self.state)
             elif isinstance(key, ast.Constant) and isinstance(key.value, str):
+                filled = self.filled(value) if self.trace else ""
                 result[key.value] = self.evaluate(value)
+                if self.trace and any(isinstance(node, ast.BinOp) for node in ast.walk(value)):  # computed in the return itself
+                    self.steps.append(Step(key.value, self.as_code(value), filled, result[key.value], True))
             else:
                 raise NotAllowed("dict keys must be plain strings")
         if "answer" not in result:
@@ -136,11 +193,12 @@ class Interpreter:
         return value
 
 
-def execute(source: str, state: Optional[Dict[str, int]] = None, allow_remainders: bool = False) -> Execution:
+def execute(source: str, state: Optional[Dict[str, int]] = None, allow_remainders: bool = False,
+            trace: bool = False) -> Execution:
     """Run one solve() (state=None for the first turn, the previous result for a follow-up)."""
-    interpreter = Interpreter(state, allow_remainders)
+    interpreter = Interpreter(state, allow_remainders, trace)
     result = interpreter.run(parse_solve(source, takes_state=state is not None))
-    return Execution(result, interpreter.operations, interpreter.literals, interpreter.reads_state)
+    return Execution(result, interpreter.operations, interpreter.literals, interpreter.reads_state, interpreter.steps)
 
 
 # --- human benchmarks: dataset equation -> solve() -------------------------------------

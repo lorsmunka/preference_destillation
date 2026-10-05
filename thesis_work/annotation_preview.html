@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Annotation Preview</title>
+<style>
+:root { --bg:#f7f7f5; --card:#fff; --fg:#1d1d1f; --muted:#6b6b70; --border:#e2e2de; --tag:#8a8a90;
+  --agent-bg:#e2f3e7; --agent-fg:#1e6a39; --gold-bg:#dff1f1; --gold-fg:#0f6464; --harness:#875800; --warn:#b7791f; --on:#2f6fdb; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#141416; --card:#1d1d20; --fg:#ececee; --muted:#9a9aa2;
+  --border:#2e2e33; --tag:#8a8a95; --agent-bg:#173322; --agent-fg:#7fd8a0; --gold-bg:#123434; --gold-fg:#7fdcdc; --harness:#f0c060;
+  --warn:#e3b25a; --on:#7aa7ff; } }
+:root[data-theme="dark"] { --bg:#141416; --card:#1d1d20; --fg:#ececee; --muted:#9a9aa2; --border:#2e2e33; --tag:#8a8a95;
+  --agent-bg:#173322; --agent-fg:#7fd8a0; --gold-bg:#123434; --gold-fg:#7fdcdc; --harness:#f0c060; --warn:#e3b25a; --on:#7aa7ff; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { max-width:960px; margin:0 auto; padding:24px 16px 60px; }
+h1 { font-size:24px; margin:0 0 6px; }
+.note { color:var(--muted); font-size:13px; }
+.legend span { padding:3px 8px; border-radius:6px; font-size:13px; margin-right:6px; }
+.item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin:14px 0; }
+.item.warn { border-color:var(--warn); }
+.switch { margin:8px 0; display:flex; gap:6px; flex-wrap:wrap; }
+.switch button { background:none; border:1px solid var(--border); color:var(--fg); border-radius:8px; padding:3px 10px; cursor:pointer; font:inherit; font-size:13px; }
+.switch button.on { border-color:var(--on); color:var(--on); font-weight:600; }
+pre { white-space:pre-wrap; word-break:break-word; font:12.5px/1.6 ui-monospace,Consolas,monospace; margin:0;
+  background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; }
+.tag { color:var(--tag); } .agent { background:var(--agent-bg); color:var(--agent-fg); }
+.gold { background:var(--gold-bg); color:var(--gold-fg); } .harness { color:var(--harness); font-style:italic; }
+</style></head><body><main>
+<h1>Annotation preview — the four gold formats</h1>
+<p class="note">Real items from the corpus, shown as the tutor's main line in the tagged format. Every solution is rendered
+from the item's executed solve(), so it is correct by construction. Switch formats per item; "named" is the v1 candidate.</p>
+<p class="legend"><span class="tag">&lt;tags&gt; (conversation layer)</span><span class="agent">task text (written by agents)</span><span class="gold">solution (rendered from solve())</span><span class="harness">what the harness computes (code format)</span></p>
+<section class="item">
+  <header><b>S09-mem-b02-0031</b> · S09 · the fish tank from the sample conversation · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">He also buys a tub of fish food for $5. How much has he spent now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 17</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Ravi had saved $30 for his tank. How much of his savings is left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 13</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A week later he goes back and buys 4 more neon tetras at the same price. How much money does he have left after that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 5</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">2 * 6 = 12
+Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">He also buys a tub of fish food for $5. How much has he spent now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">12 + 5 = 17
+Answer: 17</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Ravi had saved $30 for his tank. How much of his savings is left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">30 - 17 = 13
+Answer: 13</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A week later he goes back and buys 4 more neon tetras at the same price. How much money does he have left after that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">4 * 2 = 8
+13 - 8 = 5
+Answer: 5</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">cost = 2 * 6 = 12
+Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">He also buys a tub of fish food for $5. How much has he spent now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">spent = 12 + 5 = 17
+Answer: 17</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Ravi had saved $30 for his tank. How much of his savings is left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">left = 30 - 17 = 13
+Answer: 13</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A week later he goes back and buys 4 more neon tetras at the same price. How much money does he have left after that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">more = 4 * 2 = 8
+remaining = 13 - 8 = 5
+Answer: 5</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">price = 2
+fish = 6
+cost = price * fish
+Answer: cost</span>
+<span class="harness">→ the harness runs it: Answer = 12</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">He also buys a tub of fish food for $5. How much has he spent now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">spent = cost + 5
+Answer: spent</span>
+<span class="harness">→ the harness runs it: Answer = 17</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Ravi had saved $30 for his tank. How much of his savings is left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">left = 30 - spent
+Answer: left</span>
+<span class="harness">→ the harness runs it: Answer = 13</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A week later he goes back and buys 4 more neon tetras at the same price. How much money does he have left after that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">more = 4 * price
+remaining = left - more
+Answer: remaining</span>
+<span class="harness">→ the harness runs it: Answer = 5</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>S01-mem-b01-0009</b> · S01 · start unknown · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Even before a school group of 38 walked into the dinosaur hall, it was busy; now 92 people are inside. How many were there before the group came?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 54</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The guide leads the school group around in pairs. How many pairs are there?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 19</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Then 25 more visitors come into the hall. How many people are in the hall now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 117</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Even before a school group of 38 walked into the dinosaur hall, it was busy; now 92 people are inside. How many were there before the group came?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">92 - 38 = 54
+Answer: 54</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The guide leads the school group around in pairs. How many pairs are there?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">38 / 2 = 19
+Answer: 19</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Then 25 more visitors come into the hall. How many people are in the hall now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">92 + 25 = 117
+Answer: 117</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">Even before a school group of 38 walked into the dinosaur hall, it was busy; now 92 people are inside. How many were there before the group came?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">before = 92 - 38 = 54
+Answer: 54</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The guide leads the school group around in pairs. How many pairs are there?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">pairs = 38 / 2 = 19
+Answer: 19</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Then 25 more visitors come into the hall. How many people are in the hall now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">now = 92 + 25 = 117
+Answer: 117</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Even before a school group of 38 walked into the dinosaur hall, it was busy; now 92 people are inside. How many were there before the group came?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">group = 38
+in_hall = 92
+before = in_hall - group
+Answer: before</span>
+<span class="harness">→ the harness runs it: Answer = 54</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The guide leads the school group around in pairs. How many pairs are there?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">pairs = group // 2
+Answer: pairs</span>
+<span class="harness">→ the harness runs it: Answer = 19</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Then 25 more visitors come into the hall. How many people are in the hall now?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">now = in_hall + 25
+Answer: now</span>
+<span class="harness">→ the harness runs it: Answer = 117</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>S04-mem-b01-0081</b> · S04 · keyword distractor (&#x27;fewer&#x27;, solved by adding) · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Tonight&#x27;s campfire burned for 75 minutes, which was 40 minutes more than last night&#x27;s. How long did last night&#x27;s fire burn?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 35</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Tomorrow they want a fire 15 minutes longer than tonight&#x27;s. How long is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 90</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many minutes would the three fires burn in all?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 200</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How much longer would tomorrow&#x27;s fire burn than last night&#x27;s?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 55</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Tonight&#x27;s campfire burned for 75 minutes, which was 40 minutes more than last night&#x27;s. How long did last night&#x27;s fire burn?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">75 - 40 = 35
+Answer: 35</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Tomorrow they want a fire 15 minutes longer than tonight&#x27;s. How long is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">75 + 15 = 90
+Answer: 90</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many minutes would the three fires burn in all?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">75 + 35 + 90 = 200
+Answer: 200</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How much longer would tomorrow&#x27;s fire burn than last night&#x27;s?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">90 - 35 = 55
+Answer: 55</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">Tonight&#x27;s campfire burned for 75 minutes, which was 40 minutes more than last night&#x27;s. How long did last night&#x27;s fire burn?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">last night = 75 - 40 = 35
+Answer: 35</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Tomorrow they want a fire 15 minutes longer than tonight&#x27;s. How long is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tomorrow = 75 + 15 = 90
+Answer: 90</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many minutes would the three fires burn in all?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">total = 75 + 35 + 90 = 200
+Answer: 200</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How much longer would tomorrow&#x27;s fire burn than last night&#x27;s?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">longer = 90 - 35 = 55
+Answer: 55</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Tonight&#x27;s campfire burned for 75 minutes, which was 40 minutes more than last night&#x27;s. How long did last night&#x27;s fire burn?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tonight = 75
+last_night = tonight - 40
+Answer: last_night</span>
+<span class="harness">→ the harness runs it: Answer = 35</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Tomorrow they want a fire 15 minutes longer than tonight&#x27;s. How long is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tomorrow = tonight + 15
+Answer: tomorrow</span>
+<span class="harness">→ the harness runs it: Answer = 90</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many minutes would the three fires burn in all?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">total = tonight + last_night + tomorrow
+Answer: total</span>
+<span class="harness">→ the harness runs it: Answer = 200</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How much longer would tomorrow&#x27;s fire burn than last night&#x27;s?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">longer = tomorrow - last_night
+Answer: longer</span>
+<span class="harness">→ the harness runs it: Answer = 55</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>S07-mem-b01-0021</b> · S07 · round up · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Hamsters at the pet shop live 3 to a cage. If 16 hamsters arrive, how many cages does the shop need?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 6</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each cage gets 2 water bottles. How many bottles is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Hamsters at the pet shop live 3 to a cage. If 16 hamsters arrive, how many cages does the shop need?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">(16 + 3 - 1) // 3 = 6
+Answer: 6</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each cage gets 2 water bottles. How many bottles is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">6 * 2 = 12
+Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">Hamsters at the pet shop live 3 to a cage. If 16 hamsters arrive, how many cages does the shop need?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">cages = (16 + 3 - 1) // 3 = 6
+Answer: 6</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each cage gets 2 water bottles. How many bottles is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">bottles = 6 * 2 = 12
+Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Hamsters at the pet shop live 3 to a cage. If 16 hamsters arrive, how many cages does the shop need?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">per_cage = 3
+hamsters = 16
+cages = (hamsters + per_cage - 1) // per_cage
+Answer: cages</span>
+<span class="harness">→ the harness runs it: Answer = 6</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each cage gets 2 water bottles. How many bottles is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">bottles = cages * 2
+Answer: bottles</span>
+<span class="harness">→ the harness runs it: Answer = 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>S07-mem-b01-0005</b> · S07 · remainder · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Tomás lines up 23 river stones in rows of 5. The water was cold and clear. How many stones are left out of the full rows?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 3</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many full rows did he make?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 4</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Tomás lines up 23 river stones in rows of 5. The water was cold and clear. How many stones are left out of the full rows?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">23 % 5 = 3
+Answer: 3</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many full rows did he make?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">23 // 5 = 4
+Answer: 4</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">Tomás lines up 23 river stones in rows of 5. The water was cold and clear. How many stones are left out of the full rows?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">left = 23 % 5 = 3
+Answer: 3</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many full rows did he make?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">rows = 23 // 5 = 4
+Answer: 4</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Tomás lines up 23 river stones in rows of 5. The water was cold and clear. How many stones are left out of the full rows?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">stones = 23
+per_row = 5
+left = stones % per_row
+Answer: left</span>
+<span class="harness">→ the harness runs it: Answer = 3</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many full rows did he make?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">rows = stones // per_row
+Answer: rows</span>
+<span class="harness">→ the harness runs it: Answer = 4</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>S08-mem-b01-0022</b> · S08 · multiplicative compare · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">The bike shop keeps 9 tandem bikes. Its racing bikes are 7 times that number. It opens at 8 every morning. How many racing bikes does it have?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 63</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Saturday the shop sells 13 racing bikes. How many racing bikes are left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 50</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many racing bikes and tandems are there now altogether?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 59</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Every one of those bikes gets 2 new tyres. How many tyres is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 118</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">The bike shop keeps 9 tandem bikes. Its racing bikes are 7 times that number. It opens at 8 every morning. How many racing bikes does it have?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">9 * 7 = 63
+Answer: 63</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Saturday the shop sells 13 racing bikes. How many racing bikes are left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">63 - 13 = 50
+Answer: 50</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many racing bikes and tandems are there now altogether?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">50 + 9 = 59
+Answer: 59</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Every one of those bikes gets 2 new tyres. How many tyres is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">59 * 2 = 118
+Answer: 118</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">The bike shop keeps 9 tandem bikes. Its racing bikes are 7 times that number. It opens at 8 every morning. How many racing bikes does it have?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">racing = 9 * 7 = 63
+Answer: 63</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Saturday the shop sells 13 racing bikes. How many racing bikes are left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">racing left = 63 - 13 = 50
+Answer: 50</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many racing bikes and tandems are there now altogether?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">bikes now = 50 + 9 = 59
+Answer: 59</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Every one of those bikes gets 2 new tyres. How many tyres is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tyres = 59 * 2 = 118
+Answer: 118</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">The bike shop keeps 9 tandem bikes. Its racing bikes are 7 times that number. It opens at 8 every morning. How many racing bikes does it have?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tandems = 9
+times = 7
+racing = tandems * times
+Answer: racing</span>
+<span class="harness">→ the harness runs it: Answer = 63</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Saturday the shop sells 13 racing bikes. How many racing bikes are left?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">racing_left = racing - 13
+Answer: racing_left</span>
+<span class="harness">→ the harness runs it: Answer = 50</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">How many racing bikes and tandems are there now altogether?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">bikes_now = racing_left + tandems
+Answer: bikes_now</span>
+<span class="harness">→ the harness runs it: Answer = 59</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Every one of those bikes gets 2 new tyres. How many tyres is that?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tyres = bikes_now * 2
+Answer: tyres</span>
+<span class="harness">→ the harness runs it: Answer = 118</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>S10-mem-b01-0078</b> · S10 · multi-step, three follow-ups · source <code>memory</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">A bookstore sells 36 magazines on Monday and twice as many on Tuesday. A cat sleeps by the window. What is the total for the two days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 108</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Wednesday it sells 29 fewer than on Tuesday. How many does it sell on Wednesday?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 43</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">What is the total for the three days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 151</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each magazine costs 4 dollars. How much did Wednesday&#x27;s sales bring in?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 172</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">A bookstore sells 36 magazines on Monday and twice as many on Tuesday. A cat sleeps by the window. What is the total for the two days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">36 * 2 = 72
+36 + 72 = 108
+Answer: 108</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Wednesday it sells 29 fewer than on Tuesday. How many does it sell on Wednesday?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">72 - 29 = 43
+Answer: 43</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">What is the total for the three days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">108 + 43 = 151
+Answer: 151</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each magazine costs 4 dollars. How much did Wednesday&#x27;s sales bring in?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">43 * 4 = 172
+Answer: 172</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">A bookstore sells 36 magazines on Monday and twice as many on Tuesday. A cat sleeps by the window. What is the total for the two days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">tuesday = 36 * 2 = 72
+total = 36 + 72 = 108
+Answer: 108</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Wednesday it sells 29 fewer than on Tuesday. How many does it sell on Wednesday?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">wednesday = 72 - 29 = 43
+Answer: 43</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">What is the total for the three days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">total = 108 + 43 = 151
+Answer: 151</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each magazine costs 4 dollars. How much did Wednesday&#x27;s sales bring in?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">income = 43 * 4 = 172
+Answer: 172</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">A bookstore sells 36 magazines on Monday and twice as many on Tuesday. A cat sleeps by the window. What is the total for the two days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">monday = 36
+tuesday = monday * 2
+total = monday + tuesday
+Answer: total</span>
+<span class="harness">→ the harness runs it: Answer = 108</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">On Wednesday it sells 29 fewer than on Tuesday. How many does it sell on Wednesday?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">wednesday = tuesday - 29
+Answer: wednesday</span>
+<span class="harness">→ the harness runs it: Answer = 43</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">What is the total for the three days?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">total = total + wednesday
+Answer: total</span>
+<span class="harness">→ the harness runs it: Answer = 151</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">Each magazine costs 4 dollars. How much did Wednesday&#x27;s sales bring in?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">income = wednesday * 4
+Answer: income</span>
+<span class="harness">→ the harness runs it: Answer = 172</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section><section class="item">
+  <header><b>sd-p1-h01-0005</b> · S05 · seeded from a harvested real problem · source <code>seeded:hv-engageny-0005</code></header>
+  <div class="switch"><button data-format="answer" class="">answer</button><button data-format="working" class="">working</button><button data-format="named" class="on">named</button><button data-format="code" class="">code</button></div>
+  <pre class="pane" data-format="answer" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Each toy tricycle at the toy store has 3 wheels. Find the total number of wheels on 8 tricycles.</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 24</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The store also lines up 5 toy wagons, each with 4 wheels. How many wheels are there on the tricycles and wagons together?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 44</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A customer buys 2 of the tricycles. How many wheels are left in the display?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 38</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The manager wants 50 wheels on display. How many more wheels are needed?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="working" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Each toy tricycle at the toy store has 3 wheels. Find the total number of wheels on 8 tricycles.</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">3 * 8 = 24
+Answer: 24</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The store also lines up 5 toy wagons, each with 4 wheels. How many wheels are there on the tricycles and wagons together?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">5 * 4 = 20
+24 + 20 = 44
+Answer: 44</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A customer buys 2 of the tricycles. How many wheels are left in the display?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">2 * 3 = 6
+44 - 6 = 38
+Answer: 38</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The manager wants 50 wheels on display. How many more wheels are needed?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">50 - 38 = 12
+Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="named"><span class="tag">&lt;task&gt;</span><span class="agent">Each toy tricycle at the toy store has 3 wheels. Find the total number of wheels on 8 tricycles.</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">wheels = 3 * 8 = 24
+Answer: 24</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The store also lines up 5 toy wagons, each with 4 wheels. How many wheels are there on the tricycles and wagons together?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">wagon wheels = 5 * 4 = 20
+total = 24 + 20 = 44
+Answer: 44</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A customer buys 2 of the tricycles. How many wheels are left in the display?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">sold wheels = 2 * 3 = 6
+left = 44 - 6 = 38
+Answer: 38</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The manager wants 50 wheels on display. How many more wheels are needed?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">needed = 50 - 38 = 12
+Answer: 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre><pre class="pane" data-format="code" hidden><span class="tag">&lt;task&gt;</span><span class="agent">Each toy tricycle at the toy store has 3 wheels. Find the total number of wheels on 8 tricycles.</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">wheels_per_trike = 3
+trikes = 8
+wheels = wheels_per_trike * trikes
+Answer: wheels</span>
+<span class="harness">→ the harness runs it: Answer = 24</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The store also lines up 5 toy wagons, each with 4 wheels. How many wheels are there on the tricycles and wagons together?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">wagon_wheels = 5 * 4
+total = wheels + wagon_wheels
+Answer: total</span>
+<span class="harness">→ the harness runs it: Answer = 44</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">A customer buys 2 of the tricycles. How many wheels are left in the display?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">sold_wheels = 2 * wheels_per_trike
+left = total - sold_wheels
+Answer: left</span>
+<span class="harness">→ the harness runs it: Answer = 38</span>
+<span class="tag">&lt;/solution&gt;</span>
+<span class="tag">&lt;task&gt;</span><span class="agent">The manager wants 50 wheels on display. How many more wheels are needed?</span><span class="tag">&lt;/task&gt;</span>
+<span class="tag">&lt;solution&gt;</span>
+<span class="gold">needed = 50 - left
+Answer: needed</span>
+<span class="harness">→ the harness runs it: Answer = 12</span>
+<span class="tag">&lt;/solution&gt;</span></pre>
+</section>
+<section class="item warn">
+  <header><b>Why named and code need a relabel pass for rewordings</b></header>
+  <p>The rewording reuses the original's code, so its variable names still describe the original story:</p>
+  <pre><span class="agent">Halima buys 6 daisy plants for her new flower bed, at $2 a plant. Bees are already buzzing around the garden centre. What do the daisies cost her?</span>
+<span class="gold">cost = 2 * 6 = 12
+Answer: 12</span>   ← labels from Ravi's fish tank, not Halima's daisies</pre>
+  <p>Anonymous formats (answer, working) are unaffected. A relabel pass (Gemma renames each variable for the new story, checked by script) fixes it, and could also make the labels more descriptive for every item.</p>
+</section>
+</main>
+<script>
+document.querySelectorAll('.item').forEach(item => {
+  item.querySelectorAll('.switch button').forEach(button => button.addEventListener('click', () => {
+    item.querySelectorAll('.switch button').forEach(b => b.classList.toggle('on', b === button));
+    item.querySelectorAll('.pane').forEach(p => p.hidden = p.dataset.format !== button.dataset.format);
+  }));
+});
+</script></body></html>
