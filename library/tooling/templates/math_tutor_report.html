@@ -376,6 +376,18 @@ function render() {
     table([{ label: "file", get: "path" }, { label: "KB", get: "kb", n: 1 }, { label: "lines", get: "lines", n: 1 }], storage.files),
     pre("python -m library.domain.math_tutor.benchmarks   # human sets -> benchmarks/\npython -m library.domain.math_tutor.prune        # raw -> items.jsonl, dropped.jsonl, build_log.json\npython -m library.domain.math_tutor.renumber     # items -> renumbered.jsonl\npython -m library.domain.math_tutor.items        # validate raw files\npython math_tutor_report.py                      # this page")));
 
+  // a real conversation through the teacher
+  if (DATA.conversation && DATA.conversation.length) {
+    app.append(step("C", "A conversation", "one item, its rewording and a renumbered copy, every turn through Gemma 4",
+      tldr("Each turn: what the student sees (earlier turns carry the correct answers the harness holds), what Gemma writes, and the executed answer.",
+        "Wrong teacher turns are kept and flagged <code>answer_correct: false</code>."),
+      ...DATA.conversation.map(conversation => sub(`${conversation.id} · ${conversation.source}`,
+        ...conversation.turns.map((turn, index) => el("div", {},
+          el("span", { class: "tag" }, `turn ${index}`),
+          el("span", { class: turn.teacher_correct ? "good" : "bad" }, turn.teacher_correct ? " teacher correct" : ` teacher wrong (answer ${turn.executed_answer})`),
+          el("div", { class: "grid2" }, pre(turn.student_sees.trim()), pre(turn.teacher_writes))))))));
+  }
+
   // methods: the exact process, question by question, for the thesis
   if (DATA.methods && DATA.methods.length) {
     app.append(el("h2", { style: "margin-top:32px" }, "Methods — how the corpus was made (Q&A)"),

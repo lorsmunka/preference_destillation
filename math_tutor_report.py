@@ -319,6 +319,7 @@ def build():
         "storage": storage(),
         "teacher": read_json(PACKAGE / "teacher_check.json"),
         "templateness": templateness(),
+        "conversation": read_json(PACKAGE / "sample_conversation.json"),
         "prompts": PROMPTS,
         "example_responses": EXAMPLE_RESPONSES,
     }

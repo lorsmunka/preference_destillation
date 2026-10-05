@@ -1,0 +1,92 @@
+[
+  {
+    "id": "S09-mem-b02-0031",
+    "source": "memory",
+    "turns": [
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\n\n",
+        "teacher_writes": "2 * 6 = 12\nAnswer: 12;",
+        "executed_answer": 12,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\nAnswer: 12\nFollow-up: He also buys a tub of fish food for $5. How much has he spent now?\n\n",
+        "teacher_writes": "2 * 6 = 12\n12 + 5 = 17\nAnswer: 17;",
+        "executed_answer": 17,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\nAnswer: 12\nFollow-up: He also buys a tub of fish food for $5. How much has he spent now?\nAnswer: 17\nFollow-up: Ravi had saved $30 for his tank. How much of his savings is left?\n\n",
+        "teacher_writes": "17 + 0 = 17\n30 - 17 = 13\nAnswer: 13;",
+        "executed_answer": 13,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\nAnswer: 12\nFollow-up: He also buys a tub of fish food for $5. How much has he spent now?\nAnswer: 17\nFollow-up: Ravi had saved $30 for his tank. How much of his savings is left?\nAnswer: 13\nFollow-up: A week later he goes back and buys 4 more neon tetras at the same price. How much money does he have left after that?\n\n",
+        "teacher_writes": "13 - 4 = 9\n9 - 2 = 7\nAnswer: 7;",
+        "executed_answer": 5,
+        "teacher_correct": false
+      }
+    ]
+  },
+  {
+    "id": "S09-mem-b02-0031~w1",
+    "source": "reword:S09-mem-b02-0031",
+    "turns": [
+      {
+        "student_sees": "Problem: Halima buys 6 daisy plants for her new flower bed, at $2 a plant. Bees are already buzzing around the garden centre. What do the daisies cost her?\n\n",
+        "teacher_writes": "6 * 2 = 12\nAnswer: 12;",
+        "executed_answer": 12,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Halima buys 6 daisy plants for her new flower bed, at $2 a plant. Bees are already buzzing around the garden centre. What do the daisies cost her?\nAnswer: 12\nFollow-up: She also buys a bag of compost for $5. How much has she spent now?\n\n",
+        "teacher_writes": "12 + 5 = 17\nAnswer: 17;",
+        "executed_answer": 17,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Halima buys 6 daisy plants for her new flower bed, at $2 a plant. Bees are already buzzing around the garden centre. What do the daisies cost her?\nAnswer: 12\nFollow-up: She also buys a bag of compost for $5. How much has she spent now?\nAnswer: 17\nFollow-up: Halima had saved $30 for the garden. How much of her savings is left?\n\n",
+        "teacher_writes": "17 + 13 = 30\n30 - 17 = 13\nAnswer: 13;",
+        "executed_answer": 13,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Halima buys 6 daisy plants for her new flower bed, at $2 a plant. Bees are already buzzing around the garden centre. What do the daisies cost her?\nAnswer: 12\nFollow-up: She also buys a bag of compost for $5. How much has she spent now?\nAnswer: 17\nFollow-up: Halima had saved $30 for the garden. How much of her savings is left?\nAnswer: 13\nFollow-up: The next week she buys 4 more daisy plants at the same price. How much money does she have left then?\n\n",
+        "teacher_writes": "13 - 4 = 9\n9 - 8 = 1\nAnswer: 1;",
+        "executed_answer": 5,
+        "teacher_correct": false
+      }
+    ]
+  },
+  {
+    "id": "S09-mem-b02-0031~n1",
+    "source": "memory",
+    "turns": [
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\n\n",
+        "teacher_writes": "2 * 6 = 12\nAnswer: 12;",
+        "executed_answer": 12,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\nAnswer: 12\nFollow-up: He also buys a tub of fish food for $5. How much has he spent now?\n\n",
+        "teacher_writes": "2 * 6 = 12\n12 + 5 = 17\nAnswer: 17;",
+        "executed_answer": 17,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\nAnswer: 12\nFollow-up: He also buys a tub of fish food for $5. How much has he spent now?\nAnswer: 17\nFollow-up: Ravi had saved $48 for his tank. How much of his savings is left?\n\n",
+        "teacher_writes": "17 + 0 = 17\n48 - 17 = 31\nAnswer: 31;",
+        "executed_answer": 31,
+        "teacher_correct": true
+      },
+      {
+        "student_sees": "Problem: Ravi is setting up a fish tank in his bedroom, and the pet shop has neon tetras for $2 each. He chooses 6 of them. The little fish shimmer blue under the lamp. What does Ravi pay for his new fish?\nAnswer: 12\nFollow-up: He also buys a tub of fish food for $5. How much has he spent now?\nAnswer: 17\nFollow-up: Ravi had saved $48 for his tank. How much of his savings is left?\nAnswer: 31\nFollow-up: A week later he goes back and buys 11 more neon tetras at the same price. How much money does he have left after that?\n\n",
+        "teacher_writes": "11 * 2 = 22\n31 - 22 = 9\nAnswer: 9;",
+        "executed_answer": 9,
+        "teacher_correct": true
+      }
+    ]
+  }
+]
