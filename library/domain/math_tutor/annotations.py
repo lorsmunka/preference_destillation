@@ -60,18 +60,57 @@ def shown(expression: str, item: Dict) -> str:
     return expression if item["slice"] == REMAINDER_SLICE else expression.replace("//", "/")
 
 
+def arithmetic(node) -> int:
+    """Value of a filled-in expression (whole numbers and + - * // % only)."""
+    if isinstance(node, ast.Constant):
+        return node.value
+    left, right = arithmetic(node.left), arithmetic(node.right)
+    return {ast.Add: left + right, ast.Sub: left - right, ast.Mult: left * right,
+            ast.FloorDiv: left // right if right else 0, ast.Mod: left % right if right else 0}[type(node.op)]
+
+
+def operand(node) -> str:
+    text = ast.unparse(node)
+    return f"({text})" if isinstance(node, ast.BinOp) else text
+
+
+def calculation(step, item: Dict) -> str:
+    """'expression = value' as a tutor writes it. Division with a remainder is spelled out
+    instead of Python's tricks: (16 + 3 - 1) // 3 -> 16 / 3 = 5 remainder 1, rounded up = 6;
+    23 % 5 -> remainder of 23 / 5 = 3; 23 // 5 (not exact) -> 23 / 5 = 4 remainder 3."""
+    node = ast.parse(step.filled, mode="eval").body
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.FloorDiv):
+        inner = node.left
+        if (isinstance(inner, ast.BinOp) and isinstance(inner.op, ast.Sub) and isinstance(inner.right, ast.Constant)
+                and inner.right.value == 1 and isinstance(inner.left, ast.BinOp) and isinstance(inner.left.op, ast.Add)
+                and arithmetic(inner.left.right) == arithmetic(node.right)):
+            dividend, divisor = inner.left.left, arithmetic(node.right)
+            quotient, remainder = divmod(arithmetic(dividend), divisor)
+            if remainder:
+                return f"{operand(dividend)} / {divisor} = {quotient} remainder {remainder}, rounded up = {step.value}"
+            return f"{operand(dividend)} / {divisor} = {step.value}"
+        quotient, remainder = divmod(arithmetic(node.left), arithmetic(node.right))
+        if remainder:
+            return f"{operand(node.left)} / {operand(node.right)} = {quotient} remainder {remainder}"
+    if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
+        return f"remainder of {operand(node.left)} / {operand(node.right)} = {step.value}"
+    divisions = [part for part in ast.walk(node) if isinstance(part, ast.BinOp) and isinstance(part.op, ast.FloorDiv)]
+    if all(arithmetic(part.left) % arithmetic(part.right) == 0 for part in divisions if arithmetic(part.right)):
+        return f"{step.filled.replace('//', '/')} = {step.value}"   # every division here is exact
+    return f"{shown(step.filled, item)} = {step.value}"
+
+
 def render_answer(item: Dict, turn: int, executions: List[Execution]) -> str:
     return f"Answer: {executions[turn].result['answer']}"
 
 
 def render_working(item: Dict, turn: int, executions: List[Execution]) -> str:
-    lines = [f"{shown(step.filled, item)} = {step.value}" for step in executions[turn].steps if step.computes]
+    lines = [calculation(step, item) for step in executions[turn].steps if step.computes]
     return "\n".join(lines + [render_answer(item, turn, executions)])
 
 
 def render_named(item: Dict, turn: int, executions: List[Execution]) -> str:
-    lines = [f"{label(step.name)} = {shown(step.filled, item)} = {step.value}"
-             for step in executions[turn].steps if step.computes]
+    lines = [f"{label(step.name)} = {calculation(step, item)}" for step in executions[turn].steps if step.computes]
     return "\n".join(lines + [render_answer(item, turn, executions)])
 
 

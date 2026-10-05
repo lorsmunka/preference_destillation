@@ -68,3 +68,31 @@ def build_corpus(path: str, count: Optional[int] = None, seed: int = 0) -> None:
     held_out = sum(1 for record in records if record["split"] == "heldout_shape")
     print(f"math_tutor corpus: {len(train)} train turns, then {len(test)} test turns -> {path}"
           f" ({held_out} held-out-shape turns kept out)")
+
+
+def build_agentic_corpus(path: str, annotation: str = "named", count: Optional[int] = None, seed: int = 0) -> Dict:
+    """The tagged-conversation corpus (conversation.py): one solve record per turn, with the
+    gold solution block in `annotation` format as its target. Train turns first (shuffled),
+    test turns last; held-out shapes left out. Rewordings are skipped for annotations whose
+    labels come from variable names (named, code) until a relabel pass. Explain and route
+    records join once the explanation threads exist (plan step 5)."""
+    from .conversation import solve_turns, usable
+
+    random_generator = random.Random(seed)
+    items = kept_items()
+    skipped = sum(1 for item in items if not usable(item, annotation))
+    records = [record for item in items if usable(item, annotation) for record in solve_turns(item, annotation)]
+    train = [record for record in records if record["split"] == "train"]
+    test = [record for record in records if record["split"] == "test"]
+    random_generator.shuffle(train)
+    random_generator.shuffle(test)
+    if count is not None:
+        train = train[:count]
+    with open(path, "w", encoding="utf-8") as file:
+        for record in train + test:
+            file.write(json.dumps(record, ensure_ascii=False) + "\n")
+    summary = {"annotation": annotation, "train_turns": len(train), "test_turns": len(test),
+               "items_skipped_until_relabel": skipped}
+    print(f"math_tutor agentic corpus ({annotation}): {len(train)} train turns, then {len(test)} test turns -> {path}"
+          f" ({skipped} reworded items skipped until relabelled)")
+    return summary
