@@ -302,7 +302,7 @@ python -m library.domain.math_tutor.templateness # the templateness table
 python math_tutor_report.py                      # this page</pre>
 <ul><li>Everything agent-written is committed as written (<code>items/raw/</code>, <code>items/reword/</code>,
 <code>benchmarks/harvested/</code>); every other file is rebuilt from it deterministically (seed 0).</li>
-<li>Agent prompts: the brief plus the per-run scripts in the session's workflow folder (assignment text per batch).</li></ul>"""))
+<li>Agent prompts: <code>writer_brief.md</code> plus the run scripts in <code>library/domain/math_tutor/writing_runs/</code>, which generated every batch's assignment (the pilot's three assignments are in its README).</li></ul>"""))
     return [{"q": question, "a": answer} for question, answer in qa]
 
 
