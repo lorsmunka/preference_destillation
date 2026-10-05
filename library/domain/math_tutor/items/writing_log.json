@@ -84,6 +84,18 @@
       "what": "2 rewordings for each of 10,847 train items, 150 items per agent",
       "stopped_by": "session usage limit",
       "outcome": "38 chunks complete, chunks 37 and 40 half done (cut between append steps)"
+    },
+    {
+      "run": "reword 2",
+      "date": "2026-10-05",
+      "model": "Claude Opus 5.5",
+      "agents": 35,
+      "completed": 35,
+      "subagent_tokens": 6769022,
+      "minutes": 71.6,
+      "what": "rest of chunks 37 and 40 + chunks 41-73",
+      "stopped_by": "finished",
+      "outcome": "21,694 rewordings in total, both for every one of the 10,847 train items"
     }
   ]
 }
