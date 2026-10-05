@@ -1,11 +1,11 @@
-RUNNING   writing run C (workflow, Opus, waves of 10), started 2026-10-04 17:05: the 72 tasks
-          runs A/B lost to the session usage limit (53 memory batches S04-S10, 17 seeded
-          batches, harvesters uk-naep + other-oer). No GPU in use.
-          Done so far (committed 6a16be8): memory S01-S03 + S04 b1/b2/b4, seeded 11 files,
-          harvest IM 203 + EngageNY 325. All files complete and 100% valid.
-          NEXT: merge harvest into seeds -> seeded writers on harvest seeds -> prune ->
-          reword pass -> prune -> renumber -> templateness -> report. Then step 7 on the
-          cloud 5090 (user rents it): math_tutor + code_recall data gen, batched.
+RUNNING   reword pass (workflow, Opus, 73 agents x 150 train items x 2 rewordings, waves of 10),
+          started 2026-10-05 ~12:20. Output items/reword/rw_bNNN.jsonl. No GPU in use.
+          Writing is COMPLETE: 12,476 raw items (all valid) -> 12,472 kept, 29,920 turns;
+          train 10,847 / test 1,210 / held-out shapes 415 (add>mul, sub>div, sub>add).
+          Seeds 2,153 (843 harvested). If the usage limit hits: inventory, commit finished
+          files, resume the workflow (finished agents replay from cache).
+          NEXT: prune (rewordings included) -> renumber -> templateness -> report.
+          Then step 7 on the cloud 5090 (runbook: thesis_work/cloud_runbook.md).
 
 PLAN   (agreed 2026-10-04 — practical turn: two demo domains + one standardised table)
 Direction: build the math tutor and the code finder as model + harness agents, run the
