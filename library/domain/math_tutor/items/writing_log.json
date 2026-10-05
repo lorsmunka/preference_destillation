@@ -1,0 +1,89 @@
+{
+  "note": "Agent runs that wrote the math_tutor corpus. subagent_tokens = tokens processed by the run's agents as reported by the workflow tool; 'completed' = agents that returned before the run ended (several more had already written their file).",
+  "runs": [
+    {
+      "run": "pilot",
+      "date": "2026-10-04",
+      "model": "Claude Sonnet 5.5",
+      "agents": 3,
+      "completed": 3,
+      "subagent_tokens": 286554,
+      "minutes": 5.3,
+      "what": "S04 memory 50, S04 online 50, seeded 50 (from 50 random seeds)",
+      "stopped_by": "finished",
+      "outcome": "150/150 valid after self-check; online writers retired (1/11 pages usable)"
+    },
+    {
+      "run": "A",
+      "date": "2026-10-04",
+      "model": "Claude Opus 5.5",
+      "agents": 84,
+      "completed": 21,
+      "subagent_tokens": 5448457,
+      "minutes": 43.7,
+      "what": "4 harvesters + 80 memory writers (10 slices x 8 batches x 100)",
+      "stopped_by": "session usage limit",
+      "outcome": "files complete for S01-S03, S04 b1/b2/b4; harvest IM 203, EngageNY 325"
+    },
+    {
+      "run": "B",
+      "date": "2026-10-04",
+      "model": "Claude Opus 5.5",
+      "agents": 28,
+      "completed": 1,
+      "subagent_tokens": 1405564,
+      "minutes": 17.5,
+      "what": "seeded writers, 2 passes over the 1,310 original seeds",
+      "stopped_by": "session usage limit (shared with run A)",
+      "outcome": "11 files complete (written before the limit hit)"
+    },
+    {
+      "run": "C",
+      "date": "2026-10-04",
+      "model": "Claude Opus 5.5",
+      "agents": 72,
+      "completed": 40,
+      "subagent_tokens": 7484311,
+      "minutes": 114.3,
+      "what": "the 72 tasks A/B lost, waves of 10",
+      "stopped_by": "session usage limit",
+      "outcome": "memory S04-S08, S09 b1; harvest UK/NAEP 91, other OER 299"
+    },
+    {
+      "run": "D",
+      "date": "2026-10-04/05",
+      "model": "Claude Opus 5.5",
+      "agents": 50,
+      "completed": 42,
+      "subagent_tokens": 7916874,
+      "minutes": 107.6,
+      "what": "S09 b2-8, S10, 17 seeded batches, seeded x2 over 843 harvested seeds",
+      "stopped_by": "session usage limit",
+      "outcome": "all but harvest pass 2 h01-h08 (7 of those written before the limit)"
+    },
+    {
+      "run": "D (resumed)",
+      "date": "2026-10-05",
+      "model": "Claude Opus 5.5",
+      "agents": 8,
+      "completed": 8,
+      "subagent_tokens": 534456,
+      "minutes": 13.4,
+      "what": "harvest pass 2 h01-h08 (7 found their file already written)",
+      "stopped_by": "finished",
+      "outcome": "h04 written; writing complete"
+    },
+    {
+      "run": "reword 1",
+      "date": "2026-10-05",
+      "model": "Claude Opus 5.5",
+      "agents": 73,
+      "completed": 38,
+      "subagent_tokens": 8132018,
+      "minutes": 77.9,
+      "what": "2 rewordings for each of 10,847 train items, 150 items per agent",
+      "stopped_by": "session usage limit",
+      "outcome": "38 chunks complete, chunks 37 and 40 half done (cut between append steps)"
+    }
+  ]
+}

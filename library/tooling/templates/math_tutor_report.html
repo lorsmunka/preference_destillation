@@ -376,6 +376,15 @@ function render() {
     table([{ label: "file", get: "path" }, { label: "KB", get: "kb", n: 1 }, { label: "lines", get: "lines", n: 1 }], storage.files),
     pre("python -m library.domain.math_tutor.benchmarks   # human sets -> benchmarks/\npython -m library.domain.math_tutor.prune        # raw -> items.jsonl, dropped.jsonl, build_log.json\npython -m library.domain.math_tutor.renumber     # items -> renumbered.jsonl\npython -m library.domain.math_tutor.items        # validate raw files\npython math_tutor_report.py                      # this page")));
 
+  // methods: the exact process, question by question, for the thesis
+  if (DATA.methods && DATA.methods.length) {
+    app.append(el("h2", { style: "margin-top:32px" }, "Methods — how the corpus was made (Q&A)"),
+      el("p", { class: "note" }, "The exact process in the order it was done, for the thesis methods chapter. Numbers come from the build logs."),
+      ...DATA.methods.map((entry, index) => el("details", { class: "step" },
+        el("summary", {}, el("span", { class: "num" }, `Q${index + 1}`), el("span", {}, entry.q)),
+        el("div", { class: "body", html: entry.a }))));
+  }
+
   // 8 teacher
   if (DATA.teacher) {
     app.append(step("8", "Teacher check", DATA.teacher.headline || "",
