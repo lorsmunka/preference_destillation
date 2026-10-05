@@ -22,7 +22,7 @@ type (route / solve / explain) · 3 student size · 4 regularisers. ~70 runs.
 v1 build order:
  1. plan + spec (this)                                   DONE 2026-10-05
  2. annotations.py: gold renderers answer/working/named/code from the solve() trace  DONE 2026-10-05
- 3. conversation.py: tagged turns, clean history, route / solve / explain turns
+ 3. conversation.py: tagged turns, clean history, route / solve / explain turns   DONE 2026-10-05
  4. teacher prompts per annotation + teacher-forced scoring mode (GPU check)
  5. explain threads: Gemma-as-pupil questions (sampled) + teacher explanations (GPU check)
  6. relabel pass for rewordings' variable names (cloud)
