@@ -1,11 +1,11 @@
-RUNNING   reword pass (workflow, Opus, 73 agents x 150 train items x 2 rewordings, waves of 10),
-          started 2026-10-05 ~12:20. Output items/reword/rw_bNNN.jsonl. No GPU in use.
-          Writing is COMPLETE: 12,476 raw items (all valid) -> 12,472 kept, 29,920 turns;
-          train 10,847 / test 1,210 / held-out shapes 415 (add>mul, sub>div, sub>add).
-          Seeds 2,153 (843 harvested). If the usage limit hits: inventory, commit finished
-          files, resume the workflow (finished agents replay from cache).
-          NEXT: prune (rewordings included) -> renumber -> templateness -> report.
-          Then step 7 on the cloud 5090 (runbook: thesis_work/cloud_runbook.md).
+RUNNING   nothing. No GPU in use, no agents.
+          math_tutor CORPUS COMPLETE 2026-10-05 (a4764af): 34,002 items, 130,546 problems with
+          renumbering, 306,389 teacher turns (295,458 train + 10,931 test), held-out shapes
+          415 items. Rebuild is byte-identical (prune -> renumber -> build_corpus).
+          Report + Methods Q&A: python math_tutor_report.py -> thesis_work/math_tutor_report.html
+          NEXT (needs the user): step 7 on a rented RTX 5090, thesis_work/cloud_runbook.md —
+          python generation_check.py first, then python generate_data.py (code_recall, math_tutor).
+          Step 8 open items below (unknown tokens, student size).
 
 PLAN   (agreed 2026-10-04 — practical turn: two demo domains + one standardised table)
 Direction: build the math tutor and the code finder as model + harness agents, run the
