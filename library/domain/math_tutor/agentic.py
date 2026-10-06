@@ -64,7 +64,8 @@ class TutorAnswerMetric(ExactAnswerMetric):
 
 class MathTutorAgenticDomain(Domain):
     stop_token = "</solution>"
-    max_steps = 80
+    stop_strings = ["</solution>", "</explanation>"]   # batched generation stops at either block's end
+    max_steps = 120     # explanations run longer than solutions (gold solutions max 62 tokens)
     max_input_tokens = 320
 
     def __init__(self, annotation: str = "named", teacher: str = "generate"):
@@ -117,6 +118,14 @@ FORMAT_TEXTS = [
     "35-23=12\n4*6=24\n8/2=4\n3+4=7",
     "16 / 3 = 5 remainder 1, rounded up = 6\nremainder of 23 / 5 = 3\n23 / 5 = 4 remainder 3",
     "cost_of_more = 4 * price\nAnswer: cost_of_more",
+    # Gemma's tokenizer glues punctuation and spaces onto a closing tag (".</", "▁</"): every form
+    "two.</explanation> two </explanation> two?</explanation> two!</explanation> two,</explanation>",
+    "5.\n</solution> 5 </solution> two.</solution>\n</explanation>",
+    # words explanations of arithmetic need even when no problem text uses them
+    "The Multiplication multiplication Subtraction subtraction Addition addition Division division "
+    "calculate calculated calculation initial initially difference product sum quotient remainder "
+    "Because because each times equal groups share shared altogether total fewer less twice half double "
+    "I subtracted added multiplied divided found took first then next so means that's it's we you",
 ]
 
 
@@ -143,10 +152,10 @@ def build_output_tokens() -> None:
         for ids in tokenizer(texts[start:start + 5000], add_special_tokens=False)["input_ids"]:
             counts.update(tokenizer.convert_ids_to_tokens(ids))
     vocabulary = tokenizer.get_vocab()
-    for token in list(counts):
-        bare = token[1:] if token.startswith("▁") else None
-        if bare and bare in vocabulary and bare not in counts:
-            counts[bare] = 1
+    for token in list(counts):   # each word in both forms: line start ("cost") and mid-line ("▁cost")
+        other = token[1:] if token.startswith("▁") else "▁" + token
+        if len(other) > 1 and other in vocabulary and other not in counts:
+            counts[other] = 1
     tokens = [token for token, _ in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))]
     json.dump({"tokens": tokens, "texts": len(texts), "built_from": "items.jsonl problems, follow-ups, gold targets"},
               open(OUTPUT_TOKENS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)

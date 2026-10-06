@@ -151,30 +151,34 @@ class ModelHandler:
         cache = DynamicCache()
         pending = sequence
         last_token_decoded = ""
-        skipped_scaffold = ""   # Gemma 4 sometimes opens "thought\n<channel|>" before answering, thinking or not
+        # Gemma 4 sometimes opens an empty thought channel before answering. Tokens that could
+        # be its start are held back and dropped only if the whole preamble follows; otherwise
+        # they are real output (a "<" that turns out to open "<solution>" must not be lost).
+        scaffold_text, held = "", []
         while not self.is_stop(last_token_decoded, generated_text) and len(steps) <= self.max_generation_steps:
             token_repr, token_decoded, logit_vector, predicted_token_index, next_token_id = self.generate_single_step(
                 pending, cache, total_length=sequence.shape[1])
             if next_token_id in self.end_token_ids:
                 break   # end of sequence / end of turn: not part of the response
-
-            if not steps and skipped_scaffold is not None and continues_scaffold(skipped_scaffold + token_decoded):
-                skipped_scaffold += token_decoded   # advance past the scaffold without recording it
-                pending = torch.tensor([[next_token_id]], device=sequence.device)
-                sequence = torch.cat([sequence, pending], dim=1)
-                continue
-            skipped_scaffold = None
-
-            steps.append({
-                "token": token_repr,
-                "logits": logit_vector,
-                "predicted_token_index": predicted_token_index
-            })
-
-            generated_text += token_decoded
             pending = torch.tensor([[next_token_id]], device=sequence.device)
             sequence = torch.cat([sequence, pending], dim=1)
+            step = ({"token": token_repr, "logits": logit_vector, "predicted_token_index": predicted_token_index}, token_decoded)
+
+            if not steps and scaffold_text is not None and continues_scaffold(scaffold_text + token_decoded):
+                scaffold_text += token_decoded
+                held.append(step)
+                if scaffold_text in THOUGHT_SCAFFOLDS:   # the whole preamble: drop it
+                    scaffold_text, held = None, []
+                continue
+            scaffold_text = None
+            for held_step, held_text in held + [step]:
+                steps.append(held_step)
+                generated_text += held_text
+            held = []
             last_token_decoded = token_decoded
+        for held_step, held_text in held:   # output ended inside what looked like a preamble
+            steps.append(held_step)
+            generated_text += held_text
 
         elapsed_time = time() - start_time
         print(f"\tGenerated training example length of {len(steps)} tokens -> took {elapsed_time:.2f} seconds.")
@@ -196,35 +200,45 @@ class ModelHandler:
             inputs = {key: value.to(device) for key, value in inputs.items()}
         token_list = self.vocabulary["token_list"]
         recorder = ReducedLogitsRecorder([self.vocabulary["token_to_id"][token] for token in token_list])
+        stop_strings = getattr(self.domain_handler, "stop_strings", None) or [self.domain_handler.stop_token]
         with torch.no_grad():
             output = self.model.generate(
                 **inputs, do_sample=False, max_new_tokens=self.max_generation_steps + 8,
-                logits_processor=[recorder], stop_strings=[self.domain_handler.stop_token],
+                logits_processor=[recorder], stop_strings=stop_strings,
                 tokenizer=self.tokenizer, eos_token_id=sorted(self.end_token_ids),
                 pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id)
         new_tokens = output[:, inputs["input_ids"].shape[1]:].tolist()
 
-        results = []
+        results, self.last_generated_texts = [], []
         for row_index, text in enumerate(texts):
-            steps, generated_text, skipped_scaffold, last_token_decoded = [], "", "", ""
+            steps, generated_text, last_token_decoded = [], "", ""
+            scaffold_text, held = "", []   # possible empty-thought preamble, held back (see generate_training_example)
             for position, token_id in enumerate(new_tokens[row_index]):
                 if self.is_stop(last_token_decoded, generated_text) or len(steps) > self.max_generation_steps:
                     break
                 if token_id in self.end_token_ids:
                     break
                 token_decoded = self.tokenizer.decode([token_id])
-                if not steps and skipped_scaffold is not None and continues_scaffold(skipped_scaffold + token_decoded):
-                    skipped_scaffold += token_decoded
-                    continue
-                skipped_scaffold = None
                 logit_vector = recorder.rows[position][row_index].tolist()
-                steps.append({
-                    "token": self.tokenizer.convert_ids_to_tokens([token_id])[0],
-                    "logits": logit_vector,
-                    "predicted_token_index": int(max(range(len(logit_vector)), key=logit_vector.__getitem__)),
-                })
-                generated_text += token_decoded
+                step = ({"token": self.tokenizer.convert_ids_to_tokens([token_id])[0], "logits": logit_vector,
+                         "predicted_token_index": int(max(range(len(logit_vector)), key=logit_vector.__getitem__))},
+                        token_decoded)
+                if not steps and scaffold_text is not None and continues_scaffold(scaffold_text + token_decoded):
+                    scaffold_text += token_decoded
+                    held.append(step)
+                    if scaffold_text in THOUGHT_SCAFFOLDS:
+                        scaffold_text, held = None, []
+                    continue
+                scaffold_text = None
+                for held_step, held_text in held + [step]:
+                    steps.append(held_step)
+                    generated_text += held_text
+                held = []
                 last_token_decoded = token_decoded
+            for held_step, held_text in held:
+                steps.append(held_step)
+                generated_text += held_text
+            self.last_generated_texts.append(generated_text)   # every row's text, kept or rejected
             results.append(self.finish_example(text, generated_text, steps, ""))
         print(f"\tGenerated {len(texts)} examples together -> took {time() - start_time:.2f} seconds.")
         return results
