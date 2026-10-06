@@ -62,7 +62,21 @@ class DistillationDataGenerator:
             # One input at a time (the original loop), or `generation_batch_size` together
             group = list(range(index, min(index + self.generation_batch_size, self.input_handler.input_count)))
             texts = [self.input_handler.get_input(i) for i in group]
-            if getattr(self.domain, "teacher", "generate") == "forced":   # gold targets, teacher soft labels
+            # a record may name its own teacher mode (an agentic corpus mixes them); else the domain's
+            modes = [self.input_handler.get_teacher_mode(i) or getattr(self.domain, "teacher", "generate") for i in group]
+            if len(set(modes)) > 1:
+                outcomes = [None] * len(group)
+                for mode in set(modes):
+                    positions = [position for position, record_mode in enumerate(modes) if record_mode == mode]
+                    subset_texts = [texts[position] for position in positions]
+                    if mode == "forced":
+                        subset = self.model_handler.score_training_examples(
+                            subset_texts, [self.input_handler.get_target(group[position]) for position in positions])
+                    else:
+                        subset = self.model_handler.generate_training_examples(subset_texts)
+                    for position, outcome in zip(positions, subset):
+                        outcomes[position] = outcome
+            elif modes[0] == "forced":   # gold targets, teacher soft labels
                 targets = [self.input_handler.get_target(i) for i in group]
                 outcomes = self.model_handler.score_training_examples(texts, targets)
             elif self.generation_batch_size == 1:

@@ -13,6 +13,7 @@ Held-out-shape items are left out: they are evaluated against their executed ans
 
 import json
 import random
+from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
@@ -76,12 +77,20 @@ def build_agentic_corpus(path: str, annotation: str = "named", count: Optional[i
     test turns last; held-out shapes left out. Rewordings are skipped for annotations whose
     labels come from variable names (named, code) until a relabel pass. Explain and route
     records join once the explanation threads exist (plan step 5)."""
-    from .conversation import solve_turns, usable
+    from .conversation import solve_turns, thread_turns, usable
+    from .threads import THREADS_PATH
 
     random_generator = random.Random(seed)
     items = kept_items()
     skipped = sum(1 for item in items if not usable(item, annotation))
     records = [record for item in items if usable(item, annotation) for record in solve_turns(item, annotation)]
+    if THREADS_PATH.exists():   # explanation threads (threads.py) and the route records after them
+        by_id = {item["id"]: item for item in items}
+        for line in open(THREADS_PATH, encoding="utf-8"):
+            thread_record = json.loads(line)
+            item = by_id.get(thread_record["item_id"])
+            if item is not None and usable(item, annotation):
+                records += list(thread_turns(item, annotation, thread_record))
     train = [record for record in records if record["split"] == "train"]
     test = [record for record in records if record["split"] == "test"]
     random_generator.shuffle(train)
@@ -92,7 +101,8 @@ def build_agentic_corpus(path: str, annotation: str = "named", count: Optional[i
         for record in train + test:
             file.write(json.dumps(record, ensure_ascii=False) + "\n")
     summary = {"annotation": annotation, "train_turns": len(train), "test_turns": len(test),
-               "items_skipped_until_relabel": skipped}
+               "items_skipped_until_relabel": skipped,
+               "by_turn_type": dict(Counter(record.get("turn_type", "solve") for record in train + test))}
     print(f"math_tutor agentic corpus ({annotation}): {len(train)} train turns, then {len(test)} test turns -> {path}"
           f" ({skipped} reworded items skipped until relabelled)")
     return summary

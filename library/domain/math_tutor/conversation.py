@@ -116,3 +116,29 @@ def usable(item: Dict, annotation: str) -> bool:
         except KeyError:
             return False
     return not (annotation in NEEDS_STORY_NAMES and str(item.get("source", "")).startswith("reword:"))
+
+
+def thread_turns(item: Dict, annotation: str, thread_record: Dict) -> Iterator[Dict]:
+    """The explain records of one thread, and the route record that follows it: the next
+    task arriving while the thread is still open. Explanations are the teacher's own greedy
+    text from the thread pass, scored again in the forced mode (the same logits generation
+    would give, at an eighth of the cost); a route record's target is only the opening tag
+    (the solution itself is learned from the clean-history solve record)."""
+    solutions = render(item, annotation)
+    tasks = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
+    turn = thread_record["turn"]
+    conversation = Conversation()
+    for earlier in range(turn + 1):
+        conversation.add_solution(tasks[earlier], solutions[earlier])
+    base = {"annotation": annotation, "item_id": item["id"], "family": item["family"], "turn": turn,
+            "slice": item["slice"], "problem_shape": item["problem_shape"], "split": item["split"]}
+    for depth, entry in enumerate(thread_record["thread"]):
+        if entry["routed"] != "explanation" or not entry["explanation"]:
+            break   # the tutor did not explain: the thread ends here
+        yield {**base, "text": conversation.explain_context(entry["question"]),
+               "target": explanation_target(entry["explanation"]), "turn_type": "explain",
+               "depth": depth + 1, "question_kind": entry["kind"], "teacher": "forced"}
+        conversation.add_explanation(entry["question"], entry["explanation"])
+    if turn + 1 < len(tasks) and conversation.thread:
+        yield {**base, "text": conversation.route_context(tasks[turn + 1]), "target": SOLUTION,
+               "turn_type": "route", "answer": None, "teacher": "forced"}

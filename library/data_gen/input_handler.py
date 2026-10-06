@@ -33,6 +33,10 @@ class InputHandler:
         """The corpus record's gold "target" text (teacher-forced scoring), or None."""
         return self.records[index].get("target")
 
+    def get_teacher_mode(self, index):
+        """The record's own teacher mode ("generate" / "forced"), or None to use the domain's."""
+        return self.records[index].get("teacher")
+
     def get_ground_truth(self, index):
         """The corpus record's "answer", when the domain has one (else None)."""
         return self.records[index].get("answer")
