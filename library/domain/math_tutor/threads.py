@@ -34,14 +34,26 @@ QUESTION_KINDS = {
     "lost": "that they do not understand one particular step, asking for it to be explained more simply",
     "check": "whether one particular line is really right, or how the tutor knows",
     "where from": "where one particular number in the working came from",
+    "shortcut": "whether there is a quicker way to get the answer",
+    "smaller numbers": "to explain one step again with smaller, easier numbers",
 }
 
-PUPIL_PROMPT = """You are a curious primary-school pupil working with your maths tutor. Here is your conversation so far:
+# Who is asking: varies the voice of the follow-up questions, not their content.
+PERSONAS = {
+    "curious": "curious and chatty",
+    "shy": "shy, and asks very short questions",
+    "confused": "a bit confused and unsure of yourself",
+    "confident": "confident, and likes to check that the tutor is right",
+    "impatient": "impatient, and wants a quick answer",
+    "careful": "careful, and asks about small details",
+}
+
+PUPIL_PROMPT = """You are a primary-school pupil working with your maths tutor. You are {persona}. Here is your conversation so far:
 
 {conversation}
 
-Ask your tutor ONE short question about {about}: {kind}.
-Ask it the way a child would, in one sentence, mentioning the number or step you mean. Write only the question."""
+Ask your tutor ONE question about {about}: {kind}.
+Ask it the way a child like you would, in your own words, mentioning the number or step you mean. Write only the question."""
 
 
 def solution_body(block: str) -> str:
@@ -90,6 +102,7 @@ def run_threads(handler, domain, items: List[Dict] = None) -> int:
         for start in range(0, len(active), BATCH):
             batch = active[start:start + BATCH]
             pupil_prompts = [PUPIL_PROMPT.format(
+                persona=PERSONAS[random.Random(f"{plan['item']['id']}-{depth}").choice(list(PERSONAS))],
                 conversation=plan["conversation"].history(with_thread=True),
                 about="the tutor's last solution" if depth == 0 else "the tutor's last explanation",
                 kind=QUESTION_KINDS[plan["kinds"][depth]]) for plan in batch]

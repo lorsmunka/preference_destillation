@@ -244,14 +244,19 @@ class ModelHandler:
         return results
 
     def generate_texts(self, prompts: List[str], max_new_tokens: int = 200, temperature: float = 0.0,
-                       stop_strings: Optional[List[str]] = None, seed: int = 0) -> List[str]:
+                       stop_strings: Optional[List[str]] = None, seed: int = 0,
+                       prefixes: Optional[List[str]] = None) -> List[str]:
         """Plain text from the teacher for whole prompts (already formatted, no domain prompt
         added): no logits kept, no vocabulary check. For helper passes such as labelling gold
-        solutions or writing pupil questions. temperature 0 = greedy; above 0 = sampled."""
+        solutions or writing pupil questions, and for running Gemma inside the tutor harness.
+        temperature 0 = greedy; above 0 = sampled. A prefix starts the model's own turn (the
+        harness writes "<solution>" once the route is decided); it is not part of the result."""
         self.tokenizer.padding_side = "left"
         texts = [self.tokenizer.apply_chat_template([{"role": "user", "content": prompt}], tokenize=False,
                                                     add_generation_prompt=True, enable_thinking=False)
                  if self.chat_template else prompt for prompt in prompts]
+        if prefixes:
+            texts = [text + prefix for text, prefix in zip(texts, prefixes)]
         inputs = self.tokenizer(texts, return_tensors="pt", padding=True)
         device = get_device()
         if device != "cpu":
