@@ -190,6 +190,9 @@ BUILD RESULT (2026-10-05; numbers from the build logs)
   agent tokens ~38M over 8 runs (items/writing_log.json)
 
 AGENTIC MATH TUTOR v1 (agreed 2026-10-05)
+  Names (user, 2026-10-06): FOLLOW-UP TASK = a new sub-task (-> <solution>); FOLLOW-UP
+  QUESTION = a question about the working (-> <explanation>). GOLD solution = derived from
+  the executed solve(), correct by construction; TEACHER solution = what Gemma writes freely.
   The tutor is an agent: the distilled student plus a harness. Turn types:
     route    newest message -> first output token <solution> or <explanation>
     solve    clean history + <message> -> <solution> named steps + Answer </solution>

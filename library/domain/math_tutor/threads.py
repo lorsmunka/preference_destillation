@@ -1,4 +1,5 @@
-"""Explanation threads: the pupil asks about a step, the tutor explains. A helper pass on the
+"""Explanation threads: follow-up questions (the pupil asks about a step) and the tutor's
+explanations; follow-up tasks are the items' own follow-ups. A helper pass on the
 GPU writes them as text; the data generation then turns every explanation into a training
 turn with the teacher's logits (greedy, so it reproduces the same text).
 

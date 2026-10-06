@@ -1,6 +1,10 @@
 """Conversation layer: what the tutor model reads and writes, turn by turn. The same rules
 build the training corpus and run the live harness, so they cannot drift apart.
 
+Names: the first <task> is the problem; a later new task is a FOLLOW-UP TASK (answered with
+a <solution>); a question about the tutor's working is a FOLLOW-UP QUESTION (answered with an
+<explanation>, in a side thread that a follow-up task closes).
+
 Past turns carry their type; the newest input is an untyped <message>:
 
     <task>Ravi buys 6 tetras at $2 each. What does he pay?</task>
