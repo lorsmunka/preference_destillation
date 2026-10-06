@@ -107,5 +107,12 @@ def solve_turns(item: Dict, annotation: str) -> Iterator[Dict]:
 
 def usable(item: Dict, annotation: str) -> bool:
     """Named and code labels come from the writer's variable names, which rewordings
-    inherit from their original story: skip rewordings for those until they are relabelled."""
+    inherit from their original story: skip rewordings for those. Facts-first labels exist
+    only for turns the label pass verified."""
+    if annotation == "facts":
+        try:
+            render(item, "facts")
+            return True
+        except KeyError:
+            return False
     return not (annotation in NEEDS_STORY_NAMES and str(item.get("source", "")).startswith("reword:"))

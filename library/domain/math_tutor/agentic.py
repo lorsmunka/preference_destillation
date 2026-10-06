@@ -25,7 +25,7 @@ from ..base import Domain
 
 PACKAGE = Path(__file__).resolve().parent
 OUTPUT_TOKENS = PACKAGE / "output_tokens.json"
-ANNOTATIONS = ("answer", "working", "named", "code")
+ANNOTATIONS = ("answer", "working", "named", "code", "facts")
 TEACHER_MODES = ("generate", "forced")
 
 HEADER = (
@@ -46,6 +46,11 @@ FORMATS = {
               "naming the quantity with words from the problem and using only + - * /; then the line "
               "Answer: <number>; then </solution>." + REMAINDERS + " Example:\n"
               "<solution>\ncost of 4 more tetras = 4 * 2 = 8\nmoney left = 13 - 8 = 5\nAnswer: 5\n</solution>"),
+    "facts": (": first one line for each number you use, written as what it is = number (words from the problem; "
+              "a number from an earlier answer counts too); then one line per calculation that is needed, written as "
+              "what it is = calculation = result, using only + - * /; then the line Answer: <number>; then </solution>."
+              + REMAINDERS + " Example:\n<solution>\ntetras bought later = 4\nprice of a tetra = 2\nmoney left before = 13\n"
+              "cost of 4 more tetras = 4 * 2 = 8\nmoney left = 13 - 8 = 5\nAnswer: 5\n</solution>"),
     "code": (": one line of Python per step, giving a value to a name taken from the problem, using only "
              "+ - * // % and earlier names; then the line Answer: <name>; then </solution>. The program is "
              "run for you. Example:\n<solution>\ncost_of_more_tetras = 4 * 2\nmoney_left = 13 - cost_of_more_tetras\n"

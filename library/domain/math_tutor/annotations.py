@@ -120,11 +120,27 @@ def render_code(item: Dict, turn: int, executions: List[Execution]) -> str:
     return "\n".join(lines + [f"Answer: {answer_name(source)}"])
 
 
+_FACTS_LABELS: Dict = {}
+
+
+def render_facts(item: Dict, turn: int, executions: List[Execution]) -> str:
+    """Facts first, in Gemma's words, verified against this item's trace (labels.py). There is
+    no code-only version: 45% of numbers are written inline in solve() and have no name."""
+    if not _FACTS_LABELS:
+        from .labels import read_labels
+        _FACTS_LABELS.update(read_labels())
+    block = _FACTS_LABELS.get((item["id"], turn))
+    if block is None:
+        raise KeyError(f"{item['id']} turn {turn}: no verified facts-first label (python -m library.domain.math_tutor.labels)")
+    return block.replace("<solution>", "").replace("</solution>", "").strip()
+
+
 RENDERERS: Dict[str, Callable[[Dict, int, List[Execution]], str]] = {
     "answer": render_answer,
     "working": render_working,
     "named": render_named,
     "code": render_code,
+    "facts": render_facts,
 }
 NEEDS_STORY_NAMES = {"named", "code"}   # wrong for rewordings until they are relabelled
 

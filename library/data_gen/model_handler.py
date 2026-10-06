@@ -243,6 +243,39 @@ class ModelHandler:
         print(f"\tGenerated {len(texts)} examples together -> took {time() - start_time:.2f} seconds.")
         return results
 
+    def generate_texts(self, prompts: List[str], max_new_tokens: int = 200, temperature: float = 0.0,
+                       stop_strings: Optional[List[str]] = None, seed: int = 0) -> List[str]:
+        """Plain text from the teacher for whole prompts (already formatted, no domain prompt
+        added): no logits kept, no vocabulary check. For helper passes such as labelling gold
+        solutions or writing pupil questions. temperature 0 = greedy; above 0 = sampled."""
+        self.tokenizer.padding_side = "left"
+        texts = [self.tokenizer.apply_chat_template([{"role": "user", "content": prompt}], tokenize=False,
+                                                    add_generation_prompt=True, enable_thinking=False)
+                 if self.chat_template else prompt for prompt in prompts]
+        inputs = self.tokenizer(texts, return_tensors="pt", padding=True)
+        device = get_device()
+        if device != "cpu":
+            inputs = {key: value.to(device) for key, value in inputs.items()}
+        sampling = dict(do_sample=True, temperature=temperature, top_p=0.95) if temperature > 0 else dict(do_sample=False)
+        if temperature > 0:
+            torch.manual_seed(seed)
+        with torch.no_grad():
+            output = self.model.generate(
+                **inputs, max_new_tokens=max_new_tokens, **sampling,
+                stop_strings=stop_strings, tokenizer=self.tokenizer if stop_strings else None,
+                eos_token_id=sorted(self.end_token_ids),
+                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id)
+        results = []
+        for row in output[:, inputs["input_ids"].shape[1]:]:
+            text = self.tokenizer.decode(row, skip_special_tokens=False)
+            for end in ("<turn|>", "<end_of_turn>", "<eos>", "<pad>"):
+                text = text.split(end)[0]
+            for scaffold in THOUGHT_SCAFFOLDS:
+                if text.startswith(scaffold):
+                    text = text[len(scaffold):]
+            results.append(text.strip())
+        return results
+
     def score_training_examples(self, texts: List[str], targets: List[str]) -> List[Tuple[Optional[Dict], Optional[str]]]:
         """Teacher-forced: the teacher reads a given target (a gold answer) after the prompt in
         one forward pass, and its distribution over the reduced vocabulary is kept at every
