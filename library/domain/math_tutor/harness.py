@@ -20,7 +20,7 @@ One agent turn, for a new pupil message m:
 Sessions are small state machines with one pending request each, so run_sessions can batch the
 requests of many conversations into one model call.
 
-    python -m library.domain.math_tutor.harness      # Gemma (NF4) on 24 test items; GPU
+    python -m library.domain.math_tutor.harness      # Gemma (NF4) on 16 test items; GPU
 """
 
 import json
@@ -51,17 +51,20 @@ class Request:
 
 
 class GemmaTutor:
-    """The teacher as the tutor model: the agentic domain's prompt around the conversation."""
+    """The teacher as the tutor model: the agentic domain's prompt around the conversation.
+    At most `batch` requests per model call (8 keeps a 12 GB card off its memory limit)."""
 
-    def __init__(self, handler, domain):
-        self.handler, self.domain = handler, domain
+    def __init__(self, handler, domain, batch: int = 8):
+        self.handler, self.domain, self.batch = handler, domain, batch
 
     def generate(self, requests: List[Request]) -> List[str]:
         groups: Dict[tuple, List[int]] = {}
         for index, request in enumerate(requests):
             groups.setdefault((request.max_tokens, request.temperature, tuple(request.stop)), []).append(index)
         texts = [""] * len(requests)
-        for (max_tokens, temperature, stop), indices in groups.items():
+        chunks = [(key, indices[start:start + self.batch]) for key, indices in groups.items()
+                  for start in range(0, len(indices), self.batch)]
+        for (max_tokens, temperature, stop), indices in chunks:
             prompts = [requests[i].context if requests[i].kind == "pupil" else self.domain.teacher_prompt(requests[i].context)
                        for i in indices]
             outputs = self.handler.generate_texts(prompts, max_new_tokens=max_tokens, temperature=temperature,
@@ -217,8 +220,8 @@ def main() -> None:
     items = [json.loads(line) for line in open(PACKAGE / "items" / "items.jsonl", encoding="utf-8")]
     random_generator = random.Random(0)
     test_items = [item for item in items if item["split"] == "test"]
-    chosen = random_generator.sample([i for i in test_items if len(i["follow_ups"]) >= 2], 16) + \
-             random_generator.sample([i for i in test_items if len(i["follow_ups"]) == 1], 8)
+    chosen = random_generator.sample([i for i in test_items if len(i["follow_ups"]) >= 2], 12) + \
+             random_generator.sample([i for i in test_items if len(i["follow_ups"]) == 1], 4)
     domain = MathTutorAgenticDomain("facts")
     handler = ModelHandler("google/gemma-4-12B-it", domain, load_in_4bit=True, chat_template=True)
     sessions = [TutorSession(ScriptedPupil(item)) for item in chosen]
