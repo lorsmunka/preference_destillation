@@ -36,7 +36,8 @@ class Execution(NamedTuple):
     operations: List[str]    # every operation in the order computed: ["mul", "sub"]
     literals: List[int]      # every number written in the code
     reads_state: bool        # whether it used anything from the previous turn
-    steps: List[Step]        # every assignment (and computed return value), in order
+    steps: List[Step]        # every assignment (and computed return value), in order (trace=True)
+    operation_values: List[int]   # the value every single operation produced, in order
 
 
 def parse_solve(source: str, takes_state: bool) -> ast.FunctionDef:
@@ -64,6 +65,7 @@ class Interpreter:
         self.allow_remainders = allow_remainders
         self.variables: Dict[str, int] = {}
         self.operations: List[str] = []
+        self.operation_values: List[int] = []
         self.literals: List[int] = []
         self.reads_state = False
         self.steps: List[Step] = []
@@ -182,6 +184,7 @@ class Interpreter:
         value = {ast.Add: lambda: left + right, ast.Sub: lambda: left - right, ast.Mult: lambda: left * right,
                  ast.FloorDiv: lambda: left // right, ast.Mod: lambda: left % right}[type(operator)]()
         self.operations.append(OPERATION_NAMES[type(operator)])
+        self.operation_values.append(value)
         return self.checked(value)
 
     @staticmethod
@@ -198,7 +201,8 @@ def execute(source: str, state: Optional[Dict[str, int]] = None, allow_remainder
     """Run one solve() (state=None for the first turn, the previous result for a follow-up)."""
     interpreter = Interpreter(state, allow_remainders, trace)
     result = interpreter.run(parse_solve(source, takes_state=state is not None))
-    return Execution(result, interpreter.operations, interpreter.literals, interpreter.reads_state, interpreter.steps)
+    return Execution(result, interpreter.operations, interpreter.literals, interpreter.reads_state, interpreter.steps,
+                     interpreter.operation_values)
 
 
 # --- human benchmarks: dataset equation -> solve() -------------------------------------

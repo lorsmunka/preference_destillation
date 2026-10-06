@@ -22,7 +22,7 @@ import re
 from collections import Counter
 from typing import Dict, List, NamedTuple, Optional
 
-from .items import digit_numbers, text_numbers
+from .items import constants_allowed, digit_numbers, text_numbers
 
 FACT = re.compile(r"^(?P<label>[^=]+?)\s*=\s*(?P<number>\d+)\s*$")
 CALCULATION = re.compile(r"^(?P<label>[^=]+?)\s*=\s*(?P<expression>[^=]+?)\s*=\s*(?P<result>.+?)\s*$")
@@ -101,22 +101,33 @@ def check_lines(block: str) -> Optional[str]:
 
 
 def check_against_trace(block: str, computed: List[int], answer: int, context: str) -> Optional[str]:
-    """The label-pass check: well formed and true (check_lines), the answer is the function's,
-    the calculations produce exactly the function's computed values (as a multiset), and every
-    fact is a number written in the conversation (task text or an earlier answer)."""
+    """The label-pass check: well formed and true (check_lines); the answer is the function's;
+    every calculation's result is a value some operation of the function produced (so a long
+    step may be split into child-sized ones, or two joined); every fact is a number in the
+    conversation or one a word implies ("a pair" = 2, "a week" = 7); every number a calculation
+    uses is a fact, an earlier result, or in the conversation (nothing invented)."""
     problem = check_lines(block)
     if problem:
         return problem
     lines = parse(block)
     if lines[-1].number != answer:
         return f"answer {lines[-1].number}, the function gives {answer}"
-    results = Counter(line.number for line in lines if line.kind == "calculation")
-    if results != Counter(computed):
-        return f"calculations give {sorted(results.elements())}, the function computes {sorted(computed)}"
-    available = set(text_numbers(context)) | set(digit_numbers(context))
-    for line in lines:
-        if line.kind == "fact" and line.number not in available:
-            return f"fact {line.number} is not in the conversation"
     if not any(line.kind == "fact" for line in lines):
         return "no facts listed"
+    available = set(text_numbers(context)) | set(digit_numbers(context)) | constants_allowed(context) | {0, 1}
+    function_values = set(computed)
+    known = set(available)
+    for line in lines:
+        if line.kind == "fact":
+            if line.number not in available:
+                return f"fact {line.number} is not in the conversation"
+            known.add(line.number)
+        elif line.kind == "calculation":
+            expression = line.text.split("=", 1)[1].rsplit("=", 1)[0]
+            for number in re.findall(r"\d+", expression.split("remainder")[0]):
+                if int(number) not in known:
+                    return f"calculation uses {number}, which is not a fact, an earlier result or in the conversation"
+            if line.number not in function_values:
+                return f"result {line.number} is not a value the function computes {sorted(function_values)}"
+            known.add(line.number)
     return None

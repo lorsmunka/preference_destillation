@@ -29,7 +29,7 @@ ITEMS_DIR = Path(__file__).resolve().parent / "items"
 LABELS_PATH = ITEMS_DIR / "labels" / "facts.jsonl"
 LOG_PATH = ITEMS_DIR / "labels" / "facts_log.json"
 ATTEMPTS = 3          # greedy first, then two sampled retries
-BATCH = 16
+BATCH = 8             # long prompts: 8 keeps a 12 GB card off its memory limit
 
 PROMPT = """You write the worked solution for a primary-school maths tutor.
 
@@ -42,8 +42,8 @@ These are the exact calculations that solve it, in this order:
 The answer is {answer}.
 
 Write the solution block:
-- First, one line for each number you use, written as: what it is = number. Use words from the problem. A number from an earlier answer counts too.
-- Then each calculation above, in the same order, written as: what it is = calculation = result.
+- First, one line for each number you use, written as: what it is = number. Use words from the problem. A number from an earlier answer counts too. Write numbers without units.
+- Then the calculations above, in the same order, each written as: what it is = calculation = result. You may split a long calculation into smaller steps.
 - Then the line Answer: {answer}
 - Then </solution>.
 Example:
@@ -63,7 +63,9 @@ def gold_calculations(item: Dict, turn: int, executions) -> List[str]:
 
 
 def computed_values(executions, turn: int) -> List[int]:
-    return [step.value for step in executions[turn].steps if step.computes]
+    """Every value any single operation of this turn's solve() produced (a line may split a
+    multi-operation step into child-sized steps, or join two)."""
+    return list(executions[turn].operation_values)
 
 
 def read_labels() -> Dict[tuple, str]:
@@ -121,6 +123,10 @@ def label_wave(handler, items: List[Dict], turn: int, labels: Dict[tuple, str], 
                         out.flush()
                     else:
                         still_failing.append((item, context, executions))
+                        examples = log.setdefault("failure_examples", [])
+                        if len(examples) < 40:   # kept for diagnosis
+                            examples.append({"item": item["id"], "turn": turn, "attempt": attempt, "problem": problem,
+                                             "calculations": gold_calculations(item, turn, executions), "text": text})
                         if attempt == ATTEMPTS - 1:
                             failures[re.sub(r"\d+", "N", problem.split(":")[0])[:60]] += 1
             log["verified_by_attempt"][attempt] = log["verified_by_attempt"].get(attempt, 0) + len(pending) - len(still_failing)
