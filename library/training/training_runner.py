@@ -95,6 +95,7 @@ class TrainingRunner:
                 batch_start, batch_end, epoch, resume_from)
 
             if not should_continue:
+                self._write_info("in_progress", started_at=started_at, longest_sequence=trainer.longest_sequence)
                 return False
 
             trainer.eval_epoch(test_start, test_end, epoch)
@@ -102,11 +103,12 @@ class TrainingRunner:
             logger.save()
 
         completed_at = datetime.now().isoformat()
-        self._write_info("completed", started_at=started_at, completed_at=completed_at)
+        self._write_info("completed", started_at=started_at, completed_at=completed_at,
+                         longest_sequence=trainer.longest_sequence)
         print(f"\nRun '{self.run_name}' completed.\n")
         return True
 
-    def _write_info(self, status, started_at=None, completed_at=None):
+    def _write_info(self, status, started_at=None, completed_at=None, longest_sequence=0):
         info = dict(self.config)
         info["status"] = status
         info["started_at"] = started_at
@@ -114,6 +116,13 @@ class TrainingRunner:
         if hasattr(self, "model_info"):
             info["model_info"] = self.model_info
         info_path = os.path.join(self.run_dir, "info.json")
+        # the longest sequence trained on so far; kept across resumes (each session sees only its part)
+        previous = 0
+        if os.path.exists(info_path):
+            with open(info_path, encoding="utf-8") as file:
+                previous = json.load(file).get("longest_training_sequence", 0)
+        if max(previous, longest_sequence):
+            info["longest_training_sequence"] = max(previous, longest_sequence)
         with open(info_path, "w", encoding="utf-8") as file:
             json.dump(info, file, indent=2)
 

@@ -18,7 +18,6 @@ class LongContextRecallDomain(Domain):
     name = "long_context_recall"
     stop_token = ";"
     max_steps = 12
-    max_input_tokens = 512
 
     # Every possible answer, in the exact output shape, so the vocabulary's hardest section
     # contains each of them.

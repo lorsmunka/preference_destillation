@@ -76,7 +76,6 @@ class Transformer(nn.Module):
         hidden_dim: int = HIDDEN_DIM,
         num_layers: int = NUM_LAYERS,
         num_heads: int = NUM_HEADS,
-        max_seq_length: int = None,
         dropout: float = DROPOUT,
         auxiliary_token_percentage: float = 1.0,
         input_vocabulary: dict = None
@@ -86,8 +85,6 @@ class Transformer(nn.Module):
         super().__init__()
 
         self.domain = as_domain(domain)
-        if max_seq_length is None:
-            max_seq_length = self.domain.max_seq_length
 
         self.tokenizer = AutoTokenizer.from_pretrained(teacher_model)
         self.full_input_vocab_size = self.tokenizer.vocab_size
@@ -113,12 +110,11 @@ class Transformer(nn.Module):
 
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
-        self.max_seq_length = max_seq_length
         self.head_dim = hidden_dim // num_heads
 
         self.input_embedding = nn.Embedding(self.input_vocab_size, hidden_dim)
 
-        self.rotary_embedding = RotaryEmbedding(self.head_dim, max_seq_length)
+        self.rotary_embedding = RotaryEmbedding(self.head_dim)   # positions grow on demand: no length limit
 
         self.transformer_layers = nn.ModuleList([
             TransformerBlock(hidden_dim, num_heads, self.head_dim, dropout)
@@ -222,7 +218,7 @@ class Transformer(nn.Module):
         print(f"\nSum of all above: {info['subtotal']:,}")
         print(f"Difference (RoPE buffers, non-trainable): {info['non_trainable_params']:,}")
         print(
-            f"\nHyperparameters: hidden_dim={self.hidden_dim}, heads={self.num_heads}, layers={len(self.transformer_layers)}, max_seq_length={self.max_seq_length}")
+            f"\nHyperparameters: hidden_dim={self.hidden_dim}, heads={self.num_heads}, layers={len(self.transformer_layers)}")
         if self.input_token_mapping is not None:
             print(
                 f"Input vocab size={self.input_vocab_size:,} (reduced from {self.full_input_vocab_size:,}), Output vocab size={self.output_vocab_size}")

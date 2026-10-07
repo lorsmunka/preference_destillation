@@ -9,7 +9,6 @@ class RedditSentimentDomain(Domain):
     name = "reddit_comment_sentiment"
     stop_token = "}"
     max_steps = 50
-    max_input_tokens = 25
 
     example_responses = [
         '```json\n{\n    "tone": "aggressive",\n    "sentiment": "negative",\n    "safety": "harmful",\n    "toxicity": "toxic"\n}',

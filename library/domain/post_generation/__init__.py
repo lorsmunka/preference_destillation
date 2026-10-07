@@ -22,7 +22,6 @@ class PostGenerationDomain(Domain):
     name = "post_generation"
     stop_token = "<end>"
     max_steps = 150
-    max_input_tokens = 25
 
     prompt_tokens = [
         "Given", "Reddit", "comment", "write", "original", "post",

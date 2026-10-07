@@ -20,8 +20,11 @@ from library.shared.metrics.base import TaskMetric
 class Domain(ABC):
     name: str
     stop_token: str
+    # A runaway guard, not a target: the longest output you expect plus ~35%. The model
+    # normally stops on its own stop token; this only ends generation that spins out.
+    # There is no input limit: rotary positions grow on demand, and each run records its
+    # longest training sequence in info.json.
     max_steps: int
-    max_input_tokens: int
 
     # --- reduced-vocabulary contributions (see library.shared.vocabulary) ---------
     # Example responses are tokenized into the "example" section (the hardest labels).
@@ -30,12 +33,6 @@ class Domain(ABC):
     prompt_tokens: List[str] = []
     # Domain extras prepended to the shared auxiliary bank (e.g. math's A..T scaffold).
     extra_auxiliary_tokens: List[str] = []
-
-    @property
-    def max_seq_length(self) -> int:
-        """Max positions the student needs (input context + generation). Default is
-        input + steps; a domain overrides with a class attribute if it needs a tuned value."""
-        return self.max_input_tokens + self.max_steps
 
     def student_prompt(self, text: str) -> str:
         """Context fed to the student at inference: just the sentence + delimiter (same for all)."""

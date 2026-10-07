@@ -50,6 +50,7 @@ class Trainer:
             divergence=config.get('divergence', 'forward_kl'),
             entropy_kl_weighting=config.get('entropy_kl_weighting', 0.0))
         self.encoder = ExampleEncoder(self.model, self.device)
+        self.longest_sequence = 0   # input + target positions, recorded in info.json
         self.evaluator = Evaluator(
             self.model, self.domain, self.encoder, batch_handler, self.device,
             loss_function=self._compute_loss,
@@ -155,6 +156,7 @@ class Trainer:
 
         encoded = self.encoder.encode(example)
         num_steps = encoded.num_steps
+        self.longest_sequence = max(self.longest_sequence, encoded.input_tensor.shape[1])
 
         self.optimizer.zero_grad(set_to_none=True)
         self.model.set_attention_noise(self._get_current_attention_noise())

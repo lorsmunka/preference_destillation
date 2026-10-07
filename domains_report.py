@@ -119,7 +119,6 @@ def describe(domain_name, tokenizers, entropies):
         "doc": doc,
         "stop_token": domain.stop_token,
         "max_steps": domain.max_steps,
-        "max_input_tokens": domain.max_input_tokens,
         "metric": type(domain.task_metric()).__name__,
         "structural_validity": domain.structural_validity("") is not None,
         "prompt": domain.teacher_prompt(PLACEHOLDER),
@@ -157,7 +156,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const f=(v,d=3)=>v==null?'—':Number(v).toFixed(d);
 function render(i){const d=DOMAINS[i];document.querySelectorAll('.tab').forEach((t,j)=>t.setAttribute('aria-selected',j===i));
  let h=`<div class="card"><h2>${esc(d.name)} <span class="badge">${esc(d.class)}</span></h2><p>${esc(d.doc)}</p></div>`;
- h+=`<div class="card"><h3>Spec</h3><table><tr><th>stop token</th><th>max steps</th><th>max input tokens</th><th>task metric</th><th>structural check</th></tr><tr><td class="m">${esc(JSON.stringify(d.stop_token))}</td><td class="n">${d.max_steps}</td><td class="n">${d.max_input_tokens}</td><td class="m">${esc(d.metric)}</td><td>${d.structural_validity?'yes':'no (free-form)'}</td></tr></table></div>`;
+ h+=`<div class="card"><h3>Spec</h3><table><tr><th>stop token</th><th>max steps</th><th>task metric</th><th>structural check</th></tr><tr><td class="m">${esc(JSON.stringify(d.stop_token))}</td><td class="n">${d.max_steps}</td><td class="m">${esc(d.metric)}</td><td>${d.structural_validity?'yes':'no (free-form)'}</td></tr></table></div>`;
  h+=`<div class="card"><h3>Teacher prompt</h3><pre>${esc(d.prompt)}</pre></div>`;
  h+=`<div class="card"><h3>Datasets on disk</h3><table><tr><th>teacher</th><th class="n">batches</th><th class="n">examples</th><th class="n">output vocab</th><th class="n">teacher H (nats)</th><th class="n">exp(H)</th><th class="n">one-hot steps</th></tr>`+d.datasets.map(s=>`<tr><td class="m">${esc(s.teacher||'(none yet — vocab shown for the default teacher)')}</td><td class="n">${s.batches}</td><td class="n">${s.examples.toLocaleString()}</td><td class="n">${s.vocab_size}</td><td class="n">${f(s.entropy_nats,4)}</td><td class="n">${f(s.exp_H,3)}</td><td class="n">${s.one_hot==null?'—':(s.one_hot*100).toFixed(1)+'%'}</td></tr>`).join('')+`</table>`;
  const fk=Object.keys(d.fields_exp_H||{});if(fk.length){h+=`<h3 style="margin-top:16px">exp(H) per output field</h3><table><tr>${fk.map(k=>`<th>${esc(k)}</th>`).join('')}</tr><tr>${fk.map(k=>`<td class="n">${f(d.fields_exp_H[k],3)}</td>`).join('')}</tr></table>`;}

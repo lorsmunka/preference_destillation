@@ -35,7 +35,7 @@ MIN_SENTENCE_LENGTH = 3
 MAX_SENTENCE_LENGTH = 25
 
 # Per-domain generation/sequence limits now live on the Domain itself
-# (`max_steps`, `max_input_tokens`, `max_seq_length`) — no name-keyed dicts here.
+# (`max_steps`) — no name-keyed dicts here.
 
 # Transformer architecture defaults (overridden per run)
 HIDDEN_DIM = 384

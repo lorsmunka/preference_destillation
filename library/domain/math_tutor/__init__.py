@@ -51,7 +51,6 @@ class MathTutorDomain(Domain):
     name = "math_tutor"
     stop_token = ";"
     max_steps = 64
-    max_input_tokens = 256
 
     example_responses = EXAMPLE_RESPONSES
     prompt_tokens = ["Problem", "Answer", "Follow", "-", "up", ":", ";", "="]

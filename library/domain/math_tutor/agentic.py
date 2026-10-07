@@ -74,8 +74,7 @@ class TutorAnswerMetric(ExactAnswerMetric):
 class MathTutorAgenticDomain(Domain):
     stop_token = "</solution>"
     stop_strings = ["</solution>", "</explanation>"]   # batched generation stops at either block's end
-    max_steps = 120     # explanations run longer than solutions (gold solutions max 62 tokens)
-    max_input_tokens = 320
+    max_steps = 150     # runaway guard: longest measured target 96 tokens (facts-first), ~110 expected at scale, +35%
 
     def __init__(self, annotation: str = "named", teacher: str = "generate"):
         if annotation not in ANNOTATIONS or teacher not in TEACHER_MODES:

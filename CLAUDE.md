@@ -69,7 +69,9 @@ The object is used directly; `info.json` records `domain.name` (string) for path
 auto-resolve their name (zero ceremony); the name→object registry is an internal detail for that,
 not part of the front-door API (`register_domain` exists in `library.domain` as an optional escape
 hatch, never required). A plain dict config still works (its `domain` name resolves to a built-in).
-Each Domain owns `max_steps` / `max_input_tokens` / `max_seq_length` — no name-keyed config dicts.
+Each Domain owns `max_steps` (a runaway guard: longest expected output + ~35%) — no name-keyed
+config dicts. There is no input-length limit: rotary positions grow on demand, and each run
+records `longest_training_sequence` in its info.json.
 Paths/constants live in `library/shared/config.py` (torch-free).
 
 ## Evaluation
