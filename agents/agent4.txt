@@ -1,0 +1,49 @@
+AGENT 4: Code review: training & model (library/training, library/model, specs.py, train.py)
+STATUS: DONE (2026-10-08). Read-only adversarial review, CPU checks only; no code was changed.
+BRIEF: find real bugs, misconfigurations, train/inference mismatches, data leakage and performance problems in the area; try to disprove each finding before reporting; rank critical/high/medium/low with file:line, failure scenario, fix.
+OUTPUT: findings below (also in thesis_work/agent_saves/review_training.md); to be combined into thesis_work/code_review.html.
+NEXT (pick up here): the user reviews the findings; agreed fixes are made one commit each, high first.
+
+FINDINGS
+# Training & model (library/training, library/model, specs.py, train.py)
+Effect on published results: core KD math, teacher-forced alignment and graceful resume are correct. One issue weakens a published finding (H1, data plateau). One affects every run equally (M1). Two silent-corruption paths (H2, M2) did not hit any existing run.
+
+## HIGH
+H1 | batch_handler.py:29-42 | The test set changes with max_training_examples, which weakens the data-plateau finding. | The cap is applied before the 80/20 split, so test = the last 20% of the first N files. Each data size is scored on a different, differently sized test set (eval total_steps 2,490 / 8,702 / 16,161 = 64 / 224 / 416 test examples). "256 examples" actually trains on 192. Per-field accuracy jumps (safety 0.70 -> 0.83 -> 0.75) look like test-set makeup, not learning. E-01 and the vocab sweep are unaffected (same N within each). | Take the test set from a fixed tail of the whole directory, independent of max_training_examples; cap only the training batches; re-run the plateau.
+H2 | trainer.py:72-77, training_runner.py:87-91 | A hard crash after an earlier stop silently produces a corrupted run marked "completed". | On resume the epoch and batch come from state.json, but the weights come from temp_checkpoint.pt, which is never deleted and may be stale. state.json is only saved at epoch end or on a graceful stop. Test: graceful stop, resume and finish epoch 0, hard crash in epoch 1, restart -> it loaded the epoch-0/step-1 weights, skipped epoch 0, finished "completed", and the final weights differed (max |dw| 0.049). With no temp file it prints "starting from scratch" but still skips epochs, and the schedule restarts at step 0. No existing run was affected (5 two-session runs were all graceful). | Delete the temp checkpoint after loading and on completion; refuse to resume when state.json says epoch > 0 but the checkpoint's current_step doesn't match epoch*steps_per_epoch + batch.
+
+## MEDIUM
+M1 | trainer.py:40 vs :139-140 | The warm-up never covers the first batch. | The optimizer is created at peak LR and _apply_learning_rate first runs after batch 1. So batch 1's 32 optimizer steps run at full LR; the LR then drops to peak/warmup_steps and ramps up again (measured [0.0015, 0.00075, 0.0015, ...], intended [0, 0.00075, 0.0015, ...]). The logs agree: e01-reddit-pure-kl-s1 batch 1 logs learning_rate 0.0001 yet reaches 65% token accuracy. It affects every published run equally, so arm comparisons stay fair. | Call _apply_learning_rate() at the end of Trainer.__init__; log the LR actually used.
+M2 | trainer.py:107-119 | A stop on the last batch of an epoch loses that epoch's checkpoint. | On resume the epoch loop is empty, so checkpoint_epoch_e.pt and the train_epoch record are never written (eval still runs). In the last epoch, RunStore.resolve_checkpoint("latest") (tooling/run.py:329-331) silently picks the previous epoch, so Analysis.evaluate scores a different model from the logged one. No existing run stopped on an epoch boundary. | When resuming at batch_end, save the epoch checkpoint from the loaded weights, or save it before the exit check on the last batch.
+M3 | evaluator.py:157-174 | Evaluation rollouts take 64-74% of wall-clock. | Each generated token does a full forward pass over the growing prefix, with no KV cache, plus .item(), a decode and a stop check. Train vs eval seconds: reddit+math 7,110 vs 12,727; post-gen 10,639 vs 29,740. A full-data reddit eval would take about 5 h per epoch. | Batch the rollouts across a file's examples and/or add a KV cache; run full rollouts only on the last epoch or on a fixed subset.
+M4 | losses.py:39-42 | Reverse KL is computed against a clamped teacher. | It uses log(teacher_probs.clamp_min(1e-12)). The share of teacher probabilities below 1e-12 is reddit 96%, math 75%, post-gen 47%. On a synthetic sharp teacher the code gives 19.3 where the true value is 38.6. JS and TVD are effectively unaffected. No run has used reverse_kl yet; this matters for the planned divergence comparison. | Pass F.log_softmax(teacher_logits / T, -1) into divergence_per_token.
+M5 | student.py:159-161 | StudentModel.generate uses its own stop rule. | It checks decoded == stop_token or stop_token in text instead of domain.is_stop, so for the agentic tutor Analysis.infer/evaluate won't stop at </explanation> or <out_of_scope> (the trainer's Evaluator is correct). | Use self.domain.is_stop(decoded, text_so_far).
+
+## LOW
+- losses.py:25-26: CE is computed at temperature T (CE(z/T)*T^2). E-01 used T=1, so it is unaffected. The old post-gen T 5->3 arms mixed a tempered CE with a pure-CE arm at T=1. Use CE at T=1 without T^2.
+- trainer.py:139-142, 195-197: the logged LR / KL ratio / temperature are one batch ahead.
+- trainer.py:95: there is no shuffling, so seeds vary only initialisation and dropout. The E-01 noise floor leaves out data-order variance and test-sampling variance.
+- best_and_final picks the best epoch on the test set, so the published task_best is the maximum of 3 test measurements (biased upward).
+- metrics/distribution.py:36-41: top-20 boundary ties under bf16 (15% reddit, 14% math, 33% post-gen). On reddit the median teacher mass on ranks 2-20 is 9e-8, so overlap there measures the ordering of near-zero tokens.
+- teacher_entropy is computed over the renormalised reduced vocabulary at T=1, not the true next-token entropy, and it ignores the teacher-temperature setting.
+- checkpoints.py: RNG state isn't saved, so resume isn't seed-reproducible with dropout > 0.
+- After a mid-epoch resume, the epoch-average loss covers only the batches run after the resume.
+- load_state_dict(strict=False) (checkpoints.py:35, student.py:94) would silently skip renamed modules. Suggest strict loading after popping the rotary keys.
+- batch_size only scales the data cap; it is not a gradient batch.
+- input_vocabulary.json isn't snapshotted per run, and there is no unknown-token row, so an unseen token at infer time raises ValueError.
+- trainer.py:159: longest_sequence is prompt + steps - 1 (the comment says input + target) and excludes eval rollouts.
+- Cosmetic: dead code after return (transformer.py:263-267); non_trainable_params is always 0; the student.py:90 comment is wrong (the rotary buffers are persistent).
+
+## Checked and fine
+- Forward KL direction, softmax axis and T^2: all four divergences match manual float64 computations (error <= 4e-15).
+- The KL/CE mix weights are correct, and the entropy weighting is normalised.
+- Schedules: direction, cosine and warm-up formulas are correct; current_step is restored on resume.
+- Teacher-forced alignment: input = prompt + steps[:-1], and logits [L-1 : L-1+n] predict the steps.
+- Token round-trip: 100% of 688k steps re-encode to a single, correct id.
+- Target fallback: steps outside the output vocabulary are 0 / 0 / 1; every mismatch with the reduced argmax is an exact bf16 tie.
+- Output-vocabulary slicing [:V] is correct (auxiliary-% vocabularies are prefixes).
+- A graceful mid-epoch resume is bit-exact.
+- The rotary cache grows correctly.
+- Causal mask and attention noise are correct; noise and dropout are off in eval.
+- Eval metrics use T=1 logits on answer positions only; invalid JSON counts as wrong.
+- seeded_run_training seeds before the model is initialised.
