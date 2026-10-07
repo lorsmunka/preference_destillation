@@ -1,0 +1,360 @@
+{"item_id": "S01-mem-b01-0074", "turn": 0, "kind": "distractor", "text": "why didnt you use the 4 cousins? i thought you had to do something with them"}
+{"item_id": "S01-mem-b01-0074", "turn": 0, "kind": "pushback", "text": "I think it's 46 because you put the 27 hens and the 19 hens together"}
+{"item_id": "S01-mem-b01-0074", "turn": 0, "kind": "meaning", "text": "so the 19 is how many hens were in the coop before the cousins came?"}
+{"item_id": "S01-mem-b01-0074", "turn": 1, "kind": "where_from", "text": "where did the 7 come from?? it doesnt say 7 anywhere"}
+{"item_id": "S01-mem-b01-0074", "turn": 1, "kind": "check", "text": "is 56 really right? thats loads of eggs for only 8 hens"}
+{"item_id": "S01-mem-b01-0074", "turn": 1, "kind": "smaller_numbers", "text": "can you show me with like 2 hens for 3 days so i get it"}
+{"item_id": "S01-mem-b05-0008", "turn": 0, "kind": "why", "text": "why do you add all three of them and not just the two sales"}
+{"item_id": "S01-mem-b05-0008", "turn": 0, "kind": "what_if", "text": "ooh what if the pumpkin sales by noon were $50 not $38, how much would be in the box at closing?", "what_if": {"old": 38, "new": 50}}
+{"item_id": "S01-mem-b05-0008", "turn": 0, "kind": "lost", "text": "i got lost at the 140 bit. how did 45 and 38 and 57 turn into that"}
+{"item_id": "S01-mem-b07-0059", "turn": 0, "kind": "wrong_operation", "text": "Why not plus? She brought stamps home so she got MORE stamps"}
+{"item_id": "S01-mem-b07-0059", "turn": 0, "kind": "meaning", "text": "is 29 the stamps she got at the shop?"}
+{"item_id": "S01-mem-b07-0059", "turn": 0, "kind": "off_topic", "text": "do you collect anything? i collect pokemon cards and i have 200"}
+{"item_id": "S02-mem-b01-0027", "turn": 0, "kind": "where_from", "text": "where is the 13? i can only see 20 in the question"}
+{"item_id": "S02-mem-b01-0027", "turn": 0, "kind": "pushback", "text": "it's 33. 20 and 13 makes 33, I'm really sure"}
+{"item_id": "S02-mem-b01-0027", "turn": 0, "kind": "what_if", "text": "and what if 15 rolls were gone by ten o'clock instead of 13?", "what_if": {"old": 13, "new": 15}}
+{"item_id": "S02-mem-b01-0027", "turn": 1, "kind": "where_from", "text": "the 7 is from the first question right? the leftover rolls?"}
+{"item_id": "S02-mem-b01-0027", "turn": 1, "kind": "shortcut", "text": "is there a faster way than writing all the lines out, can i just count on 12 from 7"}
+{"item_id": "S02-mem-b01-0027", "turn": 1, "kind": "check", "text": "how do you know its 19 and not 18"}
+{"item_id": "S02-mem-b01-0027", "turn": 2, "kind": "why", "text": "why do you take the 5 away? the staff still get to eat them"}
+{"item_id": "S02-mem-b01-0027", "turn": 2, "kind": "what_if", "text": "What if the staff wanted 8 rolls saved for them?", "what_if": {"old": 5, "new": 8}}
+{"item_id": "S02-mem-b01-0027", "turn": 2, "kind": "off_topic", "text": "im hungry now talking about cinnamon rolls can we stop"}
+{"item_id": "S02-mem-b01-0058", "turn": 0, "kind": "wrong_operation", "text": "they drank them so shouldnt it be 18 minus 12?"}
+{"item_id": "S02-mem-b01-0058", "turn": 0, "kind": "pushback", "text": "No it's 6!! 18 take away 12 is 6, my big sister checked it"}
+{"item_id": "S02-mem-b01-0058", "turn": 0, "kind": "meaning", "text": "so the 30 is all the bottles before anybody drank any?"}
+{"item_id": "S02-mem-b01-0058", "turn": 1, "kind": "where_from", "text": "wait wheres the 12 from, i thought there were 30 bottles in the cooler"}
+{"item_id": "S02-mem-b01-0058", "turn": 1, "kind": "smaller_numbers", "text": "can you do it with 2 bottles in the cooler and 1 more bought"}
+{"item_id": "S02-mem-b01-0058", "turn": 1, "kind": "another_way", "text": "could i do 30 take away 18 and then add the 6 instead?"}
+{"item_id": "S02-mem-b01-0079", "turn": 0, "kind": "distractor", "text": "what about the 3 movies, dont you need to times something by 3"}
+{"item_id": "S02-mem-b01-0079", "turn": 0, "kind": "lost", "text": "i dont get it, how is 94 take away 48 the hot dogs that got sold"}
+{"item_id": "S02-mem-b01-0079", "turn": 0, "kind": "what_if", "text": "if there were 80 hot dogs left afterward instead of 48, how many got sold?", "what_if": {"old": 48, "new": 80}}
+{"item_id": "S02-mem-b01-0079", "turn": 1, "kind": "why", "text": "why do you multiply 46 by 4? i dont see why"}
+{"item_id": "S02-mem-b01-0079", "turn": 1, "kind": "pushback", "text": "no its $50. 46 and 4 is 50, im sure thats it"}
+{"item_id": "S02-mem-b01-0079", "turn": 1, "kind": "smaller_numbers", "text": "show me with like 3 hot dogs that cost $4 each please"}
+{"item_id": "S02-mem-b01-0079", "turn": 2, "kind": "where_from", "text": "um why 48 and not 46?? where did the 48 come from"}
+{"item_id": "S02-mem-b01-0079", "turn": 2, "kind": "check", "text": "can you check 48 plus 30 again, i want to be sure its 78"}
+{"item_id": "S02-mem-b01-0079", "turn": 2, "kind": "off_topic", "text": "whats your favourite movie? mine is the one with the snowman"}
+{"item_id": "S02-mem-b02-0095", "turn": 0, "kind": "meaning", "text": "do the 27 soaked bales get thrown out so we dont count them anymore?"}
+{"item_id": "S02-mem-b02-0095", "turn": 0, "kind": "another_way", "text": "could I count up from 27 to 96 instead of taking away?"}
+{"item_id": "S02-mem-b02-0095", "turn": 0, "kind": "what_if", "text": "what if 30 bales got soaked, how many dry ones then", "what_if": {"old": 27, "new": 30}}
+{"item_id": "S02-mem-b03-0037", "turn": 0, "kind": "distractor", "text": "what are the 5 prizes for then? you never used them"}
+{"item_id": "S02-mem-b03-0037", "turn": 0, "kind": "pushback", "text": "it's 38 because you have to take away the 5 prizes too"}
+{"item_id": "S02-mem-b03-0037", "turn": 0, "kind": "shortcut", "text": "is there a quick way to do 90 minus 47 without lining them up in columns"}
+{"item_id": "S02-mem-b03-0037", "turn": 1, "kind": "why", "text": "why do you start from 43 this time and not 90?"}
+{"item_id": "S02-mem-b03-0037", "turn": 1, "kind": "wrong_operation", "text": "shouldnt you add the 12 because hes buying more tickets?"}
+{"item_id": "S02-mem-b03-0037", "turn": 1, "kind": "what_if", "text": "if the farmer bought 20 tickets instead how many are left on the roll", "what_if": {"old": 12, "new": 20}}
+{"item_id": "S02-mem-b03-0056", "turn": 0, "kind": "lost", "text": "i dont understand how 60 and 44 tells you the ones the wind took"}
+{"item_id": "S02-mem-b03-0056", "turn": 0, "kind": "check", "text": "how do you know 16 is right? did you check it"}
+{"item_id": "S02-mem-b03-0056", "turn": 0, "kind": "meaning", "text": "so the 44 is the roses that stayed on the float?"}
+{"item_id": "S02-mem-b03-0056", "turn": 1, "kind": "wrong_operation", "text": "they're FALLEN roses so why aren't you taking the 9 away?"}
+{"item_id": "S02-mem-b03-0056", "turn": 1, "kind": "pushback", "text": "I got 25. 16 roses blew off and they picked up 9 so it's 16 add 9"}
+{"item_id": "S02-mem-b03-0056", "turn": 1, "kind": "smaller_numbers", "text": "can you do it with tiny numbers like 4 roses and 2 glued back on"}
+{"item_id": "S02-mem-b03-0065", "turn": 0, "kind": "where_from", "text": "where did you get 70 from"}
+{"item_id": "S02-mem-b03-0065", "turn": 0, "kind": "another_way", "text": "could you do it by adding up from 45 to 70 instead?"}
+{"item_id": "S02-mem-b03-0065", "turn": 0, "kind": "what_if", "text": "what if his box had 50 pieces in it now instead of 45?", "what_if": {"old": 45, "new": 50}}
+{"item_id": "S02-mem-b03-0065", "turn": 1, "kind": "why", "text": "why is it a take away this time"}
+{"item_id": "S02-mem-b03-0065", "turn": 1, "kind": "lost", "text": "huh?? im confused, which pieces are the ones still in the box"}
+{"item_id": "S02-mem-b03-0065", "turn": 1, "kind": "off_topic", "text": "my brother has a puzzle with a dragon on it. do you like dragons"}
+{"item_id": "S02-mem-b03-0065", "turn": 2, "kind": "where_from", "text": "where did 25 come from? its not in this question"}
+{"item_id": "S02-mem-b03-0065", "turn": 2, "kind": "check", "text": "is 55 right? so theres 15 left in the box and 55 done, does that make 70 altogether?"}
+{"item_id": "S02-mem-b03-0065", "turn": 2, "kind": "pushback", "text": "i think it's 30 because he just fitted 30 pieces"}
+{"item_id": "S02-mem-b04-0005", "turn": 0, "kind": "wrong_operation", "text": "pepper ATE the hay so why is it plus? shouldnt it be 46 take away 37"}
+{"item_id": "S02-mem-b04-0005", "turn": 0, "kind": "meaning", "text": "so 83 kilos is the whole bale before the horse ate any of it?"}
+{"item_id": "S02-mem-b04-0005", "turn": 0, "kind": "off_topic", "text": "I love horses!! what colour is Pepper do you think"}
+{"item_id": "S02-mem-b04-0005", "turn": 1, "kind": "why", "text": "why do you use 46 and not 83 for this one?"}
+{"item_id": "S02-mem-b04-0005", "turn": 1, "kind": "check", "text": "is it definitely 32? i keep getting a different number when i do 46 take 14"}
+{"item_id": "S02-mem-b04-0005", "turn": 1, "kind": "another_way", "text": "can i take away the 10 first and then the 4 instead"}
+{"item_id": "S02-mem-b04-0005", "turn": 2, "kind": "why", "text": "Why is it 32 divided by 4?"}
+{"item_id": "S02-mem-b04-0005", "turn": 2, "kind": "smaller_numbers", "text": "can you show me the sharing with like 8 kilos and 2 nets"}
+{"item_id": "S02-mem-b04-0005", "turn": 2, "kind": "pushback", "text": "no it's 128. there's 4 nets so you do 32 times 4"}
+{"item_id": "S02-mem-b04-0005", "turn": 3, "kind": "lost", "text": "i dont get it. which nets are the other nets?"}
+{"item_id": "S02-mem-b04-0005", "turn": 3, "kind": "another_way", "text": "could you also do 3 nets times 8 kilos? would that work"}
+{"item_id": "S02-mem-b04-0005", "turn": 3, "kind": "meaning", "text": "is 24 the hay that pepper hasnt eaten yet?"}
+{"item_id": "S02-mem-b04-0021", "turn": 0, "kind": "distractor", "text": "does the 3 rowboats matter?? you didnt do anything with the 3"}
+{"item_id": "S02-mem-b04-0021", "turn": 0, "kind": "wrong_operation", "text": "he CUT the rope so why are you adding"}
+{"item_id": "S02-mem-b04-0021", "turn": 0, "kind": "lost", "text": "im so confused, was the rope longer or shorter before"}
+{"item_id": "S02-mem-b04-0021", "turn": 1, "kind": "why", "text": "why do you take the 9 away from 25 and not from 39"}
+{"item_id": "S02-mem-b04-0021", "turn": 1, "kind": "pushback", "text": "It's 30. The rope was 39 and 39 take away 9 is 30."}
+{"item_id": "S02-mem-b04-0021", "turn": 1, "kind": "shortcut", "text": "is there a trick for taking away 9? my teacher said something about taking 10 and adding 1"}
+{"item_id": "S02-mem-b04-0021", "turn": 2, "kind": "check", "text": "wait the answer is 4 and the pieces are 4 meters long too, is that a mistake?"}
+{"item_id": "S02-mem-b04-0021", "turn": 2, "kind": "distractor", "text": "are the pieces for the 3 rowboats? do we need the 3 now"}
+{"item_id": "S02-mem-b04-0021", "turn": 2, "kind": "what_if", "text": "what if each piece was only 2 meters long, how many pieces would he get", "what_if": {"old": 4, "new": 2}}
+{"item_id": "S02-mem-b04-0034", "turn": 0, "kind": "wrong_operation", "text": "she carried them OUT so its a take away isnt it?"}
+{"item_id": "S02-mem-b04-0034", "turn": 0, "kind": "pushback", "text": "i'm sure the answer is 3. 16 take 13 is 3"}
+{"item_id": "S02-mem-b04-0034", "turn": 0, "kind": "what_if", "text": "if 20 pots were left in the stack, how big was the stack before?", "what_if": {"old": 13, "new": 20}}
+{"item_id": "S02-mem-b05-0050", "turn": 0, "kind": "meaning", "text": "is the 34 what she spent or what she has left? i mixed them up"}
+{"item_id": "S02-mem-b05-0050", "turn": 0, "kind": "why", "text": "why do you take 34 away from 80"}
+{"item_id": "S02-mem-b05-0050", "turn": 0, "kind": "off_topic", "text": "have you ever flown a kite? mine got stuck in a tree"}
+{"item_id": "S02-mem-b05-0050", "turn": 1, "kind": "where_from", "text": "where does the 46 come from"}
+{"item_id": "S02-mem-b05-0050", "turn": 1, "kind": "pushback", "text": "the snacks cost $52 because 80 take away 28 is 52. I did it twice"}
+{"item_id": "S02-mem-b05-0050", "turn": 1, "kind": "why", "text": "but why do you minus the kite money?"}
+{"item_id": "S02-mem-b05-0050", "turn": 2, "kind": "why", "text": "why add it to 34 and not to the 80"}
+{"item_id": "S02-mem-b05-0050", "turn": 2, "kind": "check", "text": "can you check it again? 34 and 25 really make 59?"}
+{"item_id": "S02-mem-b05-0050", "turn": 2, "kind": "what_if", "text": "what if she only took $10 out of her piggy bank?", "what_if": {"old": 25, "new": 10}}
+{"item_id": "S02-mem-b05-0050", "turn": 3, "kind": "lost", "text": "how much more always confuses me can you say it easier"}
+{"item_id": "S02-mem-b05-0050", "turn": 3, "kind": "wrong_operation", "text": "why dont you add 28 and 18 together?"}
+{"item_id": "S02-mem-b05-0050", "turn": 3, "kind": "smaller_numbers", "text": "show me how much more with little numbers, like 5 and 3"}
+{"item_id": "S02-mem-b05-0066", "turn": 0, "kind": "why", "text": "why do you add the fine? he lost that money"}
+{"item_id": "S02-mem-b05-0066", "turn": 0, "kind": "meaning", "text": "so $21 is the money he had before he paid the library?"}
+{"item_id": "S02-mem-b05-0066", "turn": 0, "kind": "off_topic", "text": "volcanoes are so cool. have you ever seen one erupt"}
+{"item_id": "S02-mem-b05-0066", "turn": 1, "kind": "meaning", "text": "what does rams mean?? there arent any rams in the story"}
+{"item_id": "S02-mem-b05-0066", "turn": 1, "kind": "pushback", "text": "it's 19!! he gets a bookmark so it's 17 add 2"}
+{"item_id": "S02-mem-b05-0066", "turn": 1, "kind": "check", "text": "is 15 right? he paid $4 and then $2, so is it like 21 take away 6?"}
+{"item_id": "S02-mem-b05-0097", "turn": 0, "kind": "shortcut", "text": "is there a quick way? like counting from 32 up to 50"}
+{"item_id": "S02-mem-b05-0097", "turn": 0, "kind": "meaning", "text": "so 18 envelopes are still in the box and nobody bought them?"}
+{"item_id": "S02-mem-b05-0097", "turn": 0, "kind": "lost", "text": "how did you know to take away here? i never know when its take away"}
+{"item_id": "S02-mem-b05-0097", "turn": 1, "kind": "why", "text": "why times 2"}
+{"item_id": "S02-mem-b05-0097", "turn": 1, "kind": "wrong_operation", "text": "why don't you just add 32 and 2"}
+{"item_id": "S02-mem-b05-0097", "turn": 1, "kind": "where_from", "text": "where is 32 from? they had 50 envelopes"}
+{"item_id": "S02-mem-b06-0077", "turn": 0, "kind": "distractor", "text": "what are the 12 tables for? do they even matter"}
+{"item_id": "S02-mem-b06-0077", "turn": 0, "kind": "pushback", "text": "I think 42 croissants got sold. 72 take 18 take 12"}
+{"item_id": "S02-mem-b06-0077", "turn": 0, "kind": "another_way", "text": "can i do 72 take away 20 and then add 2 back on?"}
+{"item_id": "S02-mem-b08-0045", "turn": 0, "kind": "lost", "text": "i dont understand why you add the kids who went home, they left"}
+{"item_id": "S02-mem-b08-0045", "turn": 0, "kind": "meaning", "text": "is 25 all the kids on the hill in the morning?"}
+{"item_id": "S02-mem-b08-0045", "turn": 0, "kind": "shortcut", "text": "can i just do 16 add 10 and then take 1 off? is that faster"}
+{"item_id": "S02-mem-b08-0045", "turn": 1, "kind": "where_from", "text": "why 16? where did that come from, i thought it was 25"}
+{"item_id": "S02-mem-b08-0045", "turn": 1, "kind": "check", "text": "is it really 23 kids? how can you tell"}
+{"item_id": "S02-mem-b08-0045", "turn": 1, "kind": "pushback", "text": "i got 32. there were 25 kids and then 7 more came"}
+{"item_id": "S02-mem-b08-0045", "turn": 2, "kind": "why", "text": "why do you take away 18"}
+{"item_id": "S02-mem-b08-0045", "turn": 2, "kind": "what_if", "text": "and if only 12 kids went home when it got dark, how many would still be on the hill?", "what_if": {"old": 18, "new": 12}}
+{"item_id": "S02-mem-b08-0045", "turn": 2, "kind": "smaller_numbers", "text": "can you do it with like 6 kids and 4 going home, these numbers are too big"}
+{"item_id": "S02-mem-b08-0045", "turn": 3, "kind": "where_from", "text": "where are the 9 from? that was ages ago at lunchtime"}
+{"item_id": "S02-mem-b08-0045", "turn": 3, "kind": "pushback", "text": "it's 34. you add 9 and 18 and the 7, that's all the kids"}
+{"item_id": "S02-mem-b08-0045", "turn": 3, "kind": "another_way", "text": "could you do it with the 25 kids and the 7 who came, and then take away the 5 who stayed?"}
+{"item_id": "S03-mem-b01-0035", "turn": 0, "kind": "why", "text": "why is it plus? water and juice are different things"}
+{"item_id": "S03-mem-b01-0035", "turn": 0, "kind": "smaller_numbers", "text": "can you do it with 2 water bottles and 3 juice boxes so its easier"}
+{"item_id": "S03-mem-b01-0035", "turn": 0, "kind": "off_topic", "text": "can you tell me a story about a family going camping instead"}
+{"item_id": "S03-mem-b01-0035", "turn": 1, "kind": "where_from", "text": "where'd you get 21 from? the question only says 15"}
+{"item_id": "S03-mem-b01-0035", "turn": 1, "kind": "lost", "text": "i dont get how you know its a take away one"}
+{"item_id": "S03-mem-b01-0035", "turn": 1, "kind": "what_if", "text": "what if they only drank 10 drinks on the hike?", "what_if": {"old": 15, "new": 10}}
+{"item_id": "S03-mem-b02-0001", "turn": 0, "kind": "wrong_operation", "text": "why not 24 add 9?"}
+{"item_id": "S03-mem-b02-0001", "turn": 0, "kind": "meaning", "text": "so the 9 frozen ones didnt come from the shop shelf?"}
+{"item_id": "S03-mem-b02-0001", "turn": 0, "kind": "why", "text": "Why do you take away the frozen bottles?"}
+{"item_id": "S03-mem-b02-0001", "turn": 1, "kind": "why", "text": "why do we start with 15 now and not 24"}
+{"item_id": "S03-mem-b02-0001", "turn": 1, "kind": "pushback", "text": "No, it's 17. 24 take away 7 is 17, so 17 are still full"}
+{"item_id": "S03-mem-b02-0001", "turn": 1, "kind": "shortcut", "text": "is there a quick way to do 15 take 7 in your head"}
+{"item_id": "S03-mem-b02-0060", "turn": 0, "kind": "distractor", "text": "what do we do with the 4 dollars?"}
+{"item_id": "S03-mem-b02-0060", "turn": 0, "kind": "pushback", "text": "its 66 you forgot to add on the 4"}
+{"item_id": "S03-mem-b02-0060", "turn": 0, "kind": "lost", "text": "can you explain the 27 add 35 bit slower, i dont see how it makes 62"}
+{"item_id": "S03-mem-b03-0056", "turn": 0, "kind": "why", "text": "why do you take away two numbers at the same time"}
+{"item_id": "S03-mem-b03-0056", "turn": 0, "kind": "check", "text": "how can we be sure 24 is right? it seems like not many kids"}
+{"item_id": "S03-mem-b03-0056", "turn": 0, "kind": "another_way", "text": "could you add the 45 and the 29 first and then take that away from 98?"}
+{"item_id": "S03-mem-b03-0056", "turn": 1, "kind": "where_from", "text": "where is the 24 from"}
+{"item_id": "S03-mem-b03-0056", "turn": 1, "kind": "wrong_operation", "text": "why aren't you sharing the stickers out between the kids? like dividing"}
+{"item_id": "S03-mem-b03-0056", "turn": 1, "kind": "meaning", "text": "is 26 the stickers that nobody got?"}
+{"item_id": "S03-mem-b03-0056", "turn": 2, "kind": "where_from", "text": "where does the 2 come from, theres no 2 in the question"}
+{"item_id": "S03-mem-b03-0056", "turn": 2, "kind": "meaning", "text": "what does twice mean"}
+{"item_id": "S03-mem-b03-0056", "turn": 2, "kind": "pushback", "text": "it's 26!! 24 and 2 more is 26"}
+{"item_id": "S03-mem-b06-0021", "turn": 0, "kind": "distractor", "text": "does it matter that the park opened 6 years ago?"}
+{"item_id": "S03-mem-b06-0021", "turn": 0, "kind": "wrong_operation", "text": "why not 26 plus 11"}
+{"item_id": "S03-mem-b06-0021", "turn": 0, "kind": "smaller_numbers", "text": "show me with smaller numbers please, like 5 ramps and rails and 2 of them are ramps"}
+{"item_id": "S03-mem-b06-0021", "turn": 1, "kind": "distractor", "text": "is the 6 years for this question? you still didnt use it"}
+{"item_id": "S03-mem-b06-0021", "turn": 1, "kind": "why", "text": "why are you adding the 4"}
+{"item_id": "S03-mem-b06-0021", "turn": 1, "kind": "off_topic", "text": "i cant skateboard i keep falling off. can you skateboard?"}
+{"item_id": "S03-mem-b07-0030", "turn": 0, "kind": "lost", "text": "i dont get it, are the 7 bikes the ones that are out or the ones still in the shop"}
+{"item_id": "S03-mem-b07-0030", "turn": 0, "kind": "pushback", "text": "it's 32, 25 add 7. My dad says so too"}
+{"item_id": "S03-mem-b07-0030", "turn": 0, "kind": "why", "text": "why do you take 7 from 25?"}
+{"item_id": "S03-mem-b07-0030", "turn": 1, "kind": "why", "text": "why are you using the 7 and not the 18?"}
+{"item_id": "S03-mem-b07-0030", "turn": 1, "kind": "check", "text": "11 bikes on the rack, is that definitely right?"}
+{"item_id": "S03-mem-b07-0030", "turn": 1, "kind": "off_topic", "text": "do you have a bike? mine is blue with a bell"}
+{"item_id": "S04-mem-b01-0003", "turn": 0, "kind": "wrong_operation", "text": "it says 35 fewer... shouldnt you add them though"}
+{"item_id": "S04-mem-b01-0003", "turn": 0, "kind": "meaning", "text": "does fewer mean less people?"}
+{"item_id": "S04-mem-b01-0003", "turn": 0, "kind": "what_if", "text": "what if the night bus carried 40 fewer than the morning one?", "what_if": {"old": 35, "new": 40}}
+{"item_id": "S04-mem-b01-0003", "turn": 1, "kind": "shortcut", "text": "is there a quick way to add 72 and 37"}
+{"item_id": "S04-mem-b01-0003", "turn": 1, "kind": "pushback", "text": "i got 107 i did 72 and 35. that's the total"}
+{"item_id": "S04-mem-b01-0003", "turn": 1, "kind": "lost", "text": "what does total for both buses mean, im lost"}
+{"item_id": "S04-mem-b01-0003", "turn": 2, "kind": "meaning", "text": "is 55 how many people went on the night bus the next night?"}
+{"item_id": "S04-mem-b01-0003", "turn": 2, "kind": "what_if", "text": "ok what if it carried 20 more people instead of 18", "what_if": {"old": 18, "new": 20}}
+{"item_id": "S04-mem-b01-0003", "turn": 2, "kind": "smaller_numbers", "text": "can you show it with like 3 people and then 2 more"}
+{"item_id": "S04-mem-b01-0003", "turn": 3, "kind": "why", "text": "why take 55 away from 72?"}
+{"item_id": "S04-mem-b01-0003", "turn": 3, "kind": "another_way", "text": "could you also do 35 take away 18? because it was 35 fewer and then 18 more came"}
+{"item_id": "S04-mem-b01-0003", "turn": 3, "kind": "pushback", "text": "i think it's 35 fewer. it said 35 fewer right at the start"}
+{"item_id": "S04-mem-b03-0010", "turn": 0, "kind": "wrong_operation", "text": "why not add them? there are people at both places"}
+{"item_id": "S04-mem-b03-0010", "turn": 0, "kind": "another_way", "text": "can i count up from 49 to 85 instead"}
+{"item_id": "S04-mem-b03-0010", "turn": 0, "kind": "off_topic", "text": "i went to a concert once and it was soooo loud. do you like music?"}
+{"item_id": "S04-mem-b03-0010", "turn": 1, "kind": "check", "text": "101?? thats more than 100, is that right"}
+{"item_id": "S04-mem-b03-0010", "turn": 1, "kind": "lost", "text": "i got confused, why does the stage get more people"}
+{"item_id": "S04-mem-b03-0010", "turn": 1, "kind": "pushback", "text": "it's 69. they moved, so you take away 16"}
+{"item_id": "S04-mem-b03-0010", "turn": 2, "kind": "why", "text": "why from 49 and not 85?"}
+{"item_id": "S04-mem-b03-0010", "turn": 2, "kind": "wrong_operation", "text": "why is it minus this time when the last one was plus"}
+{"item_id": "S04-mem-b03-0010", "turn": 2, "kind": "check", "text": "how do you know 33 is right?"}
+{"item_id": "S04-mem-b03-0010", "turn": 3, "kind": "where_from", "text": "where did 101 and 33 come from? theyre not in this question"}
+{"item_id": "S04-mem-b03-0010", "turn": 3, "kind": "pushback", "text": "it's 36. you already said 36 in the very first question"}
+{"item_id": "S04-mem-b03-0010", "turn": 3, "kind": "lost", "text": "too many numbers now i'm lost. which ones are we using"}
+{"item_id": "S04-mem-b04-0027", "turn": 0, "kind": "meaning", "text": "does 11 minutes less mean Ilse had 11 minutes left?"}
+{"item_id": "S04-mem-b04-0027", "turn": 0, "kind": "wrong_operation", "text": "why not 18 add 11"}
+{"item_id": "S04-mem-b04-0027", "turn": 0, "kind": "what_if", "text": "what if Diego had 25 minutes left on his clock instead of 18?", "what_if": {"old": 18, "new": 25}}
+{"item_id": "S04-mem-b04-0027", "turn": 1, "kind": "where_from", "text": "wheres the 7 from"}
+{"item_id": "S04-mem-b04-0027", "turn": 1, "kind": "why", "text": "why do you take the 7 away from 30?"}
+{"item_id": "S04-mem-b04-0027", "turn": 1, "kind": "check", "text": "so 23 minutes used and 7 left makes 30? so it's right?"}
+{"item_id": "S04-mem-b05-0025", "turn": 0, "kind": "why", "text": "why is the answer the difference? i dont get why that tells you how many join"}
+{"item_id": "S04-mem-b05-0025", "turn": 0, "kind": "smaller_numbers", "text": "can you do it with 4 kids on red and 2 kids on blue"}
+{"item_id": "S04-mem-b05-0025", "turn": 0, "kind": "off_topic", "text": "tug of war is my best game at sports day. whats yours?"}
+{"item_id": "S04-mem-b05-0025", "turn": 1, "kind": "why", "text": "why did you work out the blue team as well when it only asks about red"}
+{"item_id": "S04-mem-b05-0025", "turn": 1, "kind": "pushback", "text": "the red team has 19. it's 16 and 3 more, I know it is"}
+{"item_id": "S04-mem-b05-0025", "turn": 1, "kind": "what_if", "text": "what if 5 kids moved from red to blue instead of 3?", "what_if": {"old": 3, "new": 5}}
+{"item_id": "S04-mem-b05-0025", "turn": 2, "kind": "meaning", "text": "so blue has just 1 more kid than red now?"}
+{"item_id": "S04-mem-b05-0025", "turn": 2, "kind": "lost", "text": "wait how is blue bigger now?? it was the smaller team before"}
+{"item_id": "S04-mem-b05-0025", "turn": 2, "kind": "shortcut", "text": "is there a faster way than writing out both teams again"}
+{"item_id": "S04-onl-r01-0022", "turn": 0, "kind": "wrong_operation", "text": "it says more but why plus? i thought 'more than' questions were take away"}
+{"item_id": "S04-onl-r01-0022", "turn": 0, "kind": "meaning", "text": "so Raj caught more fish than Grandpa?"}
+{"item_id": "S04-onl-r01-0022", "turn": 0, "kind": "pushback", "text": "No! it's 24. 36 take away 12"}
+{"item_id": "S05-mem-b02-0002", "turn": 0, "kind": "why", "text": "why multiply the 7 and the 24"}
+{"item_id": "S05-mem-b02-0002", "turn": 0, "kind": "another_way", "text": "can you add 24 seven times instead of timesing?"}
+{"item_id": "S05-mem-b02-0002", "turn": 0, "kind": "smaller_numbers", "text": "can you show it with 2 sheets and 3 stamps on each sheet"}
+{"item_id": "S05-mem-b02-0002", "turn": 1, "kind": "where_from", "text": "where's 168 from? oh wait is it the stamps from before?"}
+{"item_id": "S05-mem-b02-0002", "turn": 1, "kind": "shortcut", "text": "is there a quick way to take 58 from 168? its hard"}
+{"item_id": "S05-mem-b02-0002", "turn": 1, "kind": "what_if", "text": "what if she sold 60 stamps before lunch instead of 58?", "what_if": {"old": 58, "new": 60}}
+{"item_id": "S05-mem-b02-0002", "turn": 2, "kind": "lost", "text": "i'm lost, why are there two steps in this one"}
+{"item_id": "S05-mem-b02-0002", "turn": 2, "kind": "meaning", "text": "is 120 the stamps on the new sheets?"}
+{"item_id": "S05-mem-b02-0002", "turn": 2, "kind": "pushback", "text": "it's 115!! 5 more arrived so 110 add 5"}
+{"item_id": "S05-mem-b05-0034", "turn": 0, "kind": "wrong_operation", "text": "why times? why not just plus 5 and 8"}
+{"item_id": "S05-mem-b05-0034", "turn": 0, "kind": "check", "text": "how do you know it's 40"}
+{"item_id": "S05-mem-b05-0034", "turn": 0, "kind": "what_if", "text": "what if Kwame only had 6 pots?", "what_if": {"old": 8, "new": 6}}
+{"item_id": "S05-mem-b05-0034", "turn": 1, "kind": "where_from", "text": "where does the 2 come from"}
+{"item_id": "S05-mem-b05-0034", "turn": 1, "kind": "meaning", "text": "what does half mean again? is it like cutting in 2"}
+{"item_id": "S05-mem-b05-0034", "turn": 1, "kind": "smaller_numbers", "text": "can you do half with just 10 seeds"}
+{"item_id": "S05-mem-b05-0034", "turn": 2, "kind": "why", "text": "why do you times 20 by 4?"}
+{"item_id": "S05-mem-b05-0034", "turn": 2, "kind": "off_topic", "text": "sunflowers are taller than my dad!! how tall can they grow"}
+{"item_id": "S05-mem-b05-0034", "turn": 2, "kind": "pushback", "text": "its 24. 20 sunflowers and $4 is 24"}
+{"item_id": "S05-mem-b05-0034", "turn": 3, "kind": "why", "text": "why is it 80 take away 35"}
+{"item_id": "S05-mem-b05-0034", "turn": 3, "kind": "another_way", "text": "could i take away 30 first and then 5 more"}
+{"item_id": "S05-mem-b05-0034", "turn": 3, "kind": "what_if", "text": "if the spade cost $50 how much would he have left then", "what_if": {"old": 35, "new": 50}}
+{"item_id": "S05-mem-b06-0082", "turn": 0, "kind": "lost", "text": "that is a HUGE number. how did you even get 864"}
+{"item_id": "S05-mem-b06-0082", "turn": 0, "kind": "shortcut", "text": "is there an easier way to do 27 times 32? i cant do it in my head"}
+{"item_id": "S05-mem-b06-0082", "turn": 0, "kind": "off_topic", "text": "will there really be a clown? i'm a bit scared of clowns"}
+{"item_id": "S05-mem-b06-0082", "turn": 1, "kind": "pushback", "text": "i think it's 848, you take the 16 away from 864"}
+{"item_id": "S05-mem-b06-0082", "turn": 1, "kind": "check", "text": "54 bags, really? can you check it"}
+{"item_id": "S05-mem-b06-0082", "turn": 1, "kind": "smaller_numbers", "text": "can you do it with small numbers like 12 marbles in bags of 4"}
+{"item_id": "S05-mem-b07-0094", "turn": 0, "kind": "meaning", "text": "is 21 all the valves on all the trumpets put together?"}
+{"item_id": "S05-mem-b07-0094", "turn": 0, "kind": "another_way", "text": "could you count in 3s seven times? 3 6 9..."}
+{"item_id": "S05-mem-b07-0094", "turn": 0, "kind": "wrong_operation", "text": "why don't you add 3 and 7"}
+{"item_id": "S05-mem-b08-0032", "turn": 0, "kind": "where_from", "text": "where did you get 48 from"}
+{"item_id": "S05-mem-b08-0032", "turn": 0, "kind": "lost", "text": "i dont get why its 9 times 48 and not something else"}
+{"item_id": "S05-mem-b08-0032", "turn": 0, "kind": "meaning", "text": "is 48 how many cans get squashed into one block?"}
+{"item_id": "S06-mem-b02-0018", "turn": 0, "kind": "distractor", "text": "why didnt you use the 15 years? the librarian has been there 15 years"}
+{"item_id": "S06-mem-b02-0018", "turn": 0, "kind": "pushback", "text": "i think its 84. 91 take away 7"}
+{"item_id": "S06-mem-b02-0018", "turn": 0, "kind": "why", "text": "why divide 91 by 7?"}
+{"item_id": "S06-mem-b02-0018", "turn": 1, "kind": "distractor", "text": "is the 15 years still not needed??"}
+{"item_id": "S06-mem-b02-0018", "turn": 1, "kind": "where_from", "text": "where does the 13 come from"}
+{"item_id": "S06-mem-b02-0018", "turn": 1, "kind": "check", "text": "is it really 9? that bin only has 9 left?"}
+{"item_id": "S06-mem-b03-0054", "turn": 0, "kind": "where_from", "text": "it says four friends with letters, is that the 4 you used?"}
+{"item_id": "S06-mem-b03-0054", "turn": 0, "kind": "smaller_numbers", "text": "can you show me the sharing with 6 hours and 2 friends instead"}
+{"item_id": "S06-mem-b03-0054", "turn": 0, "kind": "what_if", "text": "what if the watch was 16 hours long, how long would each turn be?", "what_if": {"old": 12, "new": 16}}
+{"item_id": "S06-mem-b03-0054", "turn": 1, "kind": "why", "text": "why times the 3 by 2"}
+{"item_id": "S06-mem-b03-0054", "turn": 1, "kind": "off_topic", "text": "i love toasted marshmallows!! have you ever had one"}
+{"item_id": "S06-mem-b03-0054", "turn": 1, "kind": "another_way", "text": "could you just do 2 plus 2 plus 2?"}
+{"item_id": "S06-mem-b03-0054", "turn": 2, "kind": "where_from", "text": "where did the 4 come from this time?"}
+{"item_id": "S06-mem-b03-0054", "turn": 2, "kind": "another_way", "text": "could you do the 12 hours times 2 marshmallows instead? would that be the same"}
+{"item_id": "S06-mem-b03-0054", "turn": 2, "kind": "pushback", "text": "it's 10. 6 marshmallows add 4 friends"}
+{"item_id": "S06-mem-b06-0017", "turn": 0, "kind": "distractor", "text": "why didnt you share the cards between the 4 clerks?"}
+{"item_id": "S06-mem-b06-0017", "turn": 0, "kind": "wrong_operation", "text": "why not take 3 away from 81"}
+{"item_id": "S06-mem-b06-0017", "turn": 0, "kind": "what_if", "text": "and what if there were 90 cards left to sell?", "what_if": {"old": 81, "new": 90}}
+{"item_id": "S06-mem-b06-0017", "turn": 1, "kind": "meaning", "text": "what does all but 5 mean"}
+{"item_id": "S06-mem-b06-0017", "turn": 1, "kind": "distractor", "text": "what about the 4 clerks, doesnt each clerk sell some of the cards?"}
+{"item_id": "S06-mem-b06-0017", "turn": 1, "kind": "pushback", "text": "he sold 5. it says 5 right there in the question!"}
+{"item_id": "S06-mem-b06-0017", "turn": 2, "kind": "why", "text": "why 22 times 2?"}
+{"item_id": "S06-mem-b06-0017", "turn": 2, "kind": "distractor", "text": "is the 4 clerks for this bit then?"}
+{"item_id": "S06-mem-b06-0017", "turn": 2, "kind": "check", "text": "is $44 right? can you double check"}
+{"item_id": "S06-mem-b06-0017", "turn": 3, "kind": "distractor", "text": "so did each of the 4 clerks get one envelope?"}
+{"item_id": "S06-mem-b06-0017", "turn": 3, "kind": "smaller_numbers", "text": "can you do it with $8 in 4 envelopes"}
+{"item_id": "S06-mem-b06-0017", "turn": 3, "kind": "what_if", "text": "what if he only used 2 envelopes?", "what_if": {"old": 4, "new": 2}}
+{"item_id": "S08-mem-b02-0098", "turn": 0, "kind": "wrong_operation", "text": "it says 7 times as many so why dont you times 63 by 7"}
+{"item_id": "S08-mem-b02-0098", "turn": 0, "kind": "meaning", "text": "what does multiplier mean"}
+{"item_id": "S08-mem-b02-0098", "turn": 0, "kind": "lost", "text": "i don't get the times as many bit at all. can you say it another way"}
+{"item_id": "S08-mem-b02-0098", "turn": 1, "kind": "where_from", "text": "where does the 9 come from"}
+{"item_id": "S08-mem-b02-0098", "turn": 1, "kind": "shortcut", "text": "can i just count on 3 from 9? thats quicker than writing it"}
+{"item_id": "S08-mem-b02-0098", "turn": 1, "kind": "off_topic", "text": "i went on a motorboat once and it was soooo fast. have you been on a boat"}
+{"item_id": "S08-mem-b02-0098", "turn": 2, "kind": "why", "text": "why 63 take away 12?"}
+{"item_id": "S08-mem-b02-0098", "turn": 2, "kind": "pushback", "text": "it's 54. there are 9 motorboats so 63 take away 9"}
+{"item_id": "S08-mem-b02-0098", "turn": 2, "kind": "check", "text": "how do you know it's 51"}
+{"item_id": "S08-mem-b02-0098", "turn": 3, "kind": "why", "text": "why do you times it by 5"}
+{"item_id": "S08-mem-b02-0098", "turn": 3, "kind": "what_if", "text": "what if each rope was 8 metres long?", "what_if": {"old": 5, "new": 8}}
+{"item_id": "S08-mem-b02-0098", "turn": 3, "kind": "smaller_numbers", "text": "can you do it with 3 boats and ropes that are 2 metres"}
+{"item_id": "S08-mem-b04-0084", "turn": 0, "kind": "meaning", "text": "what does how many times the length mean?"}
+{"item_id": "S08-mem-b04-0084", "turn": 0, "kind": "another_way", "text": "could you count up in 7s until you get to 91?"}
+{"item_id": "S08-mem-b04-0084", "turn": 0, "kind": "pushback", "text": "it's 84 times. 91 take away 7 is 84, I'm sure"}
+{"item_id": "S08-mem-b04-0084", "turn": 1, "kind": "smaller_numbers", "text": "show me with tiny fish, like a 2 cm fish and one 3 cm longer"}
+{"item_id": "S08-mem-b04-0084", "turn": 1, "kind": "wrong_operation", "text": "why not 9 times 7? that's what i did"}
+{"item_id": "S08-mem-b04-0084", "turn": 1, "kind": "meaning", "text": "so the other fish is 16 cm long altogether?"}
+{"item_id": "S09-mem-b02-0064", "turn": 0, "kind": "lost", "text": "the last line is really confusing. what's 34 times 7 plus 75"}
+{"item_id": "S09-mem-b02-0064", "turn": 0, "kind": "why", "text": "why did you do the coffees first and not the snacks"}
+{"item_id": "S09-mem-b02-0064", "turn": 0, "kind": "another_way", "text": "could you work out the snack money on its own line first and then add the coffee money?"}
+{"item_id": "S09-mem-b02-0064", "turn": 1, "kind": "where_from", "text": "where did the 75 come from"}
+{"item_id": "S09-mem-b02-0064", "turn": 1, "kind": "meaning", "text": "is 25 the snack boxes they sold on the way back?"}
+{"item_id": "S09-mem-b02-0064", "turn": 1, "kind": "pushback", "text": "it's 304 because it's 313 take away 9"}
+{"item_id": "S09-mem-b03-0098", "turn": 0, "kind": "meaning", "text": "is getting back the same as change?"}
+{"item_id": "S09-mem-b03-0098", "turn": 0, "kind": "wrong_operation", "text": "why not 10 add 7"}
+{"item_id": "S09-mem-b03-0098", "turn": 0, "kind": "what_if", "text": "what if the collar cost $6", "what_if": {"old": 7, "new": 6}}
+{"item_id": "S09-mem-b03-0098", "turn": 1, "kind": "lost", "text": "i dont get why he needs more money, he got $3 back"}
+{"item_id": "S09-mem-b03-0098", "turn": 1, "kind": "check", "text": "is it 2? like he has 3 and the tag is 5 so he needs 2 more?"}
+{"item_id": "S09-mem-b03-0098", "turn": 1, "kind": "off_topic", "text": "whats your dog called? my dog is called Biscuit"}
+{"item_id": "S09-mem-b03-0098", "turn": 2, "kind": "why", "text": "why don't you count the money his mum gave him"}
+{"item_id": "S09-mem-b03-0098", "turn": 2, "kind": "shortcut", "text": "isnt it just 10 plus 2? is that a quicker way"}
+{"item_id": "S09-mem-b03-0098", "turn": 2, "kind": "pushback", "text": "it's 10. he only gave the clerk $10"}
+{"item_id": "S09-mem-b08-0046", "turn": 0, "kind": "wrong_operation", "text": "why do you times the 8 and the 3? why not add them"}
+{"item_id": "S09-mem-b08-0046", "turn": 0, "kind": "lost", "text": "too many steps. can you explain it simpler please"}
+{"item_id": "S09-mem-b08-0046", "turn": 0, "kind": "another_way", "text": "can i add 3 eight times and add 7 two times instead"}
+{"item_id": "S09-mem-b08-0046", "turn": 1, "kind": "where_from", "text": "where did 38 come from"}
+{"item_id": "S09-mem-b08-0046", "turn": 1, "kind": "meaning", "text": "what does change mean? like the coins you get back?"}
+{"item_id": "S09-mem-b08-0046", "turn": 1, "kind": "off_topic", "text": "can you play a game with me after this"}
+{"item_id": "S09-mem-b08-0046", "turn": 2, "kind": "where_from", "text": "where does the 12 come from"}
+{"item_id": "S09-mem-b08-0046", "turn": 2, "kind": "pushback", "text": "it's 9!! 12 take away 3 is 9"}
+{"item_id": "S09-mem-b08-0046", "turn": 2, "kind": "what_if", "text": "what if she had 4 class jars instead of 3?", "what_if": {"old": 3, "new": 4}}
+{"item_id": "S09-mem-b08-0046", "turn": 3, "kind": "where_from", "text": "why 8? this question doesnt even say 8"}
+{"item_id": "S09-mem-b08-0046", "turn": 3, "kind": "wrong_operation", "text": "why not 12 add 8"}
+{"item_id": "S09-mem-b08-0046", "turn": 3, "kind": "off_topic", "text": "i have a sticker book with unicorns in it. do you like unicorns?"}
+{"item_id": "S09-mem-b08-0082", "turn": 0, "kind": "lost", "text": "i got lost at the second line. how is 99 times 8 792"}
+{"item_id": "S09-mem-b08-0082", "turn": 0, "kind": "shortcut", "text": "is there a trick for times 11? i heard there is one"}
+{"item_id": "S09-mem-b08-0082", "turn": 0, "kind": "what_if", "text": "what if every seat was sold for $10 instead?", "what_if": {"old": 8, "new": 10}}
+{"item_id": "S09-mem-b08-0082", "turn": 1, "kind": "why", "text": "why do you times the empty seats by 8"}
+{"item_id": "S09-mem-b08-0082", "turn": 1, "kind": "wrong_operation", "text": "shouldnt it be 792 take away 15?"}
+{"item_id": "S09-mem-b08-0082", "turn": 1, "kind": "meaning", "text": "is 120 the money they didn't get because of the empty seats?"}
+{"item_id": "S09-mem-b08-0082", "turn": 2, "kind": "where_from", "text": "where are 792 and 120 from"}
+{"item_id": "S09-mem-b08-0082", "turn": 2, "kind": "another_way", "text": "could you do 99 take away 15 is 84 and then 84 times 8?"}
+{"item_id": "S09-mem-b08-0082", "turn": 2, "kind": "check", "text": "672, is that right? it feels like a lot of money"}
+{"item_id": "S10-mem-b05-0015", "turn": 0, "kind": "why", "text": "why do you divide 28 by 4 first?"}
+{"item_id": "S10-mem-b05-0015", "turn": 0, "kind": "pushback", "text": "It's 392. You do 28 times 14 because she needs 28 candles."}
+{"item_id": "S10-mem-b05-0015", "turn": 0, "kind": "what_if", "text": "what if each box cost $20?", "what_if": {"old": 14, "new": 20}}
+{"item_id": "S10-mem-b05-0015", "turn": 1, "kind": "meaning", "text": "two $50 notes is $100 right?"}
+{"item_id": "S10-mem-b05-0015", "turn": 1, "kind": "lost", "text": "why are there so many lines just for the change, i'm lost"}
+{"item_id": "S10-mem-b05-0015", "turn": 1, "kind": "off_topic", "text": "do you get pocket money? i get some every saturday"}
+{"item_id": "S10-mem-b05-0015", "turn": 2, "kind": "why", "text": "why use 28 and not 98"}
+{"item_id": "S10-mem-b05-0015", "turn": 2, "kind": "smaller_numbers", "text": "can you show sharing with 6 candles and 3 tables"}
+{"item_id": "S10-mem-b05-0015", "turn": 2, "kind": "check", "text": "4 candles on each table, how do you know thats right"}
+{"item_id": "S10-mem-b06-0055", "turn": 0, "kind": "distractor", "text": "what about the 2 gift shops? did you forget them"}
+{"item_id": "S10-mem-b06-0055", "turn": 0, "kind": "lost", "text": "i don't get why you divide the new jellyfish by 7"}
+{"item_id": "S10-mem-b06-0055", "turn": 0, "kind": "what_if", "text": "what if each tank had 20 jellyfish at the start instead of 15?", "what_if": {"old": 15, "new": 20}}
+{"item_id": "S10-mem-b06-0055", "turn": 1, "kind": "distractor", "text": "do the 2 gift shops have jellyfish in them too?"}
+{"item_id": "S10-mem-b06-0055", "turn": 1, "kind": "pushback", "text": "it's 25. 18 add 7"}
+{"item_id": "S10-mem-b06-0055", "turn": 1, "kind": "another_way", "text": "could you do 7 times 15 and then add the 21 new ones?"}
+{"item_id": "S10-mem-b06-0055", "turn": 2, "kind": "distractor", "text": "is the 2 gift shops for this one maybe?"}
+{"item_id": "S10-mem-b06-0055", "turn": 2, "kind": "smaller_numbers", "text": "can you show it with like 10 jellyfish and 3 going away"}
+{"item_id": "S10-mem-b06-0055", "turn": 2, "kind": "why", "text": "why take away 6"}
+{"item_id": "S10-mem-b08-0037", "turn": 0, "kind": "meaning", "text": "is 9 how many bags there are?"}
+{"item_id": "S10-mem-b08-0037", "turn": 0, "kind": "wrong_operation", "text": "why not 72 times 5?"}
+{"item_id": "S10-mem-b08-0037", "turn": 0, "kind": "what_if", "text": "what if each bag sold for $6 instead of $5", "what_if": {"old": 5, "new": 6}}
+{"item_id": "S10-mem-b08-0037", "turn": 1, "kind": "where_from", "text": "where's the 9 from"}
+{"item_id": "S10-mem-b08-0037", "turn": 1, "kind": "pushback", "text": "it's 112 bags because 72 add 40 is 112"}
+{"item_id": "S10-mem-b08-0037", "turn": 1, "kind": "lost", "text": "i'm confused why do you add the 5 and the 9 at the end"}
+{"item_id": "S10-mem-b08-0037", "turn": 2, "kind": "why", "text": "why times 14 by 5?"}
+{"item_id": "S10-mem-b08-0037", "turn": 2, "kind": "shortcut", "text": "can't you just add $25 to the $45 from before? is that quicker"}
+{"item_id": "S10-mem-b08-0037", "turn": 2, "kind": "pushback", "text": "it's 45. you already told me it was 45 before"}
+{"item_id": "S10-mem-b08-0037", "turn": 3, "kind": "meaning", "text": "whats profit"}
+{"item_id": "S10-mem-b08-0037", "turn": 3, "kind": "wrong_operation", "text": "why minus? the store gets money so shouldnt it be plus"}
+{"item_id": "S10-mem-b08-0037", "turn": 3, "kind": "off_topic", "text": "my uncle has a shop that sells bikes. do you have a job?"}
+{"item_id": "sd-p1-h01-0069", "turn": 0, "kind": "smaller_numbers", "text": "can you show it with 3 cones in a tub and 2 tubs"}
+{"item_id": "sd-p1-h01-0069", "turn": 0, "kind": "pushback", "text": "its 37. 30 add 7"}
+{"item_id": "sd-p1-h01-0069", "turn": 0, "kind": "lost", "text": "how is 30 times 7 210?? i only know my times tables up to 10"}
+{"item_id": "sd-p1-h01-0069", "turn": 1, "kind": "meaning", "text": "all but 45 means 45 didnt get sold?"}
+{"item_id": "sd-p1-h01-0069", "turn": 1, "kind": "check", "text": "how do you know 165 is right"}
+{"item_id": "sd-p1-h01-0069", "turn": 1, "kind": "pushback", "text": "no the answer is 45, it says 45 in the question"}
+{"item_id": "sd-p1-h01-0069", "turn": 2, "kind": "why", "text": "why is it 165 times 2"}
+{"item_id": "sd-p1-h01-0069", "turn": 2, "kind": "another_way", "text": "could you add 165 and 165 instead?"}
+{"item_id": "sd-p1-h01-0069", "turn": 2, "kind": "wrong_operation", "text": "why not 165 add 2"}
+{"item_id": "sd-p1-h04-0080", "turn": 0, "kind": "smaller_numbers", "text": "show me with smaller numbers please, like 5 tickets and 2 fewer"}
+{"item_id": "sd-p1-h04-0080", "turn": 0, "kind": "pushback", "text": "its 91. 73 and 18 makes 91"}
+{"item_id": "sd-p1-h04-0080", "turn": 0, "kind": "check", "text": "are you sure it's 55?"}
+{"item_id": "sd-p1-h04-0080", "turn": 1, "kind": "lost", "text": "which one was the evening show again? i'm lost"}
+{"item_id": "sd-p1-h04-0080", "turn": 1, "kind": "another_way", "text": "could you do 73 add 73 and then take away the 18?"}
+{"item_id": "sd-p1-h04-0080", "turn": 1, "kind": "off_topic", "text": "i want to go and see a show. whats your favourite film"}

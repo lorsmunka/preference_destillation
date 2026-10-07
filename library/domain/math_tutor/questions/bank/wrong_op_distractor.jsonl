@@ -1,0 +1,339 @@
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "why {verb} and not {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "How come you didn't {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "wait couldn't you {other_phrase} instead"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "What would go wrong if I {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "is it ok to {other_verb} here or does it have to be {verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "um why not {other_verb}"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "How did you know it was {verb} and not {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "In the {ordinal} step, why didn't you {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "i thought you {other_verb} for this kind of question?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "Why is it {verb} and not something else?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "could you get the {step_words} if you {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "ok but why can't you just {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "but what if someone chose to {other_verb}, why is that wrong?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "how do I know when to {verb} and when to {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Is {other_verb} wrong for this one? Why?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "for the {step_words}, why not {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "why didnt you {other_phrase} there"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Hmm, wouldn't it be {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "so {other_verb} would never work here?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "{sign_word}?? not {other_verb}??"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "can you tell me why it's wrong to {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Excuse me, why didn't you {other_verb} the numbers?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "{calculation}... why not the other way, like {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "join"], "depth": "first", "text": "it says more came, so why are you taking away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "join"], "depth": "any", "text": "the story is about getting more, isn't that a plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "when you compare two things don't you add them? why minus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "combine"], "depth": "first", "text": "They're two parts of the same thing, so why not add {a} and {b}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "money"], "depth": "any", "text": "why take the money away and not add it on?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "has_words"], "depth": "any", "text": "Why not put the {a_words} and the {b_words} together?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "time"], "depth": "any", "text": "why take away the time? couldn't you add it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract"], "depth": "first", "text": "why minus? i would of added"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "isn't {a} take away {b} kind of the same as adding them?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add"], "depth": "any", "text": "Why not take the small one from the big one?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "separate"], "depth": "first", "text": "but some went away in the story, so why are you adding?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "compare"], "depth": "any", "text": "isn't a how-many-more question a take away one? why plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "combine"], "depth": "any", "text": "Why add the two parts? Couldn't you take one away from the other?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "money"], "depth": "any", "text": "with money don't you usually take it away? why add?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "has_words"], "depth": "any", "text": "with {a_words} and {b_words}, why not take one away from the other?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "It says times as many, but couldn't that mean add?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "rates"], "depth": "first", "text": "why times it? can't you just add the price on?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "sharing"], "depth": "any", "text": "isn't this a sharing story? why multiply and not divide?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "grouping"], "depth": "any", "text": "Making groups is dividing isn't it, so why times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "if it's groups, why not just add them all up?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "money"], "depth": "any", "text": "why multiply money? can't you only add money?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply"], "depth": "first", "text": "why not just {a} plus {b}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide"], "depth": "any", "text": "Why not take {b} away from {a} instead of dividing?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "times_as_many"], "depth": "first", "text": "There's times as many in the question, so why aren't you multiplying?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "when you share stuff you give it away, so why not take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "equal_groups"], "depth": "any", "text": "Equal groups means times, right? So why divide here?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "remainder"], "depth": "any", "text": "it doesn't go in exactly, so is divide even right? why not take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "rates"], "depth": "any", "text": "it's about prices, shouldn't that be a times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "has_words"], "depth": "any", "text": "why not multiply the {a_words} by the {b_words}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "Could you swap any of the signs in {calculation} and still be right?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "Doesn't {other_verb} work too?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "my friend always picks {other_verb} for these, why didn't you?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "I'm not sure why it's {verb}. Wouldn't {other_verb} be ok?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "what tells you to {verb} and not {other_verb}? is it a word in the question?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "you {operation_phrase_past}, but why not {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "if I {other_phrase} do I get the same thing?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Can it be {other_verb} instead?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "so why's it not {other_verb}"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "Sorry, I don't get why we don't {other_verb}."}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "{other_verb} or {verb}? how do you choose?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "i always mix up when to {other_verb}. why not here?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "Why is {other_verb} not right for the {ordinal} line?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Our teacher said look for clue words. Which clue tells you not to {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "is there a reason you didn't {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "how would I know not to {other_verb} if I did this on my own?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "right, but then when WOULD you {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "ok so if it was a different story, could it be {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "I still don't see why not {other_verb}."}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "so would {other_verb} be right if the story was the other way round?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "but {other_verb} gives a number too, so why isn't that the answer?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Quick question: is {other_verb} ever right for this one?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Did you mean to {verb}? I thought it would be {other_verb}."}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add"], "depth": "any", "text": "why plus and not minus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "join"], "depth": "any", "text": "Do you always add when more come, or can it be take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "time"], "depth": "any", "text": "why add the times together and not take one away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "uses_earlier_answer"], "depth": "any", "text": "why add on to the last answer? couldn't you take away from it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "separate"], "depth": "follow", "text": "so even though things got used up in the story, it's still adding?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "has_words"], "depth": "any", "text": "How come you add the {a_words} to the {b_words}? I'd have taken one away."}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "isn't it a plus? why'd you minus it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "Could you add {b} to {a} to get the {step_words}? Why not?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "uses_earlier_answer"], "depth": "any", "text": "why take it away from the answer we got before? why not add it on?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "has_words"], "depth": "any", "text": "how come the {b_words} gets taken away from the {a_words}, and not added on?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Isn't adding them the same as times? Why pick times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply"], "depth": "first", "text": "multiplying makes it really big, should it be plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "Why multiply by {b}? Why not just add {b} more?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "why times by the price? wouldn't it be plus if you buy more?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "time"], "depth": "any", "text": "isn't time a plus thing? so why multiply here?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "has_words"], "depth": "any", "text": "Why multiply the {a_words} by the {b_words} and not add them up?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "uses_earlier_answer"], "depth": "any", "text": "the answer from before gets timesed?? why not just add to it"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "compare"], "depth": "any", "text": "this story is about more and fewer, so why times now?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "join"], "depth": "any", "text": "The story is adding things, so why are you multiplying here?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "combine"], "depth": "any", "text": "you put parts together by adding, so why multiply?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "separate"], "depth": "any", "text": "stuff got taken away in the story, so why multiply and not minus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide"], "depth": "first", "text": "dividing is hard, could you times instead?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "We're putting things into groups, so shouldn't it be a times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "why not times? everybody gets lots, so shouldn't it get bigger?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "money"], "depth": "any", "text": "why divide the money? isn't money just add and take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "time"], "depth": "any", "text": "Dividing the time feels weird, shouldn't it be multiply?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "remainder"], "depth": "first", "text": "there's a remainder of {remainder}, so would times work better?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "rounded_up"], "depth": "any", "text": "you had to round up, so was dividing really right? why not times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "uses_earlier_answer"], "depth": "any", "text": "why divide the answer from before? couldn't you times it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "compare"], "depth": "any", "text": "compare questions are take away, aren't they? why divide this time?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "separate"], "depth": "any", "text": "In the story things get taken away, so why not take away here too?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "combine"], "depth": "any", "text": "two parts make a whole, isn't that plus? why divide?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "join"], "depth": "any", "text": "the story adds stuff on, so why aren't you adding?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "mixed"], "depth": "any", "text": "with so many steps, how do you know this one's divide and not times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "equal_groups"], "depth": "first", "text": "isn't it {a} times {b}, because it's equal groups?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "with the answer from the line before, why {verb} and not {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "first", "text": "You used the answer from before. Why {verb} and not {other_verb} this time?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "what's the difference between {operation_phrase} and {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "{other_phrase}, would that be wrong? just checking"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Why does it say {sign_word} there? I'd have picked {other_verb}."}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "but if I {other_phrase}, what would I actually get?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "ohh, so {other_verb} would give something silly?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "wait so {other_verb} is only for when...?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "hmm ok. and why not {other_phrase} though?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "omg why didn't you just {other_verb} lol"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "I wanna {other_phrase}. Is that allowed?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "but {other_verb} seems easier, why not do that?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "please explain why it's not {other_verb}"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "Why the {sign} sign? Couldn't you {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "in {calculation} why not {other_verb}"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "What happens if you {other_phrase} by mistake?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "so it's never {other_verb} when it's like this?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "ok but my way was to {other_phrase}, why doesn't that work?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "why does it have to be {verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "um is {other_verb} not allowed here?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "hey why {verb}, why not {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "A question about the {ordinal} step: could it be {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "if the numbers were smaller, would it still be {verb} and not {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "follow", "text": "hmm I think I get it, but {other_verb} still feels right to me, why isn't it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "combine"], "depth": "first", "text": "why plus? couldn't you {other_phrase}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "compare"], "depth": "follow", "text": "so how many more doesn't always mean take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "uses_previous_step"], "depth": "any", "text": "Why add on to the answer from the line before instead of taking away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "has_words"], "depth": "first", "text": "the {a_words} and the {b_words}... why are they added and not taken away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "mixed"], "depth": "any", "text": "how do you know this part is plus and not take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "compare"], "depth": "first", "text": "Why not add {a} and {b}? It asks about both of them."}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "compare"], "depth": "follow", "text": "so finding the difference is always take away, never plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "join"], "depth": "follow", "text": "but more came, so how can it be a take away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "money"], "depth": "first", "text": "why take away the money? shouldn't you add it up to see how much?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "time"], "depth": "follow", "text": "you can take away with time too? I didn't know that"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "combine"], "depth": "any", "text": "Both parts make the total, don't they? So why not add them?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "uses_previous_step"], "depth": "any", "text": "why does the number from the line before get a take away and not a plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "separate"], "depth": "follow", "text": "so when stuff goes away it's always minus? never plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "mixed"], "depth": "any", "text": "how did you know this line was a minus and not a plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract", "has_words"], "depth": "first", "text": "Why minus the {b_words}? I thought you'd add that on."}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "can't you just put the groups together with plus instead of times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "follow", "text": "so times as many doesn't mean add on?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "rates"], "depth": "follow", "text": "so you times for the price and not plus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "money"], "depth": "first", "text": "Why times the money? I would have added {a} and {b}."}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "grouping"], "depth": "follow", "text": "so here it's times even though the story is about making groups?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "uses_previous_step"], "depth": "any", "text": "why multiply the answer from the line before, and not add it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "mixed"], "depth": "any", "text": "How come this bit is times and not plus or minus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply", "time"], "depth": "follow", "text": "hours and days can be timesed?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "why's it times {b}? why not plus {b}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide"], "depth": "follow", "text": "so dividing is like the opposite of times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "sharing"], "depth": "follow", "text": "so sharing is dividing, not taking away?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "grouping"], "depth": "first", "text": "why divide by {b}? couldn't you times by {b}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "times_as_many"], "depth": "follow", "text": "so even when it says times as many, sometimes you divide?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "rates"], "depth": "follow", "text": "So with prices you can divide too, not just times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "remainder"], "depth": "any", "text": "Why divide if it leaves {remainder} over? Would another sign work out exactly?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "rounded_up"], "depth": "follow", "text": "so you still divide even when it doesn't fit exactly?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "time"], "depth": "first", "text": "it's about time, so can't you just take it away instead of dividing?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "uses_previous_step"], "depth": "any", "text": "after the first line, why divide and not multiply?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "mixed"], "depth": "follow", "text": "so in this one you divide and not times because...?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "in {calculation}, how do you know which signs to use and not other ones?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["follow_up_task"], "depth": "any", "text": "is this one {verb} because of the new question? why not {other_verb}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["last_step", "uses_previous_step"], "depth": "any", "text": "in the last line, why {verb} and not {other_verb}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "you never used the {distractor}, is that ok?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Why is the {distractor} in the question if we don't need it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "trick question? the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "what's the {distractor} for?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Should we add the {distractor} on as well?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "does the {distractor} matter at all"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Did you forget about the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "how do you know we don't need the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "\"{distractor_sentence}\" what's that bit for?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Why did they put this in the story? \"{distractor_sentence}\""}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "where does the {distractor} go in the sum?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "do I just ignore the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "My teacher says you have to use all the numbers. What about {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "is it allowed to leave the {distractor} out?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "wait, what happened to the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "If the {distractor} was something else, would it change anything?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "I used the {distractor} too when I tried it, was that wrong?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "I bet the {distractor} is just there to confuse us, right?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "so the {distractor} is just extra?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "ok so we never need the {distractor}, not even a little bit?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "So if I see a number like {distractor} that isn't needed, I can skip it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "but then why would they even write the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "how do I spot numbers like the {distractor} next time?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "the {distractor} doesn't get used??"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Which numbers do we need? Not the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "Hi, quick question about the {distractor}. Why isn't it in the working?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "what does the {distractor} mean in the story?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "this bit: \"{distractor_sentence}\" does it change the answer?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "do we times by the {distractor} or something?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "should the {distractor} be taken away?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "why is the {distractor} not in any of your lines?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Isn't every number there for a reason? Like the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "I don't get it, why skip the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "how come {distractor} isnt part of it"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "what if I put the {distractor} in, would it be wrong?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "I was going to use the {distractor}. Do I need it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "maybe the {distractor} is for a different question?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "The {distractor} looks important though, why not use it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "why did you leave out this sentence? {distractor_sentence}"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "It says \"{distractor_sentence}\" Do we have to do something with that?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "what's the point of the bit that says \"{distractor_sentence}\""}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "did you skip this on purpose: {distractor_sentence}"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "so the sentence with the {distractor} in it is just part of the story, not the maths?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "How did you know this wasn't needed? \"{distractor_sentence}\""}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "{distractor_sentence} doesn't that count?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "can the {distractor} be ignored every time or just here?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "so many numbers! is the {distractor} one of the ones that matter?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "hmm, there's {distractor} in the question too. Did you leave it out on purpose?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "should I cross out the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "when I see {distractor} what do I do with it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "What would happen if we used the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "but what if the teacher wants us to use the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "any", "text": "Is the {distractor} money? Should we count it?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "first", "text": "does the {distractor} cost something too? do we have to pay it?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "any", "text": "with money questions don't you have to use every number? what about the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "follow", "text": "right, so the {distractor} isn't money or anything?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time"], "depth": "any", "text": "does the {distractor} change how long it takes?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time"], "depth": "first", "text": "Does it matter when it happened? Like the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time"], "depth": "follow", "text": "oh, then the {distractor} isn't how long anything takes?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["join"], "depth": "any", "text": "did {distractor} more come too? should we add them on?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["join"], "depth": "first", "text": "Shouldn't the {distractor} be added on with the ones that came?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["separate"], "depth": "any", "text": "did {distractor} get taken away as well?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["separate"], "depth": "first", "text": "shouldn't we take away the {distractor} too, like the other ones that went?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["combine"], "depth": "any", "text": "could the {distractor} be another part of the total?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["combine"], "depth": "follow", "text": "wait, the {distractor} isn't one of the parts?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["compare"], "depth": "any", "text": "are we comparing with the {distractor} too?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["compare"], "depth": "first", "text": "is {distractor} how many more? or is that something else?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["equal_groups"], "depth": "any", "text": "maybe there's {distractor} in each group?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["equal_groups"], "depth": "first", "text": "Is {distractor} the number of groups? Why not times by it?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["sharing"], "depth": "any", "text": "is {distractor} how many people it gets shared between?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["sharing"], "depth": "first", "text": "why not divide by the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["grouping"], "depth": "any", "text": "could {distractor} be the size of the groups?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["grouping"], "depth": "follow", "text": "so we don't make groups of {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["times_as_many"], "depth": "any", "text": "is {distractor} the times number? like {distractor} times as many?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["times_as_many"], "depth": "first", "text": "Why not multiply by the {distractor} as well?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["rates"], "depth": "any", "text": "{distractor} each? is that the price of one?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["rates"], "depth": "first", "text": "do we need the {distractor} to work out the cost?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["mixed"], "depth": "any", "text": "With all these numbers, how do you pick which ones? Why not the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["mixed"], "depth": "first", "text": "there are loads of steps, is the {distractor} for one of them?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["follow_up_task"], "depth": "any", "text": "now that it's a new question, do we use the {distractor} from the beginning?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["follow_up_task"], "depth": "first", "text": "Will we need the {distractor} for this new bit?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["follow_up_task"], "depth": "follow", "text": "so the {distractor} from the first question still doesn't matter?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "rates"], "depth": "any", "text": "if the {distractor} is what something costs, why don't we times by it?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "sharing"], "depth": "any", "text": "should the {distractor} be shared out too?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "join"], "depth": "any", "text": "could the {distractor} be extra money that came in?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "separate"], "depth": "any", "text": "Is the {distractor} money that got spent? Shouldn't we take it away then?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "mixed"], "depth": "any", "text": "do we have to add {distractor} as another price?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "combine"], "depth": "any", "text": "does the {distractor} go in with the money total?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time", "sharing"], "depth": "any", "text": "could the {distractor} be the number of days you share it across?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "any", "text": "\"{distractor_sentence}\" does that change how much money it is?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time"], "depth": "any", "text": "with all the time stuff in this question, is the {distractor} part of it?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["separate"], "depth": "follow", "text": "so only the ones that actually went away count, not the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["join"], "depth": "follow", "text": "oh so the {distractor} didn't join in with the rest?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["compare"], "depth": "follow", "text": "so we only compare the two amounts and the {distractor} is left out?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["equal_groups"], "depth": "follow", "text": "hmm, then the {distractor} isn't the groups or how many are in them?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["sharing"], "depth": "follow", "text": "so the {distractor} doesn't get a share?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["times_as_many"], "depth": "follow", "text": "so the times number is a different one, not {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["rates"], "depth": "follow", "text": "the price has nothing to do with the {distractor} then?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["grouping"], "depth": "first", "text": "do we need to make {distractor} groups or something?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["combine"], "depth": "first", "text": "Why isn't the {distractor} added in with the other parts?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["mixed"], "depth": "follow", "text": "so out of all the numbers, only the {distractor} isn't used?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Ok but the {distractor}???"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "did you miss a number? the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "{distractor}: use it or not?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Do you think they put the {distractor} in to catch people out?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "my friend put the {distractor} in her sum. should she have?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "the {distractor} confused me so much. is it needed?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "how can a number be in the question and not matter? like the {distractor}"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "do numbers like {distractor} ever matter?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "If we took out the {distractor}, would the story still work?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "Sorry if this is silly but why don't we use {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "I keep wanting to use the {distractor}. How do I stop?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "oh, so the {distractor} is like a fake number?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "so I should check every number before I use it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "is that why you didn't write the {distractor} anywhere?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Wouldn't it be safer to use the {distractor} too?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "\"{distractor_sentence}\" is that a clue?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "is this sentence there to trick me? {distractor_sentence}"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "what am I meant to do with this: {distractor_sentence}"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "so when I work it out I can skip the bit about the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Did you read the part with the {distractor}? Why isn't it in the sum?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "isnt the {distractor} part of the answer"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "does the {distractor} have anything to do with the question?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "needed or just a story number? the {distractor} i mean"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "how come the {distractor} gets left out but the other numbers don't?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "erm the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Did the question put the {distractor} in by mistake?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Can you show me which numbers you used, and why not the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "who cares about the {distractor} then?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "why does the question even have {distractor} in it"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "the {distractor} would only matter if the question asked something else, right?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "What kind of question WOULD need the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "ohh so it's just there to make it look harder?"}
+{"kind": "distractor", "focus": "distractor", "depth": "follow", "text": "ok and is there any other number like the {distractor} that we don't use?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "i think the {distractor} matters, does it?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "should I write the {distractor} in my working anyway?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "Is it bad if I use the {distractor} by accident?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "do I lose marks if I don't use the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "lol the {distractor} is useless then?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "what's the {distractor} got to do with anything?"}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "Your working has no {distractor} in it, why?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "can the {distractor} help me check the answer?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "are numbers like the {distractor} there so we practise finding the right ones?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["follow_up_task"], "depth": "any", "text": "the {distractor} wasn't used before, is it used now?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "first", "text": "{distractor} pounds? {distractor} dollars? does it matter?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time"], "depth": "any", "text": "is {distractor} minutes or hours or what?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["rates"], "depth": "follow", "text": "so you only need the price and how many, not the {distractor}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["equal_groups"], "depth": "any", "text": "do we need {distractor} lots of something?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["compare"], "depth": "any", "text": "what if the {distractor} is the difference between them?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["separate"], "depth": "any", "text": "is the {distractor} how many are left?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["join"], "depth": "any", "text": "is the {distractor} how many there were at the start?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["combine"], "depth": "any", "text": "Is {distractor} the total? or is it just there?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["sharing"], "depth": "any", "text": "Is the {distractor} how much each one gets?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["times_as_many"], "depth": "any", "text": "which one is the {distractor}, the bigger amount or the smaller one?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["mixed"], "depth": "any", "text": "is the {distractor} needed for one of the later steps maybe?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money", "time"], "depth": "any", "text": "money or time, which one is the {distractor} about?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "I'd have done it the other way, with {other_verb}. Is that bad?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "{operation_phrase_past}?? wouldn't {other_verb} make more sense?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["subtract"], "depth": "follow", "text": "ok, and if the question said altogether, would it be add then?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add"], "depth": "first", "text": "plus?? I thought it'd be minus?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "my first idea was {other_verb}, was that a bad idea?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "With a remainder, couldn't you times instead so nothing's left over?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["rounded_up"], "depth": "follow", "text": "so it's divide and then round up, not times?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["add", "combine"], "depth": "follow", "text": "so with parts and a total you add, unless a part is missing?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "if I {other_phrase}, is that answering a totally different question?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "first", "text": "Do I always {verb} when it's like this, or could it be {other_verb} sometimes?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["uses_previous_step"], "depth": "first", "text": "the {ordinal} line uses the one before... could it be {other_verb} instead?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide", "equal_groups"], "depth": "follow", "text": "so with equal groups you can times OR divide?"}

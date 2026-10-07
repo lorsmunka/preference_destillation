@@ -1,0 +1,380 @@
+{"kind": "check", "focus": "step", "depth": "any", "text": "can you prove that {a} {sign_word} {b} makes {result}?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "I want to check the {ordinal} line myself. What do I do?"}
+{"kind": "check", "focus": "step", "depth": "first", "text": "Did you double check {calculation}?"}
+{"kind": "check", "focus": "step", "depth": "first", "text": "hmm {result}?? is that right for {calculation}"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "Is there a way to test if {result} is right?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "How would I know if you made a mistake in {calculation}?"}
+{"kind": "check", "focus": "step", "depth": "follow", "text": "ok but how are you sure {result} is right"}
+{"kind": "check", "focus": "step", "depth": "first", "text": "you sure about the {result}?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "Is there an opposite sum I can do to check {calculation}?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "i'm not sure {calculation} is {result}, can you go over it again"}
+{"kind": "check", "focus": "step", "depth": "first", "text": "Prove it! {calculation} = {result}???"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "Could you check the {ordinal} step one more time just to be safe?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "before you wrote {result} down, did you test it somehow?"}
+{"kind": "check", "focus": "step", "depth": "follow", "text": "and that's for sure right? {a} {sign_word} {b} is {result}?"}
+{"kind": "check", "focus": "step", "depth": "follow", "text": "okay so how would I check that one on my own?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "is the \"{step_words}\" line definitely right?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "Is {calculation} too big to check on my fingers?"}
+{"kind": "check", "focus": "step", "depth": "first", "text": "um how do you know {result} isn't one more or one less?"}
+{"kind": "check", "focus": "step", "requires": ["add"], "depth": "any", "text": "If I take {b} away from {result}, do I get back to {a}?"}
+{"kind": "check", "focus": "step", "requires": ["add"], "depth": "any", "text": "would adding {b} and {a} the other way round check it?"}
+{"kind": "check", "focus": "step", "requires": ["add"], "depth": "first", "text": "Is {a} plus {b} really {result}? I want to count it on to check."}
+{"kind": "check", "focus": "step", "requires": ["add", "join"], "depth": "any", "text": "how can I be sure there are {result} once the {b} more came?"}
+{"kind": "check", "focus": "step", "requires": ["add", "combine"], "depth": "any", "text": "to check, can I take one part away from {result} and see if the other part is left?"}
+{"kind": "check", "focus": "step", "requires": ["add", "money"], "depth": "any", "text": "the money really adds up to {result}? show me it's right"}
+{"kind": "check", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "Does {result} plus {b} really give {a}? That's how my teacher checks."}
+{"kind": "check", "focus": "step", "requires": ["subtract"], "depth": "first", "text": "wait, did you take {b} from {a} or the other way? is {result} right?"}
+{"kind": "check", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "If you put the {b} back, would there be {a} again?"}
+{"kind": "check", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "what's a good way to check the difference is really {result}?"}
+{"kind": "check", "focus": "step", "requires": ["subtract", "money"], "depth": "any", "text": "Money has to be exact. How do I make sure {a} take away {b} is {result}?"}
+{"kind": "check", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Can I check {a} times {b} by doing {b} times {a}?"}
+{"kind": "check", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "if i share {result} into {b} equal groups, is there {a} in each one?"}
+{"kind": "check", "focus": "step", "requires": ["multiply"], "depth": "first", "text": "I don't know my tables that high. Is {a} times {b} really {result}?"}
+{"kind": "check", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "How do I know {a} groups of {b} really makes {result}?"}
+{"kind": "check", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "To check, can I add up the cost one at a time until I get to {result}?"}
+{"kind": "check", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "how can i check {result} really is that many times bigger?"}
+{"kind": "check", "focus": "step", "requires": ["multiply", "money"], "depth": "first", "text": "Is the money total really {result}? It looks like a lot."}
+{"kind": "check", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "If I multiply {result} by {b}, do I get {a} back?"}
+{"kind": "check", "focus": "step", "requires": ["divide", "equal_groups"], "depth": "any", "text": "how do you know there are {result} lots of {b} in {a}?"}
+{"kind": "check", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "If everyone gets {result}, does it all add back up to {a}?"}
+{"kind": "check", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "are there really {result} groups? can we check?"}
+{"kind": "check", "focus": "step", "requires": ["divide", "money"], "depth": "first", "text": "is each share of the money really {result}?"}
+{"kind": "check", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "How do you know the remainder is {remainder}?"}
+{"kind": "check", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "can I check it by doing {quotient} times {b} and then adding {remainder}?"}
+{"kind": "check", "focus": "step", "requires": ["remainder"], "depth": "first", "text": "Shouldn't the remainder be smaller than {b}? Is {remainder} ok?"}
+{"kind": "check", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "Are you sure we need {result} and not just {quotient}?"}
+{"kind": "check", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "will {result} be enough for all {a}? can you check?"}
+{"kind": "check", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "{calculation} has lots of bits. How do I check all of it comes to {result}?"}
+{"kind": "check", "focus": "step", "requires": ["multi_operation"], "depth": "first", "text": "did you do the bits of {calculation} in the right order?"}
+{"kind": "check", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "If the step before was wrong, would this one be wrong too?"}
+{"kind": "check", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "This uses the answer from last time. How do we know that one was right?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "Is {answer} the real answer, or could it be wrong?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "can you prove the answer is {answer}?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "did you check your answer before you told me?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "Can we check {answer} by working backwards?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "does {answer} even make sense in the story?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "i want to be really really sure. is it {answer}?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "Is {answer} too big or too small? What's a way to tell?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "would a grown-up get {answer} too?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "Is it definitely {answer}? I don't want to copy down something wrong."}
+{"kind": "check", "focus": "answer", "depth": "follow", "text": "ok, and next time how do I check the answer by myself?"}
+{"kind": "check", "focus": "answer", "depth": "follow", "text": "so now you're totally sure it's {answer}?"}
+{"kind": "check", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "You did {step_count} steps, so how do I know none of them went wrong?"}
+{"kind": "check", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "Can you check every line one by one for me?"}
+{"kind": "check", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "it's only one sum, so whats the best way to check it?"}
+{"kind": "check", "focus": "answer", "requires": ["money"], "depth": "any", "text": "Could I check {answer} with pretend coins?"}
+{"kind": "check", "focus": "answer", "requires": ["money"], "depth": "first", "text": "is {answer} the right amount? money is a bad thing to get wrong"}
+{"kind": "check", "focus": "answer", "requires": ["time"], "depth": "any", "text": "Could a timeline help me check that {answer} is right?"}
+{"kind": "check", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "To check, can I add {answer} onto the smaller number and get the bigger one?"}
+{"kind": "check", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "If I add up everyone's share, will it come back to the start? Is that a check for {answer}?"}
+{"kind": "check", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "counting the groups out one by one, would that check {answer}?"}
+{"kind": "check", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "is there a way to check {answer} without doing the times again?"}
+{"kind": "check", "focus": "answer", "requires": ["times_as_many"], "depth": "any", "text": "Does {answer} really fit the times as many bit? Can we test it?"}
+{"kind": "check", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "Going through them one at a time, would I land on {answer} too?"}
+{"kind": "check", "focus": "answer", "requires": ["join"], "depth": "any", "text": "To check {answer}, can I take away the ones that joined and see if I'm back at the start?"}
+{"kind": "check", "focus": "answer", "requires": ["separate"], "depth": "any", "text": "If I put back what was taken away, would I get the starting number? Then {answer} is right?"}
+{"kind": "check", "focus": "answer", "requires": ["combine"], "depth": "any", "text": "Will putting the parts back together check {answer}?"}
+{"kind": "check", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "this question builds on the last one. if that was right, is {answer} right too?"}
+{"kind": "check", "focus": "answer", "requires": ["mixed"], "depth": "any", "text": "lots of different steps here. is there a way to check {answer} at the end?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "{answer}? really? show me"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "One quick test that shows {answer} is right, please?"}
+{"kind": "check", "focus": "answer", "depth": "follow", "text": "right, but you didn't actually check the answer. can you?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "would I still get {answer} if I did it a totally different way?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "can I trust the {answer}?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "Draw it out so I can see {answer} is right?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "My teacher always says check your answer. So how do we check {answer}?"}
+{"kind": "check", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "Did you copy the {number} right from the question?"}
+{"kind": "check", "focus": "fact", "depth": "any", "text": "are you sure you read {number} right for the {words}?"}
+{"kind": "check", "focus": "fact", "depth": "any", "text": "How do you know it's {number} and not some other number?"}
+{"kind": "check", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "Was the last answer really {number}? Better check it."}
+{"kind": "check", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "is {number} really what that word means?"}
+{"kind": "check", "focus": "fact", "requires": ["from_problem"], "depth": "first", "text": "I hope you didn't mix up the {number} with another number in the question. Did you?"}
+{"kind": "check", "focus": "fact", "depth": "first", "text": "can we check the facts first? is {number} right?"}
+{"kind": "check", "focus": "fact", "depth": "follow", "text": "and the {number} at the top, is that right too?"}
+{"kind": "check", "focus": "fact", "requires": ["money"], "depth": "any", "text": "Money numbers are easy to mix up. Is the {number} copied right?"}
+{"kind": "check", "focus": "fact", "requires": ["time"], "depth": "any", "text": "I always mix up time stuff. Did you write the {number} down right?"}
+{"kind": "check", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "let me check against the question. you wrote {number} for the {words}, yes?"}
+{"kind": "check", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "follow", "text": "but was the {number} from before even right?"}
+{"kind": "check", "focus": "fact", "depth": "any", "text": "should the \"{words}\" line say {number}? just checking"}
+{"kind": "check", "focus": "fact", "depth": "first", "text": "um is the {number} a typo or is it right?"}
+{"kind": "check", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "let's look back at the story and check the {number} together"}
+{"kind": "check", "focus": "fact", "requires": ["implied_by_word"], "depth": "first", "text": "That word means {number}? Are you sure?"}
+{"kind": "check", "focus": "fact", "depth": "any", "text": "if the {number} is wrong, is everything after it wrong too?"}
+{"kind": "check", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "is it right to use the \"{a_words}\" and \"{b_words}\" numbers here? how do I check that?"}
+{"kind": "check", "focus": "step", "requires": ["last_step"], "depth": "any", "text": "The last line gives the answer, so can you check {calculation} again?"}
+{"kind": "check", "focus": "step", "requires": ["only_step"], "depth": "first", "text": "there's just one sum. is {calculation} done right?"}
+{"kind": "check", "focus": "step", "requires": ["first_step"], "depth": "follow", "text": "and the first line, did you check that too?"}
+{"kind": "check", "focus": "step", "depth": "follow", "text": "but couldn't you have made a tiny mistake somewhere in that line?"}
+{"kind": "check", "focus": "step", "requires": ["divide"], "depth": "follow", "text": "ok so the opposite of dividing checks it? show me on this one"}
+{"kind": "check", "focus": "step", "requires": ["subtract"], "depth": "follow", "text": "can you do the adding check on {calculation} so I can see it?"}
+{"kind": "check", "focus": "step", "requires": ["multiply"], "depth": "follow", "text": "i think you check times with sharing, does that work for {result}?"}
+{"kind": "check", "focus": "step", "requires": ["add"], "depth": "follow", "text": "Oh! So I take away to check adding? Try it with {result}."}
+{"kind": "check", "focus": "step", "requires": ["time"], "depth": "first", "text": "is {result} right? time sums are tricky for me"}
+{"kind": "check", "focus": "step", "requires": ["rates"], "depth": "any", "text": "Prices always trip me up. Is the {ordinal} step really right?"}
+{"kind": "check", "focus": "step", "requires": ["uses_previous_step"], "depth": "first", "text": "You used a number from the line above. Did you copy it over right?"}
+{"kind": "check", "focus": "step", "requires": ["rounded_up"], "depth": "follow", "text": "so {result} works but {quotient} doesn't? how do i check that"}
+{"kind": "check", "focus": "answer", "depth": "follow", "text": "You checked it, but can I check it too, just to be extra sure?"}
+{"kind": "check", "focus": "answer", "requires": ["money"], "depth": "follow", "text": "So if I counted all the money out, it would come to {answer}?"}
+{"kind": "check", "focus": "answer", "requires": ["time"], "depth": "first", "text": "is {answer} right? im bad at time questions"}
+{"kind": "check", "focus": "fact", "requires": ["from_problem"], "depth": "follow", "text": "and that {number} is really in the question, right?"}
+{"kind": "check", "focus": "answer", "depth": "any", "text": "Would a calculator say {answer} too?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "is there a different way to {operation_phrase}?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "Is a number line allowed for the {ordinal} step?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "what about counters? would they work for {calculation}?"}
+{"kind": "another_way", "focus": "step", "depth": "first", "text": "instead of doing the sum, I could just draw {calculation}, right?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "We do it in columns at school. Can I do {calculation} like that?"}
+{"kind": "another_way", "focus": "step", "depth": "follow", "text": "ok, but is that the only way to do it?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "does it have to be done your way, or can I use my own way for the {ordinal} step?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "Another method for the \"{step_words}\" line, please?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "i like drawings better. can you draw the {ordinal} step?"}
+{"kind": "another_way", "focus": "step", "depth": "follow", "text": "with a picture instead, would that work?"}
+{"kind": "another_way", "focus": "step", "depth": "first", "text": "is it ok to work out {calculation} on my fingers and toes? lol"}
+{"kind": "another_way", "focus": "step", "requires": ["add"], "depth": "any", "text": "starting at {a} and counting on {b}, does that work too?"}
+{"kind": "another_way", "focus": "step", "requires": ["add"], "depth": "any", "text": "i always count on from the bigger number, is that ok here?"}
+{"kind": "another_way", "focus": "step", "requires": ["add"], "depth": "any", "text": "Tens first, then ones. Is that another way to do it?"}
+{"kind": "another_way", "focus": "step", "requires": ["add"], "depth": "first", "text": "my teacher says make a ten first. would that work for {a} and {b}?"}
+{"kind": "another_way", "focus": "step", "requires": ["add", "join"], "depth": "any", "text": "could I draw the {a} and then draw the {b} more joining them?"}
+{"kind": "another_way", "focus": "step", "requires": ["add", "combine"], "depth": "any", "text": "putting both groups together and counting them all would work too, wouldn't it?"}
+{"kind": "another_way", "focus": "step", "requires": ["add", "money"], "depth": "any", "text": "With coins I'd add the big ones first. Is that a different way of doing it?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "can I count up from {b} to {a} instead of taking away?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "number line! start at {a}, jump back {b}. does that work?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract"], "depth": "first", "text": "Taking {b} away in two jumps instead of one, would that work?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "lining them up side by side and counting the extras, is that another way?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "could I draw {a} things and cross out {b} of them?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract", "money"], "depth": "any", "text": "Shopkeepers count up to give change. Could I do it their way?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "can I add {a} again and again, {b} times?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "skip counting in {b}s works too, right?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "rows of dots!! would that be another way?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "first", "text": "Swap them round, {b} times {a}. Is that another way?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Breaking {a} into two easier numbers and timesing each by {b}, would that work?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "Adding one group at a time until they're all there, is that allowed?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply", "money"], "depth": "any", "text": "could I add up the price for each one instead?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "would a bar model work for the times as many part?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply", "time"], "depth": "any", "text": "could I count it along a timeline instead of timesing?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide"], "depth": "any", "text": "Taking {b} away from {a} again and again till nothing's left, is that another way?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide"], "depth": "any", "text": "Using the {b} times table backwards, would that work too?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "dealing them out one at a time like cards, is that another way?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide"], "depth": "any", "text": "I'd draw circles and put things in them till they're all gone. Is that ok too?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "Counting up in {b}s until I reach {a}, would that work?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide", "money"], "depth": "any", "text": "sharing the money out coin by coin, is that a different way to do it?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide"], "depth": "first", "text": "what times {b} makes {a}? is that another way to think about it?"}
+{"kind": "another_way", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "drawing {a} dots and circling groups of {b}, then looking at what's left, does that work?"}
+{"kind": "another_way", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "is there another way to see why it's {result}, maybe with a drawing?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide"], "depth": "follow", "text": "so another way would be sharing them out one by one?"}
+{"kind": "another_way", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "could you split {calculation} into two smaller lines?"}
+{"kind": "another_way", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "Does {calculation} have to be done in that order, or is there another order?"}
+{"kind": "another_way", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "Is there a way to do this step without the line before?"}
+{"kind": "another_way", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "This line uses an old answer. Is there a way around that?"}
+{"kind": "another_way", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "Drawing the \"{a_words}\" and \"{b_words}\" numbers as a picture, would that help me do it another way?"}
+{"kind": "another_way", "focus": "step", "depth": "first", "text": "We learned partitioning at school. would it work for {calculation}?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "Our class has a hundred square. Would it work for {calculation}?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "Tally marks for {calculation}, is that a way?"}
+{"kind": "another_way", "focus": "step", "depth": "follow", "text": "and is there a way without writing any numbers?"}
+{"kind": "another_way", "focus": "step", "depth": "follow", "text": "hm ok, what's another way then?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "Would building blocks help me {operation_phrase} a different way?"}
+{"kind": "another_way", "focus": "step", "depth": "first", "text": "does {calculation} have a different way, like in your head?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "pretend I have {a} and give away {b}, is that another way to do it?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "would drawing two bars, one for each, show the difference?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract", "time"], "depth": "any", "text": "on a calendar I'd just count back. is that ok?"}
+{"kind": "another_way", "focus": "step", "requires": ["add", "time"], "depth": "any", "text": "Counting on along a clock or a calendar for {calculation}, does that work?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "what about writing a list, one line for each one, instead of timesing?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "drawing {a} circles with {b} in each one, is that another way?"}
+{"kind": "another_way", "focus": "answer", "depth": "first", "text": "can the whole thing be done a different way?"}
+{"kind": "another_way", "focus": "answer", "depth": "any", "text": "Could I draw the whole story to get {answer}?"}
+{"kind": "another_way", "focus": "answer", "depth": "any", "text": "No sums at all, just drawing. Possible?"}
+{"kind": "another_way", "focus": "answer", "depth": "any", "text": "What's another method that also gets to {answer}?"}
+{"kind": "another_way", "focus": "answer", "depth": "follow", "text": "can you show me a different way to the answer then?"}
+{"kind": "another_way", "focus": "answer", "depth": "first", "text": "my friend did it another way but got the same, is that allowed?"}
+{"kind": "another_way", "focus": "answer", "depth": "any", "text": "Would a bar model work for this one?"}
+{"kind": "another_way", "focus": "answer", "depth": "any", "text": "Acting it out with my toys, could that get me {answer}?"}
+{"kind": "another_way", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "could you do the steps in a different order?"}
+{"kind": "another_way", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "can it all go in one big sum instead of {step_count} lines?"}
+{"kind": "another_way", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "Going right back to the first question, could I get {answer} a different way?"}
+{"kind": "another_way", "focus": "answer", "requires": ["money"], "depth": "any", "text": "Can I do it with play money instead of sums?"}
+{"kind": "another_way", "focus": "answer", "requires": ["time"], "depth": "any", "text": "Time problems like this one, do they have a different way?"}
+{"kind": "another_way", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "I want to draw two towers and see how much taller one is. Does that work?"}
+{"kind": "another_way", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "how about handing them out one each, round and round, till they're gone?"}
+{"kind": "another_way", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "making groups and counting how many I made, would that work?"}
+{"kind": "another_way", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "do I have to times, or can I draw every group and count all of them?"}
+{"kind": "another_way", "focus": "answer", "requires": ["times_as_many"], "depth": "any", "text": "could I draw the smaller one again and again instead?"}
+{"kind": "another_way", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "Would a table help me do the whole thing another way?"}
+{"kind": "another_way", "focus": "answer", "requires": ["join"], "depth": "any", "text": "Start with what was there and count on the new ones. Is that another way?"}
+{"kind": "another_way", "focus": "answer", "requires": ["separate"], "depth": "any", "text": "pretending with real things and taking them away one at a time, would that work?"}
+{"kind": "another_way", "focus": "answer", "requires": ["combine"], "depth": "any", "text": "can I draw a part-whole model for this?"}
+{"kind": "another_way", "focus": "answer", "requires": ["mixed"], "depth": "any", "text": "Some bits with drawings and some with sums, is that allowed?"}
+{"kind": "another_way", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "it's only one sum, but is there another way than the sum you did?"}
+{"kind": "another_way", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "knowing that word means {number} is one way, but could I count it out instead?"}
+{"kind": "another_way", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "Rather than using the {number} from before, can I work it out fresh?"}
+{"kind": "another_way", "focus": "step", "requires": ["subtract"], "depth": "follow", "text": "So counting up is another way for take aways too?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "follow", "text": "so I could do repeated adding instead? would it take ages?"}
+{"kind": "another_way", "focus": "step", "requires": ["divide", "rates"], "depth": "any", "text": "if I know the price of one, could I count up in that price instead of dividing?"}
+{"kind": "another_way", "focus": "answer", "depth": "first", "text": "Hmm, I did it differently in my head. Is there more than one way?"}
+{"kind": "another_way", "focus": "answer", "depth": "follow", "text": "and the drawing way gives the same answer?"}
+{"kind": "another_way", "focus": "step", "depth": "first", "text": "My dad does sums like this a totally different way. Is that ok?"}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "Show me a second way to get {result}, please."}
+{"kind": "another_way", "focus": "step", "depth": "any", "text": "number bonds or times tables, could either of those help with {calculation}?"}
+{"kind": "another_way", "focus": "step", "requires": ["multi_operation"], "depth": "follow", "text": "so I could do the first bit, write it down, and then do the rest?"}
+{"kind": "another_way", "focus": "answer", "requires": ["multi_step"], "depth": "first", "text": "Do I have to do it in {step_count} steps or is another way ok?"}
+{"kind": "another_way", "focus": "step", "requires": ["add", "combine"], "depth": "follow", "text": "so another way is to draw both parts and count the lot?"}
+{"kind": "another_way", "focus": "step", "requires": ["has_words"], "depth": "first", "text": "isn't there another way to put the \"{a_words}\" and \"{b_words}\" numbers together?"}
+{"kind": "shortcut", "focus": "step", "depth": "any", "text": "I want to {operation_phrase} faster. how?"}
+{"kind": "shortcut", "focus": "step", "depth": "any", "text": "any quick trick for {calculation}?"}
+{"kind": "shortcut", "focus": "step", "depth": "first", "text": "can I do {calculation} in my head somehow? writing takes ages"}
+{"kind": "shortcut", "focus": "step", "depth": "any", "text": "Shortcut for the {ordinal} step?"}
+{"kind": "shortcut", "focus": "step", "depth": "follow", "text": "that took ages. isn't there a quicker way?"}
+{"kind": "shortcut", "focus": "step", "depth": "follow", "text": "ok but is there a shortcut? my hand hurts lol"}
+{"kind": "shortcut", "focus": "step", "depth": "any", "text": "there must be a quicker way to get {result}"}
+{"kind": "shortcut", "focus": "step", "depth": "first", "text": "do I always have to write the whole line out, or is there a short way?"}
+{"kind": "shortcut", "focus": "step", "depth": "any", "text": "What's the speediest way to do {calculation}?"}
+{"kind": "shortcut", "focus": "step", "depth": "any", "text": "What trick makes {a} {sign_word} {b} easy?"}
+{"kind": "shortcut", "focus": "step", "requires": ["add"], "depth": "any", "text": "could I round {b} to the nearest ten, add that, then fix it? is that faster?"}
+{"kind": "shortcut", "focus": "step", "requires": ["add"], "depth": "first", "text": "adding {a} and {b} in my head is hard. any tricks?"}
+{"kind": "shortcut", "focus": "step", "requires": ["add", "money"], "depth": "any", "text": "with money, is there a quick way to add it all up?"}
+{"kind": "shortcut", "focus": "step", "requires": ["add", "join"], "depth": "first", "text": "Counting on {b} one at a time is slow. Faster way?"}
+{"kind": "shortcut", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "Is there a quick way to take {b} away without counting back one by one?"}
+{"kind": "shortcut", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "do I have to borrow, or is there a quicker way?"}
+{"kind": "shortcut", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "how do you find the difference fast without counting every single one?"}
+{"kind": "shortcut", "focus": "step", "requires": ["subtract", "money"], "depth": "any", "text": "shopkeepers are super fast at change. what's their trick?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Do you know a times tables trick for {a} times {b}?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "would doubling make it quicker somehow?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multiply"], "depth": "first", "text": "times like {calculation} take me forever. is there a trick?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "isn't there a faster way than adding all the groups up one by one?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "Working out the price of lots of them takes ages. Any quick way?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "times as many ones take me forever. any shortcut?"}
+{"kind": "shortcut", "focus": "step", "requires": ["divide"], "depth": "any", "text": "dividing {a} by counting one at a time takes forever. quicker way?"}
+{"kind": "shortcut", "focus": "step", "requires": ["divide"], "depth": "any", "text": "can my times tables make dividing by {b} faster?"}
+{"kind": "shortcut", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "is there a fast way to know how many groups of {b} fit in {a}?"}
+{"kind": "shortcut", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "Finding the leftover takes me ages. Any trick?"}
+{"kind": "shortcut", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "how can I tell quickly when I need to round up?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "{calculation} takes me so long. Faster way to do it all at once?"}
+{"kind": "shortcut", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "Could I skip the step before and go straight to this one?"}
+{"kind": "shortcut", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "do I need the last answer here, or is there a quicker route?"}
+{"kind": "shortcut", "focus": "step", "requires": ["time"], "depth": "any", "text": "stories with days and hours slow me down. is there a quick way to do {calculation}?"}
+{"kind": "shortcut", "focus": "answer", "depth": "first", "text": "How could I get to {answer} quicker?"}
+{"kind": "shortcut", "focus": "answer", "depth": "any", "text": "Can I just work out the answer without all the lines?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "can I skip one of the {step_count} steps?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "Do I really need {step_count} lines, or is there a faster route?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["multi_step"], "depth": "follow", "text": "so is there a way with fewer lines?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "it's just one sum but is there a faster trick?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["one_step"], "depth": "first", "text": "Could I just know the answer without working it out?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["money"], "depth": "any", "text": "Money questions like this, do you know a quick way?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["time"], "depth": "any", "text": "time questions take me ages. any shortcut for this one?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "can I use the last answer to skip some of the work?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["mixed"], "depth": "any", "text": "All these different bits... a shorter way through?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "Counting all the groups is slow. Quicker way?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "Sharing them out one by one takes forever. Is there a shortcut?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "Making the groups is slow. Speedy way?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "I just want to see how many more, fast. is there a trick?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["join"], "depth": "any", "text": "Is there a quicker way than counting everything from the start?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["separate"], "depth": "any", "text": "taking them away one at a time is so slow. is there a faster way?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["combine"], "depth": "any", "text": "can I put the two parts together quicker somehow?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "Price questions take me ages. Do you know a fast way?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["times_as_many"], "depth": "first", "text": "Shortcut for times as many questions, please?"}
+{"kind": "shortcut", "focus": "answer", "depth": "any", "text": "what would a maths genius do to get {answer} faster?"}
+{"kind": "shortcut", "focus": "answer", "depth": "follow", "text": "ok, but is there a shortcut for next time?"}
+{"kind": "shortcut", "focus": "answer", "depth": "any", "text": "is there a trick so I don't have to do all this every time?"}
+{"kind": "shortcut", "focus": "answer", "depth": "first", "text": "that's long! quicker way?"}
+{"kind": "shortcut", "focus": "answer", "depth": "any", "text": "My sister says there's a shortcut for these. Is there?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "the numbers are too big. can you do one like {calculation} but with little numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "I need the {ordinal} step with easy numbers to start with, then the real ones"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Show me the same kind of sum with tiny numbers please"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "follow", "text": "still lost. can you try it with really small numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "follow", "text": "do that again but with numbers I can count on my fingers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "it's hard to picture {calculation}. can you use smaller ones?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Could you do a baby version of {calculation}?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "I get lost in the {ordinal} step. Can it be shown with small numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "um what does it look like to {verb} with really small numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "pretend it's numbers under ten. how would the {ordinal} step go?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "The \"{step_words}\" line confuses me. Explain it with smaller numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "big numbers scare me. could you show {calculation} with small ones first and then the real ones?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "follow", "text": "maybe show it with like three and four?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Give me an easy example with small numbers that works the same as {calculation}."}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "Can we practise this step with easy numbers before the big ones?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "I'm only good with small numbers. Could you show it that way?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["add"], "depth": "any", "text": "adding {a} plus {b} gets muddled in my head. how does it go with smaller numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["add"], "depth": "any", "text": "show me adding with really small numbers, like two and three, so I see the idea"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["add", "join"], "depth": "any", "text": "pretend there are a few marbles and a few more join them. how does that work?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["add", "combine"], "depth": "any", "text": "Show me putting two small groups together first."}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["add", "money"], "depth": "any", "text": "could you show it with a few pennies instead?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "Sweets! Show me taking away with a few sweets."}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract"], "depth": "first", "text": "{a} take away {b} is hard for me. can you do a little one first?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "finding the difference is tricky. Show me with small numbers first?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "show me it with like five apples and eating some"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract", "money"], "depth": "any", "text": "pretend I've only got a little bit of money. how would the take away work?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Times is hard for me. Start with groups of two, maybe?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "I can't picture {a} lots of {b}. Could you show me small groups?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "show me with like three bags of two, then I'll get the big one"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "could you do it with just two or three things first?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "times as many with tiny numbers, please?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply", "money"], "depth": "any", "text": "Use cheap things first, like sweets that cost a little, and show me?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply", "time"], "depth": "any", "text": "just a couple of days first, then the real thing? that would help"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide"], "depth": "any", "text": "sharing a few things first would help me. can we?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide"], "depth": "first", "text": "{a} is a lot to share. could you share out like six sweets instead, to show me?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "What about sharing between just two friends first?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "show me making groups with less stuff?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide", "money"], "depth": "any", "text": "Share out a small amount of money to show me how it works?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "I don't get remainders with big numbers. Small ones?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "show me leftovers with like seven sweets put in pairs"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["remainder"], "depth": "first", "text": "could you show it with a few things that don't fit in the groups exactly?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "A tiny example where you have to round up like that would help."}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["rounded_up"], "depth": "follow", "text": "still confused about rounding up. small numbers please?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "{calculation} is a lot. can you show it with small numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multi_operation"], "depth": "follow", "text": "still lost on {calculation}. tiny numbers for each bit?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "how do both steps work with easy numbers? show me please"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "Tiny numbers for the \"{a_words}\" and \"{b_words}\" bit, please?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["time"], "depth": "any", "text": "Smaller numbers of days or minutes might help. Try that?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract", "time"], "depth": "any", "text": "counting back in time with small numbers, how does that go?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "the old answer makes it confusing. can you show this step with small numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["last_step"], "depth": "any", "text": "the last step but with easy numbers, please"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["first_step"], "depth": "first", "text": "Before the big numbers, can you do the first line with small ones?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["only_step"], "depth": "any", "text": "it's just one step, can you do it with little numbers so I see it?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["money"], "depth": "any", "text": "money numbers are too big for me. can you show it with small amounts?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Do the {ordinal} step like it's for little kids, please!"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "explain {calculation} with easy numbers like you would to my little brother"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "follow", "text": "so with easy numbers, what would that step look like?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "my teacher uses small numbers to show us. can you do that for {calculation}?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "Smaller numbers please! I can't do {calculation} yet"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "is there a small-number version of the {ordinal} step?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Can you start with tiny numbers and then go up to {a} and {b}?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "follow", "text": "only numbers up to ten this time?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "i like it when you use small numbers. can you do the {ordinal} step that way?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["add"], "depth": "follow", "text": "adding on with five and a few more, like that?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract"], "depth": "follow", "text": "show the take away again with numbers like ten and three?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply"], "depth": "follow", "text": "do the times again with twos and threes?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide"], "depth": "follow", "text": "show the sharing again but with like eight sweets?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["subtract", "compare"], "depth": "follow", "text": "could you do the difference thing again with like five and two?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "follow", "text": "show the groups again but smaller, like two in each?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "can u show it with small numbers pls"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "follow", "text": "smaller numbers plz"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "too big!! smaller numbers?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Please do {calculation} with easy pretend numbers first."}
+{"kind": "smaller_numbers", "focus": "step", "depth": "first", "text": "ugh big numbers. same step but small please"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "show me with numbers I already know, like my number bonds to ten"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Can you draw a small version with only a few dots?"}
+{"kind": "smaller_numbers", "focus": "answer", "depth": "any", "text": "A mini version of the whole problem with small numbers would really help."}
+{"kind": "smaller_numbers", "focus": "answer", "depth": "first", "text": "this one is hard. can you make up an easy one like it?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "all {step_count} steps again with easy numbers please?"}
+{"kind": "smaller_numbers", "focus": "answer", "depth": "follow", "text": "now can you show the whole thing with really tiny numbers?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["money"], "depth": "any", "text": "do the whole money thing again with little amounts, please"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "show it with like six sweets and two kids?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "Like ten things in groups of two, could it be shown like that?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "Could you do the whole thing with tiny groups?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "show me with two small towers how this works"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["join"], "depth": "any", "text": "tell the story with small numbers, like a few birds and then a couple more"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["separate"], "depth": "any", "text": "use little numbers to show the taking away story?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["combine"], "depth": "any", "text": "two small piles put together, could you show it like that?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "One or two things with small prices, so I can follow?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["times_as_many"], "depth": "any", "text": "show me the times as many thing with like two and three?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["mixed"], "depth": "any", "text": "there are too many bits. can you do it with small numbers so I see each bit?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["time"], "depth": "any", "text": "Small amounts of time would be easier. Show me that way?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "This question and the last one with small numbers, please?"}
+{"kind": "smaller_numbers", "focus": "answer", "depth": "first", "text": "I get confused with big numbers. Could the whole story be done with small ones to show me?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "it's one sum but the numbers are huge for me. smaller?"}
+{"kind": "smaller_numbers", "focus": "fact", "depth": "any", "text": "the {number} makes it hard for me. could you show how it works with a smaller number?"}
+{"kind": "smaller_numbers", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "the {number} from the last question confuses me. can we use a small one to understand it?"}
+{"kind": "smaller_numbers", "focus": "fact", "depth": "follow", "text": "pretend the \"{words}\" number is tiny so I see how it works?"}
+{"kind": "smaller_numbers", "focus": "fact", "requires": ["money"], "depth": "any", "text": "{number} is a lot of money for me. How about showing it with less?"}
+{"kind": "another_way", "focus": "step", "requires": ["last_step"], "depth": "follow", "text": "and for the last line, is there a different way too?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["divide", "times_as_many"], "depth": "any", "text": "times as many going backwards confuses me. tiny numbers please?"}
+{"kind": "shortcut", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "writing \"{a_words}\" and \"{b_words}\" takes ages. can I just use the numbers?"}
+{"kind": "shortcut", "focus": "step", "requires": ["only_step"], "depth": "first", "text": "it's only one line. can't I just do it in my head?"}

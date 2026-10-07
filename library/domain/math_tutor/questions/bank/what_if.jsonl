@@ -1,0 +1,252 @@
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Suppose the {old} was {new}. What would the answer be then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "imagine it said {new} where it says {old}, what would you get"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "ok but if the {old} was {new} what would it come out as"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "{new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Pretend the {old} is {new}. Now what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "now say it's {new} and not {old}. how does it work out?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Could you do it again with {new} in place of {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what happens to the answer if you swap the {old} for {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "and if it was {new}? instead of the {old} i mean"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Let's say the {old} turns into {new}. What's the new answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "wait what if that {old} was {new}"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Can you work it out with {new} instead of {old}, please?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "how about {new} instead of {old}? what would it be"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "If the {old} was changed to {new}, would the answer still be the same? What would it be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "try it with {new} where the {old} is"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "same question but with {new} not {old}. go!"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "hmm and what if the {old} said {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Would the answer change if it was {new} rather than {old}? What to?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "i want to change the {old} to {new}. what's the answer now?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "ooh what if it was {new}?? not {old}"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Quick one: {old} becomes {new}. What's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "redo it but with {new} for the {old} pls"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what would you get if the {old} was a different number, like {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "So if I make the {old} into {new}, what comes out at the end?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "but if it was {new} rather than {old}, what would it be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "let's change {old} to {new}. what do we get then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "I bet the answer changes if it's {new} instead of {old}. What is it?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what if they put {new} in the question and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "If the book had {new} printed instead of {old}, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "and with {new}, not {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Can you show me what the answer would be with {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "my sister says what if it's {new} instead of {old}. what would you get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "ok I get it. now what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "Thanks! What if the {old} was {new} though?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "makes sense. same thing with {new} in place of {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "Right. So if you used {new} where the {old} goes, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "cool, and if it was {new} and not {old} what would you get"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "Got it now. Could you solve it again if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "oh ok. so if {old} turned into {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "Can I change a number? I want {new} instead of {old}. What would it be then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "If {old} was {new}, then what?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "you had {old} but I want {new}. what's the answer for that?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Say the {old} was {new}. Work it out again?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "change just one number: {old} to {new}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "i think it would be fun if the {old} was {new}. what would we get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What answer do you get when the {old} is {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Does {new} instead of {old} give a different answer? What answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "if you used {new} where you used {old}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "um can we try {new} for the {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Would it be a lot different with {new} instead of {old}? What would you get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "where you wrote {old_words} = {old}, what if it was {new}? what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What if the {old_words} changed to {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "ok so {old_words} is {old}. but what if it was {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Can you do it again with {old_words} = {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "the {old_words} bit. make it {new} instead of {old}. what do you get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "suppose you had {new} for the {old_words} and not {old}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "imagine the {old_words} is {new}. would the answer be different? what would it be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what if {old_words} was {new} and not {old}"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "pretend the line says {old_words} = {new}. what's the answer now?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "If you change the {old_words} from {old} to {new}, what's the new answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "ok. and if the {old_words} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "I see. Now could you try the {old_words} as {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what's the answer when the number for {old_words} is {new} instead?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "{old_words}: {new} instead of {old}. answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "let's say the {old_words} goes from {old} to {new}. what happens to the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "um the {old_words} one, what if it was {new}"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What would you get with {new} as the {old_words}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "can you change {old_words} to {new} and do it again?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "now say the {old_words} number is {new}... what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "if it was {new} for {old_words} what would the answer be"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "So {old_words} = {old} right? Try {new}. What do you get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Would it still come out the same if the {old_words} was {new}? Or what would it be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "Thank you. What if the {old_words} were {new} though, not {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "ok but if {old_words} is {new}??"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What if you put {new} where you wrote {old_words}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "i want the {old_words} to be {new}. can you work out the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "the line with {old_words}... if that was {new} not {old}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "Hmm, the {old_words}. Could that be {new}? Then what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Change the {old_words} to {new} please and tell me the new answer."}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "how does the answer change if the {old_words} is {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "yeah ok. now make the {old_words} {new}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "and if {new} was the {old_words}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what's the answer with the {old_words} at {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Instead of {old} for the {old_words}, use {new}. What's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "I want to play with the {old_words}. if it's {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "let's pretend {old_words} is {new}. what would it come to?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "If someone changed the {old_words} to {new}, what answer would you get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "can you show me the whole thing again but {old_words} is {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "{old} for {old_words} is a bit boring. what if it was {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what happens if you set the {old_words} to {new}? new answer pls"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "Wait, what if the {old_words} were {new}? What's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "you said {old_words} = {old}. what if it's {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Could the {old_words} be {new} instead? What answer would that give?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "if {old_words} = {new} then answer = ?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "Ohh that helps. Can we do one where the {old_words} is {new}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Same story, but the {old_words} is {new}. What's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "say the {old_words} was something else, like {new}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "hmm, {new} for the {old_words}? what then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What if you'd written {old_words} = {new} at the start? What would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "that makes sense now. but if the {old_words} went to {new}, what would you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "for this new question, what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "keep the answer from before, but make the {old} into {new}. what comes out now?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "first", "text": "in this part, what if it said {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "Using the same answer from the last question, what if this one had {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "only in this bit, swap {old} for {new}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "and if this part had {new} in it, not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "don't change the first bit. just the {old}. make it {new}. what do you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "follow", "text": "ok thanks. for this question, could the {old} be {new}? what then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "the earlier answer stays the same, right? so if the {old} here was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "What if the newest part of the story said {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "first", "text": "so carrying on from before, what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "if this question used {new} rather than {old}, what would the answer be? same start as before"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "keep everything from before and only change {old} to {new}. answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "Same answer to carry over, but {new} in place of {old} this time. What's the result?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "this one builds on the last one right? so if this {old} turned into {new}, what then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "Could you redo just this part with {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "follow", "text": "ah ok. for the latest question then, what if it was {new} not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "if it said {old_words} = {new} in this part, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "in this part the {old_words} is {old}. what if it was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "Starting from your answer before, what if the {old} became {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "this bit only: {new} instead of {old}. new answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "first", "text": "and for this question, with {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "forget the number you didn't use. what if the {old} was {new} instead?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "you used the {old}, so if it was {new} what would you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "not the extra number, the {old}. what if that one was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "first", "text": "ok the other number didn't matter. but the {old} does, so what if it was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "If the {old} that you did use was {new}, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "leave the unused number alone. change {old} to {new}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "follow", "text": "ok. and I know you skipped one number. but say the {old} was {new}, what would it be then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "what would the answer be if the {old} was {new}? that one counts, right?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "the {old_words} is one you used. what if it was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "there's a number that doesn't matter, but the {old} does. try {new} for it?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "Some numbers don't change anything. Does the {old}? What if it was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "the {old} isn't a trick number like the other one, is it? so if it was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "what if tomorrow it was {new} instead of {old}? what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "say next week the {old} was {new}. what then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "if it all happened again another day, but with {new} not {old}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "first", "text": "time ones confuse me. if the {old} was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "follow", "text": "ok. and on a different day, if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "same story but later on, with {new} instead of {old}. what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "what if on another day the {old_words} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "Next time it might be {new} and not {old}. What would the answer be then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "money ones are tricky. if it said {new} instead of {old}, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "I'm saving my pocket money so I want to know: what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "In this money one, I'd change {old} to {new}. What would you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "this is like at the shop! what if it was {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "Money is my favourite kind of maths. Can you do it with {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "with money it's easy to mix up, so with {new} in place of {old}, what do you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "first", "text": "same money story but {new} where the {old} is. what's the answer now?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "follow", "text": "thanks! money stuff is hard. so pretend it's {new}, not {old}. what comes out?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["join"], "depth": "any", "text": "I like stories where people get more stuff. ok, what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["join"], "depth": "any", "text": "the story starts with more getting added. so if the {old} was {new}, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["join", "follow_up_task"], "depth": "any", "text": "the first question was about getting more. for this new bit, what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["join"], "depth": "follow", "text": "my piggy bank gets more every week too. anyway, what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["join", "follow_up_task"], "depth": "first", "text": "after all that adding at the start, what if this part said {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["separate"], "depth": "any", "text": "my brother always eats some of my crisps haha. anyway what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["separate"], "depth": "any", "text": "the story started with some going away. suppose the {old} was {new}, what would you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["separate", "follow_up_task"], "depth": "first", "text": "the first one was a take-away question. now in this part, if the {old} was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["separate", "follow_up_task"], "depth": "any", "text": "ok so after the bit where some got taken, what if this question had {new} not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["separate"], "depth": "follow", "text": "oh I see. and in this story where stuff gets taken away, what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["combine"], "depth": "any", "text": "the story is about two lots that make one big lot. change the {old} to {new} and what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["combine"], "depth": "any", "text": "my pens are red ones and blue ones, all in one pot haha. what if it was {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["combine", "follow_up_task"], "depth": "any", "text": "at the start two groups got put together. in this one, would it change if the {old} was {new}? to what?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["combine"], "depth": "first", "text": "both parts and the total... my head hurts. what if the {old} was {new}? what would it come to?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["combine"], "depth": "follow", "text": "ok. so in this story with the two lots, what if it was {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["compare"], "depth": "any", "text": "me and my friend always compare who has more stickers! anyway, swap the {old} for {new}. what do you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["compare"], "depth": "any", "text": "the story is about who has more and who has less. so what would you get if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["compare", "follow_up_task"], "depth": "first", "text": "we started with a how-many-more question. for this part though, what if it said {new} not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["compare"], "depth": "any", "text": "the how-many-more stuff is hard for me. what's the answer if it's {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["compare"], "depth": "follow", "text": "ok that's clearer. and if the {old} was {new} in this comparing story?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups"], "depth": "any", "text": "I like the ones with bags that have the same in each. what if it was {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups"], "depth": "any", "text": "my egg box has the same in every row! ok, use {new} for the {old}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups", "follow_up_task"], "depth": "any", "text": "the first question had groups with the same in each. here, what happens if the {old} is {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups"], "depth": "follow", "text": "ok thanks. in this story with the equal groups, what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups"], "depth": "first", "text": "equal groups stories are my favourite! so what would you get if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["sharing"], "depth": "any", "text": "I always share sweets with my friends! what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["sharing"], "depth": "any", "text": "fair sharing is fun. what if the {old} was {new}, what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["sharing", "follow_up_task"], "depth": "first", "text": "since it all got shared out at the start, what happens in this part if the {old} is {new}? what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["sharing"], "depth": "any", "text": "in the sharing story, what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["sharing"], "depth": "follow", "text": "ok. me and my cousins share stuff all the time btw. could the {old} be {new}? what then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["grouping"], "depth": "any", "text": "we make teams in PE, that's kind of like this story. what if it was {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["grouping", "follow_up_task"], "depth": "any", "text": "back at the start things got put into groups. now, if the {old} was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["grouping"], "depth": "first", "text": "packing things in boxes is my favourite kind of question. try {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["grouping"], "depth": "any", "text": "I always forget about the leftover ones in group stories. anyway what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["grouping"], "depth": "follow", "text": "oh ok. so in this story about groups, if the {old} became {new}, what would it be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["times_as_many"], "depth": "any", "text": "this story has a times as many bit and those are hard. with {new} in place of {old}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["times_as_many"], "depth": "any", "text": "I always mix up times as many and more than. so what if the {old} was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["times_as_many", "follow_up_task"], "depth": "first", "text": "after the times as many part at the start, what if this bit had {new} where it has {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["times_as_many"], "depth": "any", "text": "the how-many-times stuff is confusing. could you do it with {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["times_as_many"], "depth": "follow", "text": "ok, sort of. times stuff is still hard. and if it said {new} rather than {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["rates"], "depth": "any", "text": "prices and stuff. ok what if it was {new} and not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["rates"], "depth": "any", "text": "we have a price list at the swimming pool too. what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["rates", "money"], "depth": "first", "text": "money and prices, my favourite. so if the {old} was {new}, what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["rates", "money"], "depth": "any", "text": "when things cost the same for each one I get confused. if the {old} went to {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["rates"], "depth": "follow", "text": "ok got it. same kind of story but with {new} not {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["mixed"], "depth": "any", "text": "this story has lots going on. if the {old} was {new}, what would come out at the end?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["mixed"], "depth": "any", "text": "there's so much in this story. could you do it all again with {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["mixed"], "depth": "first", "text": "so many different things happen here! ok, imagine {new} where the {old} is. answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["mixed"], "depth": "any", "text": "if the {old} was {new}, would every step change or just some? what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["mixed"], "depth": "follow", "text": "phew, that's a lot of steps. but what if it was {new} not {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "if the {old} was {new}, would the answer go up or down? what would it be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "if one of the numbers changed, like {old} to {new}, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "hmm, {old}... can it be {new}? what would we get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "i'm making up my own version: {new} instead of {old}. can you solve it?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "my teacher changes the numbers sometimes. can you do it with {new} where {old} was?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "is the answer still the same if it's {new}? I mean instead of {old}. or what is it?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "can you do {new} instead of {old}?? pleeease"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What would the answer be with {new}, and not {old}? I want to check something."}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Let me change it. {old} is now {new}. Go!"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "{new}, not {old}. what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "I wanna try a different number. {new} where it says {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "how would the answer turn out if you used {new} for {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "I think I understand. Can you show me with {new} in it instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "yep. now do it with {new} for {old} please"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "kind of get it. what if the {old} was {new}, though? what would that be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "random idea... the {old} could be {new}! what do you get then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "So with {new} in the story instead of {old}, what would you get at the end?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "i'd like to see the answer if it said {new} and not {old}"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Is it hard to work out if the {old} becomes {new}? What would it be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "Wait so if I put {new} instead of {old}, what's my answer?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "can you tell me the answer for {new} instead of {old} too?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "ok now a hard one for you. {new} instead of {old}, go!"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "so the {old_words} is {old}... and if it was {new}, the answer would be?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "you wrote {old} for the {old_words}. if I make it {new}, what do I get?"}
+{"kind": "what_if", "focus": "what_if", "depth": "follow", "text": "nice. now try {new} for {old_words} and tell me what you get"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "if the {old_words} line said {new}, does the answer change too? to what?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "what if the {old_words} was {new}? same answer or a different one?"}
+{"kind": "what_if", "focus": "what_if", "depth": "first", "text": "can the {old_words} be {new} for a sec? what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "{old_words} {old}? nah, make it {new}. what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task", "money"], "depth": "any", "text": "for this money part, what if the {old} was {new}? what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task", "money"], "depth": "first", "text": "money again! for this question, swap the {old} for {new}. what do you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "any", "text": "later in the story it says {old}. what if it was {new}? what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "follow", "text": "makes sense now. in this newer part, can you use {new} instead of {old} and tell me the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task", "has_distractor"], "depth": "any", "text": "the extra number was back in the first question. in this one, what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["has_distractor"], "depth": "any", "text": "I know one number was a trick. what if the {old} was {new}? what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "i love buying stuff. what if it was {new} not {old}? what's the answer then?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "in the money story, if the {old_words} was {new}, what would the answer be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["money"], "depth": "any", "text": "the {old_words} bit is {old} right? if it was {new}, what would it all come to?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "any", "text": "would the answer be different on a day when it's {new} and not {old}? what would it be?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["time"], "depth": "follow", "text": "ok thanks. but what if it was {new} instead of {old} the next week?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["compare"], "depth": "any", "text": "who has more is tricky. say {old_words} is {new} instead of {old}. answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups", "money"], "depth": "any", "text": "it's like buying lots of the same thing! what if the {old} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["mixed", "follow_up_task"], "depth": "any", "text": "loads of steps in the first question! for this part, with {new} instead of {old}, what do you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["join"], "depth": "any", "text": "more got added in the story. what if it said {old_words} = {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["separate"], "depth": "any", "text": "some got taken away in the story, right. if the {old_words} was {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["combine"], "depth": "first", "text": "two bits make the whole thing. what if the {old_words} was {new}?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["equal_groups"], "depth": "any", "text": "groups with the same in each... ok but what if the {old_words} was {new}? what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["grouping"], "depth": "any", "text": "putting stuff in groups is hard. what if the {old_words} was {new} though?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["follow_up_task"], "depth": "first", "text": "this new question is easy. what if it had {new} where the {old} is?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["sharing"], "depth": "any", "text": "sharing again! what if the {old_words} was {new}, what would you get?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["times_as_many"], "depth": "any", "text": "times stuff... ok, if {old_words} = {new}, what's the answer?"}
+{"kind": "what_if", "focus": "what_if", "requires": ["rates", "money"], "depth": "follow", "text": "I see. and in this price story, if {old_words} was {new}?"}

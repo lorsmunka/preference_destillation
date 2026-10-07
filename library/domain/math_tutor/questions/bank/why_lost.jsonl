@@ -1,0 +1,355 @@
+{"kind": "why", "focus": "step", "depth": "first", "text": "why did you do {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "How did you know you had to {verb} in that step?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "wait why {verb}??"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "whats the point of doing {calculation}"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Why those two numbers, {a} and {b}?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "um, how come the {ordinal} sum is {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "who says you have to {verb} here?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Why is it {sign_word} {b}? I would never have thought of that."}
+{"kind": "why", "focus": "step", "depth": "first", "text": "Can you tell me the reason you did {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "do we even need the {ordinal} step? why?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "What made you choose to {operation_phrase}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "there's a {sign} in the {ordinal} sum, why that one?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "I want to know why you did {calculation} and not something else"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "why does it say {step_words} = {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Why is {a} first and {b} second?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "so in the {ordinal} step... why {verb}? tell me pls"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "ok but why {verb} though?"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "yeah but WHY {calculation}"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "that still doesn't tell me why you {operation_phrase_past}"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "Hmm, but what is {b} doing in there?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "Is there a reason you {verb_past}? I thought it was a different kind of sum"}
+{"kind": "why", "focus": "step", "requires": ["add"], "depth": "any", "text": "So you add {b} on to {a}, but why?"}
+{"kind": "why", "focus": "step", "requires": ["add"], "depth": "first", "text": "Putting {a} and {b} together... what made you do that?"}
+{"kind": "why", "focus": "step", "requires": ["add"], "depth": "any", "text": "is it a plus because it has to get bigger?"}
+{"kind": "why", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "why is it {a} - {b} and not {b} - {a}?"}
+{"kind": "why", "focus": "step", "requires": ["subtract"], "depth": "first", "text": "Tell me why you take {b} off {a}."}
+{"kind": "why", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "minus?? that makes it smaller, why would you want that"}
+{"kind": "why", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "how come it's {a} lots of {b}?"}
+{"kind": "why", "focus": "step", "requires": ["multiply"], "depth": "first", "text": "where are the groups? why is it times?"}
+{"kind": "why", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Why do you need a times sum for {a} and {b}?"}
+{"kind": "why", "focus": "step", "requires": ["divide"], "depth": "any", "text": "What's special about {b}? why divide by that?"}
+{"kind": "why", "focus": "step", "requires": ["divide"], "depth": "any", "text": "Why does {a} go first when you divide?"}
+{"kind": "why", "focus": "step", "requires": ["divide"], "depth": "first", "text": "how come you split up the {a}?"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "there's more than one sign in {calculation}, why?"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation"], "depth": "first", "text": "why did you cram it all in one line like {calculation}?"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "why doesn't {b} go into {a} exactly?"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "how come you get {remainder} left over?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "why {result} and not {quotient}?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "first", "text": "if there's only {remainder} left over, why do you need one more?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "Why does this line use the answer from the line above it?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step"], "depth": "first", "text": "does the {ordinal} step really need the one before it? why?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "how come last question's answer is in this sum?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "first", "text": "do we need the old answer for this one? why?"}
+{"kind": "why", "focus": "step", "requires": ["first_step"], "depth": "any", "text": "why start with {calculation}?"}
+{"kind": "why", "focus": "step", "requires": ["last_step"], "depth": "any", "text": "After {calculation} you just stop. Why?"}
+{"kind": "why", "focus": "step", "requires": ["only_step"], "depth": "first", "text": "Just {calculation} and that's it? why is that all you need?"}
+{"kind": "why", "focus": "step", "requires": ["has_words", "subtract"], "depth": "any", "text": "why take the {b_words} away from the {a_words}?"}
+{"kind": "why", "focus": "step", "requires": ["has_words", "add"], "depth": "any", "text": "what's the reason you add the {a_words} to the {b_words}?"}
+{"kind": "why", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "the story is about getting more, so why take away?"}
+{"kind": "why", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "but stuff went away in the story, why are you adding?"}
+{"kind": "why", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "is it divide because it's shared out fairly?"}
+{"kind": "why", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "How does taking away tell you how many more?"}
+{"kind": "why", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "Do the two groups make one big group? is that why you added?"}
+{"kind": "why", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "you took one part away from the whole lot, why does that work?"}
+{"kind": "why", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "We're comparing two things, so why add?"}
+{"kind": "why", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "every group has the same amount, is that why you multiplied?"}
+{"kind": "why", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "To find how many groups you divided {a} by {b}. why does that work?"}
+{"kind": "why", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "times as many... does that always mean multiply? why?"}
+{"kind": "why", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "it said times as many so why are you dividing??"}
+{"kind": "why", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "it says each or per somewhere, so you times? why does that work?"}
+{"kind": "why", "focus": "step", "requires": ["rates", "divide"], "depth": "any", "text": "why divide by {b}, does that give you how much one is?"}
+{"kind": "why", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "and now you {verb} in the {ordinal} step? why switch?"}
+{"kind": "why", "focus": "step", "requires": ["money", "subtract"], "depth": "any", "text": "Did somebody spend money? is that why it's take away?"}
+{"kind": "why", "focus": "step", "requires": ["money", "multiply"], "depth": "any", "text": "did they buy loads of the same thing? why else would you times"}
+{"kind": "why", "focus": "step", "requires": ["money", "add"], "depth": "first", "text": "why add {b}, is it more money coming in?"}
+{"kind": "why", "focus": "step", "requires": ["time", "add"], "depth": "any", "text": "why add {b}? did more time go by or something?"}
+{"kind": "why", "focus": "step", "requires": ["time", "multiply"], "depth": "any", "text": "Does it happen every day or every week or something? why times?"}
+{"kind": "why", "focus": "step", "requires": ["time", "subtract"], "depth": "any", "text": "why take away {b}? is that time that's gone?"}
+{"kind": "why", "focus": "step", "requires": ["follow_up_task", "uses_earlier_answer"], "depth": "first", "text": "why can't you start fresh for this new question?"}
+{"kind": "why", "focus": "step", "requires": ["follow_up_task", "first_step"], "depth": "any", "text": "for the new question, why is {calculation} the first thing you do?"}
+{"kind": "why", "focus": "step", "requires": ["remainder", "grouping"], "depth": "any", "text": "the {remainder} left over can't make another group? why not?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "so it's {quotient} and a bit, why make it {result}?"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "first", "text": "can't it just come out even? why is there a remainder"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "which part of {calculation} do you do first and why?"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation", "last_step"], "depth": "any", "text": "the last line has so many numbers in it. why??"}
+{"kind": "why", "focus": "step", "requires": ["divide", "has_words"], "depth": "any", "text": "why do you divide the {a_words} by {b}?"}
+{"kind": "why", "focus": "step", "requires": ["multiply", "has_words"], "depth": "any", "text": "the {a_words} get multiplied, but why?"}
+{"kind": "why", "focus": "step", "requires": ["subtract", "last_step"], "depth": "any", "text": "why end on a take away?"}
+{"kind": "why", "focus": "step", "requires": ["add", "first_step"], "depth": "first", "text": "Why add first, before doing anything else?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step", "multiply"], "depth": "any", "text": "you multiply the answer you just got. what for?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step", "subtract"], "depth": "any", "text": "The number you just worked out goes into a take away, why?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step", "divide"], "depth": "any", "text": "First you get a number and then you divide it?? whyyy"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step", "add"], "depth": "any", "text": "why add more on after the step before?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "add"], "depth": "any", "text": "adding on to the answer from last time? why"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "subtract"], "depth": "any", "text": "why take some away from what we got before?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "multiply"], "depth": "any", "text": "The last answer gets multiplied here, how come?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "divide"], "depth": "any", "text": "we already found that answer, why divide it up now?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "Excuse me, why did you {operation_phrase}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "y did u {verb}"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "what tells you it's {sign_word} and not something else?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "how do you decide which sign to use, like in {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "I need to know why the {ordinal} step is {calculation}, my teacher will ask"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "and why is it {b} and not some other number?"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "sorry but why {operation_phrase}? I still dont see the reason"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "why'd you pick {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Explain why you need {calculation} for this."}
+{"kind": "why", "focus": "step", "depth": "first", "text": "hold on, why is it {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "{a} and {b} in the same sum... why do they go together?"}
+{"kind": "why", "focus": "fact", "depth": "first", "text": "why did you put {number} in the list at the start?"}
+{"kind": "why", "focus": "fact", "depth": "any", "text": "Why do we need the {number}?"}
+{"kind": "why", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "why copy {number} from the question? I can already see it"}
+{"kind": "why", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "{number} again? why write it down twice"}
+{"kind": "why", "focus": "fact", "depth": "any", "text": "what's the point of writing {words} = {number} before any sums?"}
+{"kind": "why", "focus": "answer", "depth": "first", "text": "why is the answer {answer}?"}
+{"kind": "why", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "why did it need {step_count} steps?"}
+{"kind": "why", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "Only one sum? why is it so short?"}
+{"kind": "why", "focus": "fact", "depth": "any", "text": "is {number} even needed? why's it in your list"}
+{"kind": "why", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "the story only had a word, not {number}. why turn it into a number?"}
+{"kind": "why", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "first", "text": "why does the answer from before go in the list for this one?"}
+{"kind": "why", "focus": "fact", "depth": "follow", "text": "ok but why do you need {number} at all?"}
+{"kind": "why", "focus": "fact", "depth": "any", "text": "{words}... why is that one of the things you wrote down?"}
+{"kind": "why", "focus": "fact", "requires": ["money"], "depth": "any", "text": "you wrote {number}, is it how much something costs? why write it?"}
+{"kind": "why", "focus": "fact", "requires": ["time"], "depth": "any", "text": "is {number} a time thing? why is it there"}
+{"kind": "why", "focus": "fact", "depth": "first", "text": "Why list the numbers before you work anything out?"}
+{"kind": "why", "focus": "fact", "requires": ["from_earlier_answer", "follow_up_task"], "depth": "any", "text": "are we still using {number} from the last question? why?"}
+{"kind": "why", "focus": "answer", "depth": "any", "text": "how is {answer} the answer and not one of the other numbers?"}
+{"kind": "why", "focus": "answer", "depth": "first", "text": "why put Answer: {answer} at the end when it's already in the line above?"}
+{"kind": "why", "focus": "answer", "depth": "any", "text": "Why do you get {answer} for the {answer_words}?"}
+{"kind": "why", "focus": "answer", "requires": ["multi_step"], "depth": "first", "text": "why does it need more than one step? what does each one do?"}
+{"kind": "why", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "the answer is different from last time, why?"}
+{"kind": "why", "focus": "answer", "requires": ["time"], "depth": "any", "text": "so why is it {answer}? is that minutes or hours or what"}
+{"kind": "why", "focus": "answer", "requires": ["money"], "depth": "any", "text": "does {answer} mean money? and why does it come to that?"}
+{"kind": "why", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "why is the answer how many more and not how many altogether?"}
+{"kind": "why", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "is {answer} what each one gets? why?"}
+{"kind": "why", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "{answer}?? is that how many groups? why"}
+{"kind": "why", "focus": "answer", "depth": "follow", "text": "but why is it {answer} in the end?"}
+{"kind": "why", "focus": "answer", "requires": ["multi_step", "mixed"], "depth": "any", "text": "There are different kinds of sums to get the answer, why?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "WHY {operation_phrase}??"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "Quick question: why {verb} in the {ordinal} step?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "I was wondering why you {operation_phrase_past}."}
+{"kind": "why", "focus": "step", "depth": "any", "text": "honestly why {calculation}, it looks random"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "In the {ordinal} step, why did you use {a}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "is there a rule that says you have to {verb} here?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "{calculation}?? why that"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "What has {calculation} got to do with the question?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "can you say why you {verb_past}"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "my sister says you should never {verb} like that, why did you?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "how did you work out you needed {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "i get the answer but why {verb}"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "Right, but why {calculation} and not the other way round?"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "you keep saying it but why {verb}??"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "so why is {calculation} the right sum then?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step"], "depth": "follow", "text": "ok and why does that step come after the other one?"}
+{"kind": "why", "focus": "step", "requires": ["only_step", "multiply"], "depth": "any", "text": "Why is one times sum enough?"}
+{"kind": "why", "focus": "step", "requires": ["only_step", "divide"], "depth": "any", "text": "one divide and you're done? why?"}
+{"kind": "why", "focus": "step", "requires": ["last_step", "add"], "depth": "any", "text": "why do you add at the very end?"}
+{"kind": "why", "focus": "step", "requires": ["last_step", "divide"], "depth": "any", "text": "dividing last... why?"}
+{"kind": "why", "focus": "step", "requires": ["first_step", "subtract"], "depth": "any", "text": "Why take away right at the start?"}
+{"kind": "why", "focus": "step", "requires": ["first_step", "multiply"], "depth": "first", "text": "times straight away? why not something else first"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "why can't the {remainder} left over get split up too?"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "you just leave the {remainder}?? why"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "The last one isn't even full, so why count it?"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation", "first_step"], "depth": "any", "text": "why is the first line so long?"}
+{"kind": "why", "focus": "step", "requires": ["sharing", "divide"], "depth": "first", "text": "how come sharing means dividing?"}
+{"kind": "why", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "is dividing the same as making groups of {b}? is that why?"}
+{"kind": "why", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "is {b} the times as many number? is that why you times by it?"}
+{"kind": "why", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "Some more came, is that why you added {b}?"}
+{"kind": "why", "focus": "step", "requires": ["separate", "subtract"], "depth": "first", "text": "some got used up so you took away? or is there another reason"}
+{"kind": "why", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "why do you take the small number from the big one?"}
+{"kind": "why", "focus": "step", "requires": ["combine", "add"], "depth": "first", "text": "putting the parts together, that's why it's plus?"}
+{"kind": "why", "focus": "step", "requires": ["rates", "money", "multiply"], "depth": "any", "text": "is it times because each one costs the same?"}
+{"kind": "why", "focus": "step", "requires": ["money", "divide"], "depth": "any", "text": "does the money get shared? is that why you divide?"}
+{"kind": "why", "focus": "step", "requires": ["time", "divide"], "depth": "any", "text": "why divide here? to find how many days or something?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "my mum wants to know why it's {calculation}"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "{verb}? really? why"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Hey, why's {b} in the {ordinal} step?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "what part of the story made you {verb}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Can I ask why the {ordinal} step is {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "first", "text": "I'd have done it a different way. why did you {operation_phrase}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "what's the idea behind {calculation}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "Where in the question does it say to {verb}?"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "why can't you just leave {a} like it is?"}
+{"kind": "why", "focus": "step", "requires": ["first_step"], "depth": "any", "text": "I'm curious why you {operation_phrase} first"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "fine, but why is it a {sign} and not a different sign?"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "that's the same thing again. I mean why {verb} at ALL"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "that didn't help. why does {a} have to be in it?"}
+{"kind": "why", "focus": "step", "depth": "follow", "text": "ok i think i get it. but why {b} though"}
+{"kind": "why", "focus": "step", "requires": ["has_words", "add"], "depth": "any", "text": "why add on the {b_words}?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up", "grouping"], "depth": "any", "text": "can't the last {remainder} squeeze in somewhere? why one more?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "the {ordinal} step uses a number you worked out before, why not one from the question?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "first_step"], "depth": "any", "text": "Why does this new one start with the old answer?"}
+{"kind": "why", "focus": "step", "requires": ["follow_up_task", "only_step"], "depth": "first", "text": "this new bit only needs {calculation}? why so easy?"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation", "uses_previous_step"], "depth": "any", "text": "you use the step before AND more numbers in one go, why?"}
+{"kind": "why", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "first", "text": "Is it because there are {a} groups of {b}? is that why times?"}
+{"kind": "why", "focus": "step", "requires": ["sharing", "divide", "has_words"], "depth": "any", "text": "why share out the {a_words}?"}
+{"kind": "why", "focus": "step", "requires": ["money", "subtract", "last_step"], "depth": "any", "text": "is that take away the change? is that why you did it?"}
+{"kind": "why", "focus": "step", "requires": ["only_step", "add"], "depth": "any", "text": "just one plus? why is it that easy?"}
+{"kind": "why", "focus": "step", "requires": ["only_step", "subtract"], "depth": "any", "text": "Only one take away, why not more?"}
+{"kind": "why", "focus": "step", "requires": ["last_step", "multiply"], "depth": "any", "text": "why is the last bit a times?"}
+{"kind": "why", "focus": "step", "requires": ["first_step", "divide"], "depth": "any", "text": "dividing first?? why not later"}
+{"kind": "why", "focus": "step", "depth": "any", "text": "is {verb} always what you do in this kind of question? why?"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "why is it remainder {remainder} and not zero?"}
+{"kind": "why", "focus": "fact", "depth": "follow", "text": "and the {words} one, why is that in the list?"}
+{"kind": "why", "focus": "fact", "requires": ["implied_by_word"], "depth": "first", "text": "you wrote {number} but nobody said {number}. why?"}
+{"kind": "why", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "why write {number} up there if you use it later anyway?"}
+{"kind": "why", "focus": "answer", "requires": ["one_step", "follow_up_task"], "depth": "any", "text": "why only one step this time?"}
+{"kind": "why", "focus": "answer", "requires": ["multi_step"], "depth": "follow", "text": "ok but why is the last step the one that gives the answer?"}
+{"kind": "why", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "why does it come to {answer}? are those all the groups added up?"}
+{"kind": "why", "focus": "answer", "requires": ["times_as_many"], "depth": "any", "text": "how does times as many give {answer}? why that?"}
+{"kind": "why", "focus": "answer", "depth": "any", "text": "I'm not asking if it's right, I'm asking WHY it's {answer}"}
+{"kind": "why", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "why {answer}? is it cos each one costs the same or something?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I don't understand {calculation}"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "huh? the {ordinal} step makes no sense to me"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "can you explain {calculation} like I'm five"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "i'm lost at the {ordinal} sum"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "Could you say the {calculation} bit in easier words?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "my brain hurts. what's going on in {calculation}?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "Please go over the {ordinal} step again but slower"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "too hard. the {ordinal} step. help"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I'm stuck on {calculation}, can you make it simpler?"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "i read the {ordinal} step three times and i still dont get it"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "break {calculation} into baby steps for me?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "Um... I got lost when you did {calculation}."}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "This line confuses me: {step_words} = {calculation}"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "I'm only in year three, can you explain the {ordinal} step easier?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "Wait wait wait, slow down. What happened in the {ordinal} step?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "the {verb} part is confusing me, can you say it differently?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "what did you do with {a} and {b}? I don't get it"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "the {ordinal} step went way over my head"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I'm so confused. {calculation} = {result}?? how?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "explain the {result} bit simpler pls"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "I don't really get it. Can you do the {ordinal} step again with easy words?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "say it simpler please, the part where you {operation_phrase}"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "?? the {ordinal} step ??"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I tried but I can't see how you got {result}"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "explain {calculation} with sweets or something, I'm confused"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "i dont get it at all, the {ordinal} step i mean"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "lost. totally lost. {calculation}??"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "the {ordinal} step is too hard for me, can you tell it like a story?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I don't follow how {calculation} turns into {result}. can you go slower?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "a drawing or counting would help me with {calculation}. please?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "Sorry, I'm confused about the {ordinal} step."}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "{calculation}... I don't get it, what even is that"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "still lost on {calculation} sorry"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "nope, still don't get the {ordinal} step"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "that was too long, can you say the {verb} part in one sentence?"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "I didn't understand what you just said about {calculation}"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "try again with even easier words? the {calculation} bit"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "ok that made it worse lol. what does {calculation} do?"}
+{"kind": "lost", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "what's the star in {calculation}? i don't get it"}
+{"kind": "lost", "focus": "step", "requires": ["divide"], "depth": "any", "text": "what does the slash in {calculation} mean? im lost"}
+{"kind": "lost", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "I don't know my {b} times table, can you explain {calculation} slowly?"}
+{"kind": "lost", "focus": "step", "requires": ["divide"], "depth": "any", "text": "I don't get how {a} divided by {b} works"}
+{"kind": "lost", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "I get muddled taking away big numbers. how do you do {a} take away {b}?"}
+{"kind": "lost", "focus": "step", "requires": ["add"], "depth": "any", "text": "can you show me how {a} and {b} make {result}? i lose count"}
+{"kind": "lost", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "too many numbers in one line, can you split {calculation} up?"}
+{"kind": "lost", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "I lost track in {calculation}, can you do it one sign at a time?"}
+{"kind": "lost", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "what's a remainder? I don't get the {remainder} bit"}
+{"kind": "lost", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "I'm lost, {quotient} remainder {remainder} but then you said {result}??"}
+{"kind": "lost", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "I lost track of how the steps join up, can you go slower?"}
+{"kind": "lost", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "I forgot the last question, so I don't get this step. help?"}
+{"kind": "lost", "focus": "step", "requires": ["first_step"], "depth": "first", "text": "I got lost right at the start, can you explain {calculation} again?"}
+{"kind": "lost", "focus": "step", "requires": ["last_step", "uses_previous_step"], "depth": "any", "text": "I was fine until the end, then {calculation} lost me"}
+{"kind": "lost", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "We haven't done sharing with big numbers yet. can you explain how to {operation_phrase}, but simpler?"}
+{"kind": "lost", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "how do you know how many groups there are? I'm lost on {calculation}"}
+{"kind": "lost", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "can you draw the groups for {calculation}? I can't see it in my head"}
+{"kind": "lost", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "taking away to find how many more makes no sense to me, help"}
+{"kind": "lost", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "the story adds things but the sum takes away and my head is spinning. explain slowly?"}
+{"kind": "lost", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "things went away but you added?? I'm so mixed up, go slower please"}
+{"kind": "lost", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "putting the two groups together is confusing, make it easier?"}
+{"kind": "lost", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "times as many is confusing. what does {calculation} have to do with it?"}
+{"kind": "lost", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "dividing with times as many?? that loses me, explain it slow"}
+{"kind": "lost", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "I get lost with the each-one stuff. explain {calculation} slower?"}
+{"kind": "lost", "focus": "step", "requires": ["rates", "divide"], "depth": "any", "text": "how much for one? I'm lost. what happens when you {operation_phrase}? easy words pls"}
+{"kind": "lost", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "so many different sums, I'm lost by the {ordinal} one"}
+{"kind": "lost", "focus": "step", "requires": ["money"], "depth": "any", "text": "money sums confuse me, can you explain the {ordinal} step simpler?"}
+{"kind": "lost", "focus": "step", "requires": ["money", "subtract"], "depth": "any", "text": "I never get change sums. explain {calculation} like we're in a shop?"}
+{"kind": "lost", "focus": "step", "requires": ["money", "add"], "depth": "any", "text": "I'm rubbish with money. what's happening when you add {b}?"}
+{"kind": "lost", "focus": "step", "requires": ["time"], "depth": "any", "text": "time stuff always gets me mixed up. help with the {ordinal} step?"}
+{"kind": "lost", "focus": "step", "requires": ["time", "multiply"], "depth": "any", "text": "I'm lost with the time part of {calculation}. go slower?"}
+{"kind": "lost", "focus": "step", "requires": ["follow_up_task"], "depth": "first", "text": "the new question mixed me up. explain the {ordinal} step from the start?"}
+{"kind": "lost", "focus": "step", "requires": ["only_step"], "depth": "any", "text": "there's only one sum and I still don't get it lol. {calculation}?"}
+{"kind": "lost", "focus": "step", "requires": ["has_words", "subtract"], "depth": "any", "text": "I'm mixed up. the {a_words} take away the {b_words}? explain slower"}
+{"kind": "lost", "focus": "step", "requires": ["has_words", "multiply"], "depth": "any", "text": "the {a_words} and the {b_words}... I'm lost, how do they make {result}?"}
+{"kind": "lost", "focus": "step", "requires": ["remainder", "grouping"], "depth": "any", "text": "I don't get what happens to the {remainder} left over, can you show me?"}
+{"kind": "lost", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "the rounding up bit lost me. explain it like I'm little?"}
+{"kind": "lost", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "remainders confuse me. what does it mean when {b} doesn't go into {a}?"}
+{"kind": "lost", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "my head can't hold {calculation} all at once. smaller bits please?"}
+{"kind": "lost", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "I'm lost in the {ordinal} step, I didn't get how it uses the one before"}
+{"kind": "lost", "focus": "step", "requires": ["add"], "depth": "any", "text": "the plus part confuses me, how does {a} plus {b} work?"}
+{"kind": "lost", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "explain it like taking {b} sweets off a pile? the take away confuses me"}
+{"kind": "lost", "focus": "step", "requires": ["divide"], "depth": "any", "text": "dividing is the worst. go through {calculation} super slow?"}
+{"kind": "lost", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "i keep getting times wrong. show me {a} lots of {b} slowly?"}
+{"kind": "lost", "focus": "fact", "depth": "any", "text": "{number}... I don't get that one"}
+{"kind": "lost", "focus": "fact", "depth": "any", "text": "the line {words} = {number} confuses me"}
+{"kind": "lost", "focus": "fact", "depth": "first", "text": "I'm lost, what does {number} have to do with anything?"}
+{"kind": "lost", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "{number} is back? I thought we were done with that question. confused"}
+{"kind": "lost", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "the {number} one confuses me cos the story just used a word. explain easier?"}
+{"kind": "lost", "focus": "fact", "depth": "follow", "text": "still confused about the {number} one"}
+{"kind": "lost", "focus": "fact", "depth": "any", "text": "no idea what {words} means, sorry"}
+{"kind": "lost", "focus": "fact", "depth": "first", "text": "explain the numbers at the top more simply? i'm lost already"}
+{"kind": "lost", "focus": "answer", "depth": "any", "text": "I don't get how you got {answer} at all"}
+{"kind": "lost", "focus": "answer", "depth": "any", "text": "how is it {answer}?? I'm lost"}
+{"kind": "lost", "focus": "answer", "depth": "first", "text": "Can you explain the whole thing again but easier?"}
+{"kind": "lost", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "{step_count} steps is too many for me, go slower?"}
+{"kind": "lost", "focus": "answer", "depth": "any", "text": "how does the answer end up {answer}? say it like I'm small"}
+{"kind": "lost", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "how does this connect to the first question? lost"}
+{"kind": "lost", "focus": "answer", "depth": "first", "text": "start again from the beginning? I'm lost"}
+{"kind": "lost", "focus": "answer", "depth": "follow", "text": "I still don't see how it's {answer}, sorry"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "erm what? I can't follow the {ordinal} step"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "make it easier pls, {calculation} is confusing"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "pretend I'm a little kid and explain {calculation}"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "help!! what's happening in the {ordinal} step"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I zoned out at {calculation}, can you say it again slowly?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "not getting it. {calculation}. simpler?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "use smaller words for what {calculation} does?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "So confused right now. Go back to the {ordinal} step?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I think I'm missing something in the {ordinal} step. could you go over it?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "my teacher does it a different way so {calculation} confuses me. explain?"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "we didn't learn {sign_word} yet, so the {ordinal} step lost me"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "Too fast!! slow down at {calculation}"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "back up a bit, I got confused at the {ordinal} step"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "it's not making sense, the {result} part"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "zero idea what {calculation} is doing tbh"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "help me understand the {ordinal} step? like really simple"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I'm sorry I'm being slow but I don't get {calculation}"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "my head is foggy about the {ordinal} step, simpler please"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I keep getting confused by {calculation}. one more time but simpler?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I'm not very good at maths. can you help me get the {ordinal} step?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "what does it mean when you {operation_phrase}? I'm confused"}
+{"kind": "lost", "focus": "step", "depth": "first", "text": "uhh I lost you at the {ordinal} step"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "?? what happened between {a} and {result}"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "it's all jumbled for me. which number does what in {calculation}?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "the {ordinal} step is like another language to me"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "still don't get it. could you explain {calculation} a different way?"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "too many words!! just tell me simply what {calculation} does"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "hmm nope. the {ordinal} step is still a mystery to me"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "i kind of get it but not the {verb} part"}
+{"kind": "lost", "focus": "step", "depth": "follow", "text": "what you said was confusing. {calculation} again, easier?"}
+{"kind": "lost", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "sharing {a} between {b}... I'm lost, go slow?"}
+{"kind": "lost", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "making groups of {b} out of {a} confuses me, simpler?"}
+{"kind": "lost", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "equal groups confuse me. is it {a} groups or {b} groups?"}
+{"kind": "lost", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "I'm confused about the bit where some go away, explain {calculation} slowly?"}
+{"kind": "lost", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "the bit where more come... I'm lost, explain {calculation} easier"}
+{"kind": "lost", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "comparing and adding at the same time confuses me. help with {calculation}?"}
+{"kind": "lost", "focus": "step", "requires": ["rates", "money", "multiply"], "depth": "any", "text": "prices times how many? I don't get it. explain {calculation} slow?"}
+{"kind": "lost", "focus": "step", "requires": ["multi_operation", "last_step"], "depth": "any", "text": "I'm lost in the last line, there's too much going on in it"}
+{"kind": "lost", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "wait, the old answer is in this sum?? I'm confused, explain slower"}
+{"kind": "lost", "focus": "step", "requires": ["uses_previous_step", "multiply"], "depth": "any", "text": "you got a number then timesed it and I'm lost. go slower?"}
+{"kind": "lost", "focus": "step", "requires": ["uses_previous_step", "divide"], "depth": "any", "text": "I get lost when the number from before gets divided, explain easier?"}
+{"kind": "lost", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "what's left over and why is it {remainder}? I'm confused"}
+{"kind": "lost", "focus": "step", "requires": ["first_step", "subtract"], "depth": "first", "text": "I'm lost at the very first take away"}
+{"kind": "lost", "focus": "step", "requires": ["last_step", "divide"], "depth": "any", "text": "the divide at the end confuses me. smaller words?"}
+{"kind": "lost", "focus": "step", "requires": ["has_words", "add"], "depth": "any", "text": "the {a_words} plus the {b_words}? that confuses me, simpler please"}
+{"kind": "lost", "focus": "step", "requires": ["time", "add"], "depth": "any", "text": "adding time is hard for me. what happens when you add {b}?"}
+{"kind": "lost", "focus": "step", "requires": ["money", "divide"], "depth": "any", "text": "sharing money confuses me, explain {calculation} slower?"}
+{"kind": "lost", "focus": "fact", "depth": "any", "text": "{words}?? huh"}
+{"kind": "lost", "focus": "fact", "depth": "any", "text": "the {number} at the top confuses me, what is it?"}
+{"kind": "lost", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "I can see {number} in the question but I don't get what it's for"}
+{"kind": "lost", "focus": "answer", "depth": "first", "text": "i don't get the answer, go through it really slowly?"}
+{"kind": "lost", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "I lost track somewhere in the {step_count} steps. help?"}
+{"kind": "lost", "focus": "answer", "requires": ["money"], "depth": "any", "text": "is {answer} money or what? explain simply pls, I'm confused"}
+{"kind": "lost", "focus": "answer", "depth": "any", "text": "explain it again like I'm a baby"}
+{"kind": "lost", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "how many more... I don't get how it's {answer}"}
+{"kind": "lost", "focus": "answer", "depth": "follow", "text": "that explanation lost me. just say how you got {answer}"}

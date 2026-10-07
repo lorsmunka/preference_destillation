@@ -1,0 +1,336 @@
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "what does the {number} mean?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "{number} means the {words}, yeah?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "wait what is the {number} again"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "Sorry, I don't understand what the {number} stands for in the story."}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "um the {number}... what is that one?"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "Does {number} mean the {words}? I just want to check I've got it."}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "what's {number} counting?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "ok so the {words} is {number}. what does that tell us?"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "in the story what is {number}"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "I think {number} is the {words}, am I right?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "{number} stands for what?"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "Can you tell me what the {number} is about please?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "what does it mean when you write {words} = {number}"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "{number} of what?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "{number}?? what's that for"}
+{"kind": "meaning", "focus": "fact", "depth": "follow", "text": "oh, so the {number} is the {words}? I thought it was something else"}
+{"kind": "meaning", "focus": "fact", "depth": "follow", "text": "ok but the {number}, what is that bit?"}
+{"kind": "meaning", "focus": "fact", "depth": "follow", "text": "so the {number} never changes, it just stays the {words}?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "if I drew a picture of the {number}, what would I draw?"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "hi! quick question, is {number} the {words} or did I mix it up"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "the story says {number} somewhere, is that the {words}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_problem"], "depth": "first", "text": "There's {number} in the question. What does it mean?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_problem", "has_distractor"], "depth": "any", "text": "there are loads of numbers in the question. is {number} the {words}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "hmm, does the {number} still mean the same as before, or something new now?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "so the {number} we got last time is now the {words}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "first", "text": "what does {number} mean in this part? before it was the answer"}
+{"kind": "meaning", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "so {number} is the {words} just because that's how many there always are?"}
+{"kind": "meaning", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "does {number} mean the {words}? like it's always {number}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["money"], "depth": "any", "text": "money or things? which one is the {number}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["money"], "depth": "first", "text": "is {number} dollars or is it just how many"}
+{"kind": "meaning", "focus": "fact", "requires": ["rates", "money"], "depth": "any", "text": "{number}, is that the price of one?"}
+{"kind": "meaning", "focus": "fact", "requires": ["time"], "depth": "any", "text": "the {number}... minutes? hours? i'm confused"}
+{"kind": "meaning", "focus": "fact", "requires": ["time"], "depth": "first", "text": "Does {number} mean how long something takes?"}
+{"kind": "meaning", "focus": "fact", "requires": ["join"], "depth": "any", "text": "is {number} what there was at the start, before more came?"}
+{"kind": "meaning", "focus": "fact", "requires": ["separate"], "depth": "any", "text": "did the {number} get taken away, or is it the ones that stayed?"}
+{"kind": "meaning", "focus": "fact", "requires": ["combine"], "depth": "any", "text": "is {number} just one part, or the whole lot together?"}
+{"kind": "meaning", "focus": "fact", "requires": ["compare"], "depth": "any", "text": "which is {number}, the bigger group or the smaller one?"}
+{"kind": "meaning", "focus": "fact", "requires": ["equal_groups"], "depth": "any", "text": "is {number} how many groups there are, or how many in each group?"}
+{"kind": "meaning", "focus": "fact", "requires": ["sharing"], "depth": "any", "text": "people sharing, or the stuff being shared? which is {number}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["grouping"], "depth": "any", "text": "does {number} mean how many fit in one group?"}
+{"kind": "meaning", "focus": "fact", "requires": ["times_as_many"], "depth": "any", "text": "does {number} tell us how many times bigger?"}
+{"kind": "meaning", "focus": "fact", "requires": ["rates"], "depth": "first", "text": "just one of them, or all of them? that's what I don't get about {number}"}
+{"kind": "meaning", "focus": "fact", "requires": ["mixed"], "depth": "any", "text": "there are so many facts here. the {number} is the {words}, is that it?"}
+{"kind": "meaning", "focus": "fact", "requires": ["follow_up_task"], "depth": "any", "text": "with this next question, what does the {number} mean?"}
+{"kind": "meaning", "focus": "fact", "requires": ["has_distractor"], "depth": "first", "text": "which number is the {words}? is it {number} or the other one?"}
+{"kind": "meaning", "focus": "fact", "requires": ["money", "from_problem"], "depth": "any", "text": "the {number} in the question, is that how much something costs?"}
+{"kind": "meaning", "focus": "fact", "requires": ["time", "from_problem"], "depth": "any", "text": "Is the {number} written in the story a time?"}
+{"kind": "meaning", "focus": "fact", "requires": ["sharing", "money"], "depth": "any", "text": "the money that gets shared out, that's {number}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["equal_groups"], "depth": "follow", "text": "ohh so {number} is the {words}. is that the size of one group then?"}
+{"kind": "meaning", "focus": "fact", "requires": ["compare", "from_problem"], "depth": "first", "text": "the story has {number} in it, is that the one we compare with?"}
+{"kind": "meaning", "focus": "step", "depth": "first", "text": "what does {result} mean in the story?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "is {result} the {step_words}?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "so after the {ordinal} step we know the {step_words}?"}
+{"kind": "meaning", "focus": "step", "depth": "first", "text": "What is the {ordinal} line actually working out?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "{result} what though? {result} of what?"}
+{"kind": "meaning", "focus": "step", "depth": "first", "text": "i dont get what {calculation} is for in the story"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "what does {calculation} = {result} mean in real life?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "um, the {result}, that's the {step_words} yeah?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "So {calculation} gives us the {step_words}?"}
+{"kind": "meaning", "focus": "step", "depth": "first", "text": "what does '{step_words}' mean? I don't get those words"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "can you explain what the {result} is in the story, not the sum"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "wait, is {result} the answer or just a bit on the way?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "the {ordinal} step... what did that find out?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "if I told my mum about the {result}, what would I say it is?"}
+{"kind": "meaning", "focus": "step", "depth": "first", "text": "What does the {result} in the {ordinal} line stand for?"}
+{"kind": "meaning", "focus": "step", "depth": "follow", "text": "ohh, so the {ordinal} step is just finding the {step_words}?"}
+{"kind": "meaning", "focus": "step", "depth": "follow", "text": "so then {result} means the {step_words}, not the answer?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "{calculation}... is that about the {step_words}?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "whats {result} telling me"}
+{"kind": "meaning", "focus": "step", "depth": "first", "text": "I can see {calculation} = {result} but what does it mean?"}
+{"kind": "meaning", "focus": "step", "depth": "follow", "text": "and the {result}, is that real things or just a maths number?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "hold on, {result} is which thing in the story?"}
+{"kind": "meaning", "focus": "step", "requires": ["add"], "depth": "any", "text": "everything put together makes {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["add", "join"], "depth": "any", "text": "so {result} is how many there are once the new ones came?"}
+{"kind": "meaning", "focus": "step", "requires": ["add", "combine"], "depth": "any", "text": "do the two bits make one big group of {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "is {result} what's left over, or how many went?"}
+{"kind": "meaning", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "so the {result} are the ones that stayed?"}
+{"kind": "meaning", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "does {result} mean how many more one has than the other?"}
+{"kind": "meaning", "focus": "step", "requires": ["subtract", "join"], "depth": "any", "text": "wait, you took away but {result} is how many came??"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "is {result} like {a} lots of {b}?"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "{result} means all of them from every group added up?"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "does {result} mean the one with more, the times as many one?"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "is {result} the total for all of them, not just one?"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply", "money"], "depth": "first", "text": "do they cost {result} all together?"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply", "time"], "depth": "any", "text": "does the {result} mean the time for all of it?"}
+{"kind": "meaning", "focus": "step", "requires": ["divide"], "depth": "any", "text": "{result}, is that the number of groups or the size of each one?"}
+{"kind": "meaning", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "each one gets {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "can we make {result} groups then?"}
+{"kind": "meaning", "focus": "step", "requires": ["divide", "rates"], "depth": "any", "text": "{result} is how much for just one, yeah?"}
+{"kind": "meaning", "focus": "step", "requires": ["divide", "money"], "depth": "any", "text": "and {result} is money for each one, right?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "so {remainder} are left over? what happens to them?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder", "grouping"], "depth": "any", "text": "the {remainder} that are left, they don't make a whole group right?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder", "sharing"], "depth": "any", "text": "so nobody gets the {remainder} extra ones?"}
+{"kind": "meaning", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "so {result} means one more for the {remainder} left over?"}
+{"kind": "meaning", "focus": "step", "requires": ["rounded_up"], "depth": "first", "text": "does that mean one of the {result} isn't full?"}
+{"kind": "meaning", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "what does {calculation} actually work out?"}
+{"kind": "meaning", "focus": "step", "requires": ["multi_operation"], "depth": "follow", "text": "so all of {calculation} together is the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "oh the {ordinal} step uses what we found before to get the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "now that you used the old answer, {result} is the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["add", "has_words"], "depth": "any", "text": "so the {a_words} plus the {b_words} makes the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["subtract", "has_words"], "depth": "any", "text": "the {a_words} take away the {b_words} is the {step_words}, is that what it means?"}
+{"kind": "meaning", "focus": "step", "requires": ["multiply", "has_words"], "depth": "any", "text": "so it's the {a_words} times the {b_words}, and that gives the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["divide", "has_words"], "depth": "any", "text": "is {a} the {a_words} and {b} the {b_words}? so {result} is the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["has_words"], "depth": "first", "text": "what has the {a_words} got to do with the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["last_step"], "depth": "any", "text": "{result} is the final thing then? the actual answer?"}
+{"kind": "meaning", "focus": "step", "requires": ["last_step", "uses_previous_step"], "depth": "any", "text": "in the last step you turn the earlier number into the {step_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["first_step"], "depth": "first", "text": "the first thing you found was the {step_words}. what is that in the story?"}
+{"kind": "meaning", "focus": "step", "requires": ["only_step"], "depth": "any", "text": "so {calculation} is the whole question in one go?"}
+{"kind": "meaning", "focus": "step", "requires": ["money"], "depth": "any", "text": "does {result} mean money?"}
+{"kind": "meaning", "focus": "step", "requires": ["time"], "depth": "any", "text": "{result} what, minutes? days?"}
+{"kind": "meaning", "focus": "step", "requires": ["follow_up_task"], "depth": "any", "text": "this question or the old one, which is {result} for?"}
+{"kind": "meaning", "focus": "answer", "depth": "first", "text": "so what does {answer} actually mean?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "the answer is {answer}, so that's the {answer_words}?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "{answer} what? I don't know what the answer is counting"}
+{"kind": "meaning", "focus": "answer", "depth": "first", "text": "Can you say the answer as a sentence? Like {answer} what?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "what would I write in my book, {answer} of what?"}
+{"kind": "meaning", "focus": "answer", "depth": "first", "text": "I get that the answer is {answer} but what does it mean in the story?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "{answer} is about which part of the story?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "so the question was asking for the {answer_words}, and that's {answer}?"}
+{"kind": "meaning", "focus": "answer", "depth": "follow", "text": "oh so {answer} is the {answer_words}! not the other thing?"}
+{"kind": "meaning", "focus": "answer", "depth": "follow", "text": "right, and what does the {answer} mean again?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "Answer: {answer}... but what are the {answer}?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "whats {answer} in normal words"}
+{"kind": "meaning", "focus": "answer", "depth": "first", "text": "Please can you tell me what {answer} means, like in the story?"}
+{"kind": "meaning", "focus": "answer", "depth": "first", "text": "wait so the answer is the {answer_words}? I thought we had to find something else"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "um what does the answer even stand for"}
+{"kind": "meaning", "focus": "answer", "depth": "follow", "text": "so if my friend asked, I'd say the {answer_words} is {answer}?"}
+{"kind": "meaning", "focus": "answer", "depth": "any", "text": "ok {answer}. but {answer} what exactly??"}
+{"kind": "meaning", "focus": "answer", "requires": ["money"], "depth": "any", "text": "are we talking {answer} dollars?"}
+{"kind": "meaning", "focus": "answer", "requires": ["money", "rates"], "depth": "any", "text": "you'd pay {answer} for all of them?"}
+{"kind": "meaning", "focus": "answer", "requires": ["time"], "depth": "any", "text": "how long is {answer}? is that in days?"}
+{"kind": "meaning", "focus": "answer", "requires": ["time"], "depth": "first", "text": "so it takes {answer}... what, minutes?"}
+{"kind": "meaning", "focus": "answer", "requires": ["join"], "depth": "any", "text": "after they got more there were {answer}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["separate"], "depth": "any", "text": "at the end there are {answer} still there?"}
+{"kind": "meaning", "focus": "answer", "requires": ["combine"], "depth": "any", "text": "so {answer} is all of them if you put both groups in one pile?"}
+{"kind": "meaning", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "does {answer} mean how many more, or how many someone has?"}
+{"kind": "meaning", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "one group or all the groups, which does {answer} count?"}
+{"kind": "meaning", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "so everyone gets {answer} each?"}
+{"kind": "meaning", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "so {answer} means {answer} full groups?"}
+{"kind": "meaning", "focus": "answer", "requires": ["times_as_many"], "depth": "any", "text": "how many times, or how many things? what's {answer}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "the whole amount, not the amount for one, that's {answer}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["mixed"], "depth": "any", "text": "after all those steps, what does {answer} tell us?"}
+{"kind": "meaning", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "so {answer} is the answer to this part, not the first part?"}
+{"kind": "meaning", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "you did {step_count} steps, so is {answer} just the last bit or the whole thing?"}
+{"kind": "meaning", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "so just one sum and {answer} is the {answer_words}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["has_distractor"], "depth": "first", "text": "the question had lots of numbers, so what does {answer} mean in the end?"}
+{"kind": "meaning", "focus": "answer", "requires": ["money", "sharing"], "depth": "any", "text": "each person gets {answer} dollars? like real money?"}
+{"kind": "meaning", "focus": "answer", "requires": ["time", "rates"], "depth": "any", "text": "does {answer} mean every day or hour, or the whole time altogether?"}
+{"kind": "meaning", "focus": "answer", "requires": ["money", "compare"], "depth": "any", "text": "so one costs {answer} more than the other one?"}
+{"kind": "meaning", "focus": "answer", "requires": ["follow_up_task", "money"], "depth": "any", "text": "after the new bit happened, {answer} is the money now?"}
+{"kind": "meaning", "focus": "answer", "requires": ["equal_groups", "money"], "depth": "any", "text": "so all of them together cost {answer}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["grouping", "follow_up_task"], "depth": "any", "text": "now there are {answer} groups, is that what it means?"}
+{"kind": "meaning", "focus": "answer", "requires": ["compare"], "depth": "follow", "text": "ohh, so {answer} is the gap between them?"}
+{"kind": "meaning", "focus": "step", "requires": ["compare"], "depth": "any", "text": "the difference between the two, or one of them... which is {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["mixed", "first_step"], "depth": "any", "text": "the first line gives the {step_words}, is that just to help get the answer?"}
+{"kind": "meaning", "focus": "step", "requires": ["time", "divide"], "depth": "any", "text": "does each one take {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["money", "subtract"], "depth": "any", "text": "{result} is the change you get back, right?"}
+{"kind": "meaning", "focus": "step", "requires": ["money", "add"], "depth": "any", "text": "all the money put together is {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["sharing"], "depth": "first", "text": "would one person get {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["times_as_many"], "depth": "any", "text": "small amount or big amount, {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "so {result} is the other part, the bit we didn't know?"}
+{"kind": "meaning", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "is {result} the bigger one then?"}
+{"kind": "meaning", "focus": "step", "requires": ["equal_groups", "has_words"], "depth": "any", "text": "which one is the groups, the {a_words} or the {b_words}?"}
+{"kind": "meaning", "focus": "step", "requires": ["grouping", "rounded_up"], "depth": "any", "text": "so we need {result} even though the last one isn't full?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder"], "depth": "follow", "text": "so {quotient} is the full ones and {remainder} is the extra?"}
+{"kind": "meaning", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "were there {result} before any went away?"}
+{"kind": "meaning", "focus": "step", "requires": ["rates", "uses_previous_step"], "depth": "any", "text": "after the step before, does {result} mean the cost of everything?"}
+{"kind": "meaning", "focus": "step", "requires": ["has_words", "last_step"], "depth": "any", "text": "so the last line uses the {a_words} and the {b_words} to get the thing the question asked for?"}
+{"kind": "meaning", "focus": "fact", "depth": "follow", "text": "and the {words}, what's that in real life?"}
+{"kind": "meaning", "focus": "fact", "requires": ["join", "from_problem"], "depth": "any", "text": "the {number} in the story, is that before or after more got added?"}
+{"kind": "meaning", "focus": "fact", "requires": ["follow_up_task", "from_problem"], "depth": "first", "text": "this {number} is new, what's it for?"}
+{"kind": "meaning", "focus": "fact", "requires": ["separate", "money"], "depth": "any", "text": "did they spend the {number}, or is that what they had?"}
+{"kind": "meaning", "focus": "fact", "requires": ["times_as_many", "from_problem"], "depth": "any", "text": "the {number} in the question, does it mean times or just how many?"}
+{"kind": "meaning", "focus": "fact", "requires": ["grouping", "time"], "depth": "any", "text": "does {number} mean how many in a group, or how long?"}
+{"kind": "meaning", "focus": "fact", "requires": ["mixed", "money"], "depth": "any", "text": "with all this money stuff, is {number} a price or a total?"}
+{"kind": "meaning", "focus": "fact", "requires": ["equal_groups", "from_earlier_answer"], "depth": "any", "text": "so last time's answer {number} is now how many groups?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "the {words}... is that the {number}? sorry I get mixed up"}
+{"kind": "meaning", "focus": "fact", "depth": "first", "text": "Which bit of the story is the {number}?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "how did you know about the {number}?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "{number}?? where's that from"}
+{"kind": "where_from", "focus": "fact", "depth": "first", "text": "I don't see where you got {number}"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "how do you know the {words} is {number}?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "the {words} one, where is that from?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "who said it was {number}?"}
+{"kind": "where_from", "focus": "fact", "depth": "first", "text": "Did you make up the {number} or was it in the story?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "where in the question does it say {number}?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "is the {number} from the question, or did you work it out?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "the line that says {words} = {number}, where did you find that?"}
+{"kind": "where_from", "focus": "fact", "depth": "follow", "text": "ok but you still haven't said where the {number} came from"}
+{"kind": "where_from", "focus": "fact", "depth": "follow", "text": "and the {number}, where's that one from then?"}
+{"kind": "where_from", "focus": "fact", "depth": "follow", "text": "huh, the {number} was in the story the whole time?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "i cant find {number} anywhere"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "how come you know it's {number}?"}
+{"kind": "where_from", "focus": "fact", "depth": "first", "text": "Was {number} in the question? I don't remember it."}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "which part of the story has the {number} in it?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "the {number} came from where??"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "where'd that {number} come from lol"}
+{"kind": "where_from", "focus": "fact", "depth": "first", "text": "Excuse me, how did you find out the {words}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "can you show me where {number} is written in the question?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "first", "text": "I can't find the {number} in the story, where is it?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "which sentence has the {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "was {number} given to us, or did you have to find it?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "follow", "text": "oh is {number} just from the question?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "so the {words} is {number} because the story says so?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "where does it say the {words} is {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem", "has_distractor"], "depth": "any", "text": "there are lots of numbers in the story, how did you find the {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem", "money"], "depth": "any", "text": "the {number}, is that from the price bit in the story?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem", "time"], "depth": "any", "text": "I bet the {number} is from the part about time?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "is the {number} from the last answer?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "{number} isn't in this one, did you take it from before?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "first", "text": "oh wait is {number} what we got last time?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "nowhere does it say {number} for the {words}... was it from before?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "I read the question three times and there's no {number}"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "did the {number} come from the other question?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "you can use the old answer?? is that where {number} is from?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "follow", "text": "so {number} carries on from the first part?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "where's the {number}? this question only has other numbers"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "money"], "depth": "any", "text": "the {number}, that's the money from the last bit, right?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "time"], "depth": "any", "text": "didn't we work out {number} before? is that the time?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "separate"], "depth": "any", "text": "was {number} what was left last time?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "join"], "depth": "any", "text": "hmm, were there {number} after the first part? is that where it's from?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "sharing"], "depth": "any", "text": "we found the share before, was it {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "rates"], "depth": "any", "text": "didn't we already work out the cost was {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "there's no {number} in this question?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "where's the {number}, I can't see it"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "first", "text": "The question doesn't say {number}. How do you know?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "does a word in the story make it {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "who told you the {words} is {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "how do you know it's {number}? the story only has words there"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "did you just know {number}? like from your head?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "is the {number} hiding in a word?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "is {number} one of those things you just know, like how many days in a week?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word", "time"], "depth": "any", "text": "maybe the {number} comes from a word like week or hour?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "follow", "text": "oh so that word means {number}? how was I meant to know that?"}
+{"kind": "where_from", "focus": "fact", "requires": ["money"], "depth": "any", "text": "money from the story, or something else? where's {number} from?"}
+{"kind": "where_from", "focus": "fact", "requires": ["time"], "depth": "any", "text": "erm where'd you get {number}, is it the time?"}
+{"kind": "where_from", "focus": "fact", "requires": ["follow_up_task"], "depth": "any", "text": "{number} is from the one before, not this one?"}
+{"kind": "where_from", "focus": "fact", "requires": ["mixed"], "depth": "any", "text": "there are so many numbers, where's the {number} from?"}
+{"kind": "where_from", "focus": "fact", "requires": ["rates"], "depth": "any", "text": "did you get the {number} from where it says how much each one is?"}
+{"kind": "where_from", "focus": "fact", "requires": ["grouping"], "depth": "any", "text": "how big the groups are... is that where the {number} comes from?"}
+{"kind": "where_from", "focus": "fact", "requires": ["sharing"], "depth": "any", "text": "maybe {number} is how many are sharing? where's it from?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "where did the {a} come from?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "where does the {b} in {calculation} come from?"}
+{"kind": "where_from", "focus": "step", "depth": "first", "text": "where did you get {calculation} from?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "the numbers in the {ordinal} step, where are they from?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "and {result}? where did that come from"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "{a} is from the question, right?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "did the story say {b}?"}
+{"kind": "where_from", "focus": "step", "depth": "first", "text": "I don't know where the {b} in the {ordinal} line came from."}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "{a} and {b}... where did those come from"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "which bit of the question gives you {a}?"}
+{"kind": "where_from", "focus": "step", "depth": "follow", "text": "and where does the {a} come from in that?"}
+{"kind": "where_from", "focus": "step", "depth": "follow", "text": "fine, but the {b}? where's that one from"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "you worked out {result} yourself, it's not from the story, right?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "where do the numbers for the {step_words} come from?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "So {a} is from the question and {b} is from where?"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "wait wheres {a} in the story"}
+{"kind": "where_from", "focus": "step", "depth": "any", "text": "{b}? I didn't see {b} anywhere"}
+{"kind": "where_from", "focus": "step", "depth": "first", "text": "Hello, could you show me where the numbers in {calculation} are in the question?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "in {calculation}, which number came from the step before?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "is one of the numbers in the {ordinal} step the answer from the line above?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step"], "depth": "first", "text": "the {ordinal} step uses a number that wasn't in the story, where did that come from?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step"], "depth": "follow", "text": "oh is one of those from the line you did before?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step", "has_words"], "depth": "any", "text": "did the {a_words} come from the line before?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step", "last_step"], "depth": "any", "text": "where does the first number in the last line come from?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "in {calculation}, is one number from the last question?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "one of those numbers isn't in this question. is it the old answer?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_earlier_answer", "money"], "depth": "any", "text": "the money in {calculation}, did that come from the first part?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_earlier_answer", "time"], "depth": "any", "text": "is one of those numbers the time we found before?"}
+{"kind": "where_from", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "where in the story does it say the {b_words} is {b}?"}
+{"kind": "where_from", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "the {a_words}, is that written in the question or worked out?"}
+{"kind": "where_from", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "{calculation} has loads of numbers, where are they all from?"}
+{"kind": "where_from", "focus": "step", "requires": ["multi_operation"], "depth": "follow", "text": "are all the numbers in {calculation} from the story?"}
+{"kind": "where_from", "focus": "step", "requires": ["first_step"], "depth": "any", "text": "the {a} in the first line, is that straight from the question?"}
+{"kind": "where_from", "focus": "step", "requires": ["last_step"], "depth": "any", "text": "in the last line, is the {a} something you worked out earlier?"}
+{"kind": "where_from", "focus": "step", "requires": ["only_step"], "depth": "any", "text": "both numbers are from the question right?"}
+{"kind": "where_from", "focus": "step", "requires": ["divide"], "depth": "any", "text": "where did you get the {b} to divide by?"}
+{"kind": "where_from", "focus": "step", "requires": ["divide", "sharing"], "depth": "any", "text": "where's the {b} from, is that how many are sharing?"}
+{"kind": "where_from", "focus": "step", "requires": ["divide", "grouping"], "depth": "any", "text": "the {b} you divided by, does the story say that's how many fit in one?"}
+{"kind": "where_from", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "you multiplied by {b} but where's {b} in the question?"}
+{"kind": "where_from", "focus": "step", "requires": ["multiply", "times_as_many"], "depth": "any", "text": "does the story give the {b}, like the times number?"}
+{"kind": "where_from", "focus": "step", "requires": ["multiply", "rates"], "depth": "any", "text": "is the {b} from the bit that says how much for each?"}
+{"kind": "where_from", "focus": "step", "requires": ["multiply", "equal_groups"], "depth": "any", "text": "does the story say there are {a} groups? where?"}
+{"kind": "where_from", "focus": "step", "requires": ["subtract"], "depth": "any", "text": "the {b} you took away, I can't find it in the story"}
+{"kind": "where_from", "focus": "step", "requires": ["subtract", "separate"], "depth": "any", "text": "{b} went away in the story, that's where it's from?"}
+{"kind": "where_from", "focus": "step", "requires": ["subtract", "compare"], "depth": "any", "text": "where are the two numbers you compared from?"}
+{"kind": "where_from", "focus": "step", "requires": ["add"], "depth": "any", "text": "where did you find the {b} that you added on?"}
+{"kind": "where_from", "focus": "step", "requires": ["add", "join"], "depth": "any", "text": "does the story say {b} more came?"}
+{"kind": "where_from", "focus": "step", "requires": ["add", "combine"], "depth": "any", "text": "are {a} and {b} the two groups from the question?"}
+{"kind": "where_from", "focus": "step", "requires": ["money"], "depth": "any", "text": "where's the money in {calculation} from?"}
+{"kind": "where_from", "focus": "step", "requires": ["time"], "depth": "any", "text": "{b} must be the time it says in the story? or not?"}
+{"kind": "where_from", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "where did the extra one come from, to make {result}?"}
+{"kind": "where_from", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "where did the {remainder} left over come from?"}
+{"kind": "where_from", "focus": "step", "requires": ["follow_up_task"], "depth": "any", "text": "are the numbers in {calculation} from this question or the last one?"}
+{"kind": "where_from", "focus": "step", "requires": ["mixed"], "depth": "any", "text": "with all these steps, where does the {a} come from?"}
+{"kind": "where_from", "focus": "answer", "depth": "first", "text": "where does the {answer} come from?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "how did you end up with {answer}?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "which line gives you {answer}?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "{answer} came from which sum?"}
+{"kind": "where_from", "focus": "answer", "depth": "first", "text": "I don't get where the answer {answer} came from"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "um the answer, where did it come from?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "{answer} comes from the last line?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "did you just guess {answer}?"}
+{"kind": "where_from", "focus": "answer", "depth": "first", "text": "How did you get from the question to {answer}?"}
+{"kind": "where_from", "focus": "answer", "depth": "follow", "text": "ok and then where does the {answer} come in?"}
+{"kind": "where_from", "focus": "answer", "depth": "follow", "text": "right, so that step gives the {answer} at the end?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "which numbers did you use to work out the {answer_words}?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "the answer says {answer}, but where's that from?"}
+{"kind": "where_from", "focus": "answer", "depth": "any", "text": "{answer} isn't in the story anywhere, so where did it come from?"}
+{"kind": "where_from", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "which step does the {answer} come from?"}
+{"kind": "where_from", "focus": "answer", "requires": ["multi_step"], "depth": "first", "text": "you did {step_count} steps, is {answer} from the last one?"}
+{"kind": "where_from", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "is the {answer} made from every line, or only the end one?"}
+{"kind": "where_from", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "so {answer} just comes from one sum?"}
+{"kind": "where_from", "focus": "answer", "requires": ["one_step"], "depth": "follow", "text": "{answer} is straight out of the calculation, yeah?"}
+{"kind": "where_from", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "did you get {answer} from the first answer?"}
+{"kind": "where_from", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "does {answer} come from the old answer and the new numbers?"}
+{"kind": "where_from", "focus": "answer", "requires": ["money"], "depth": "any", "text": "{answer}... is that money from the story or did you work it out?"}
+{"kind": "where_from", "focus": "answer", "requires": ["time"], "depth": "any", "text": "did you add up the times to get {answer}?"}
+{"kind": "where_from", "focus": "answer", "requires": ["has_distractor"], "depth": "any", "text": "is {answer} from the numbers you used, not the other one?"}
+{"kind": "where_from", "focus": "answer", "requires": ["mixed"], "depth": "any", "text": "so many lines... which one gives {answer}?"}
+{"kind": "where_from", "focus": "answer", "requires": ["sharing"], "depth": "any", "text": "did {answer} come from sharing it out?"}
+{"kind": "where_from", "focus": "answer", "requires": ["grouping"], "depth": "any", "text": "you got {answer} by making groups, yeah?"}
+{"kind": "where_from", "focus": "answer", "requires": ["equal_groups"], "depth": "any", "text": "you counted up all the groups to get {answer}?"}
+{"kind": "where_from", "focus": "answer", "requires": ["compare"], "depth": "any", "text": "is {answer} from the bigger one take away the smaller one?"}
+{"kind": "where_from", "focus": "answer", "requires": ["join"], "depth": "any", "text": "what they had and what they got, that's how you got {answer}?"}
+{"kind": "where_from", "focus": "answer", "requires": ["separate"], "depth": "any", "text": "{answer} came from what was there minus what went?"}
+{"kind": "where_from", "focus": "answer", "requires": ["combine"], "depth": "any", "text": "putting both parts together gives {answer}, is that where it's from?"}
+{"kind": "where_from", "focus": "answer", "requires": ["times_as_many"], "depth": "any", "text": "the times bit is where {answer} comes from?"}
+{"kind": "where_from", "focus": "answer", "requires": ["rates"], "depth": "any", "text": "price of one times how many, is that how {answer} came?"}
+{"kind": "where_from", "focus": "fact", "requires": ["compare"], "depth": "any", "text": "I think the {number} is from where it says more or fewer?"}
+{"kind": "where_from", "focus": "fact", "requires": ["equal_groups", "from_problem"], "depth": "any", "text": "where does the story say {number} in each group?"}
+{"kind": "where_from", "focus": "fact", "requires": ["times_as_many"], "depth": "any", "text": "is the {number} from where it says times as many?"}
+{"kind": "where_from", "focus": "fact", "requires": ["combine"], "depth": "any", "text": "where's the {number} from, is it one of the two groups?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_earlier_answer", "add"], "depth": "any", "text": "the old number with the new ones added on gives {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["grouping", "divide"], "depth": "follow", "text": "so we're asking how many lots of {b} fit into {a}, and that's {result}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["one_step", "time"], "depth": "any", "text": "does {answer} mean the time something lasts, or a number of things?"}

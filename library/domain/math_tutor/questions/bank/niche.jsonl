@@ -1,0 +1,405 @@
+{"kind": "why", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "the story says some got added, so how come you took {b} away from {a}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "they got MORE, so shouldn't we {other_phrase}?"}
+{"kind": "meaning", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "is {result} the ones that got added on or the ones there at the start?"}
+{"kind": "lost", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "how can it be a take away if things were coming in?? im lost"}
+{"kind": "another_way", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "what if I start at {b} and count on, how many jumps to {a}?"}
+{"kind": "check", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "if there were {b} and then {result} more came, does that really make {a}?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["join", "subtract"], "depth": "first", "text": "can you show me with tiny numbers why it's a take away when stuff gets added"}
+{"kind": "meaning", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "so {a} is what was there first and {b} is the extra that came?"}
+{"kind": "another_way", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "Could I just count on {b} from {a} instead?"}
+{"kind": "shortcut", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "whats a fast way to add {b} more onto {a} in my head"}
+{"kind": "check", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "If you start with {a} and get {b} more, is it for sure {result}?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "can we do the adding on with small numbers first? like a few and then a few more"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "why not times? they got more, and times makes it bigger"}
+{"kind": "lost", "focus": "step", "requires": ["join", "add"], "depth": "any", "text": "um i don't see why adding gives the {step_words}"}
+{"kind": "meaning", "focus": "fact", "requires": ["join"], "depth": "any", "text": "is the {number} what they had at the start, or what they got after?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["join"], "depth": "any", "text": "doesn't the {distractor} get added on as well?"}
+{"kind": "where_from", "focus": "fact", "requires": ["join", "from_problem"], "depth": "any", "text": "where in the story does the {number} come in? at the start or when more came?"}
+{"kind": "why", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "so the {a_words} and the {b_words}... which one is before and which one is after?"}
+{"kind": "why", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "they took some away, so why are you adding {a} and {b}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "stuff was taken away! I'd {other_phrase}, why don't you?"}
+{"kind": "meaning", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "is {result} how many there were before any got taken?"}
+{"kind": "lost", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "wait why does it get bigger when they gave stuff away"}
+{"kind": "check", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "if you had {result} and {a} went, would there be {b} left?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "Can you show the \"how many at the start\" thing with smaller numbers?"}
+{"kind": "another_way", "focus": "step", "requires": ["separate", "add"], "depth": "any", "text": "what about starting from what's left and putting back the ones that went?"}
+{"kind": "meaning", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "so {result} is what's left after some went?"}
+{"kind": "another_way", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "what if I start at {a} and jump back {b}?"}
+{"kind": "shortcut", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "is there a trick for taking {b} away from {a} without counting back the whole way?"}
+{"kind": "check", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "How do I know {result} are really left? Can I add it back to check?"}
+{"kind": "lost", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "i get that some went away but i dont get the {calculation} bit"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "can u do the taking away with tiny numbers, not {a}"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "it's about things going away, but how do I know it's minus and not divide?"}
+{"kind": "meaning", "focus": "fact", "requires": ["separate"], "depth": "any", "text": "is {number} the amount at the start, the bit that went, or what's left?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["separate"], "depth": "any", "text": "does the {distractor} get taken away too or no"}
+{"kind": "where_from", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "where did the {b} come from, is that the bit that got taken?"}
+{"kind": "why", "focus": "step", "requires": ["separate", "subtract"], "depth": "any", "text": "why do you start at {a}? is that what they had before?"}
+{"kind": "meaning", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "all of them put together makes {result}?"}
+{"kind": "why", "focus": "step", "requires": ["combine", "has_words"], "depth": "any", "text": "why can you add the {a_words} and the {b_words} when they're different things?"}
+{"kind": "lost", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "i don't get how two different groups make one number"}
+{"kind": "another_way", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "if I swap them and go {b} plus {a}, is it still the same?"}
+{"kind": "check", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "can I check the {result} by taking the {b} back off?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "could you show the putting together with just a few of each kind?"}
+{"kind": "shortcut", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "is there a quick way to add {a} and {b}, like making a ten?"}
+{"kind": "why", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "if it's about putting groups together, why is there a minus?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "shouldn't we add? it's both groups together"}
+{"kind": "meaning", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "is {result} the other part, the bit that isn't the {b}?"}
+{"kind": "lost", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "why does taking {b} away from all {a} give the other group?"}
+{"kind": "check", "focus": "step", "requires": ["combine", "subtract"], "depth": "first", "text": "so {b} and {result} together make {a}? is that how you know?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "show me the missing part thing with small numbers pls"}
+{"kind": "meaning", "focus": "fact", "requires": ["combine"], "depth": "any", "text": "one group or all of them together, which is {number}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["combine"], "depth": "any", "text": "why isn't the {distractor} one of the parts we put together?"}
+{"kind": "another_way", "focus": "step", "requires": ["combine", "subtract"], "depth": "any", "text": "can I find the other part by adding on to {b} until I reach {a}?"}
+{"kind": "why", "focus": "step", "requires": ["combine", "multi_operation"], "depth": "any", "text": "why are there so many numbers in one line?"}
+{"kind": "why", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "why is \"how many more\" a take away? nothing got taken"}
+{"kind": "meaning", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "is {result} the difference, or how many the smaller one has?"}
+{"kind": "another_way", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "can I do it like a number line, jumping from {b} up to {a}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "why don't you {other_phrase}? I thought \"more\" means add"}
+{"kind": "lost", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "i dont get how taking away tells you the difference"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "draw me a short tower and a tall tower so I see the difference thing"}
+{"kind": "check", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "does {result} plus {b} really come back to {a}?"}
+{"kind": "shortcut", "focus": "step", "requires": ["compare", "subtract"], "depth": "any", "text": "Is there a quick way to find the gap between {a} and {b}?"}
+{"kind": "why", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "why add when it's a \"more than\" question?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "but \"more than\" means take away, so why not {other_phrase}?"}
+{"kind": "meaning", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "so {result} is the bigger one, the one that has {b} more?"}
+{"kind": "check", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "if {result} is {b} more than {a}, then {result} take away {b} is {a}, right?"}
+{"kind": "lost", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "the \"more than\" part confuses me. why does it make you add {b}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["compare"], "depth": "any", "text": "is {number} the bigger one, the smaller one, or how far apart they are?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["compare"], "depth": "any", "text": "is the {distractor} one of the two things we're comparing?"}
+{"kind": "another_way", "focus": "step", "requires": ["compare", "has_words"], "depth": "any", "text": "could I draw the {a_words} and the {b_words} as two bars and look at the gap?"}
+{"kind": "why", "focus": "step", "requires": ["compare", "first_step"], "depth": "first", "text": "how did you know which number goes first when you compare them?"}
+{"kind": "where_from", "focus": "fact", "requires": ["compare"], "depth": "any", "text": "which of the two things in the story is the {number} about?"}
+{"kind": "meaning", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "which one is how many groups, the {a} or the {b}?"}
+{"kind": "another_way", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "could i add {b} over and over instead of multiplying?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "like if there were three bags with two in each, how does that work?"}
+{"kind": "why", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "is it a times sum cos all the groups are the same size?"}
+{"kind": "check", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "{a} lots of {b}... are you sure that's {result}? how can I tell?"}
+{"kind": "shortcut", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "is there a quicker way to do {a} times {b}? adding them up takes forever"}
+{"kind": "lost", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "i don't get how the groups turn into {result}"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "why not just {other_phrase}? they're both in the story"}
+{"kind": "another_way", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "does it matter if I do {b} times {a} instead?"}
+{"kind": "meaning", "focus": "step", "requires": ["equal_groups", "has_words"], "depth": "any", "text": "does the bit that says {b_words} mean how many are in each group?"}
+{"kind": "meaning", "focus": "fact", "requires": ["equal_groups"], "depth": "any", "text": "{number}... is that the number of groups, or what goes in one group?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["equal_groups"], "depth": "any", "text": "isn't the {distractor} another group we should count?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "follow", "text": "ok can you draw it with dots but way less dots"}
+{"kind": "lost", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "first", "text": "what does \"in each\" have to do with times?"}
+{"kind": "meaning", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "so if I counted every single one I'd get {result}?"}
+{"kind": "shortcut", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "would tens first and then the rest work?"}
+{"kind": "where_from", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "any", "text": "where did you get the {b} from? is that how many in one group?"}
+{"kind": "meaning", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "so that means each of them ends up with {result}?"}
+{"kind": "check", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "if each one gets {result}, does that use up all {a}?"}
+{"kind": "why", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "why is sharing out a divide sum?"}
+{"kind": "another_way", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "what about handing them out one by one like dealing cards?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "pretend it's six sweets and two people, how would the sharing go?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "how come you didn't {other_phrase}? i always mix up sharing and times"}
+{"kind": "lost", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "im confused, how does {a} {sign_word} {b} tell me what one gets"}
+{"kind": "meaning", "focus": "step", "requires": ["sharing", "has_words"], "depth": "any", "text": "does '{b_words}' mean how many ways it gets split?"}
+{"kind": "check", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "how did you know it shares out exactly, with none left over?"}
+{"kind": "shortcut", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "sharing out {a} one at a time is slow, what's quicker?"}
+{"kind": "another_way", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "Could I use my times tables to work out {a} shared by {b}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["sharing"], "depth": "any", "text": "is {number} the stuff being shared or the people sharing it?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["sharing"], "depth": "any", "text": "does the {distractor} change how many each one gets?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["sharing", "divide"], "depth": "follow", "text": "again pls but share out just a few things this time"}
+{"kind": "where_from", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "where did the {b} come from, is it how many people there are?"}
+{"kind": "why", "focus": "step", "requires": ["sharing", "uses_previous_step"], "depth": "any", "text": "why do we share out the number from the line before and not one from the story?"}
+{"kind": "meaning", "focus": "step", "requires": ["sharing", "divide"], "depth": "first", "text": "does {result} mean one person's share or all of it?"}
+{"kind": "lost", "focus": "step", "requires": ["sharing", "divide"], "depth": "any", "text": "wait so is it fair? does everyone get the same?"}
+{"kind": "meaning", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "so {result} is how many groups of {b} you can make?"}
+{"kind": "why", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "why divide? nobody is sharing anything, they're just putting them in groups"}
+{"kind": "another_way", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "could I keep taking {b} away from {a} and count how many times I did it?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "do it with ten pencils and packs of two so I can see"}
+{"kind": "check", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "if there's {result} groups with {b} in each, is that enough for all {a}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "why not {other_phrase}? the groups are all the same size like in a times sum"}
+{"kind": "lost", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "i dont get it, how does dividing tell you how many lots there are"}
+{"kind": "shortcut", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "counting up in {b}s takes ages, is there something faster?"}
+{"kind": "meaning", "focus": "fact", "requires": ["grouping"], "depth": "any", "text": "is the {number} how many fit in one group or how many there are altogether?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["grouping"], "depth": "any", "text": "would the {distractor} make us need more boxes or groups?"}
+{"kind": "meaning", "focus": "step", "requires": ["grouping", "has_words"], "depth": "any", "text": "so '{b_words}' tells you how big each group is?"}
+{"kind": "why", "focus": "step", "requires": ["grouping", "uses_previous_step"], "depth": "any", "text": "how come the number from the line before gets put into groups?"}
+{"kind": "another_way", "focus": "step", "requires": ["grouping", "divide"], "depth": "first", "text": "I could draw {a} dots and circle them in {b}s, right?"}
+{"kind": "where_from", "focus": "step", "requires": ["grouping", "divide"], "depth": "any", "text": "the {b}, did it come from the bit about how much one holds?"}
+{"kind": "lost", "focus": "step", "requires": ["grouping", "multiply"], "depth": "any", "text": "wait why is it times now when the story was about putting things in groups?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["grouping", "divide"], "depth": "follow", "text": "show me again but with like twelve things"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "why do we need another one for the leftover {remainder}?"}
+{"kind": "meaning", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "the last one isn't full then? only {remainder} in it?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "isn't {calculation} just {quotient}? why is the answer {result}?"}
+{"kind": "lost", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "the leftover bit confuses me. where does the extra one come from?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "first", "text": "can't we just leave the {remainder} extra ones behind?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "can you show me with smaller numbers why one more is needed for the leftovers?"}
+{"kind": "check", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "{result} lots of {b}, that's enough for all {a}?"}
+{"kind": "meaning", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "does {result} mean all the full ones plus one that's only a bit full?"}
+{"kind": "why", "focus": "step", "requires": ["rounded_up"], "depth": "follow", "text": "a half empty one still counts?? why?"}
+{"kind": "where_from", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "where did the extra one come from? {calculation} only makes {quotient}"}
+{"kind": "another_way", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "what about counting up in {b}s till I go past {a}?"}
+{"kind": "shortcut", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "any trick for knowing it needs one extra box or trip?"}
+{"kind": "lost", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "why does a remainder make the answer go UP? i thought you just ignore it"}
+{"kind": "check", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "would {quotient} be too few? how do you know?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["rounded_up"], "depth": "any", "text": "why didn't you round down to {quotient} like we do sometimes?"}
+{"kind": "meaning", "focus": "step", "requires": ["rounded_up"], "depth": "follow", "text": "oh so the extra one is for the {remainder} that didn't fit?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "what happens to the {remainder} left over?"}
+{"kind": "why", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "why didn't it come out even?"}
+{"kind": "check", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "how do you know exactly {remainder} are left over?"}
+{"kind": "lost", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "i don't get remainders. what is the {remainder}?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "can you show me a remainder with tiny numbers, like five split into twos?"}
+{"kind": "another_way", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "maybe do {b} times something and see how far it is from {a}?"}
+{"kind": "where_from", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "Where does the {remainder} come from? It's not in the story."}
+{"kind": "shortcut", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "can I find the leftover without doing the whole divide?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder"], "depth": "follow", "text": "oh, the remainder means the ones that don't fit in a group?"}
+{"kind": "check", "focus": "step", "requires": ["remainder"], "depth": "first", "text": "if I go {b} times {quotient} and then plus {remainder}, do I get {a}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "if it doesn't go in evenly, shouldn't you use a different sum?"}
+{"kind": "why", "focus": "step", "requires": ["remainder", "grouping"], "depth": "any", "text": "why are there leftovers? can't they make the groups a bit bigger?"}
+{"kind": "why", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "why does \"times as many\" mean you multiply?"}
+{"kind": "meaning", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "so {result} is like having {b} copies of {a}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "i thought \"times as many\" means add, so why not {other_phrase}?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "what does \"three times as many\" look like with tiny numbers?"}
+{"kind": "check", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "if I add {a} again and again, {b} times, do I get {result}?"}
+{"kind": "lost", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "what's the difference between \"{b} more\" and \"{b} times as many\"?"}
+{"kind": "another_way", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "could you draw {a} as one bar and then {b} bars all the same?"}
+{"kind": "shortcut", "focus": "step", "requires": ["times_as_many", "multiply"], "depth": "any", "text": "is there a quick way to work out {b} times something, like doubling?"}
+{"kind": "why", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "it says times as many, so why did you divide?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "shouldn't you {other_phrase}? it says times!"}
+{"kind": "meaning", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "{result} means the smaller one? or how many times bigger?"}
+{"kind": "check", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "{b} lots of {result} would make {a} again, yeah?"}
+{"kind": "lost", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "im mixed up, which one is the big amount and which is the small one?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "could you show it with smaller numbers, like something that's double something else?"}
+{"kind": "another_way", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "is it like the {b} times table? what times {b} makes {a}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["times_as_many"], "depth": "any", "text": "{number}: big amount, small amount, or the \"how many times\" number?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["times_as_many"], "depth": "any", "text": "isn't {distractor} how many times bigger it is?"}
+{"kind": "where_from", "focus": "fact", "requires": ["times_as_many", "implied_by_word"], "depth": "any", "text": "where's the {number}? is it from a word like twice or triple?"}
+{"kind": "meaning", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "does {b} mean how much one costs?"}
+{"kind": "why", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "why times? you pay for each one, so isn't it adding?"}
+{"kind": "another_way", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "could I add the price over and over, once for each one bought?"}
+{"kind": "check", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "do {a} of them really come to {result}? how can I be sure?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "if one sweet costs two coins and I buy three, is it the same idea?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "why not {other_phrase}, the price and how many?"}
+{"kind": "meaning", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "is {result} like the coins the shop gives back to you?"}
+{"kind": "why", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "taking the cost away from the money... why?"}
+{"kind": "check", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "if I pay {a} and get {result} back, did it cost {b}?"}
+{"kind": "another_way", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "do shopkeepers count on from the price to work out change? could I do that?"}
+{"kind": "lost", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "i don't get change. why is it {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["rates", "divide"], "depth": "any", "text": "how many you can buy, or what one costs... which one is {result}?"}
+{"kind": "why", "focus": "step", "requires": ["rates", "divide"], "depth": "any", "text": "why divide the money? are you sharing it out?"}
+{"kind": "meaning", "focus": "fact", "requires": ["rates"], "depth": "any", "text": "{number} is a price? or how many of something?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["rates"], "depth": "any", "text": "isn't the {distractor} another price we have to pay?"}
+{"kind": "shortcut", "focus": "step", "requires": ["rates", "multiply"], "depth": "any", "text": "buying loads of the same thing, is there a fast way to get the total?"}
+{"kind": "lost", "focus": "step", "requires": ["rates", "add"], "depth": "any", "text": "um why add those two? is it the whole bill?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "can we pretend I pay with a small coin so the change is easy?"}
+{"kind": "why", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "why does this step need the answer from the line before?"}
+{"kind": "why", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "how did you know to do the other line first and this one second?"}
+{"kind": "another_way", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "could this line go first and the other one after?"}
+{"kind": "lost", "focus": "answer", "requires": ["mixed", "multi_step"], "depth": "any", "text": "i got lost in the middle. how did you get from the start to {answer}?"}
+{"kind": "meaning", "focus": "step", "requires": ["mixed", "first_step"], "depth": "any", "text": "what does {result} tell us, the one you got first?"}
+{"kind": "check", "focus": "step", "requires": ["mixed", "last_step"], "depth": "any", "text": "are we done at {result}, or is there more to do?"}
+{"kind": "shortcut", "focus": "step", "requires": ["mixed", "multi_operation"], "depth": "any", "text": "doing it all in one go like that, is that faster?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "both steps again but small numbers please"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "why do you {verb} in this line and not do the same as the line before?"}
+{"kind": "meaning", "focus": "fact", "requires": ["mixed"], "depth": "any", "text": "in all these steps, where does the {number} get used?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["mixed"], "depth": "any", "text": "with all these steps, is the {distractor} maybe for one of them?"}
+{"kind": "lost", "focus": "answer", "requires": ["mixed", "multi_step"], "depth": "any", "text": "why are there {step_count} steps? what is the first one even for?"}
+{"kind": "where_from", "focus": "step", "requires": ["mixed", "uses_previous_step"], "depth": "any", "text": "is one of the numbers in this line from the line before? which one?"}
+{"kind": "why", "focus": "step", "requires": ["mixed", "multiply"], "depth": "any", "text": "how did you know this part was a times part?"}
+{"kind": "why", "focus": "step", "requires": ["mixed", "divide"], "depth": "any", "text": "how did you know this part needed dividing?"}
+{"kind": "why", "focus": "step", "requires": ["mixed", "subtract"], "depth": "any", "text": "what in the story told you to take away here?"}
+{"kind": "check", "focus": "step", "requires": ["mixed", "first_step"], "depth": "first", "text": "i wanna check every line. the {step_words} part, is it right?"}
+{"kind": "another_way", "focus": "step", "requires": ["mixed", "multi_operation"], "depth": "any", "text": "could you split {calculation} into two lines to make it easier?"}
+{"kind": "meaning", "focus": "step", "requires": ["money", "subtract"], "depth": "any", "text": "is the {result} the money that's left, or what got spent?"}
+{"kind": "meaning", "focus": "step", "requires": ["money", "multiply"], "depth": "any", "text": "so {result} is how much all of them cost together?"}
+{"kind": "meaning", "focus": "fact", "requires": ["money"], "depth": "any", "text": "is that {number} an amount of money, like in a purse?"}
+{"kind": "check", "focus": "answer", "requires": ["money"], "depth": "any", "text": "how can I check {answer} is right if it's money? can I use pretend coins?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["money", "add"], "depth": "any", "text": "explain it with pocket money, like just a few coins?"}
+{"kind": "another_way", "focus": "step", "requires": ["money", "subtract"], "depth": "any", "text": "with pretend coins I'd just take {b} away, is that the same?"}
+{"kind": "why", "focus": "step", "requires": ["money", "add"], "depth": "any", "text": "why add the money together? did someone get more?"}
+{"kind": "lost", "focus": "step", "requires": ["money", "multiply"], "depth": "any", "text": "i don't get how the money gets bigger when you times it"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["money", "multiply"], "depth": "any", "text": "why not just {other_phrase}? it's money, and you add money"}
+{"kind": "where_from", "focus": "fact", "requires": ["money", "from_problem"], "depth": "any", "text": "where does it say {number}? is that the bit with the price?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["money"], "depth": "any", "text": "{distractor} sounds like money too, why don't we pay it?"}
+{"kind": "shortcut", "focus": "step", "requires": ["money", "add"], "depth": "any", "text": "what's the quickest way to add money like {a} and {b}?"}
+{"kind": "check", "focus": "step", "requires": ["money", "subtract"], "depth": "any", "text": "if they spend {b} out of {a}, is {result} really what's left?"}
+{"kind": "meaning", "focus": "answer", "requires": ["money"], "depth": "first", "text": "{answer} is money, right? like dollars?"}
+{"kind": "lost", "focus": "step", "requires": ["money", "divide"], "depth": "any", "text": "how do you divide money? do you cut the coins??"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["money", "multiply"], "depth": "any", "text": "with small numbers, like each thing costs one coin, how does the money part work?"}
+{"kind": "why", "focus": "step", "requires": ["money", "last_step"], "depth": "first", "text": "is {result} at the end the money? how did it get to that?"}
+{"kind": "another_way", "focus": "answer", "requires": ["money"], "depth": "any", "text": "playing shop could work the money out too, right?"}
+{"kind": "check", "focus": "fact", "requires": ["money"], "depth": "any", "text": "was it really {number}? I can't find where the money part says that"}
+{"kind": "meaning", "focus": "step", "requires": ["time", "multiply"], "depth": "any", "text": "days, hours, or just things? what is {result}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["time"], "depth": "any", "text": "does {number} mean a time, like minutes or days?"}
+{"kind": "lost", "focus": "step", "requires": ["time", "divide"], "depth": "any", "text": "i don't get dividing with time. how does that work?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["time", "add"], "depth": "any", "text": "use a clock with small numbers to show me? i don't get it with these"}
+{"kind": "why", "focus": "step", "requires": ["time", "subtract"], "depth": "any", "text": "why take away? is it like counting back on a clock?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["time"], "depth": "any", "text": "is the {distractor} just telling us when it happened? so we can skip it?"}
+{"kind": "another_way", "focus": "step", "requires": ["time", "add"], "depth": "any", "text": "would a clock or a calendar work for counting it?"}
+{"kind": "meaning", "focus": "answer", "requires": ["time"], "depth": "any", "text": "is {answer} in minutes, hours or days? or is it not a time?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["time", "divide"], "depth": "any", "text": "why not {other_phrase}? it's about time, not sharing"}
+{"kind": "where_from", "focus": "fact", "requires": ["time", "from_problem"], "depth": "any", "text": "where's {number} in the story? is it one of the times?"}
+{"kind": "lost", "focus": "step", "requires": ["time", "add"], "depth": "any", "text": "adding time is confusing, why do we add {b}?"}
+{"kind": "meaning", "focus": "step", "requires": ["time", "subtract"], "depth": "any", "text": "does {result} mean the time left, or how long it took?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["time", "multiply"], "depth": "any", "text": "try it with just two days so i can follow"}
+{"kind": "check", "focus": "step", "requires": ["time", "multiply"], "depth": "any", "text": "how do I know {result} is right? sums with days and weeks confuse me"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "which word in the story means {number}?"}
+{"kind": "check", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "nobody wrote {number} in the story, so who says the {words} is {number}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "is {number} secretly in one of the words? like \"pair\" means two?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "first", "text": "i can't find {number} anywhere in the question??"}
+{"kind": "lost", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "i don't get it, how can a word be a number?"}
+{"kind": "check", "focus": "fact", "requires": ["implied_by_word", "time"], "depth": "any", "text": "do you just have to know '{words}' off by heart?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word", "money"], "depth": "any", "text": "does the {number} come from a coin word, like dime or nickel?"}
+{"kind": "check", "focus": "fact", "requires": ["implied_by_word"], "depth": "follow", "text": "so is it always {number}? every single time?"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word", "sharing"], "depth": "any", "text": "which word gave you {number}? was it something like \"half\"?"}
+{"kind": "lost", "focus": "fact", "requires": ["implied_by_word", "time"], "depth": "any", "text": "why is {number} in there? the story only said a time word"}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word", "equal_groups"], "depth": "any", "text": "did the {number} come from a word like dozen or pair?"}
+{"kind": "meaning", "focus": "fact", "requires": ["implied_by_word", "follow_up_task"], "depth": "any", "text": "so the {words} is {number} even though this bit never says it?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "did we get {number} as the answer in the bit before?"}
+{"kind": "check", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "are you sure it's still {number}? didn't something change since then?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "so the {words} is the {number} we found before?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "first", "text": "this bit doesn't tell us {number}, so how do you know?"}
+{"kind": "lost", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "i'm lost, why do we need the old answer {number} again?"}
+{"kind": "check", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "what if we got the last one wrong? then {number} would be wrong too"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "money"], "depth": "any", "text": "the {number}, is that money from the last question?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "separate"], "depth": "any", "text": "is {number} the ones still there at the end of the last bit?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "join"], "depth": "any", "text": "was {number} how many there were once the extra ones came?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_earlier_answer", "sharing"], "depth": "any", "text": "did each one get {number} in the last bit? is that where it's from?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "equal_groups"], "depth": "any", "text": "the {number}, that's the total from the groups before, yeah?"}
+{"kind": "meaning", "focus": "fact", "requires": ["from_earlier_answer", "compare"], "depth": "any", "text": "is {number} the difference we found, or one of the two amounts?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "rates"], "depth": "any", "text": "did the {number} come from the shopping bit before?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "grouping"], "depth": "any", "text": "is {number} how many groups we got last time?"}
+{"kind": "check", "focus": "fact", "requires": ["from_earlier_answer", "mixed"], "depth": "any", "text": "with so many questions, how do you remember it was {number}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "combine"], "depth": "any", "text": "was {number} all of them together, from the first question?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer", "times_as_many"], "depth": "any", "text": "did we work out {number} with the times sum before?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "why do you use the old answer in this sum?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "one of these numbers isn't in this bit of the story, where's it from?"}
+{"kind": "check", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "if the answer before was wrong, is {result} wrong too?"}
+{"kind": "lost", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "i forgot what we got before, can you explain how it fits in {calculation}?"}
+{"kind": "another_way", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "starting again from the very beginning, would that work too?"}
+{"kind": "shortcut", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "is using the answer from before like a shortcut?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_earlier_answer", "add"], "depth": "any", "text": "so we add on to what we had last time to get {result}?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_earlier_answer", "subtract"], "depth": "any", "text": "is the earlier answer the {a} or the {b} here?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "multiply"], "depth": "any", "text": "what's the point of multiplying the answer we already had?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "divide"], "depth": "any", "text": "why do we split up the answer we got before?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "can you show me how the old answer and the new number fit together, with small numbers?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "any", "text": "with the answer from before in there, shouldn't you {other_phrase} instead?"}
+{"kind": "check", "focus": "step", "requires": ["uses_earlier_answer"], "depth": "first", "text": "is it okay to use an answer from before? what if things changed?"}
+{"kind": "lost", "focus": "step", "requires": ["uses_earlier_answer", "money"], "depth": "any", "text": "is this the same money as before or new money?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_earlier_answer", "separate"], "depth": "any", "text": "so it's what we had last time, with the new bit taken off?"}
+{"kind": "why", "focus": "step", "requires": ["uses_earlier_answer", "compare"], "depth": "any", "text": "why compare with the answer from before and not the first number in the story?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_earlier_answer", "rates"], "depth": "any", "text": "are we using the money from the earlier answer now?"}
+{"kind": "why", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "why is {answer} so different from the last answer?"}
+{"kind": "check", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "does {answer} still fit with the first question?"}
+{"kind": "lost", "focus": "answer", "requires": ["follow_up_task"], "depth": "first", "text": "wait, are we still in the same story? i'm lost"}
+{"kind": "another_way", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "was there a way to do this bit without the last answer?"}
+{"kind": "meaning", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "is {answer} the answer to just this bit, or to the whole thing?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["follow_up_task"], "depth": "any", "text": "the {distractor} was in the first part, do we need it now?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["follow_up_task"], "depth": "any", "text": "is this the bit where the {distractor} finally gets used?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["follow_up_task"], "depth": "any", "text": "doing both questions at once would be quicker, no?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["follow_up_task"], "depth": "any", "text": "this new bit is hard, any chance you could do it with smaller numbers?"}
+{"kind": "where_from", "focus": "fact", "requires": ["follow_up_task", "from_problem"], "depth": "any", "text": "new question or old one, where's {number} from?"}
+{"kind": "check", "focus": "step", "requires": ["follow_up_task", "only_step"], "depth": "any", "text": "is one line enough for this bit? it seems too easy"}
+{"kind": "why", "focus": "step", "requires": ["follow_up_task", "first_step"], "depth": "any", "text": "why don't you start from the very beginning of the story again?"}
+{"kind": "lost", "focus": "step", "requires": ["follow_up_task", "has_words"], "depth": "any", "text": "how do '{a_words}' and '{b_words}' fit with the first question?"}
+{"kind": "meaning", "focus": "answer", "requires": ["follow_up_task", "multi_step"], "depth": "any", "text": "is the answer {answer} from the last line? there are {step_count} lines"}
+{"kind": "check", "focus": "answer", "requires": ["follow_up_task", "one_step"], "depth": "any", "text": "is it really just one sum this time? and it's {answer}?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["follow_up_task"], "depth": "any", "text": "this new bit is a {sign_word} sum? why not {other_verb}?"}
+{"kind": "distractor", "focus": "answer", "requires": ["has_distractor"], "depth": "any", "text": "you didn't use every number in the story. is {answer} still right?"}
+{"kind": "why", "focus": "step", "requires": ["has_distractor", "only_step"], "depth": "any", "text": "how come you picked {a} and {b} and not the other number?"}
+{"kind": "check", "focus": "answer", "requires": ["has_distractor"], "depth": "first", "text": "did you forget a number? one of them isn't in your working"}
+{"kind": "distractor", "focus": "step", "requires": ["has_distractor", "first_step"], "depth": "any", "text": "how did you know which numbers to use and which one to leave out?"}
+{"kind": "lost", "focus": "answer", "requires": ["has_distractor"], "depth": "any", "text": "there are too many numbers, how do I know which ones matter?"}
+{"kind": "distractor", "focus": "answer", "requires": ["has_distractor"], "depth": "any", "text": "what would happen if we used every number? would it still be {answer}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["has_distractor", "from_problem"], "depth": "any", "text": "Is {number} one of the numbers we need, or one of the tricky extra ones?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["has_distractor"], "depth": "any", "text": "whats the trick for spotting numbers you dont need"}
+{"kind": "why", "focus": "step", "requires": ["has_distractor", "has_words"], "depth": "any", "text": "what makes the {a_words} and the {b_words} the ones that matter?"}
+{"kind": "check", "focus": "step", "requires": ["has_distractor", "last_step"], "depth": "any", "text": "you're sure the extra number isn't needed for {result}?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "first", "text": "if we don't need the {distractor}, why did they put it in?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "follow", "text": "ok but what is the {distractor} for then?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "any", "text": "at school we always use every number... so where does the {distractor} go?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "any", "text": "is \"{distractor_sentence}\" a trick?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "any", "text": "should I cross out the {distractor} so I don't get confused?"}
+{"kind": "distractor", "focus": "answer", "requires": ["has_distractor", "one_step"], "depth": "any", "text": "only one sum? but the story had more numbers than that"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "any", "text": "if the {distractor} was a different number, would the answer change?"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "why did you put all of it in one line?"}
+{"kind": "lost", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "there's too much going on in {calculation}, can you break it up?"}
+{"kind": "check", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "how do I know {calculation} makes {result}? can you show each bit?"}
+{"kind": "another_way", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "would it work if I did it one number at a time instead of all at once?"}
+{"kind": "meaning", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "so {result} is the {step_words} after all of that?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "show me a long sum like {calculation} but with small numbers"}
+{"kind": "why", "focus": "step", "requires": ["multi_operation"], "depth": "first", "text": "in {calculation}, do you start at the front or somewhere else?"}
+{"kind": "check", "focus": "step", "requires": ["multi_operation"], "depth": "follow", "text": "so you just go left to right? is that always ok?"}
+{"kind": "shortcut", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "is there an order that makes {calculation} easier?"}
+{"kind": "where_from", "focus": "step", "requires": ["multi_operation"], "depth": "any", "text": "where did all the numbers in {calculation} come from?"}
+{"kind": "meaning", "focus": "step", "requires": ["multi_operation", "separate"], "depth": "any", "text": "so you add up everything that went plus what's left to get the start?"}
+{"kind": "lost", "focus": "step", "requires": ["multi_operation", "money"], "depth": "any", "text": "so many money numbers in one line, can you go slower?"}
+{"kind": "check", "focus": "step", "requires": ["multi_operation", "rates"], "depth": "any", "text": "does {calculation} have everything they bought in it?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["multi_operation", "join"], "depth": "any", "text": "adding lots of things at once is hard, show me with tiny numbers?"}
+{"kind": "where_from", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "did the {a} come from the line before or from the story?"}
+{"kind": "check", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "if the line before was wrong, would the {ordinal} line be wrong too?"}
+{"kind": "lost", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "i don't get how the {ordinal} line connects to the one before it"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "why can't the {ordinal} line be done by itself?"}
+{"kind": "another_way", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "this line and the one before, can they be squashed into one sum?"}
+{"kind": "meaning", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "so the answer from the line before turns into part of {calculation}?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "could you redo the {ordinal} line with easy numbers so I see how it links up?"}
+{"kind": "shortcut", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "do we really need the line before, or can we skip it?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["uses_previous_step", "multiply"], "depth": "any", "text": "why multiply in the {ordinal} line? couldn't you {other_phrase}?"}
+{"kind": "check", "focus": "step", "requires": ["uses_previous_step", "last_step"], "depth": "any", "text": "the last line uses what we just worked out, and that's the answer?"}
+{"kind": "why", "focus": "step", "requires": ["first_step", "multiply"], "depth": "any", "text": "why is multiplying the first thing you do?"}
+{"kind": "why", "focus": "step", "requires": ["first_step", "divide"], "depth": "any", "text": "hmm why do you start by dividing?"}
+{"kind": "lost", "focus": "step", "requires": ["first_step", "has_words"], "depth": "any", "text": "why does it start with the {a_words}?"}
+{"kind": "check", "focus": "step", "requires": ["first_step", "subtract"], "depth": "any", "text": "how do you know to start from {a} and not {b}?"}
+{"kind": "meaning", "focus": "step", "requires": ["first_step", "add"], "depth": "first", "text": "does the first line add up what they had at the beginning?"}
+{"kind": "meaning", "focus": "step", "requires": ["last_step", "has_words"], "depth": "any", "text": "so the last line gives the {step_words}, and that's what the question wanted?"}
+{"kind": "check", "focus": "step", "requires": ["last_step", "subtract"], "depth": "any", "text": "wait is the last line right? {a} take away {b} is {result}?"}
+{"kind": "lost", "focus": "step", "requires": ["last_step", "divide"], "depth": "any", "text": "why does it end with a divide?"}
+{"kind": "shortcut", "focus": "step", "requires": ["only_step"], "depth": "any", "text": "is it really only one sum? that was quick"}
+{"kind": "lost", "focus": "step", "requires": ["only_step", "has_words"], "depth": "any", "text": "how did you know it's just the {a_words} and the {b_words}, nothing else?"}
+{"kind": "check", "focus": "step", "requires": ["only_step", "multiply"], "depth": "any", "text": "only one line? how can one times sum be the whole thing?"}
+{"kind": "why", "focus": "step", "requires": ["only_step", "divide"], "depth": "any", "text": "why is just one divide enough?"}
+{"kind": "another_way", "focus": "step", "requires": ["only_step", "subtract"], "depth": "any", "text": "could I do it as an adding sum instead, like what plus {b} makes {a}?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["only_step", "add"], "depth": "any", "text": "could you do the same kind of sum but with numbers under ten?"}
+{"kind": "meaning", "focus": "step", "requires": ["only_step"], "depth": "first", "text": "so {calculation} is the whole thing? that's the answer?"}
+{"kind": "another_way", "focus": "step", "requires": ["last_step", "multiply"], "depth": "any", "text": "could the times bit be done a different way, like doubling and doubling again?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "could you skip a line and still get {answer}?"}
+{"kind": "lost", "focus": "answer", "requires": ["multi_step"], "depth": "first", "text": "slowly please, one line at a time. i got lost somewhere in the {step_count} lines"}
+{"kind": "check", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "how can I check {answer} when there are so many steps?"}
+{"kind": "another_way", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "could the lines go in a different order and still give {answer}?"}
+{"kind": "meaning", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "which line is the actual answer? the last one?"}
+{"kind": "check", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "that seems too easy, is {answer} really it?"}
+{"kind": "another_way", "focus": "answer", "requires": ["one_step"], "depth": "any", "text": "two smaller steps would get {answer} too, right?"}
+{"kind": "why", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "why does it need {step_count} steps and not just one?"}
+{"kind": "smaller_numbers", "focus": "answer", "requires": ["multi_step"], "depth": "any", "text": "pls redo all the steps but with baby numbers"}
+{"kind": "meaning", "focus": "step", "requires": ["has_words", "divide"], "depth": "any", "text": "so the {a_words} split by the {b_words} gives {result}?"}
+{"kind": "lost", "focus": "step", "requires": ["has_words", "multiply"], "depth": "any", "text": "why does it go {a_words} times {b_words}?"}
+{"kind": "check", "focus": "step", "requires": ["has_words", "subtract"], "depth": "any", "text": "is it the {a_words} minus the {b_words}? not the other way round?"}
+{"kind": "why", "focus": "step", "requires": ["has_words", "add"], "depth": "any", "text": "why add '{a_words}' and '{b_words}'? what's the story bit for that?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "what part of the question is the {number} in? i can't spot it"}
+{"kind": "check", "focus": "fact", "requires": ["from_problem"], "depth": "any", "text": "did the story really say {number}? I read it as something else"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["combine", "add"], "depth": "any", "text": "why not {other_phrase}? one group is bigger than the other"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["rates", "subtract"], "depth": "any", "text": "shouldn't you {other_phrase}? when you pay, the money goes together"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["money", "divide"], "depth": "any", "text": "why didn't you {other_phrase} to find the money?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["time", "multiply"], "depth": "any", "text": "why not {other_phrase}? days just add up, don't they?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["mixed", "divide"], "depth": "any", "text": "in a long story like this, how did you know not to {other_verb} here?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["uses_earlier_answer", "add"], "depth": "any", "text": "hang on, why add on to the old answer? shouldn't some be taken off?"}
+{"kind": "shortcut", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "any", "text": "any fast way to see how many times bigger it is without dividing?"}
+{"kind": "shortcut", "focus": "step", "requires": ["compare", "add"], "depth": "any", "text": "any quick way to add on {b}? like jumping in tens?"}
+{"kind": "shortcut", "focus": "step", "requires": ["time", "add"], "depth": "any", "text": "with times, can you jump to the next hour first to make it quicker?"}
+{"kind": "shortcut", "focus": "answer", "requires": ["money"], "depth": "any", "text": "rounding the money would be faster, wouldn't it?"}
+{"kind": "shortcut", "focus": "step", "requires": ["join", "subtract"], "depth": "any", "text": "is there a faster way than counting all the way from {b} to {a}?"}
+{"kind": "check", "focus": "fact", "requires": ["time", "from_problem"], "depth": "any", "text": "the {number} is from the time part of the story, right? do we use it like a normal number?"}
+{"kind": "meaning", "focus": "step", "requires": ["time", "divide"], "depth": "any", "text": "is {result} how long each one gets, or how many there are?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "is the {remainder} too small to make another group?"}
+{"kind": "lost", "focus": "step", "requires": ["remainder"], "depth": "follow", "text": "but where do the leftover ones go in real life?"}
+{"kind": "why", "focus": "step", "requires": ["sharing", "divide"], "depth": "follow", "text": "but why does dividing make it fair?"}
+{"kind": "lost", "focus": "step", "requires": ["compare", "subtract"], "depth": "follow", "text": "i still don't see why it's minus when we're comparing"}
+{"kind": "meaning", "focus": "step", "requires": ["equal_groups", "multiply"], "depth": "follow", "text": "oh so times just means lots of the same group?"}
+{"kind": "check", "focus": "step", "requires": ["rounded_up"], "depth": "follow", "text": "ok so if there were no leftovers would it just be {quotient}?"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "follow", "text": "wait so which question was {number} the answer to?"}
+{"kind": "lost", "focus": "step", "requires": ["times_as_many", "divide"], "depth": "follow", "text": "still confused. why is \"times as many\" a divide here?"}
+{"kind": "meaning", "focus": "step", "requires": ["grouping", "divide"], "depth": "follow", "text": "so dividing can mean making groups too, not just sharing?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["rates", "multiply"], "depth": "follow", "text": "just do one price and two things, I'll get it then"}
+{"kind": "why", "focus": "step", "requires": ["join", "subtract"], "depth": "follow", "text": "ok but it still feels like it should be plus"}
+{"kind": "check", "focus": "step", "requires": ["separate", "add"], "depth": "follow", "text": "so if I take the {a} away from {result} I'm back to {b}?"}
+{"kind": "meaning", "focus": "fact", "requires": ["implied_by_word"], "depth": "follow", "text": "oh so \"a pair\" or \"a week\" counts as a number even if there's no number written?"}
+{"kind": "another_way", "focus": "step", "requires": ["combine", "add"], "depth": "follow", "text": "counting them all one by one would work too, right?"}
+{"kind": "distractor", "focus": "distractor", "requires": ["has_distractor"], "depth": "follow", "text": "so the {distractor} is just there to trick us?"}
+{"kind": "lost", "focus": "answer", "requires": ["one_step"], "depth": "first", "text": "explain the one line like i'm little? i don't get it"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_problem", "compare"], "depth": "any", "text": "the {number} comes from the \"more\" or \"fewer\" bit, right?"}
+{"kind": "why", "focus": "step", "requires": ["last_step", "add"], "depth": "any", "text": "why is the very last thing adding?"}
+{"kind": "smaller_numbers", "focus": "step", "requires": ["last_step", "subtract"], "depth": "any", "text": "redo the last take away with small numbers, like ten take away three?"}
+{"kind": "check", "focus": "step", "requires": ["only_step", "divide"], "depth": "any", "text": "one divide and that's it? how can I check {result}?"}
+{"kind": "another_way", "focus": "answer", "requires": ["one_step", "has_distractor"], "depth": "any", "text": "is one sum really the only way, even with that extra number in the story?"}

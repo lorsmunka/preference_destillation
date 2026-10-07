@@ -296,7 +296,8 @@ def solution_foci(item: Dict, turn: int, block: str, random_generator: random.Ra
         foci.append(Focus("answer", answer_slots, set(shared) | {"one_step" if len(calculations) <= 1 else "multi_step"},
                           key="answer", links=[f"step{len(calculations) - 1}"] if calculations else []))
         foci += mistake_foci(calculations, answer, distractor_numbers(item), shared, random_generator)
-    for index, number in enumerate(distractor_numbers(item)):
+    shown_numbers = {int(number) for line in lines for number in re.findall(r"\d+", line.text)}
+    for index, number in enumerate(n for n in distractor_numbers(item) if n not in shown_numbers):   # still unused in this turn
         foci.append(Focus("distractor", {"distractor": number, "distractor_sentence": sentence_with(item["problem"], number)},
                           set(shared), key=f"distractor{index}"))
     return foci
