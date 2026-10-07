@@ -1,0 +1,37 @@
+{"kind": "why", "focus": "step", "depth": "any", "text": "Why did you {operation_phrase}?"}
+{"kind": "why", "focus": "step", "requires": ["subtract"], "depth": "first", "text": "how come you took {b} away and not added it?"}
+{"kind": "why", "focus": "step", "requires": ["divide", "rounded_up"], "depth": "any", "text": "Why did you round up to {result} when it said {quotient} remainder {remainder}?"}
+{"kind": "why", "focus": "step", "requires": ["uses_previous_step"], "depth": "any", "text": "Why do you use {a} again in the {ordinal} step?"}
+{"kind": "meaning", "focus": "fact", "depth": "any", "text": "Is the {number} the {words}?"}
+{"kind": "meaning", "focus": "step", "depth": "any", "text": "So {result} is the {step_words}, right? What does that mean in the story?"}
+{"kind": "meaning", "focus": "step", "requires": ["remainder"], "depth": "any", "text": "what does the remainder {remainder} mean here"}
+{"kind": "where_from", "focus": "fact", "requires": ["from_earlier_answer"], "depth": "any", "text": "Where did {number} come from? It's not in this question."}
+{"kind": "where_from", "focus": "fact", "requires": ["implied_by_word"], "depth": "any", "text": "There's no {number} in the story, so where did you get it?"}
+{"kind": "where_from", "focus": "fact", "depth": "any", "text": "Where did you get the {number} from?"}
+{"kind": "check", "focus": "answer", "depth": "first", "text": "Are you sure it's {answer}?"}
+{"kind": "check", "focus": "step", "depth": "any", "text": "Is {calculation} really {result}? How do you know?"}
+{"kind": "another_way", "focus": "step", "requires": ["multiply"], "depth": "any", "text": "Could I add instead of multiplying for that step?"}
+{"kind": "another_way", "focus": "answer", "depth": "first", "text": "Is there another way to work it out?"}
+{"kind": "lost", "focus": "step", "depth": "any", "text": "I don't get the {ordinal} step, can you explain it more simply?"}
+{"kind": "lost", "focus": "step", "requires": ["has_words"], "depth": "any", "text": "I'm confused about why the {a_words} and the {b_words} go together."}
+{"kind": "shortcut", "focus": "answer", "requires": ["multi_step"], "depth": "first", "text": "Is there a quicker way than doing {step_count} steps?"}
+{"kind": "smaller_numbers", "focus": "step", "depth": "any", "text": "Can you show me how to {operation_phrase} with smaller numbers?"}
+{"kind": "wrong_operation", "focus": "step", "depth": "any", "text": "Why didn't you {other_verb} instead?"}
+{"kind": "wrong_operation", "focus": "step", "requires": ["divide"], "depth": "any", "text": "Shouldn't you {other_phrase}?"}
+{"kind": "distractor", "focus": "distractor", "depth": "any", "text": "What about the {distractor}? You didn't use it."}
+{"kind": "distractor", "focus": "distractor", "depth": "first", "text": "It says \"{distractor_sentence}\" so don't we need that?"}
+{"kind": "pushback", "focus": "mistake", "requires": ["wrong_operation"], "depth": "any", "text": "I think you're wrong. I did {wrong_phrase} and got {wrong_answer}."}
+{"kind": "pushback", "focus": "mistake", "requires": ["used_distractor"], "depth": "any", "text": "No, you forgot the {distractor}, it should be {wrong_answer}."}
+{"kind": "pushback", "focus": "mistake", "requires": ["skipped_step"], "depth": "any", "text": "My answer is {wrong_answer}. Isn't that the answer?"}
+{"kind": "pushback", "focus": "mistake", "requires": ["slip"], "depth": "any", "text": "i got {wrong_answer} not {answer}"}
+{"kind": "pushback", "focus": "mistake", "depth": "any", "text": "My teacher would say {wrong_answer}. You made a mistake."}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "What if it was {new} instead of {old}?"}
+{"kind": "what_if", "focus": "what_if", "depth": "any", "text": "And if the {old_words} was {new}, what would the answer be?"}
+{"kind": "follow", "focus": "none", "depth": "follow", "text": "I still don't get it."}
+{"kind": "follow", "focus": "none", "depth": "follow", "text": "But why?"}
+{"kind": "follow", "focus": "none", "depth": "follow", "text": "Can you say that in an easier way?"}
+{"kind": "follow", "focus": "step", "depth": "follow", "text": "So is that why the answer to that step is {result}?"}
+{"kind": "off_topic", "focus": "none", "depth": "any", "text": "What's your favourite colour?"}
+{"kind": "off_topic", "focus": "none", "depth": "any", "text": "Can you help me with my spelling homework instead?"}
+{"kind": "off_topic", "focus": "none", "depth": "any", "text": "tell me a joke"}
+{"kind": "off_topic", "focus": "none", "depth": "any", "text": "Who would win, a shark or a lion?"}

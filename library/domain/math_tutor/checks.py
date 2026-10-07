@@ -29,6 +29,7 @@ from .items import constants_allowed, digit_numbers, text_numbers
 
 FACT = re.compile(r"^(?P<label>[^=]+?)\s*=\s*(?P<number>\d+)\s*$")
 CALCULATION = re.compile(r"^(?P<label>[^=]+?)\s*=\s*(?P<expression>[^=]+?)\s*=\s*(?P<result>.+?)\s*$")
+LIST_MARKER = re.compile(r"^\s*(\d+[.)]|[-*•])\s")   # "1. ", "- ": not part of the format
 REMAINDER = re.compile(r"^(?P<a>\d+) / (?P<b>\d+) = (?P<q>\d+) remainder (?P<r>\d+)(, rounded up = (?P<up>\d+))?$")
 
 
@@ -127,6 +128,8 @@ def check_lines(block: str) -> Optional[str]:
     if not lines or lines[-1].kind != "answer" or lines[-1].number is None:
         return "no final Answer: <number> line"
     for line in lines[:-1]:
+        if LIST_MARKER.match(line.text):
+            return f"numbered or bulleted line: {line.text!r}"
         if line.kind == "other":
             return f"not a fact or a calculation: {line.text!r}"
         if line.kind == "answer":

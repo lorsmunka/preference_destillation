@@ -46,6 +46,7 @@ Write the solution block:
 - Then the calculations above, in the same order, each written as: what it is = calculation = result. You may split a long calculation into smaller steps.
 - Then the line Answer: {answer}
 - Then </solution>.
+No numbering or bullet points: every line starts with its words.
 Example:
 <solution>
 tetras bought later = 4
@@ -114,7 +115,7 @@ def label_wave(handler, items: List[Dict], turn: int, labels: Dict[tuple, str], 
                 texts = handler.generate_texts(prompts, max_new_tokens=220, temperature=0.0 if attempt == 0 else 0.7,
                                                stop_strings=["</solution>"], seed=attempt)
                 for (item, context, executions), text in zip(batch, texts):
-                    block = text[text.find("<solution>"):] if "<solution>" in text else text
+                    block = text[text.find("<solution>"):] if "<solution>" in text else "<solution>\n" + text.strip()
                     problem = check_against_trace(block, computed_values(executions, turn), item["answers"][turn], context)
                     if problem is None:
                         labels[(item["id"], turn)] = block

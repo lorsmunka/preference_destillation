@@ -53,7 +53,7 @@ FORMATS = {
     "facts": (": first one line for each number you use, written as what it is = number (words from the problem; "
               "a number from an earlier answer counts too; numbers without units); then one line per calculation that is needed, written as "
               "what it is = calculation = result, using only + - * / (every calculation line ends with = and its "
-              "result); then the line Answer: <number>; then </solution>."
+              "result); then the line Answer: <number>; then </solution>. No numbering or bullet points."
               + REMAINDERS + " Example:\n<solution>\ntetras bought later = 4\nprice of a tetra = 2\nmoney left before = 13\n"
               "cost of 4 more tetras = 4 * 2 = 8\nmoney left = 13 - 8 = 5\nAnswer: 5\n</solution>"),
     "code": (": one line of Python per step, giving a value to a name taken from the problem, using only "
