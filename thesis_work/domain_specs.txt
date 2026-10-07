@@ -233,4 +233,5 @@ FOLLOW-UP MESSAGES: TEMPLATE PUPIL v1 (2026-10-07)
     - the implied word ({implied_word}: week, pair, dozen); rounded_down for dropped remainders
     - what the last explanation covered (follow-ups can only be generic today)
   Writers need their own scratch folders (a shared one let batch files overwrite each other).
-  Safety note: a wellbeing message ("someone pushed me") must not get the off-topic reply (v2 route).
+  Out of scope (decided 2026-10-07): wellbeing / safety messages ("someone pushed me") get no special
+  handling; a real product would flag them. Stated as a limitation in the thesis.
