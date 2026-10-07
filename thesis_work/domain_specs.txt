@@ -215,3 +215,22 @@ PROVENANCE (for the thesis)
   agents' code, outputs and logits from Gemma 4 12B. Same split as TinyGSM
   (arXiv 2312.09241: GPT-3.5 wrote problems and Python solutions). Real
   benchmarks are only a style reference and the held-out test.
+
+FOLLOW-UP MESSAGES: TEMPLATE PUPIL v1 (2026-10-07)
+  The pupil's follow-up messages come from a template bank (questions/bank/, 3,461 templates
+  from 10 writer agents, 1,842 niche), filled from what the shown solution offers (foci: step,
+  fact, answer, distractor, computed mistake, what-if with the code re-run, none). Gemma only
+  replies. Routes: explanation | solution (what-if = a new calculation) | out_of_scope (the
+  harness answers with a fixed sentence; the message never enters the context). Engine is
+  domain-free (library/agent/question_templates.py). Free-written naturalness set: 360.
+  v2 wish list (raised by most writers):
+    - story type, money/time per TURN and per number, not per conversation
+    - {unit} ("$", "minutes"); number roles (group size / number of groups / total / change)
+    - which operand came from the line before or an earlier answer ({carried})
+    - a "first of several steps" feature; spelled step counts ("both", "all three")
+    - {line} (the whole solution line) and noun-phrase labels: bare labels ("left", "each") read badly
+    - past-tense wrong_phrase; which slip (1 or 10); distractor added vs taken away
+    - the implied word ({implied_word}: week, pair, dozen); rounded_down for dropped remainders
+    - what the last explanation covered (follow-ups can only be generic today)
+  Writers need their own scratch folders (a shared one let batch files overwrite each other).
+  Safety note: a wellbeing message ("someone pushed me") must not get the off-topic reply (v2 route).
