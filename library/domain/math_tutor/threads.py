@@ -40,20 +40,26 @@ QUESTION_KINDS = {
 
 # Who is asking: varies the voice of the follow-up questions, not their content.
 PERSONAS = {
-    "curious": "curious and chatty",
-    "shy": "shy, and asks very short questions",
-    "confused": "a bit confused and unsure of yourself",
-    "confident": "confident, and likes to check that the tutor is right",
-    "impatient": "impatient, and wants a quick answer",
-    "careful": "careful, and asks about small details",
+    "curious": "curious and chatty; you start with what you noticed",
+    "shy": "shy; you ask in just a few words",
+    "confused": "a bit confused; you say which part lost you",
+    "confident": "confident; you say what you think first, then ask",
+    "impatient": "impatient; you want a quick, short answer",
+    "careful": "careful; you ask about one small detail",
 }
+
+# How the question starts: drawn per question, so the same kind is not always asked the same way.
+OPENINGS = ["Why", "How come", "Wait,", "I don't get", "So", "Is it", "What", "Hmm,", "Could you",
+            "But", "Where", "Does", "I thought", "Hang on,", "How"]
 
 PUPIL_PROMPT = """You are a primary-school pupil working with your maths tutor. You are {persona}. Here is your conversation so far:
 
 {conversation}
 
 Ask your tutor ONE question about {about}: {kind}.
-Ask it the way a child like you would, in your own words, mentioning the number or step you mean. Write only the question."""
+Say which step you mean by what it is about in the story (the buses, the stickers, the money left...), not only by its numbers.
+Ask it the way a child like you would, in your own words. Start your question with "{opening}" if that fits, otherwise start your own way.
+Write only the question."""
 
 
 def solution_body(block: str) -> str:
@@ -103,6 +109,7 @@ def run_threads(handler, domain, items: List[Dict] = None) -> int:
             batch = active[start:start + BATCH]
             pupil_prompts = [PUPIL_PROMPT.format(
                 persona=PERSONAS[random.Random(f"{plan['item']['id']}-{depth}").choice(list(PERSONAS))],
+                opening=random.Random(f"{plan['item']['id']}-{depth}-opening").choice(OPENINGS),
                 conversation=plan["conversation"].history(with_thread=True),
                 about="the tutor's last solution" if depth == 0 else "the tutor's last explanation",
                 kind=QUESTION_KINDS[plan["kinds"][depth]]) for plan in batch]

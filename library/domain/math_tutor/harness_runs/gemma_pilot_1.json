@@ -1,0 +1,1363 @@
+{
+  "model": "google/gemma-4-12B-it NF4 (teacher as tutor)",
+  "annotation": "facts",
+  "summary": {
+    "conversations": 16,
+    "turns": 88,
+    "tasks": 47,
+    "questions": 41,
+    "task_routed_solution": 45,
+    "question_routed_explanation": 39,
+    "solutions_pass_check": 39,
+    "solutions_needed_retry": 9,
+    "answers_correct": 47,
+    "conversations_all_correct": 16,
+    "question_kinds": {
+      "smaller numbers": 5,
+      "another way": 3,
+      "shortcut": 4,
+      "where from": 4,
+      "lost": 8,
+      "why": 6,
+      "meaning": 9,
+      "check": 2
+    },
+    "tokens_outside_vocabulary": {
+      "Yes": 9,
+      "▁represents": 6,
+      "multiplier": 2,
+      "▁multiplying": 2,
+      "Think": 2,
+      "▁equals": 2,
+      "▁Alternatively": 1,
+      "▁multiplier": 1,
+      "▁×": 1,
+      "▁easier": 1,
+      "▁imagine": 1,
+      "▁Dividing": 1,
+      "▁Multip": 1,
+      "▁bond": 1,
+      "▁Taking": 1,
+      "▁individual": 1,
+      "additional": 1
+    }
+  },
+  "conversations": [
+    {
+      "item_id": "sd-p1-h02-0007",
+      "slice": "S01",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?",
+          "expected_route": "solution",
+          "expected_answer": 63,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nbottles already there = 54\nbottles Ines added = 9\nnew total = 54 + 9 = 63\nAnswer: 63\n</solution>",
+          "check": null,
+          "answer": 63,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "The bottles are packed into bags of 7. How many bags are filled?",
+          "expected_route": "solution",
+          "expected_answer": 9,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nnew total = 63\nbottles per bag = 7\nnumber of bags = 63 / 7 = 9\nAnswer: 9\n</solution>",
+          "check": null,
+          "answer": 9,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "smaller numbers",
+          "persona": "careful",
+          "message": "Can you show me how you did the bit where you divided 63 by 7, but using smaller numbers instead?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>To divide 63 by 7, we can think of it as 60 plus 3. Since 60 divided by 7 is 8 with 4 left over, and 3 divided by 7 is 0 with 3 left over, we combine them to get 8 with 7 left over, which is the same as 9. Alternatively, we can count by 7s until we reach 63.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "another way",
+          "persona": "impatient",
+          "message": "Can you do it another way instead of doing the 60 and 3 part?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We can also think of 63 as 56 plus 7. Since we know that 7 times 8 is 56, we can see that 56 divided by 7 is 8, and then we just add one more bag for the extra 7.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "The recycling center pays 4 dollars for each full bag. How much money is that?",
+          "expected_route": "solution",
+          "expected_answer": 36,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nnumber of bags = 9\npayment per bag = 4\ntotal money = 9 * 4 = 36\nAnswer: 36\n</solution>",
+          "check": null,
+          "answer": 36,
+          "answer_correct": true
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p2-b03-0040",
+      "slice": "S08",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 2,
+          "message": "Leo has 6 photos of the Moon. The space club album has 9 times as many. How many photos are in the album?",
+          "expected_route": "solution",
+          "expected_answer": 54,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\nLeo's photos = 6\nmultiplier = 9\nphotos in the album = 6 * 9\nAnswer: 54\n</solution>",
+              "problem": "not a fact or a calculation: 'photos in the album = 6 * 9'"
+            }
+          ],
+          "output": "<solution>\nLeo's photos = 6\nmultiplier = 9\nphotos in the album = 6 * 9\nAnswer: 54\n</solution>",
+          "check": "not a fact or a calculation: 'photos in the album = 6 * 9'",
+          "answer": 54,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 2,
+          "message": "The club adds 12 photos from a stargazing night. How many photos does the album hold now?",
+          "expected_route": "solution",
+          "expected_answer": 66,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\nphotos in the album = 54\nnew photos = 12\ntotal photos = 54 + 12\nAnswer: 66\n</solution>",
+              "problem": "not a fact or a calculation: 'total photos = 54 + 12'"
+            }
+          ],
+          "output": "<solution>\nphotos in the album = 54\nnew photos = 12\ntotal photos = 54 + 12\nAnswer: 66\n</solution>",
+          "check": "not a fact or a calculation: 'total photos = 54 + 12'",
+          "answer": 66,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 2,
+          "expected_route": "explanation",
+          "kind": "shortcut",
+          "persona": "confident",
+          "message": "Is there a quicker way to get 66 than adding 12 to 54?",
+          "route": "unclear",
+          "route_correct": false,
+          "rejected": [
+            {
+              "output": "<solution>\nphotos in the album = 54\nnew photos = 12\ntotal = 54 + 12\nAnswer: 66\n</solution>",
+              "problem": "not a fact or a calculation: 'total = 54 + 12'"
+            }
+          ],
+          "output": "<solution>\nphotos in the album = 54\nnew photos = 12\ntotal photos = 66\nAnswer: 66\n</solution>",
+          "check": null,
+          "answer": 66
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 2,
+          "message": "Each page holds 6 photos. How many pages are filled?",
+          "expected_route": "solution",
+          "expected_answer": 11,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\ntotal photos = 66\nphotos per page = 6\npages filled = 66 / 6\nAnswer: 11\n</solution>",
+              "problem": "not a fact or a calculation: 'pages filled = 66 / 6'"
+            }
+          ],
+          "output": "<solution>\ntotal photos = 66\nphotos per page = 6\npages filled = 66 / 6\nAnswer: 11\n</solution>",
+          "check": "not a fact or a calculation: 'pages filled = 66 / 6'",
+          "answer": 11,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 3,
+          "attempts": 2,
+          "message": "The album has 20 pages. How many are still empty?",
+          "expected_route": "solution",
+          "expected_answer": 9,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\ntotal pages = 20\npages filled = 11\nempty pages = 20 - 11\nAnswer: 9\n</solution>",
+              "problem": "not a fact or a calculation: 'empty pages = 20 - 11'"
+            }
+          ],
+          "output": "<solution>\ntotal pages = 20\npages filled = 11\nempty pages = 20 - 11\nAnswer: 9\n</solution>",
+          "check": "not a fact or a calculation: 'empty pages = 20 - 11'",
+          "answer": 9,
+          "answer_correct": true
+        }
+      ]
+    },
+    {
+      "item_id": "S02-mem-b02-0092",
+      "slice": "S02",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "The scout troop printed 85 raffle tickets to raise money for a new canoe. At the fair, people bought tickets until only 17 were left. So, how many tickets were sold?",
+          "expected_route": "solution",
+          "expected_answer": 68,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntickets printed = 85\ntickets left = 17\ntickets sold = 85 - 17 = 68\nAnswer: 68\n</solution>",
+          "check": null,
+          "answer": 68,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "On Monday the troop sells 12 more tickets at school. How many tickets are left?",
+          "expected_route": "solution",
+          "expected_answer": 5,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntickets left before = 17\ntickets sold on Monday = 12\ntickets left = 17 - 12 = 5\nAnswer: 5\n</solution>",
+          "check": null,
+          "answer": 5,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "where from",
+          "persona": "impatient",
+          "message": "Where did the 17 come from?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The number 17 was the number of tickets left from the first part of the problem. The question told us that after the fair, only 17 tickets were remaining.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "careful",
+          "message": "Can you explain the bit about the 17 tickets left after the fair again, but maybe using a different way to say it?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The problem says that after the fair was over, the scouts counted the tickets and found there were 17 left. You can think of it as the amount that was not sold.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "How many tickets were sold in total?",
+          "expected_route": "solution",
+          "expected_answer": 80,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntickets sold at fair = 68\ntickets sold on Monday = 12\ntotal tickets sold = 68 + 12 = 80\nAnswer: 80\n</solution>",
+          "check": null,
+          "answer": 80,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "why",
+          "persona": "impatient",
+          "message": "Why did you add the 12 to the 68?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We added them because 68 was the number of tickets sold at the fair, and 12 was the number of tickets sold on Monday. Adding them together gives us the total number of tickets sold in both places.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "S08-mem-b08-0031",
+      "slice": "S08",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "At the bike shop a bell costs 13 dollars, and a mountain bike costs 7 times as much. How much does the mountain bike cost?",
+          "expected_route": "solution",
+          "expected_answer": 91,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ncost of a bell = 13\nmultiplier = 7\ncost of the mountain bike = 13 * 7 = 91\nAnswer: 91\n</solution>",
+          "check": null,
+          "answer": 91,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "careful",
+          "message": "Can you tell me what the number 7 stands for in the working?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The number 7 represents how many times more expensive the mountain bike is compared to the bell. It is the multiplier we use to find the total cost.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "Chen buys the mountain bike and the bell. How much does he spend?",
+          "expected_route": "solution",
+          "expected_answer": 104,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ncost of the mountain bike = 91\ncost of the bell = 13\ntotal spent = 91 + 13 = 104\nAnswer: 104\n</solution>",
+          "check": null,
+          "answer": 104,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "He pays with 11 ten-dollar notes. How much change should he get?",
+          "expected_route": "solution",
+          "expected_answer": 6,
+          "route": "unclear",
+          "route_correct": false,
+          "output": "<solution>\ntotal spent = 104\nnumber of notes = 11\nvalue of notes = 11 * 10 = 110\nchange = 110 - 104 = 6\nAnswer: 6\n</solution>",
+          "check": null,
+          "answer": 6,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "curious",
+          "message": "So, for the last bit, what does the 110 stand for?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The 110 represents the total amount of money Chen gave to the shop, which is the value of his 11 ten-dollar notes.\n</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "shortcut",
+          "persona": "careful",
+          "message": "Is there a quicker way to get the 110 than multiplying 11 by 10?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, you can find it by simply adding a zero to the end of the number of notes. Since each note is worth 10, multiplying by 10 is the same as moving the place value of the 11 one step to the left.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p2-h08-0022",
+      "slice": "S09",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "The art room has run out of glue just before the collage project. Mr. Haddad orders 8 bottles of glue, and each bottle costs 3 dollars. What does the order cost?",
+          "expected_route": "solution",
+          "expected_answer": 24,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nnumber of bottles = 8\ncost per bottle = 3\ntotal cost = 8 * 3 = 24\nAnswer: 24\n</solution>",
+          "check": null,
+          "answer": 24,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "He pays with a 50 dollar note. How much change should he get?",
+          "expected_route": "solution",
+          "expected_answer": 26,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntotal cost = 24\nmoney given = 50\nchange = 50 - 24 = 26\nAnswer: 26\n</solution>",
+          "check": null,
+          "answer": 26,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "confused",
+          "message": "Um, sorry, but what does the 24 stand for in the last bit?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The 24 represents the total cost of the 8 bottles of glue. We found this by multiplying the number of bottles by the price of each one.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "With the change he buys paintbrushes at 2 dollars each. How many brushes can he buy?",
+          "expected_route": "solution",
+          "expected_answer": 13,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nchange = 26\ncost per brush = 2\nnumber of brushes = 26 / 2 = 13\nAnswer: 13\n</solution>",
+          "check": null,
+          "answer": 13,
+          "answer_correct": true
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p2-h02-0044",
+      "slice": "S04",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "The slow bus to the beach takes 52 minutes. The express bus does the same trip in 17 minutes less. How long does the express take?",
+          "expected_route": "solution",
+          "expected_answer": 35,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntime for slow bus = 52\ntime saved = 17\ntime for express bus = 52 - 17 = 35\nAnswer: 35\n</solution>",
+          "check": null,
+          "answer": 35,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "check",
+          "persona": "curious",
+          "message": "Wait, how did you know that you had to take the 17 away from the 52?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The problem says the express bus takes \"less\" time, which means we need to subtract. Since the slow bus is the starting time, we take away the difference to find the shorter time.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "where from",
+          "persona": "confused",
+          "message": "But why did you use the 52? Was that the time for the slow bus?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, the problem says the slow bus takes 52 minutes, so that is our starting number. We use it because we need to find out how much shorter the express bus is compared to that time.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "Kemal rides the express there and back. How many minutes does he spend on the bus?",
+          "expected_route": "solution",
+          "expected_answer": 70,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntime for express bus = 35\nnumber of trips = 2\ntotal time = 35 * 2 = 70\nAnswer: 70\n</solution>",
+          "check": null,
+          "answer": 70,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "smaller numbers",
+          "persona": "careful",
+          "message": "Can you show me how you did the part where you multiplied 35 by 2, but use smaller numbers instead?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>To multiply 35 by 2, you can think of it as doubling 30 and doubling 5. Since 30 + 30 = 60 and 5 + 5 = 10, you just add them together to get 70.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "How much time does he save compared with taking the slow bus both ways?",
+          "expected_route": "solution",
+          "expected_answer": 34,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntime for slow bus = 52\ntime for express bus = 35\ntime for slow bus both ways = 52 * 2 = 104\ntime for express bus both ways = 70\ntime saved = 104 - 70 = 34\nAnswer: 34\n</solution>",
+          "check": null,
+          "answer": 34,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "shortcut",
+          "persona": "careful",
+          "message": "Is there a quicker way to find the 34 minutes saved without having to calculate the big numbers like 104 and 70 first?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, you can find the answer by looking at the difference between the two buses first. Since the express bus saves 17 minutes on each trip, you just need to multiply that 17-minute saving by the 2 trips he takes.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "careful",
+          "message": "Can you explain the part about multiplying the 17-minute saving by the 2 trips again? I'm a bit confused how that gets me to the same answer.",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Think of it this way: every time he takes the express bus, he saves 17 minutes compared to the slow bus. Since he goes there and back, he saves 17 minutes on the way there and another 17 minutes on the way back. So, 17 + 17 is the same as 17 × 2.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p1-h08-0037",
+      "slice": "S02",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "Mariam had 23 sunflowers growing behind her flower shop. She cut 9 of them for a wedding order. How many sunflowers are still growing?",
+          "expected_route": "solution",
+          "expected_answer": 14,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nsunflowers at first = 23\nsunflowers cut = 9\nsunflowers left = 23 - 9 = 14\nAnswer: 14\n</solution>",
+          "check": null,
+          "answer": 14,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "another way",
+          "persona": "curious",
+          "message": "Could we have done the 23 minus 9 bit in a different way, like using a number line or breaking the numbers into smaller bits?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, we can use a number line by jumping back 9 spaces from 23, or we can break 9 into 5 and 4 to make it easier to subtract. For example, you could take away 5 to get to 18, and then take away 4 more to get to 14.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "Then she plants 6 new ones. How many sunflowers are in the garden now?",
+          "expected_route": "solution",
+          "expected_answer": 20,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nsunflowers left = 14\nnew sunflowers planted = 6\ntotal sunflowers = 14 + 6 = 20\nAnswer: 20\n</solution>",
+          "check": null,
+          "answer": 20,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "smaller numbers",
+          "persona": "impatient",
+          "message": "Can you show me how you got 20 again, but use smaller numbers like 5 plus 2?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>To show you how it works with smaller numbers, we can imagine starting with 5 sunflowers and adding 2 more. This helps us practice the same step of adding new plants to the garden.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "why",
+          "persona": "impatient",
+          "message": "Why did you use 5 plus 2?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>I used 5 plus 2 because you asked to see an example with smaller numbers. It helps us practice the same type of adding without using the bigger numbers from the story.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 2,
+          "message": "Next week she plans to cut half of them. How many will she cut?",
+          "expected_route": "solution",
+          "expected_answer": 10,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\nsunflowers in the garden = 20\nhalf of 20 = 20 / 2\nAnswer: 10\n</solution>",
+              "problem": "not a fact or a calculation: 'half of 20 = 20 / 2'"
+            }
+          ],
+          "output": "<solution>\nsunflowers now = 20\nhalf of sunflowers = 20 / 2 = 10\nAnswer: 10\n</solution>",
+          "check": null,
+          "answer": 10,
+          "answer_correct": true
+        }
+      ]
+    },
+    {
+      "item_id": "S10-mem-b01-0049",
+      "slice": "S10",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "There are 28 students in an art class. Each one makes 3 clay pots, and 7 pots crack in the kiln. How many pots come out whole?",
+          "expected_route": "solution",
+          "expected_answer": 77,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nnumber of students = 28\npots per student = 3\ntotal pots made = 28 * 3 = 84\npots cracked = 7\nwhole pots = 84 - 7 = 77\nAnswer: 77\n</solution>",
+          "check": null,
+          "answer": 77,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "curious",
+          "message": "Wait, so does the 84 mean the total number of pots that the students made at the very beginning before any of them cracked?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, that's correct! The 84 represents the total number of pots the students made before any of them were damaged in the kiln.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "The teacher puts the whole pots on 7 shelves equally. How many pots are on each shelf?",
+          "expected_route": "solution",
+          "expected_answer": 11,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nwhole pots = 77\nnumber of shelves = 7\npots per shelf = 77 / 7 = 11\nAnswer: 11\n</solution>",
+          "check": null,
+          "answer": 11,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "why",
+          "persona": "impatient",
+          "message": "Why did you divide by 7 at the end?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We divided by 7 because there were 7 shelves and we wanted to share the pots equally among them. Dividing helps us find out how many pots go on each shelf.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "Students take 4 pots home from every shelf. How many pots stay on the shelves?",
+          "expected_route": "solution",
+          "expected_answer": 49,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\npots per shelf = 11\npots taken from each shelf = 4\npots staying on each shelf = 11 - 4 = 7\nnumber of shelves = 7\ntotal pots staying = 7 * 7 = 49\nAnswer: 49\n</solution>",
+          "check": null,
+          "answer": 49,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "careful",
+          "message": "In the last part, when you wrote \"7 shelves\", does that mean the pots are still being spread out across all 7 of those shelves?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, that's right! We are still looking at all 7 shelves to see how many pots are left in total. Since each shelf has 7 pots left on it, we multiply that by 7.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p2-b14-0010",
+      "slice": "S05",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "Clipped end to end, 8 identical segments make up the robotics club's snake robot. Every segment measures 12 centimetres. How long is the snake from nose to tail?",
+          "expected_route": "solution",
+          "expected_answer": 96,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nnumber of segments = 8\nlength of one segment = 12\ntotal length = 8 * 12 = 96\nAnswer: 96\n</solution>",
+          "check": null,
+          "answer": 96,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "shortcut",
+          "persona": "careful",
+          "message": "Is there a quicker way to do the 8 times 12 part without having to do the whole sum?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>You can think of 12 as 10 + 2, so you can multiply 8 by 10 and then 8 by 2. Adding those two answers together gives you the same total!</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "Ingrid adds 3 more segments of the same size. How long is the snake now?",
+          "expected_route": "solution",
+          "expected_answer": 132,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nprevious length = 96\nnumber of new segments = 3\nlength of one segment = 12\nlength of new segments = 3 * 12 = 36\nnew length = 96 + 36 = 132\nAnswer: 132\n</solution>",
+          "check": null,
+          "answer": 132,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "Each segment needs 4 batteries. How many batteries does the longer snake need?",
+          "expected_route": "solution",
+          "expected_answer": 44,
+          "route": "unclear",
+          "route_correct": false,
+          "output": "<solution>\nlength of the longer snake = 132\nlength of one segment = 12\nnumber of segments in the longer snake = 132 / 12 = 11\nbatteries per segment = 4\ntotal batteries = 11 * 4 = 44\nAnswer: 44\n</solution>",
+          "check": null,
+          "answer": 44,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "smaller numbers",
+          "persona": "confused",
+          "message": "Um, can you show me how you got 11 again, but using smaller numbers?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>To find the number of segments, we can count by 12s until we reach 132. Since 12 times 10 is 120, we just need one more segment to reach 132.\n</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 3,
+          "attempts": 1,
+          "message": "The club had a box of 60 batteries. How many are left after the snake is filled?",
+          "expected_route": "solution",
+          "expected_answer": 16,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nbatteries in the box = 60\nbatteries needed = 44\nbatteries left = 60 - 44 = 16\nAnswer: 16\n</solution>",
+          "check": null,
+          "answer": 16,
+          "answer_correct": true
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p1-b07-0049",
+      "slice": "S02",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "A bike shop had 13 red scooters in its window. Customers bought 8 of them during the Saturday sale. How many red scooters were still in the window after the sale?",
+          "expected_route": "solution",
+          "expected_answer": 5,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nscooters in window = 13\nscooters bought = 8\nscooters left = 13 - 8 = 5\nAnswer: 5\n</solution>",
+          "check": null,
+          "answer": 5,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "where from",
+          "persona": "impatient",
+          "message": "Why did you use 13?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>I used 13 because the problem tells us that the shop started with 13 red scooters in the window. This is the total number we need to begin with before any were sold.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "careful",
+          "message": "Can you explain that part again, but more simply? I don't quite understand why we have to start with the 13.",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Think of it like a basket of fruit. If you want to know how many are left, you first have to know how many were in the basket at the start. In this story, the 13 scooters are what we started with.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "On Monday a delivery brings 3 boxes with 4 scooters in each. How many red scooters does the shop have now?",
+          "expected_route": "solution",
+          "expected_answer": 17,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nscooters left = 5\nboxes delivered = 3\nscooters per box = 4\nscooters in delivery = 3 * 4 = 12\ntotal scooters = 5 + 12 = 17\nAnswer: 17\n</solution>",
+          "check": null,
+          "answer": 17,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "check",
+          "persona": "shy",
+          "message": "How did you get 12?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>I multiplied the number of boxes (3) by the number of scooters in each box (4) to find the total delivered. 3 times 4 equals 12.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "The window has room for 20 scooters. How many more could still fit?",
+          "expected_route": "solution",
+          "expected_answer": 3,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nscooters in window = 17\nroom for scooters = 20\nmore that could fit = 20 - 17 = 3\nAnswer: 3\n</solution>",
+          "check": null,
+          "answer": 3,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "smaller numbers",
+          "persona": "shy",
+          "message": "Can you do the 20 minus 17 bit again with smaller numbers?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>To practice, we can try 5 minus 2. If you have 5 apples and give away 2, you can count how many are left!</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "S07-mem-b05-0010",
+      "slice": "S07",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 2,
+          "message": "Last week a café bought jars of honey from a bee farm and paid $84 in all. The jars had little striped lids. If every jar cost $6, how many jars did the café buy?",
+          "expected_route": "solution",
+          "expected_answer": 14,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\ntotal cost = 84\ncost per jar = 6\nnumber of jars = 84 / 6\nAnswer: 14\n</solution>",
+              "problem": "not a fact or a calculation: 'number of jars = 84 / 6'"
+            }
+          ],
+          "output": "<solution>\ntotal cost = 84\ncost per jar = 6\nnumber of jars = 84 / 6\nAnswer: 14\n</solution>",
+          "check": "not a fact or a calculation: 'number of jars = 84 / 6'",
+          "answer": 14,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "careful",
+          "message": "Does the 84 mean the total amount of money they spent on all the jars together?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, that's correct! The $84 is the total amount of money the café paid for all the jars combined.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 2,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "confident",
+          "message": "Can you explain why we have to divide the 84 by 6 to find the jars?",
+          "route": "unclear",
+          "route_correct": false,
+          "rejected": [
+            {
+              "output": "<solution>\ntotal cost = 84\ncost per jar = 6\nnumber of jars = 84 / 6\nAnswer: 14\n</solution>",
+              "problem": "not a fact or a calculation: 'number of jars = 84 / 6'"
+            }
+          ],
+          "output": "<solution>\ntotal cost = 84\ncost per jar = 6\nnumber of jars = 84 / 6\nAnswer: 14\n</solution>",
+          "check": "not a fact or a calculation: 'number of jars = 84 / 6'",
+          "answer": 14
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 2,
+          "message": "The café puts 2 jars on each table. How many tables get honey?",
+          "expected_route": "solution",
+          "expected_answer": 7,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\nnumber of jars = 14\njars per table = 2\nnumber of tables = 14 / 2\nAnswer: 7\n</solution>",
+              "problem": "not a fact or a calculation: 'number of tables = 14 / 2'"
+            }
+          ],
+          "output": "<solution>\ntotal jars = 14\njars per table = 2\nnumber of tables = 14 / 2\nAnswer: 7\n</solution>",
+          "check": "not a fact or a calculation: 'number of tables = 14 / 2'",
+          "answer": 7,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "why",
+          "persona": "impatient",
+          "message": "Why did you have to divide by 2 to get 7?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We divide by 2 because we are splitting the 14 jars into equal groups of 2 for each table. Division helps us find how many groups there are in total.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 2,
+          "message": "Each of those tables also gets a $3 pot of jam. What does the café spend on jam?",
+          "expected_route": "solution",
+          "expected_answer": 21,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\nnumber of tables = 7\ncost of one pot of jam = 3\ntotal cost of jam = 7 * 3\nAnswer: 21\n</solution>",
+              "problem": "not a fact or a calculation: 'total cost of jam = 7 * 3'"
+            }
+          ],
+          "output": "<solution>\nnumber of tables = 7\ncost per jam pot = 3\ntotal cost = 7 * 3\nAnswer: 21\n</solution>",
+          "check": "not a fact or a calculation: 'total cost = 7 * 3'",
+          "answer": 21,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 2,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "confident",
+          "message": "Can you explain the part where you multiplied 7 by 3 to get 21? I'm not quite sure why we are doing that part yet.",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We know there are 7 tables and each table gets one pot of jam that costs $3. Multiplying the number of tables by the cost per pot tells us the total amount spent.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p2-h06-0099",
+      "slice": "S06",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "Two deckhands at the harbor share 64 dollars of tips equally. Work out each deckhand's share.",
+          "expected_route": "solution",
+          "expected_answer": 32,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntotal tips = 64\nnumber of deckhands = 2\neach deckhand's share = 64 / 2 = 32\nAnswer: 32\n</solution>",
+          "check": null,
+          "answer": 32,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "another way",
+          "persona": "confident",
+          "message": "Can I do the 64 divided by 2 part using a different way, like using a number bond?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, you can use a number bond by thinking about what number plus itself equals 64. Since you know 30 + 30 = 60, you can see that 32 + 32 = 64. </explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "confident",
+          "message": "Wait, I don't get how you jumped from 60 to 32, can you explain that bit more simply?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Since 60 is 4 less than 64, we can split that 4 into two equal parts of 2. If we add 2 to each 30, we get 32 + 32 = 64.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "One deckhand spends 15 dollars on lunch. How much of his share does he have left?",
+          "expected_route": "solution",
+          "expected_answer": 17,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\neach deckhand's share = 32\nmoney spent on lunch = 15\nmoney left = 32 - 15 = 17\nAnswer: 17\n</solution>",
+          "check": null,
+          "answer": 17,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "why",
+          "persona": "curious",
+          "message": "Why did you take the 15 away from the 32?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We subtract the 15 because the deckhand started with 32 dollars and spent some of that money. Taking it away shows how much is left after he paid for his lunch.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 2,
+          "attempts": 1,
+          "message": "The other deckhand saves all of her share. How much more money does she have than the first deckhand now?",
+          "expected_route": "solution",
+          "expected_answer": 15,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nfirst deckhand's money left = 17\nsecond deckhand's share = 32\ndifference = 32 - 17 = 15\nAnswer: 15\n</solution>",
+          "check": null,
+          "answer": 15,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 3,
+          "attempts": 1,
+          "message": "The next day they each get another 8 dollars in tips. How much do they have together now?",
+          "expected_route": "solution",
+          "expected_answer": 65,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nfirst deckhand's money left = 17\nsecond deckhand's money = 32\nfirst deckhand's new total = 17 + 8 = 25\nsecond deckhand's new total = 32 + 8 = 40\ntotal money = 25 + 40 = 65\nAnswer: 65\n</solution>",
+          "check": null,
+          "answer": 65,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 3,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "why",
+          "persona": "shy",
+          "message": "Why did you add 8 to both?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Because both deckhands received 8 dollars each, we need to add that amount to each of their individual totals. This helps us find out how much money each person has before we join them together.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "S03-mem-b07-0037",
+      "slice": "S03",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "Grace's customer asks for a bouquet with 7 lilies and 12 carnations. How many flowers will Grace put in it?",
+          "expected_route": "solution",
+          "expected_answer": 19,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nnumber of lilies = 7\nnumber of carnations = 12\ntotal flowers = 7 + 12 = 19\nAnswer: 19\n</solution>",
+          "check": null,
+          "answer": 19,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "curious",
+          "message": "Um, why did you have to do the plus sign part to get the total?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>We use the plus sign because we are putting two groups of flowers together to find the whole amount. When you combine things, you use addition to find the total.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "The customer then asks for 4 more lilies. How many flowers are in the bouquet now?",
+          "expected_route": "solution",
+          "expected_answer": 23,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nprevious total = 19\nadditional lilies = 4\nnew total = 19 + 4 = 23\nAnswer: 23\n</solution>",
+          "check": null,
+          "answer": 23,
+          "answer_correct": true
+        }
+      ]
+    },
+    {
+      "item_id": "S06-mem-b04-0070",
+      "slice": "S06",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "The head chef simmered 16 litres of broth and divided it evenly among 4 soup pots. Her apron was covered in flour. How much broth went into each pot?",
+          "expected_route": "solution",
+          "expected_answer": 4,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ntotal broth = 16\nnumber of pots = 4\nbroth per pot = 16 / 4 = 4\nAnswer: 4\n</solution>",
+          "check": null,
+          "answer": 4,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "lost",
+          "persona": "careful",
+          "message": "Can you explain why we have to do the division part for the \"broth per pot\" step?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>When we share a total amount into equal groups, we use division to find out how much is in each group. It's like sharing 16 litres of broth equally between 4 pots.</explanation>"
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "shy",
+          "message": "What does the 4 mean?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The 4 represents the number of soup pots the chef is using to hold the broth. It tells us how many equal groups we need to split the total amount into.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "She adds 3 litres of water to each pot. How much liquid is in one pot?",
+          "expected_route": "solution",
+          "expected_answer": 7,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nbroth per pot = 4\nwater added = 3\ntotal liquid = 4 + 3 = 7\nAnswer: 7\n</solution>",
+          "check": null,
+          "answer": 7,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "impatient",
+          "message": "What does the 7 stand for?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The 7 represents the total amount of liquid in one soup pot after the chef added the water. It is the sum of the broth and the water.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "sd-p2-b07-0074",
+      "slice": "S04",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 2,
+          "message": "The dog park volunteers needed 45 dollars for a new water fountain. Their bake sale raised 18 dollars more than that. How much did the bake sale raise?",
+          "expected_route": "solution",
+          "expected_answer": 63,
+          "route": "solution",
+          "route_correct": true,
+          "rejected": [
+            {
+              "output": "<solution>\nmoney needed = 45\nextra money raised = 18\ntotal raised = 45 + 18\nAnswer: 63\n</solution>",
+              "problem": "not a fact or a calculation: 'total raised = 45 + 18'"
+            }
+          ],
+          "output": "<solution>\nmoney needed = 45\nextra money = 18\nmoney raised = 45 + 18\nAnswer: 63\n</solution>",
+          "check": "not a fact or a calculation: 'money raised = 45 + 18'",
+          "answer": 63,
+          "answer_correct": true
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "After paying for the fountain, they spend the extra money on rolls of dog waste bags at 3 dollars a roll. How many rolls can they buy?",
+          "expected_route": "solution",
+          "expected_answer": 6,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\nmoney raised = 63\ncost of fountain = 45\nmoney left = 63 - 45 = 18\nprice per roll = 3\nnumber of rolls = 18 / 3 = 6\nAnswer: 6\n</solution>",
+          "check": null,
+          "answer": 6,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 1,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "meaning",
+          "persona": "confident",
+          "message": "Wait, does the \"18\" in the \"money left\" line mean the money they had left over after they bought the fountain?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>Yes, that's right! The 18 dollars is the amount they had left over after paying for the fountain. They used this extra money to buy the rolls of waste bags.</explanation>"
+        }
+      ]
+    },
+    {
+      "item_id": "S02-mem-b07-0013",
+      "slice": "S02",
+      "turns": [
+        {
+          "event": "task",
+          "pupil_turn": 0,
+          "attempts": 1,
+          "message": "Ama brought 30 cups of bean sprouts to the science fair to show how beans grow. She had grown them for 3 weeks. \"I only have 21 now, because some got knocked over,\" she says. How many cups got knocked over?",
+          "expected_route": "solution",
+          "expected_answer": 9,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ncups at start = 30\ncups left = 21\ncups knocked over = 30 - 21 = 9\nAnswer: 9\n</solution>",
+          "check": null,
+          "answer": 9,
+          "answer_correct": true
+        },
+        {
+          "event": "question",
+          "pupil_turn": 0,
+          "attempts": 0,
+          "expected_route": "explanation",
+          "kind": "where from",
+          "persona": "impatient",
+          "message": "Where did the 21 come from?",
+          "route": "explanation",
+          "route_correct": true,
+          "output": "<explanation>The number 21 is the number of cups Ama has left after some were knocked over. The problem tells us she has 21 cups now.</explanation>"
+        },
+        {
+          "event": "task",
+          "pupil_turn": 1,
+          "attempts": 1,
+          "message": "A judge asks her to put 4 of the cups on the display table. How many cups are not on the display table?",
+          "expected_route": "solution",
+          "expected_answer": 17,
+          "route": "solution",
+          "route_correct": true,
+          "output": "<solution>\ncups left = 21\ncups on display table = 4\ncups not on display table = 21 - 4 = 17\nAnswer: 17\n</solution>",
+          "check": null,
+          "answer": 17,
+          "answer_correct": true
+        }
+      ]
+    }
+  ]
+}

@@ -85,6 +85,39 @@ def arithmetic_true(line: Line) -> bool:
         return False
 
 
+def evaluate_expression(expression: str) -> Optional[int]:
+    """Whole-number value of '6 * 9' or '84 / 6' (division must be exact), else None."""
+    try:
+        tree = ast.parse(expression.strip().replace("//", "/").replace("/", "//"), mode="eval")
+        if not all(isinstance(node, (ast.Expression, ast.BinOp, ast.Constant, ast.operator)) for node in ast.walk(tree)):
+            return None
+        for node in ast.walk(tree):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.FloorDiv):
+                left = eval(compile(ast.Expression(node.left), "<l>", "eval"), {"__builtins__": {}})
+                right = eval(compile(ast.Expression(node.right), "<r>", "eval"), {"__builtins__": {}})
+                if right == 0 or left % right:
+                    return None
+        value = eval(compile(tree, "<e>", "eval"), {"__builtins__": {}})
+        return value if isinstance(value, int) else None
+    except Exception:
+        return None
+
+
+def complete_results(block: str) -> str:
+    """The harness's tidy-up before a solution enters the history: a calculation written
+    without its result ('total photos = 54 + 12') gets it ('= 66'), so later turns do not copy
+    the sloppy form. Lines it cannot evaluate stay as they are. Never used on training data."""
+    lines = []
+    for line in block.split("\n"):
+        parts = line.split("=")
+        if len(parts) == 2 and re.search(r"\d\s*[-+*/]\s*\d", parts[1]) and not line.startswith("Answer"):
+            value = evaluate_expression(parts[1])
+            if value is not None:
+                line = f"{line.rstrip()} = {value}"
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def check_lines(block: str) -> Optional[str]:
     """The harness check: None if the block is well formed and every calculation is true."""
     lines = parse(block)

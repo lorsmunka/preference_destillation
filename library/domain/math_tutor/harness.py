@@ -31,9 +31,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
-from .checks import check_lines
+from .checks import check_lines, complete_results
 from .conversation import Conversation
-from .threads import PERSONAS, PUPIL_PROMPT, QUESTION_KINDS
+from .threads import OPENINGS, PERSONAS, PUPIL_PROMPT, QUESTION_KINDS
 
 PACKAGE = Path(__file__).resolve().parent
 RUNS_DIR = PACKAGE / "harness_runs"
@@ -75,12 +75,11 @@ class GemmaTutor:
 
 
 def parse_route(text: str) -> str:
-    head = text.strip()[:20]
-    if head.startswith("<solution"):
-        return "solution"
-    if head.startswith("<explanation"):
-        return "explanation"
-    return "unclear"
+    """The route from the first tag the model wrote (anything before it, such as an empty
+    thought preamble, is ignored)."""
+    positions = {route: text.find(f"<{route}") for route in ("solution", "explanation")}
+    found = {route: position for route, position in positions.items() if position >= 0}
+    return min(found, key=found.get) if found else "unclear"
 
 
 def final_answer(block: str) -> Optional[int]:
@@ -103,7 +102,8 @@ class ScriptedPupil:
                 for _ in range(random_generator.choice([1, 1, 2])):
                     self.events.append({"type": "question", "turn": turn,
                                         "kind": random_generator.choice(list(QUESTION_KINDS)),
-                                        "persona": random_generator.choice(list(PERSONAS))})
+                                        "persona": random_generator.choice(list(PERSONAS)),
+                                        "opening": random_generator.choice(OPENINGS)})
 
 
 class TutorSession:
@@ -132,20 +132,21 @@ class TutorSession:
         self.turn = {"event": event["type"], "pupil_turn": event["turn"], "attempts": 0}
         if event["type"] == "task":
             self.turn.update(message=event["text"], expected_route="solution", expected_answer=event["answer"])
-            self.pending = Request("route", self.conversation.route_context(event["text"]), max_tokens=12)
+            self.pending = Request("route", self.conversation.route_context(event["text"]), max_tokens=24)
         else:
             self.turn.update(expected_route="explanation", kind=event["kind"], persona=event["persona"])
             about = "the tutor's last explanation" if self.conversation.thread else "the tutor's last solution"
             prompt = PUPIL_PROMPT.format(persona=PERSONAS[event["persona"]], about=about, kind=QUESTION_KINDS[event["kind"]],
-                                         conversation=self.conversation.history(with_thread=True))
+                                         opening=event["opening"], conversation=self.conversation.history(with_thread=True))
             self.pending = Request("pupil", prompt, max_tokens=60, temperature=0.9)
 
     def receive(self, text: str) -> None:
         request, turn = self.pending, self.turn
         if request.kind == "pupil":
             turn["message"] = text.strip().strip('"').split("\n")[0]
-            self.pending = Request("route", self.conversation.route_context(turn["message"]), max_tokens=12)
+            self.pending = Request("route", self.conversation.route_context(turn["message"]), max_tokens=24)
         elif request.kind == "route":
+            turn["route_text"] = text
             turn["route"] = parse_route(text)
             turn["route_correct"] = turn["route"] == turn["expected_route"]
             if turn["route"] == "explanation":
@@ -165,7 +166,10 @@ class TutorSession:
             turn.update(output=block, check=problem, answer=final_answer(block))
             if turn.get("expected_answer") is not None:
                 turn["answer_correct"] = turn["answer"] == turn["expected_answer"]
-            body = block.replace("<solution>", "").replace("</solution>", "").strip()
+            stored = complete_results(block)   # a missing "= result" is filled in before it enters the history
+            if stored != block:
+                turn["stored_completed"] = stored
+            body = stored.replace("<solution>", "").replace("</solution>", "").strip()
             self.conversation.add_solution(turn["message"], body)
             self.finish_turn()
         elif request.kind == "explanation":
