@@ -44,7 +44,7 @@ from .questions import kind_weights, solution_foci, tasks_of, what_if_foci
 PACKAGE = Path(__file__).resolve().parent
 RUNS_DIR = PACKAGE / "harness_runs"
 SOLUTION_PREFIX, EXPLANATION_PREFIX = "<solution>\n", "<explanation>"
-ROUTE_PREFIX = "<"   # a route request starts the tag, so the reply cannot open with prose or bullets
+ROUTE_PREFIX = "<"   # a route asked again starts the tag, so the reply cannot open with prose or bullets
 OUT_OF_SCOPE_REPLY = "This question is outside the scope of this task."
 
 
@@ -137,7 +137,7 @@ class TutorSession:
             if event["type"] == "task":
                 self.turn = {"event": "task", "pupil_turn": event["turn"], "attempts": 0, "message": event["text"],
                              "expected_route": "solution", "expected_answer": event["answer"]}
-                self.pending = Request("route", self.conversation.route_context(event["text"]), prefix=ROUTE_PREFIX, max_tokens=24)
+                self.pending = Request("route", self.conversation.route_context(event["text"]), max_tokens=24)
                 return
             if event["turn"] in self.closed_turns:
                 continue
@@ -149,15 +149,20 @@ class TutorSession:
                          "expected_route": message.route, "template": message.template.text, "focus": message.focus.type}
             if message.kind == "what_if":
                 self.turn["expected_answer"] = message.focus.data["answer"]
-            self.pending = Request("route", self.conversation.route_context(message.text), prefix=ROUTE_PREFIX, max_tokens=24)
+            self.pending = Request("route", self.conversation.route_context(message.text), max_tokens=24)
             return
         self.pending = None
 
     def receive(self, text: str) -> None:
         request, turn = self.pending, self.turn
         if request.kind == "route":
-            turn["route_text"] = ROUTE_PREFIX + text
-            turn["route"] = parse_route(ROUTE_PREFIX + text)
+            route_text = request.prefix + text
+            if parse_route(route_text) == "unclear" and not request.prefix:   # no tag (e.g. a bulleted reply): ask once more, starting the tag
+                turn["route_retry"] = route_text
+                self.pending = Request("route", request.context, prefix=ROUTE_PREFIX, max_tokens=24)
+                return
+            turn["route_text"] = route_text
+            turn["route"] = parse_route(route_text)
             turn["route_correct"] = turn["route"] == turn["expected_route"]
             if turn["route"] == "out_of_scope":   # the harness answers; the model's context stays as it was
                 turn.update(output=OUT_OF_SCOPE_REPLY, answered_by="harness")

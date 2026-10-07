@@ -40,7 +40,10 @@ def parse_route(text: str) -> str:
     thought preamble, is ignored); "unclear" if there is none."""
     positions = {route: text.find(f"<{route}") for route in ROUTES}
     found = {route: position for route, position in positions.items() if position >= 0}
-    return min(found, key=found.get) if found else "unclear"
+    if found:
+        return min(found, key=found.get)
+    garbled = "of_scope" in text or "out_of_" in text   # Gemma sometimes garbles it: "<or_of_scope>", "<or>\n<out_of_"
+    return "out_of_scope" if garbled else "unclear"
 
 
 def block(tag: str, text: str, multiline: bool = False) -> str:
