@@ -67,3 +67,12 @@ artificialintelligenceact.eu annex 3; mlanthology MathCAMPS (NeurIPS 2024 MATH-A
 
 ### Remaining
 Write thesis_positioning.html (TL;DR, red-team table, why worth doing, novelty table, framing, sources); final report.
+
+## 2026-10-08 save 2 (FINISHED)
+STATUS: thesis_work/thesis_positioning.html WRITTEN (51 KB, self-contained, light/dark tokens, phone card layout).
+Sections: TL;DR, red team (15 rows), why worth doing (5 cards), novelty table (a)-(j), framing (claim, 3
+contributions, 3 claims to avoid, revised novelty sentence), cheapest additions (7 rows), corrections, 61 sources.
+Validated: tags balanced; all 61 sources cited in body. Authors re-checked for TinyStories, TinyGSM, SmolLM2.
+Changes vs save 1: (k) teacher-vs-gold map folded into (f); added GSM-Symbolic renumbered-copy spread (free) to
+objection 3; MobileLLM depth note to objection 7; Chaganti (2607.08268) to row (a).
+Nothing remains for this task.

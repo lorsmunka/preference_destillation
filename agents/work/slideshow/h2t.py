@@ -1,0 +1,12 @@
+import re,html,sys
+s=open(sys.argv[1],encoding='utf-8').read()
+s=re.sub(r'<style.*?</style>','',s,flags=re.S)
+s=re.sub(r'<script.*?</script>','[SCRIPT]',s,flags=re.S)
+s=re.sub(r'<br\s*/?>','\n',s)
+s=re.sub(r'</(p|div|h\d|li|tr|pre|section)>','\n',s)
+s=re.sub(r'</(td|th)>',' | ',s)
+s=re.sub(r'<[^>]+>','',s)
+s=html.unescape(s)
+s=re.sub(r'\n\s*\n+','\n',s)
+sys.stdout.reconfigure(encoding='utf-8')
+print(s)

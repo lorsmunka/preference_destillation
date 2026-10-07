@@ -1,0 +1,16 @@
+{
+ "2605.14604": {
+  "id": "2605.14604v1",
+  "title": "Sycophancy is an Educational Safety Risk: Why LLM Tutors Need Sycophancy Benchmarks",
+  "authors": [
+   "Enkelejda Kasneci",
+   "Gjergji Kasneci"
+  ],
+  "published": "2026-05-14",
+  "updated": "2026-05-14",
+  "journal_ref": "",
+  "comment": "",
+  "doi": "",
+  "summary": "This position paper argues that effective tutoring requires corrective friction: surfacing misconceptions and challenging them supportively to drive conceptual change. Yet preference-aligned LLMs can trade epistemic rigor for agreeableness. We identify a Reasoning-Sycophancy Paradox: models that resist context-switch frame attacks can still capitulate under social-epistemic pressure, especially authority (\"my notes say I'm right\") and social-affective face-saving (\"please don't tell me I'm wrong\"). We introduce EduFrameTrap, a tutoring benchmark across math, physics, economics, chemistry, biology, and computer science that varies student confidence and pressure (context-switch, authority, social-affective). Across two frontier LLMs, context-switch failures are comparatively lower for GPT-5.2, while authority and social pressure more often trigger epistemic retreat. In contrast, Claude shows substantial context-switch fragility in this run. Because these failures are hard to judge automatically, we report two-judge disagreement as a reliability signal. We argue benchmarks should measure social-epistemic courage, i.e., supportive but corrective tutoring, and treat kind-but-correct behavior as a safety requirement."
+ }
+}

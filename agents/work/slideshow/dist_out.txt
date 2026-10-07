@@ -1,0 +1,155 @@
+Built vocabulary: 26659 tokens
+  Example tokens: 0-26484 (26484 tokens)
+  Whitespace tokens: 26484-26498 (14 tokens)
+  Prompt tokens: 26498-26505 (7 tokens)
+  Auxiliary tokens: 26505-26659 (154 tokens)
+postgen V 26659 steps 2061 mean H 1.084965119680732 exp 2.9593365943340197
+Built vocabulary: 528 tokens
+  Example tokens: 0-30 (30 tokens)
+  Whitespace tokens: 30-45 (15 tokens)
+  Prompt tokens: 45-50 (5 tokens)
+  Auxiliary tokens: 50-528 (478 tokens)
+math V 528 steps 1013 mean H 0.004721632764609805 exp 1.004732797237189
+Built vocabulary: 525 tokens
+  Example tokens: 0-27 (27 tokens)
+  Whitespace tokens: 27-42 (15 tokens)
+  Prompt tokens: 42-64 (22 tokens)
+  Auxiliary tokens: 64-525 (461 tokens)
+reddit V 525 steps 1242 mean H 0.021423350325768926 exp 1.021654477853203
+{
+ "postgen": {
+  "H": 1.5996883377286892,
+  "expH": 4.951488991587232,
+  "V": 26659,
+  "sentence": "NTA that would annoy me as well if I were you.",
+  "prefix": " dishes in the sink for days. He said he didn't realize it bothered me so much, and then said he'd be more mindful.  I just feel like it's a basic courtesy and he's completely oblivious to my feelings",
+  "chosen": ",",
+  "top": [
+   [
+    ",",
+    0.478093603881402
+   ],
+   [
+    "▁about",
+    0.199299065309378
+   ],
+   [
+    ".",
+    0.199299065309378
+   ],
+   [
+    "▁<",
+    0.023802878942681824
+   ],
+   [
+    "▁and",
+    0.0210059669395128
+   ],
+   [
+    ".<",
+    0.011243683871466301
+   ],
+   [
+    "▁on",
+    0.011243683871466301
+   ],
+   [
+    "▁–",
+    0.009922516190209384
+   ]
+  ],
+  "batch": "batch_1",
+  "record": 7,
+  "step": 65
+ },
+ "math": {
+  "H": 4.441940733385421e-05,
+  "expH": 1.0000444203938903,
+  "V": 528,
+  "sentence": "Problem: \"Kevin has 100 brownies. He gets 600 more. How many brownies does Kevin have now?\"\nA=?\nB=?\nC=A+B=?\nSolution: ?;",
+  "prefix": "100\nB=600\nC=A+B=700\nSolution",
+  "chosen": ":",
+  "top": [
+   [
+    ":",
+    0.9999968783713624
+   ],
+   [
+    "=",
+    2.5612807755496623e-06
+   ],
+   [
+    ";",
+    5.043460881817812e-07
+   ],
+   [
+    "▁",
+    3.65347080890634e-08
+   ],
+   [
+    ".",
+    5.263323731513937e-09
+   ],
+   [
+    "\n",
+    5.263323731513937e-09
+   ],
+   [
+    "7",
+    4.363448631834974e-09
+   ],
+   [
+    "/",
+    1.3307766448655137e-09
+   ]
+  ],
+  "batch": "batch_1",
+  "record": 10,
+  "step": 21
+ },
+ "reddit": {
+  "H": 0.9507281194704323,
+  "expH": 2.5875930504473477,
+  "V": 525,
+  "sentence": "gt! Just watched Endgame now I get this reference !lt",
+  "prefix": "```json\n{\n  \"tone\": \"neutral\",\n  \"sentiment\": \"neutral\",\n  \"safety\": \"safe\",\n  \"toxicity\": \"",
+  "chosen": "toxic",
+  "top": [
+   [
+    "toxic",
+    0.5883882558384123
+   ],
+   [
+    "respect",
+    0.27793493208368897
+   ],
+   [
+    "neutral",
+    0.13128716575468022
+   ],
+   [
+    "low",
+    0.0014584686698843866
+   ],
+   [
+    "safe",
+    0.0008846059645151839
+   ],
+   [
+    "slightly",
+    3.8866873545773935e-05
+   ],
+   [
+    "not",
+    2.815506876336839e-06
+   ],
+   [
+    "harm",
+    1.1736778828885034e-06
+   ]
+  ],
+  "batch": "batch_1",
+  "record": 25,
+  "step": 34
+ }
+}

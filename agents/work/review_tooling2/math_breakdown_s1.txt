@@ -1,0 +1,22 @@
+Initializing Transformer model...
+Built vocabulary: 528 tokens
+  Example tokens: 0-30 (30 tokens)
+  Whitespace tokens: 30-45 (15 tokens)
+  Prompt tokens: 45-50 (5 tokens)
+  Auxiliary tokens: 50-528 (478 tokens)
+=== Model Parameter Overview ===
+Total trainable parameters: 12,719,712
+Input embeddings: 12,582,912
+Transformer Attention: 27,648
+Transformer Feed-Forward: 82,944
+RMSNorm layers: 336
+Output projection: 25,872
+
+Sum of all above: 12,719,712
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=48, heads=1, layers=3
+Input vocab size=262,144 (full), Output vocab size=528
+Model initialized -> took 1.85 seconds.
+
+epoch_2 {'number': 284, 'number_correct': 5, 'bool': 132, 'bool_correct': 96} overall 0.24278846153846154 {'number/none': 283, 'True': 112, 'False': 21}

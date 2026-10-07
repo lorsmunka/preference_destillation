@@ -1,0 +1,3399 @@
+{
+ "1503.02531": {
+  "paperId": "0c908739fbff75f03469d13d4a1a07de3414ee19",
+  "externalIds": {
+   "ArXiv": "1503.02531",
+   "MAG": "1821462560",
+   "DBLP": "journals/corr/HintonVD15",
+   "CorpusId": 7200347
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Distilling the Knowledge in a Neural Network",
+  "venue": "arXiv.org",
+  "year": 2015,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/1503.02531"
+  }
+ },
+ "1312.6184": {
+  "paperId": "d770060812fb646b3846a7d398a3066145b5e3c8",
+  "externalIds": {
+   "DBLP": "conf/nips/BaC14",
+   "MAG": "2134797427",
+   "ArXiv": "1312.6184",
+   "CorpusId": 11536917
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Do Deep Nets Really Need to be Deep?",
+  "venue": "Neural Information Processing Systems",
+  "year": 2013,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "2654-2662"
+  }
+ },
+ "2006.05525": {
+  "paperId": "1728cb805a9573b59330890ba9723e73d6c3c974",
+  "externalIds": {
+   "MAG": "3138154797",
+   "DBLP": "journals/corr/abs-2006-05525",
+   "ArXiv": "2006.05525",
+   "DOI": "10.1007/s11263-021-01453-z",
+   "CorpusId": 219559263
+  },
+  "publicationVenue": {
+   "id": "939ee07c-6009-43f8-b884-69238b40659e",
+   "name": "International Journal of Computer Vision",
+   "type": "journal",
+   "alternate_names": [
+    "Int J Comput Vis"
+   ],
+   "issn": "0920-5691",
+   "url": "https://www.springer.com/computer/image+processing/journal/11263",
+   "alternate_urls": [
+    "https://link.springer.com/journal/11263",
+    "http://link.springer.com/journal/11263"
+   ]
+  },
+  "title": "Knowledge Distillation: A Survey",
+  "venue": "International Journal of Computer Vision",
+  "year": 2020,
+  "publicationTypes": [
+   "JournalArticle",
+   "Review"
+  ],
+  "journal": {
+   "name": "International Journal of Computer Vision",
+   "pages": "1789 - 1819",
+   "volume": "129"
+  }
+ },
+ "2106.05945": {
+  "paperId": "5f0f4a3fa3cff7ffcedabbc9ed0dad2dd71f7028",
+  "externalIds": {
+   "ArXiv": "2106.05945",
+   "DBLP": "conf/nips/StantonIKAW21",
+   "CorpusId": 235390933
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Does Knowledge Distillation Really Work?",
+  "venue": "Neural Information Processing Systems",
+  "year": 2021,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2106.05945"
+  }
+ },
+ "1906.02629": {
+  "paperId": "f8de25118af2abc4c48afb947d6ec298e05ef1e5",
+  "externalIds": {
+   "MAG": "2970206392",
+   "ArXiv": "1906.02629",
+   "DBLP": "journals/corr/abs-1906-02629",
+   "CorpusId": 174802983
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "When Does Label Smoothing Help?",
+  "venue": "Neural Information Processing Systems",
+  "year": 2019,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/1906.02629"
+  }
+ },
+ "1902.03393": {
+  "paperId": "bc6dfc6bda2d929fec91042dce1831fd07999b39",
+  "externalIds": {
+   "MAG": "2997006708",
+   "ArXiv": "1902.03393",
+   "DBLP": "conf/aaai/MirzadehFLLMG20",
+   "DOI": "10.1609/AAAI.V34I04.5963",
+   "CorpusId": 212908749
+  },
+  "publicationVenue": {
+   "id": "bdc2e585-4e48-4e36-8af1-6d859763d405",
+   "name": "AAAI Conference on Artificial Intelligence",
+   "type": "conference",
+   "alternate_names": [
+    "National Conference on Artificial Intelligence",
+    "National Conf Artif Intell",
+    "AAAI Conf Artif Intell",
+    "AAAI"
+   ],
+   "url": "http://www.aaai.org/"
+  },
+  "title": "Improved Knowledge Distillation via Teacher Assistant",
+  "venue": "AAAI Conference on Artificial Intelligence",
+  "year": 2019,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "5191-5198"
+  }
+ },
+ "1910.01108": {
+  "paperId": "a54b56af24bb4873ed0163b77df63b92bd018ddc",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-1910-01108",
+   "ArXiv": "1910.01108",
+   "MAG": "2978017171",
+   "CorpusId": 203626972
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter",
+  "venue": "arXiv.org",
+  "year": 2019,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/1910.01108"
+  }
+ },
+ "1909.10351": {
+  "paperId": "0cbf97173391b0430140117027edcaf1a37968c7",
+  "externalIds": {
+   "MAG": "3105966348",
+   "ACL": "2020.findings-emnlp.372",
+   "ArXiv": "1909.10351",
+   "DBLP": "journals/corr/abs-1909-10351",
+   "DOI": "10.18653/v1/2020.findings-emnlp.372",
+   "CorpusId": 202719327
+  },
+  "publicationVenue": {
+   "id": "479d5605-51be-4346-b1d6-4334084504df",
+   "name": "Findings",
+   "type": "journal",
+   "issn": "2652-8800",
+   "url": "https://findingspress.org/"
+  },
+  "title": "TinyBERT: Distilling BERT for Natural Language Understanding",
+  "venue": "Findings",
+  "year": 2019,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "pages": "4163-4174"
+  }
+ },
+ "2402.13116": {
+  "paperId": "94db8a625418800c8ae7b48157a9cad1c8129051",
+  "externalIds": {
+   "ArXiv": "2402.13116",
+   "DBLP": "journals/corr/abs-2402-13116",
+   "DOI": "10.48550/arXiv.2402.13116",
+   "CorpusId": 267760021
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "A Survey on Knowledge Distillation of Large Language Models",
+  "venue": "arXiv.org",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Review"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.13116"
+  }
+ },
+ "1606.07947": {
+  "paperId": "57a10537978600fd33dcdd48922c791609a4851a",
+  "externalIds": {
+   "DBLP": "conf/emnlp/KimR16",
+   "MAG": "2951037635",
+   "ArXiv": "1606.07947",
+   "ACL": "D16-1139",
+   "DOI": "10.18653/v1/D16-1139",
+   "CorpusId": 8451212
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "Sequence-Level Knowledge Distillation",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2016,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/1606.07947"
+  }
+ },
+ "2306.08543": {
+  "paperId": "275d8bfe7d9c671d1cb4f525434d10a7dbd8778a",
+  "externalIds": {
+   "ArXiv": "2306.08543",
+   "CorpusId": 259164722
+  },
+  "publicationVenue": null,
+  "title": "MiniLLM: On-Policy Distillation of Large Language Models",
+  "venue": "",
+  "year": 2023,
+  "publicationTypes": null,
+  "journal": null
+ },
+ "2306.13649": {
+  "paperId": "a57ef1f5c3af185af79751855b8033b7fc6d89b3",
+  "externalIds": {
+   "DBLP": "conf/iclr/AgarwalVZSGGB24",
+   "ArXiv": "2306.13649",
+   "CorpusId": 263610088
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes",
+  "venue": "International Conference on Learning Representations",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": null
+ },
+ "2402.03898": {
+  "paperId": "49b7baceecd32f81a08aa8e84e2fe71c2b879ee6",
+  "externalIds": {
+   "DBLP": "conf/icml/KoKCY24",
+   "ArXiv": "2402.03898",
+   "DOI": "10.48550/arXiv.2402.03898",
+   "CorpusId": 267499832
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "DistiLLM: Towards Streamlined Distillation for Large Language Models",
+  "venue": "International Conference on Machine Learning",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.03898"
+  }
+ },
+ "2503.07067": {
+  "paperId": "e5fd00515021e7e7dbd6a4692142f58943ccb750",
+  "externalIds": {
+   "ArXiv": "2503.07067",
+   "DBLP": "conf/icml/KoCKDLZY25",
+   "DOI": "10.48550/arXiv.2503.07067",
+   "CorpusId": 276903548
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "DistiLLM-2: A Contrastive Approach Boosts the Distillation of LLMs",
+  "venue": "International Conference on Machine Learning",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2503.07067"
+  }
+ },
+ "2307.15190": {
+  "paperId": "bf9e20852c04ea5aa28b5a092f7fe8354878bf92",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2307-15190",
+   "ACL": "2023.acl-long.605",
+   "ArXiv": "2307.15190",
+   "DOI": "10.48550/arXiv.2307.15190",
+   "CorpusId": 259370700
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "f-Divergence Minimization for Sequence-Level Knowledge Distillation",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2307.15190"
+  }
+ },
+ "2404.02657": {
+  "paperId": "59756f4e786d3212f793b8b709a3d37ebbc16d94",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2404-02657",
+   "ArXiv": "2404.02657",
+   "DOI": "10.48550/arXiv.2404.02657",
+   "CorpusId": 268876464
+  },
+  "publicationVenue": {
+   "id": "f51ff783-cdff-4e22-94fb-28e6336d17b3",
+   "name": "International Conference on Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Comput Linguistics",
+    "COLING"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/coling/"
+  },
+  "title": "Rethinking Kullback-Leibler Divergence in Knowledge Distillation for Large Language Models",
+  "venue": "International Conference on Computational Linguistics",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2404.02657"
+  }
+ },
+ "2211.16231": {
+  "paperId": "6ee96ee0d32816658daa507e2228b037768f148b",
+  "externalIds": {
+   "ArXiv": "2211.16231",
+   "DBLP": "journals/corr/abs-2211-16231",
+   "DOI": "10.48550/arXiv.2211.16231",
+   "CorpusId": 254069919
+  },
+  "publicationVenue": {
+   "id": "bdc2e585-4e48-4e36-8af1-6d859763d405",
+   "name": "AAAI Conference on Artificial Intelligence",
+   "type": "conference",
+   "alternate_names": [
+    "National Conference on Artificial Intelligence",
+    "National Conf Artif Intell",
+    "AAAI Conf Artif Intell",
+    "AAAI"
+   ],
+   "url": "http://www.aaai.org/"
+  },
+  "title": "Curriculum Temperature for Knowledge Distillation",
+  "venue": "AAAI Conference on Artificial Intelligence",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2211.16231"
+  }
+ },
+ "2104.07163": {
+  "paperId": "7599401233a40cc8c51b77d0419d2732c35439b2",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2104-07163",
+   "ArXiv": "2104.07163",
+   "ACL": "2021.eacl-main.212",
+   "DOI": "10.18653/v1/2021.eacl-main.212",
+   "CorpusId": 233189631
+  },
+  "publicationVenue": {
+   "id": "8de18c35-6785-4e54-99f2-21ee961302c6",
+   "name": "Conference of the European Chapter of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Conf Eur Chapter Assoc Comput Linguistics",
+    "EACL"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/eacl/"
+  },
+  "title": "Annealing Knowledge Distillation",
+  "venue": "Conference of the European Chapter of the Association for Computational Linguistics",
+  "year": 2021,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "2493-2504"
+  }
+ },
+ "1907.04829": {
+  "paperId": "ef6948edae12eba6f1d486b8600108b9762f36ab",
+  "externalIds": {
+   "MAG": "2952603081",
+   "DBLP": "journals/corr/abs-1907-04829",
+   "ACL": "P19-1595",
+   "ArXiv": "1907.04829",
+   "DOI": "10.18653/v1/P19-1595",
+   "CorpusId": 85464175
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "BAM! Born-Again Multi-Task Networks for Natural Language Understanding",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2019,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "5931-5937"
+  }
+ },
+ "2503.16870": {
+  "paperId": "65cf7c03294aaa1eb73c07f04dbe8ca276838f1b",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2503-16870",
+   "ArXiv": "2503.16870",
+   "DOI": "10.48550/arXiv.2503.16870",
+   "CorpusId": 277244226
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Sparse Logit Sampling: Accelerating Knowledge Distillation in LLMs",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2503.16870"
+  }
+ },
+ "2410.16215": {
+  "paperId": "1db93f8ce312fac041f9271a9b8068b9cb4b9fb2",
+  "externalIds": {
+   "DBLP": "conf/acl/0015LB0Z0L25",
+   "ArXiv": "2410.16215",
+   "DOI": "10.48550/arXiv.2410.16215",
+   "CorpusId": 273507110
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Pre-training Distillation for Large Language Models: A Design Space Exploration",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2410.16215"
+  }
+ },
+ "2408.00118": {
+  "paperId": "ec2ce4e38af8bc82f1b8928ba51a84911bad0cc6",
+  "externalIds": {
+   "ArXiv": "2408.00118",
+   "DBLP": "journals/corr/abs-2408-00118",
+   "DOI": "10.48550/arXiv.2408.00118",
+   "CorpusId": 270843326
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Gemma 2: Improving Open Language Models at a Practical Size",
+  "venue": "arXiv.org",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2408.00118"
+  }
+ },
+ "2410.17215": {
+  "paperId": "3f4b3d0fd2af9c45bcedd73a3428c56d3a2e5fc6",
+  "externalIds": {
+   "DBLP": "conf/iclr/GuZMZH25",
+   "ArXiv": "2410.17215",
+   "DOI": "10.48550/arXiv.2410.17215",
+   "CorpusId": 273508026
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "MiniPLM: Knowledge Distillation for Pre-Training Language Models",
+  "venue": "International Conference on Learning Representations",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2410.17215"
+  }
+ },
+ "2407.14679": {
+  "paperId": "ef122de37f6fe57403974bbfb12d4f7d2f183e1f",
+  "externalIds": {
+   "DBLP": "conf/nips/MuralidharanSJC24",
+   "ArXiv": "2407.14679",
+   "DOI": "10.48550/arXiv.2407.14679",
+   "CorpusId": 271328221
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Compact Language Models via Pruning and Knowledge Distillation",
+  "venue": "Neural Information Processing Systems",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2407.14679"
+  }
+ },
+ "2402.12030": {
+  "paperId": "1991666b99d1f9781aab32af504168748c117557",
+  "externalIds": {
+   "DBLP": "journals/tmlr/BoizardHHC25",
+   "ArXiv": "2402.12030",
+   "DOI": "10.48550/arXiv.2402.12030",
+   "CorpusId": 267750227
+  },
+  "publicationVenue": null,
+  "title": "Towards Cross-Tokenizer Distillation: the Universal Logit Distillation Loss for LLMs",
+  "venue": "Trans. Mach. Learn. Res.",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "Trans. Mach. Learn. Res.",
+   "volume": "2025"
+  }
+ },
+ "2502.08606": {
+  "paperId": "75db36b5349314c71ff5a837e6fd0b5b4b144e2f",
+  "externalIds": {
+   "ArXiv": "2502.08606",
+   "DBLP": "conf/icml/BusbridgeSWRLW25",
+   "DOI": "10.48550/arXiv.2502.08606",
+   "CorpusId": 276287490
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "Distillation Scaling Laws",
+  "venue": "International Conference on Machine Learning",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2502.08606"
+  }
+ },
+ "2604.00626": {
+  "paperId": "58e5b7e01add535df2bafd060a2e2b11f3da7698",
+  "externalIds": {
+   "ArXiv": "2604.00626",
+   "DBLP": "journals/corr/abs-2604-00626",
+   "DOI": "10.48550/arXiv.2604.00626",
+   "CorpusId": 287021833
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "A Survey of On-Policy Distillation for Large Language Models",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle",
+   "Review"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2604.00626"
+  }
+ },
+ "2305.07759": {
+  "paperId": "28085f480ce456a376ebace9b899e3bc93dbc048",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2305-07759",
+   "ArXiv": "2305.07759",
+   "CorpusId": 258686446
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "TinyStories: How Small Can Language Models Be and Still Speak Coherent English?",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.07759"
+  }
+ },
+ "2306.11644": {
+  "paperId": "2922768fd451ecdb45f48c1a83eb57f54a91221b",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2306-11644",
+   "ArXiv": "2306.11644",
+   "CorpusId": 259203998
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Textbooks Are All You Need",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2306.11644"
+  }
+ },
+ "2309.05463": {
+  "paperId": "e26888285436bc7998e5c95102a9beb60144be5e",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2309-05463",
+   "ArXiv": "2309.05463",
+   "DOI": "10.48550/arXiv.2309.05463",
+   "CorpusId": 261696657
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Textbooks Are All You Need II: phi-1.5 technical report",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2309.05463"
+  }
+ },
+ "2312.09241": {
+  "paperId": "82730762d438b58a8af874d03e9903a73e18a39e",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2312-09241",
+   "ArXiv": "2312.09241",
+   "CorpusId": 266210221
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "TinyGSM: achieving >80% on GSM8k with small language models",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2312.09241"
+  }
+ },
+ "2408.03617": {
+  "paperId": "1914a29816bb5f09f6c46c862d8db3ecd4b6923f",
+  "externalIds": {
+   "DBLP": "conf/emnlp/FengGF24",
+   "ACL": "2024.emnlp-main.1231",
+   "ArXiv": "2408.03617",
+   "DOI": "10.48550/arXiv.2408.03617",
+   "CorpusId": 271745023
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "Is Child-Directed Speech Effective Training Data for Language Models?",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "22055-22071"
+  }
+ },
+ "2502.10645": {
+  "paperId": "a1fc1bdea014ca4de09ccf452528020873e59d53",
+  "externalIds": {
+   "ArXiv": "2502.10645",
+   "DBLP": "journals/corr/abs-2502-10645",
+   "DOI": "10.48550/arXiv.2502.10645",
+   "CorpusId": 276408398
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "BabyLM Turns 3: Call for papers for the 2025 BabyLM workshop",
+  "venue": "arXiv.org",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2502.10645"
+  }
+ },
+ "2402.14905": {
+  "paperId": "f7310dac21abc6ba357bcd5e75fb2e6957a97303",
+  "externalIds": {
+   "ArXiv": "2402.14905",
+   "DBLP": "conf/icml/Liu0ILTFXCSKLC24",
+   "CorpusId": 267898017
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "MobileLLM: Optimizing Sub-billion Parameter Language Models for On-Device Use Cases",
+  "venue": "International Conference on Machine Learning",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "32431-32454"
+  }
+ },
+ "2506.22694": {
+  "paperId": "0174af65a96902b94f76beba2032c70c087790c9",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2506-22694",
+   "ArXiv": "2506.22694",
+   "DOI": "10.48550/arXiv.2506.22694",
+   "CorpusId": 280010825
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "VOCABTRIM: Vocabulary Pruning for Efficient Speculative Decoding in LLMs",
+  "venue": "arXiv.org",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2506.22694"
+  }
+ },
+ "2205.02340": {
+  "paperId": "f019c76f90f1a822351d76d317339f4c7bb8da06",
+  "externalIds": {
+   "ArXiv": "2205.02340",
+   "DBLP": "journals/corr/abs-2205-02340",
+   "DOI": "10.48550/arXiv.2205.02340",
+   "CorpusId": 248524841
+  },
+  "publicationVenue": {
+   "id": "14c9aa06-d077-45eb-b51f-0376a780741f",
+   "name": "Computational Linguistics and Intellectual Technologies",
+   "alternate_names": [
+    "Comput Linguistics Intellect Technol"
+   ],
+   "issn": "2075-7182",
+   "alternate_issns": [
+    "2221-7932"
+   ]
+  },
+  "title": "Knowledge Distillation of Russian Language Models with Reduction of Vocabulary",
+  "venue": "Computational Linguistics and Intellectual Technologies",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2205.02340"
+  }
+ },
+ "2305.15020": {
+  "paperId": "55aed2b647d08f1e9ba597ea7d109c153cc8dc6f",
+  "externalIds": {
+   "DBLP": "conf/emnlp/UshioZC23",
+   "ArXiv": "2305.15020",
+   "DOI": "10.48550/arXiv.2305.15020",
+   "CorpusId": 258865522
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "An Efficient Multilingual Language Model Compression through Vocabulary Trimming",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.15020"
+  }
+ },
+ "2407.13623": {
+  "paperId": "96686b8a1cd281584b1f4812a124a434dbda1c17",
+  "externalIds": {
+   "ArXiv": "2407.13623",
+   "DBLP": "conf/nips/TaoLDMWLLW24",
+   "DOI": "10.48550/arXiv.2407.13623",
+   "CorpusId": 271270413
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Scaling Laws with Vocabulary: Larger Models Deserve Larger Vocabularies",
+  "venue": "Neural Information Processing Systems",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2407.13623"
+  }
+ },
+ "2201.11903": {
+  "paperId": "1b6e810ce0afd0dd093f789d2b2742d047e316d5",
+  "externalIds": {
+   "DBLP": "conf/nips/Wei0SBIXCLZ22",
+   "ArXiv": "2201.11903",
+   "DOI": "10.52202/068431-1800",
+   "CorpusId": 246411621
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Chain of Thought Prompting Elicits Reasoning in Large Language Models",
+  "venue": "Neural Information Processing Systems",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2201.11903"
+  }
+ },
+ "2305.02301": {
+  "paperId": "aad167be3c902388ea625da4117fcae4325b8b7d",
+  "externalIds": {
+   "ArXiv": "2305.02301",
+   "DBLP": "journals/corr/abs-2305-02301",
+   "DOI": "10.48550/arXiv.2305.02301",
+   "CorpusId": 258461606
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.02301"
+  }
+ },
+ "2212.08410": {
+  "paperId": "126a4776ff8315fd506766cb8f3c722cf746ad9e",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2212-08410",
+   "ACL": "2023.acl-short.151",
+   "ArXiv": "2212.08410",
+   "DOI": "10.48550/arXiv.2212.08410",
+   "CorpusId": 254823156
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Teaching Small Language Models to Reason",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2212.08410"
+  }
+ },
+ "2212.10071": {
+  "paperId": "a9e3e5dd7b30890553b7ae1c41f932e99192bb44",
+  "externalIds": {
+   "ACL": "2023.acl-long.830",
+   "DBLP": "conf/acl/HoSY23",
+   "ArXiv": "2212.10071",
+   "DOI": "10.48550/arXiv.2212.10071",
+   "CorpusId": 254877399
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Large Language Models Are Reasoning Teachers",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "14852-14882"
+  }
+ },
+ "2301.12726": {
+  "paperId": "fbd49b25bdab98c171af49962a41139c73dacbde",
+  "externalIds": {
+   "ArXiv": "2301.12726",
+   "DBLP": "conf/icml/FuPOSK23",
+   "DOI": "10.48550/arXiv.2301.12726",
+   "CorpusId": 256390607
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "Specializing Smaller Language Models towards Multi-Step Reasoning",
+  "venue": "International Conference on Machine Learning",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2301.12726"
+  }
+ },
+ "2212.00193": {
+  "paperId": "8fd462f6248d5e3f1b6602697c09489086b5655f",
+  "externalIds": {
+   "DBLP": "conf/acl/ShridharSS23",
+   "ArXiv": "2212.00193",
+   "DOI": "10.18653/v1/2023.findings-acl.441",
+   "CorpusId": 258762841
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Distilling Reasoning Capabilities into Smaller Language Models",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "7059-7073"
+  }
+ },
+ "2211.10435": {
+  "paperId": "6c1e1cc1e0e1f8fd026fe517607b2d4535565fa7",
+  "externalIds": {
+   "ArXiv": "2211.10435",
+   "DBLP": "journals/corr/abs-2211-10435",
+   "DOI": "10.48550/arXiv.2211.10435",
+   "CorpusId": 253708270
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "PAL: Program-aided Language Models",
+  "venue": "International Conference on Machine Learning",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2211.10435"
+  }
+ },
+ "2211.12588": {
+  "paperId": "6c943670dca38bfc7c8b477ae7c2d1fba1ad3691",
+  "externalIds": {
+   "ArXiv": "2211.12588",
+   "DBLP": "journals/corr/abs-2211-12588",
+   "CorpusId": 253801709
+  },
+  "publicationVenue": null,
+  "title": "Program of Thoughts Prompting: Disentangling Computation from Reasoning for Numerical Reasoning Tasks",
+  "venue": "Trans. Mach. Learn. Res.",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "Trans. Mach. Learn. Res.",
+   "volume": "2023"
+  }
+ },
+ "2305.13888": {
+  "paperId": "758985395372f5378fcf036094195b2848e13a21",
+  "externalIds": {
+   "DBLP": "conf/naacl/ZhuQZLLZ24",
+   "ArXiv": "2305.13888",
+   "ACL": "2024.naacl-long.142",
+   "DOI": "10.18653/v1/2024.naacl-long.142",
+   "CorpusId": 258840866
+  },
+  "publicationVenue": {
+   "id": "01103732-3808-4930-b8e4-7e9e68d5c68d",
+   "name": "North American Chapter of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "North Am Chapter Assoc Comput Linguistics",
+    "NAACL"
+   ],
+   "url": "https://www.aclweb.org/portal/naacl"
+  },
+  "title": "PaD: Program-aided Distillation Can Teach Small Models Reasoning Better than Chain-of-thought Fine-tuning",
+  "venue": "North American Chapter of the Association for Computational Linguistics",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "2571-2597"
+  }
+ },
+ "2110.14168": {
+  "paperId": "d6045d2ccc9c09ca1671348de86d07da6bc28eea",
+  "externalIds": {
+   "ArXiv": "2110.14168",
+   "DBLP": "journals/corr/abs-2110-14168",
+   "CorpusId": 239998651
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Training Verifiers to Solve Math Word Problems",
+  "venue": "arXiv.org",
+  "year": 2021,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2110.14168"
+  }
+ },
+ "2305.20050": {
+  "paperId": "be8db99310602d66bba64bcf41a572c45816fbfc",
+  "externalIds": {
+   "ArXiv": "2305.20050",
+   "DBLP": "conf/iclr/LightmanKBEBLLS24",
+   "DOI": "10.48550/arXiv.2305.20050",
+   "CorpusId": 258987659
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "Let's Verify Step by Step",
+  "venue": "International Conference on Learning Representations",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.20050"
+  }
+ },
+ "2203.14465": {
+  "paperId": "23dd78e424d32f6a48660dcd67ce994b8a7db8be",
+  "externalIds": {
+   "ArXiv": "2203.14465",
+   "CorpusId": 247762790
+  },
+  "publicationVenue": null,
+  "title": "STaR: Bootstrapping Reasoning With Reasoning",
+  "venue": "",
+  "year": 2022,
+  "publicationTypes": null,
+  "journal": null
+ },
+ "2402.10176": {
+  "paperId": "a3d749bc119f5c8425779e4e72e650720db2fe4b",
+  "externalIds": {
+   "ArXiv": "2402.10176",
+   "DBLP": "conf/nips/ToshniwalMNGJG24",
+   "DOI": "10.48550/arXiv.2402.10176",
+   "CorpusId": 267681752
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "OpenMathInstruct-1: A 1.8 Million Math Instruction Tuning Dataset",
+  "venue": "Neural Information Processing Systems",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.10176"
+  }
+ },
+ "2402.14830": {
+  "paperId": "ad2be51acf42f686a8d1de92d7435d84274ee62d",
+  "externalIds": {
+   "ArXiv": "2402.14830",
+   "DBLP": "journals/corr/abs-2402-14830",
+   "DOI": "10.48550/arXiv.2402.14830",
+   "CorpusId": 267897618
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Orca-Math: Unlocking the potential of SLMs in Grade School Math",
+  "venue": "arXiv.org",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.14830"
+  }
+ },
+ "2501.12948": {
+  "paperId": "2eed1fad9bbf887d4395de40f20144c4fafefd7f",
+  "externalIds": {
+   "ArXiv": "2501.12948",
+   "PubMedCentral": "12443585",
+   "DBLP": "journals/nature/GuoYZSWZXZMBZY025",
+   "DOI": "10.1038/s41586-025-09422-z",
+   "CorpusId": 275789950,
+   "PubMed": "40962978"
+  },
+  "publicationVenue": {
+   "id": "6c24a0a0-b07d-4d7b-a19b-fd09a3ed453a",
+   "name": "Nature",
+   "type": "journal",
+   "issn": "0028-0836",
+   "url": "https://www.nature.com/",
+   "alternate_urls": [
+    "http://www.nature.com/nature/",
+    "https://www.nature.com/nature/",
+    "http://www.nature.com/nature/archive/index.html"
+   ]
+  },
+  "title": "DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning",
+  "venue": "Nature",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "Nature",
+   "pages": "633 - 638",
+   "volume": "645"
+  }
+ },
+ "2210.03629": {
+  "paperId": "99832586d55f540f603637e458a292406a0ed75d",
+  "externalIds": {
+   "DBLP": "conf/iclr/YaoZYDSN023",
+   "ArXiv": "2210.03629",
+   "CorpusId": 252762395
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+  "venue": "International Conference on Learning Representations",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2210.03629"
+  }
+ },
+ "2302.04761": {
+  "paperId": "53d128ea815bcc0526856eb5a9c42cc977cb36a7",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2302-04761",
+   "ArXiv": "2302.04761",
+   "DOI": "10.48550/arXiv.2302.04761",
+   "CorpusId": 256697342
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+  "venue": "Neural Information Processing Systems",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2302.04761"
+  }
+ },
+ "2310.05915": {
+  "paperId": "67daf8c4fe1958d20ebdf95c2a36dd490c73836f",
+  "externalIds": {
+   "ArXiv": "2310.05915",
+   "DBLP": "journals/corr/abs-2310-05915",
+   "DOI": "10.48550/arXiv.2310.05915",
+   "CorpusId": 263829338
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "FireAct: Toward Language Agent Fine-tuning",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2310.05915"
+  }
+ },
+ "2310.12823": {
+  "paperId": "46fe9ce789408b8a50fb4259e6bf0cc5855f4ed5",
+  "externalIds": {
+   "ArXiv": "2310.12823",
+   "DBLP": "conf/acl/ZengLLWLD024",
+   "DOI": "10.48550/arXiv.2310.12823",
+   "CorpusId": 264306101
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "AgentTuning: Enabling Generalized Agent Abilities for LLMs",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2310.12823"
+  }
+ },
+ "2505.17612": {
+  "paperId": "d030e15e1f5a01d7e50c9a31bac80787a54fa4aa",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2505-17612",
+   "ArXiv": "2505.17612",
+   "DOI": "10.48550/arXiv.2505.17612",
+   "CorpusId": 278886663
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Distilling LLM Agent into Small Models with Retrieval and Code Tools",
+  "venue": "Neural Information Processing Systems",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2505.17612"
+  }
+ },
+ "2505.13820": {
+  "paperId": "ec72ac62357efcb8578233cc6abf61a5cd3df5fc",
+  "externalIds": {
+   "ArXiv": "2505.13820",
+   "DBLP": "journals/corr/abs-2505-13820",
+   "DOI": "10.65109/OLHJ8062",
+   "CorpusId": 278769703
+  },
+  "publicationVenue": null,
+  "title": "Structured Agent Distillation for Large Language Model Agents",
+  "venue": "Proceedings of the 25th International Conference on Autonomous Agents and Multiagent Systems",
+  "year": 2025,
+  "publicationTypes": [
+   "Book",
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "Proc. of the 25th International Conference on Autonomous Agents and Multiagent Systems"
+  }
+ },
+ "2602.03022": {
+  "paperId": "53644dbddd29ab1ca1f8df919940b21b9469a1e2",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2602-03022",
+   "ArXiv": "2602.03022",
+   "DOI": "10.48550/arXiv.2602.03022",
+   "CorpusId": 285275338
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "STAR: Similarity-guided Teacher-Assisted Refinement for Super-Tiny Function Calling Models",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2602.03022"
+  }
+ },
+ "2409.00608": {
+  "paperId": "ff052499ea1e2ca50ffcd0285d3aa1004516eec7",
+  "externalIds": {
+   "ACL": "2024.emnlp-demo.9",
+   "ArXiv": "2409.00608",
+   "DBLP": "conf/emnlp/ErdoganLJ0TMHAK24",
+   "DOI": "10.48550/arXiv.2409.00608",
+   "CorpusId": 272367136
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "TinyAgent: Function Calling at the Edge",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2409.00608"
+  }
+ },
+ "2404.01744": {
+  "paperId": "3dcc854dbe084f24419ace8a682f100a14aeb09b",
+  "externalIds": {
+   "ArXiv": "2404.01744",
+   "DBLP": "journals/corr/abs-2404-01744",
+   "DOI": "10.48550/arXiv.2404.01744",
+   "CorpusId": 268857212
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Octopus v2: On-device language model for super agent",
+  "venue": "arXiv.org",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2404.01744"
+  }
+ },
+ "2311.13373": {
+  "paperId": "9e0da24b96eb4f3f77ccdfc485a4d7d7d21a4585",
+  "externalIds": {
+   "ArXiv": "2311.13373",
+   "DBLP": "conf/ijcai/ZhouHZZL24",
+   "DOI": "10.24963/ijcai.2024/627",
+   "CorpusId": 265351788
+  },
+  "publicationVenue": {
+   "id": "67f7f831-711a-43c8-8785-1e09005359b5",
+   "name": "International Joint Conference on Artificial Intelligence",
+   "type": "conference",
+   "alternate_names": [
+    "Int Jt Conf Artif Intell",
+    "IJCAI"
+   ],
+   "url": "http://www.ijcai.org/"
+  },
+  "title": "Large Language Model as a Policy Teacher for Training Reinforcement Learning Agents",
+  "venue": "International Joint Conference on Artificial Intelligence",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "5671-5679"
+  }
+ },
+ "2412.11499": {
+  "paperId": "89435c392b611b1e804c12d0176661e91ea54ea1",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2412-11499",
+   "ArXiv": "2412.11499",
+   "DOI": "10.48550/arXiv.2412.11499",
+   "CorpusId": 272330340
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "Embodied CoT Distillation From LLM To Off-the-shelf Agents",
+  "venue": "International Conference on Machine Learning",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2412.11499"
+  }
+ },
+ "2405.15793": {
+  "paperId": "1c3c531fc0fbe79f97f367ed3648de8467caeeaa",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2405-15793",
+   "ArXiv": "2405.15793",
+   "DOI": "10.48550/arXiv.2405.15793",
+   "CorpusId": 270063685
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+  "venue": "Neural Information Processing Systems",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2405.15793"
+  }
+ },
+ "2402.01030": {
+  "paperId": "78fbb6e7a1c568a04e8c935aa9909d0c942ea5f6",
+  "externalIds": {
+   "ArXiv": "2402.01030",
+   "DBLP": "conf/icml/WangCY0L0J24",
+   "DOI": "10.48550/arXiv.2402.01030",
+   "CorpusId": 267406155
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "Executable Code Actions Elicit Better LLM Agents",
+  "venue": "International Conference on Machine Learning",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.01030"
+  }
+ },
+ "2506.02153": {
+  "paperId": "f1d477ccd20b3e90611fc46b1951b3708651a425",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2506-02153",
+   "ArXiv": "2506.02153",
+   "DOI": "10.48550/arXiv.2506.02153",
+   "CorpusId": 279119702
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Small Language Models are the Future of Agentic AI",
+  "venue": "arXiv.org",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2506.02153"
+  }
+ },
+ "2609.36630": {
+  "paperId": "4aa2fc70687579d74984e4189e92a5037f1b8d4e",
+  "externalIds": {
+   "ArXiv": "2609.36630",
+   "CorpusId": 292441496
+  },
+  "publicationVenue": null,
+  "title": "Distilling Agentic Systems: A Roadmap across Models, Artifacts, and Harnesses",
+  "venue": "",
+  "year": 2026,
+  "publicationTypes": null,
+  "journal": null
+ },
+ "2307.09702": {
+  "paperId": "c4ceaef35bca063815f50d90a087acbd07a65478",
+  "externalIds": {
+   "ArXiv": "2307.09702",
+   "DBLP": "journals/corr/abs-2307-09702",
+   "DOI": "10.48550/arXiv.2307.09702",
+   "CorpusId": 260278488
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Efficient Guided Generation for Large Language Models",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2307.09702"
+  }
+ },
+ "2305.13971": {
+  "paperId": "7e269bfabb451765a16ca0357de6b497cefb60bf",
+  "externalIds": {
+   "DBLP": "conf/emnlp/GengJP023",
+   "ArXiv": "2305.13971",
+   "DOI": "10.18653/v1/2023.emnlp-main.674",
+   "CorpusId": 258841514
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "Grammar-Constrained Decoding for Structured NLP Tasks without Finetuning",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "10932-10952"
+  }
+ },
+ "2408.02442": {
+  "paperId": "7c394a8b4db70d7424abc300749fff0fe580bdae",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2408-02442",
+   "ACL": "2024.emnlp-industry.91",
+   "ArXiv": "2408.02442",
+   "DOI": "10.48550/arXiv.2408.02442",
+   "CorpusId": 271709856
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "Let Me Speak Freely? A Study On The Impact Of Format Restrictions On Large Language Model Performance.",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "1218-1236"
+  }
+ },
+ "2305.15334": {
+  "paperId": "7d8905a1fd288068f12c8347caeabefd36d0dd6c",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2305-15334",
+   "ArXiv": "2305.15334",
+   "DOI": "10.52202/079017-4020",
+   "CorpusId": 258865184
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Gorilla: Large Language Model Connected with Massive APIs",
+  "venue": "Neural Information Processing Systems",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.15334"
+  }
+ },
+ "2607.08268": {
+  "paperId": "120db3cd46d692a4c20db059f28a3342ee0b749a",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2607-08268",
+   "ArXiv": "2607.08268",
+   "DOI": "10.48550/arXiv.2607.08268",
+   "CorpusId": 290009853
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Different Teachers, Different Capabilities: Sub-1B On-Device Distillation for Structured Text Enrichment",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2607.08268"
+  }
+ },
+ "2103.07191": {
+  "paperId": "13c4e5a6122f3fa2663f63e49537091da6532f35",
+  "externalIds": {
+   "MAG": "3170403598",
+   "ArXiv": "2103.07191",
+   "DBLP": "conf/naacl/PatelBG21",
+   "ACL": "2021.naacl-main.168",
+   "DOI": "10.18653/V1/2021.NAACL-MAIN.168",
+   "CorpusId": 232223322
+  },
+  "publicationVenue": {
+   "id": "01103732-3808-4930-b8e4-7e9e68d5c68d",
+   "name": "North American Chapter of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "North Am Chapter Assoc Comput Linguistics",
+    "NAACL"
+   ],
+   "url": "https://www.aclweb.org/portal/naacl"
+  },
+  "title": "Are NLP Models really able to Solve Simple Math Word Problems?",
+  "venue": "North American Chapter of the Association for Computational Linguistics",
+  "year": 2021,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "2080-2094"
+  }
+ },
+ "2410.05229": {
+  "paperId": "05506581cade1a8ef6372616cec20b81a3d5c366",
+  "externalIds": {
+   "DBLP": "conf/iclr/MirzadehASTBF25",
+   "ArXiv": "2410.05229",
+   "CorpusId": 273186279
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "GSM-Symbolic: Understanding the Limitations of Mathematical Reasoning in Large Language Models",
+  "venue": "International Conference on Learning Representations",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2410.05229"
+  }
+ },
+ "2302.00093": {
+  "paperId": "3d68522abfadfc8ee6b7ec9edaaf91f1b2f38e5e",
+  "externalIds": {
+   "DBLP": "conf/icml/ShiCMSDCSZ23",
+   "ArXiv": "2302.00093",
+   "DOI": "10.48550/arXiv.2302.00093",
+   "CorpusId": 256459776
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "Large Language Models Can Be Easily Distracted by Irrelevant Context",
+  "venue": "International Conference on Machine Learning",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "31210-31227"
+  }
+ },
+ "2405.00332": {
+  "paperId": "ef62f95c16f668f031d649799cbd79081c6d2b0f",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2405-00332",
+   "ArXiv": "2405.00332",
+   "DOI": "10.48550/arXiv.2405.00332",
+   "CorpusId": 269484687
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "A Careful Examination of Large Language Model Performance on Grade School Arithmetic",
+  "venue": "Neural Information Processing Systems",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2405.00332"
+  }
+ },
+ "2402.19255": {
+  "paperId": "bed35010543191bf57a09a6058e75332702d7afa",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2402-19255",
+   "ArXiv": "2402.19255",
+   "DOI": "10.48550/arXiv.2402.19255",
+   "CorpusId": 268063753
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "GSM-Plus: A Comprehensive Benchmark for Evaluating the Robustness of LLMs as Mathematical Problem Solvers",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.19255"
+  }
+ },
+ "2305.14536": {
+  "paperId": "6cd26d124ffeb6ce301ef351aada27fa0852f81b",
+  "externalIds": {
+   "DBLP": "conf/emnlp/MacinaDCSKGS23",
+   "ArXiv": "2305.14536",
+   "DOI": "10.48550/arXiv.2305.14536",
+   "CorpusId": 258865403
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "MathDial: A Dialogue Tutoring Dataset with Rich Pedagogical Properties Grounded in Math Reasoning Problems",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.14536"
+  }
+ },
+ "2502.18940": {
+  "paperId": "b7fac69ac1838b6eaf8e06f133823b770ce8f0ae",
+  "externalIds": {
+   "ArXiv": "2502.18940",
+   "DBLP": "conf/emnlp/MacinaDHKGS25",
+   "DOI": "10.48550/arXiv.2502.18940",
+   "CorpusId": 276617751
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "MathTutorBench: A Benchmark for Measuring Open-ended Pedagogical Capabilities of LLM Tutors",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2502.18940"
+  }
+ },
+ "2310.10648": {
+  "paperId": "ff4b455af2ef2c3f7372c47209a617ddafd4e203",
+  "externalIds": {
+   "DBLP": "conf/naacl/WangZRLD24",
+   "ArXiv": "2310.10648",
+   "ACL": "2024.naacl-long.120",
+   "DOI": "10.18653/v1/2024.naacl-long.120",
+   "CorpusId": 264172815
+  },
+  "publicationVenue": {
+   "id": "01103732-3808-4930-b8e4-7e9e68d5c68d",
+   "name": "North American Chapter of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "North Am Chapter Assoc Comput Linguistics",
+    "NAACL"
+   ],
+   "url": "https://www.aclweb.org/portal/naacl"
+  },
+  "title": "Bridging the Novice-Expert Gap via Models of Decision-Making: A Case Study on Remediating Math Mistakes",
+  "venue": "North American Chapter of the Association for Computational Linguistics",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "2174-2199"
+  }
+ },
+ "2205.07540": {
+  "paperId": "29c4e190bfc8fc328b1fb93322716600acfc68a6",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2205-07540",
+   "ArXiv": "2205.07540",
+   "DOI": "10.48550/arXiv.2205.07540",
+   "CorpusId": 248811624
+  },
+  "publicationVenue": {
+   "id": "9d0be2d5-c618-4179-bd3d-5f249e940584",
+   "name": "Educational Data Mining",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Young Spéc Micro/nanotechnologies Electron Device",
+    "International Conference of Young Specialists on Micro/Nanotechnologies and Electron Devices",
+    "Educ Data Min",
+    "EDM"
+   ],
+   "url": "http://www.educationaldatamining.org/"
+  },
+  "title": "The AI Teacher Test: Measuring the Pedagogical Ability of Blender and GPT-3 in Educational Dialogues",
+  "venue": "Educational Data Mining",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2205.07540"
+  }
+ },
+ "2310.13548": {
+  "paperId": "e6423c211fea2945aa71e1ac5ea24f8f595b4b0a",
+  "externalIds": {
+   "DBLP": "conf/iclr/SharmaTKDABDHJK24",
+   "ArXiv": "2310.13548",
+   "DOI": "10.48550/arXiv.2310.13548",
+   "CorpusId": 264405698
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "Towards Understanding Sycophancy in Language Models",
+  "venue": "International Conference on Learning Representations",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2310.13548"
+  }
+ },
+ "2308.03958": {
+  "paperId": "a37d5620210276e47cf0c9dd2898c2a82c9d0422",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2308-03958",
+   "ArXiv": "2308.03958",
+   "DOI": "10.48550/arXiv.2308.03958",
+   "CorpusId": 260704246
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Simple synthetic data reduces sycophancy in large language models",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2308.03958"
+  }
+ },
+ "2407.09136": {
+  "paperId": "696bc486d84cb33a152491676b6237e0e5e43061",
+  "externalIds": {
+   "ACL": "2024.emnlp-main.478",
+   "ArXiv": "2407.09136",
+   "DBLP": "journals/corr/abs-2407-09136",
+   "DOI": "10.48550/arXiv.2407.09136",
+   "CorpusId": 271161813
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "Stepwise Verification and Remediation of Student Reasoning Errors with Large Language Model Tutors",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "8386-8411"
+  }
+ },
+ "2412.09416": {
+  "paperId": "40d75383b29154e8d69a899fe736ebaa9d6d03cb",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2412-09416",
+   "ArXiv": "2412.09416",
+   "DOI": "10.48550/arXiv.2412.09416",
+   "CorpusId": 274655987
+  },
+  "publicationVenue": {
+   "id": "01103732-3808-4930-b8e4-7e9e68d5c68d",
+   "name": "North American Chapter of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "North Am Chapter Assoc Comput Linguistics",
+    "NAACL"
+   ],
+   "url": "https://www.aclweb.org/portal/naacl"
+  },
+  "title": "Unifying AI Tutor Evaluation: An Evaluation Taxonomy for Pedagogical Ability Assessment of LLM-Powered AI Tutors",
+  "venue": "North American Chapter of the Association for Computational Linguistics",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2412.09416"
+  }
+ },
+ "1506.03099": {
+  "paperId": "df137487e20ba7c6e1e2b9a1e749f2a578b5ad99",
+  "externalIds": {
+   "MAG": "648786980",
+   "DBLP": "conf/nips/BengioVJS15",
+   "ArXiv": "1506.03099",
+   "CorpusId": 1820089
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks",
+  "venue": "Neural Information Processing Systems",
+  "year": 2015,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/1506.03099"
+  }
+ },
+ "1511.06732": {
+  "paperId": "b7aee9dfb027d6061c6a653684c0fa9a9bba750d",
+  "externalIds": {
+   "MAG": "2176263492",
+   "ArXiv": "1511.06732",
+   "DBLP": "journals/corr/RanzatoCAZ15",
+   "CorpusId": 7147309
+  },
+  "publicationVenue": {
+   "id": "939c6e1d-0d17-4d6e-8a82-66d960df0e40",
+   "name": "International Conference on Learning Representations",
+   "type": "conference",
+   "alternate_names": [
+    "Int Conf Learn Represent",
+    "ICLR"
+   ],
+   "url": "https://iclr.cc/"
+  },
+  "title": "Sequence Level Training with Recurrent Neural Networks",
+  "venue": "International Conference on Learning Representations",
+  "year": 2015,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "CoRR",
+   "volume": "abs/1511.06732"
+  }
+ },
+ "1011.0686": {
+  "paperId": "79ab3c49903ec8cb339437ccf5cf998607fc313e",
+  "externalIds": {
+   "MAG": "2951204162",
+   "DBLP": "journals/jmlr/RossGB11",
+   "ArXiv": "1011.0686",
+   "CorpusId": 103456
+  },
+  "publicationVenue": {
+   "id": "2d136b11-c2b5-484b-b008-7f4a852fd61e",
+   "name": "International Conference on Artificial Intelligence and Statistics",
+   "type": "conference",
+   "alternate_names": [
+    "AISTATS",
+    "Int Conf Artif Intell Stat"
+   ]
+  },
+  "title": "A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning",
+  "venue": "International Conference on Artificial Intelligence and Statistics",
+  "year": 2010,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "pages": "627-635"
+  }
+ },
+ "2204.01171": {
+  "paperId": "0e3d6a7c9c04cf3ba9c902724548846a5ade04b4",
+  "externalIds": {
+   "DBLP": "conf/acl/AroraABC22",
+   "ArXiv": "2204.01171",
+   "ACL": "2022.findings-acl.58",
+   "DOI": "10.48550/arXiv.2204.01171",
+   "CorpusId": 247939224
+  },
+  "publicationVenue": {
+   "id": "479d5605-51be-4346-b1d6-4334084504df",
+   "name": "Findings",
+   "type": "journal",
+   "issn": "2652-8800",
+   "url": "https://findingspress.org/"
+  },
+  "title": "Why Exposure Bias Matters: An Imitation Learning Perspective of Error Accumulation in Language Generation",
+  "venue": "Findings",
+  "year": 2022,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "pages": "700-710"
+  }
+ },
+ "2505.06120": {
+  "paperId": "bb5d81576c113f0b16234fd0db4238a4281c8388",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2505-06120",
+   "ArXiv": "2505.06120",
+   "DOI": "10.48550/arXiv.2505.06120",
+   "CorpusId": 278481320
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "LLMs Get Lost In Multi-Turn Conversation",
+  "venue": "arXiv.org",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2505.06120"
+  }
+ },
+ "2401.16745": {
+  "paperId": "8cc5067c48aef6b019ba38f1a2bd612b999df16c",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2401-16745",
+   "ArXiv": "2401.16745",
+   "ACL": "2024.emnlp-main.1124",
+   "DOI": "10.48550/arXiv.2401.16745",
+   "CorpusId": 267320495
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "MT-Eval: A Multi-Turn Capabilities Evaluation Benchmark for Large Language Models",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2401.16745"
+  }
+ },
+ "2305.18654": {
+  "paperId": "7d97c17a75beb89f938eaac1d3ca60ac2245fb2e",
+  "externalIds": {
+   "ArXiv": "2305.18654",
+   "DBLP": "journals/corr/abs-2305-18654",
+   "DOI": "10.52202/075280-3081",
+   "CorpusId": 258967391
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Faith and Fate: Limits of Transformers on Compositionality",
+  "venue": "Neural Information Processing Systems",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2305.18654"
+  }
+ },
+ "2002.12620": {
+  "paperId": "501a8b86428563539667e8117cd8409674ef97c3",
+  "externalIds": {
+   "MAG": "3037029945",
+   "DBLP": "journals/corr/abs-2002-12620",
+   "ACL": "2020.acl-demos.2",
+   "ArXiv": "2002.12620",
+   "DOI": "10.18653/v1/2020.acl-demos.2",
+   "CorpusId": 211572557
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "TextBrewer: An Open-Source Knowledge Distillation Toolkit for Natural Language Processing",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2020,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2002.12620"
+  }
+ },
+ "2011.12913": {
+  "paperId": "5472a56e420d6fd73f1e083d37d74cf65f264d11",
+  "externalIds": {
+   "MAG": "3108889257",
+   "DBLP": "journals/corr/abs-2011-12913",
+   "ArXiv": "2011.12913",
+   "DOI": "10.1007/978-3-030-76423-4_3",
+   "CorpusId": 227162027
+  },
+  "publicationVenue": {
+   "id": "3ca59fb5-82d5-4f30-b6e4-66ef6ca1be24",
+   "name": "International Workshop on Reproducible Research in Pattern Recognition",
+   "type": "conference",
+   "alternate_names": [
+    "RRPR",
+    "Int Workshop Reprod Res Pattern Recognit"
+   ]
+  },
+  "title": "torchdistill: A Modular, Configuration-Driven Framework for Knowledge Distillation",
+  "venue": "International Workshop on Reproducible Research in Pattern Recognition",
+  "year": 2020,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "pages": "24-44"
+  }
+ },
+ "2310.17644": {
+  "paperId": "091554b6e63b4b50e6546debee9232bb7d9eac98",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2310-17644",
+   "ArXiv": "2310.17644",
+   "ACL": "2023.nlposs-1.18",
+   "DOI": "10.18653/v1/2023.nlposs-1.18",
+   "CorpusId": 264490878
+  },
+  "publicationVenue": null,
+  "title": "torchdistill Meets Hugging Face Libraries for Reproducible, Coding-Free Deep Learning Studies: A Case Study on NLP",
+  "venue": "NLPOSS",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2310.17644"
+  }
+ },
+ "2505.20888": {
+  "paperId": "f710d24dc91f0090bb4f9899c1bf46df2349251c",
+  "externalIds": {
+   "DBLP": "conf/emnlp/0001Y0Y025",
+   "ArXiv": "2505.20888",
+   "DOI": "10.48550/arXiv.2505.20888",
+   "CorpusId": 278911958
+  },
+  "publicationVenue": {
+   "id": "41bf9ed3-85b3-4c90-b015-150e31690253",
+   "name": "Conference on Empirical Methods in Natural Language Processing",
+   "type": "conference",
+   "alternate_names": [
+    "Empir Method Nat Lang Process",
+    "Empirical Methods in Natural Language Processing",
+    "Conf Empir Method Nat Lang Process",
+    "EMNLP"
+   ],
+   "url": "https://www.aclweb.org/portal/emnlp"
+  },
+  "title": "EasyDistill: A Comprehensive Toolkit for Effective Knowledge Distillation of Large Language Models",
+  "venue": "Conference on Empirical Methods in Natural Language Processing",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "787-795"
+  }
+ },
+ "2011.14691": {
+  "paperId": "aa8f5faf8890b6846d4da9cb7e60a8df6e96ba4a",
+  "externalIds": {
+   "ArXiv": "2011.14691",
+   "DBLP": "journals/corr/abs-2011-14691",
+   "MAG": "3110457105",
+   "CorpusId": 227229062
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "KD-Lib: A PyTorch library for Knowledge Distillation, Pruning and Quantization",
+  "venue": "arXiv.org",
+  "year": 2020,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2011.14691"
+  }
+ },
+ "2005.10419": {
+  "paperId": "cd808e3e96aef9d18aae6efa842f0e5ebd329a01",
+  "externalIds": {
+   "ArXiv": "2005.10419",
+   "DBLP": "journals/corr/abs-2005-10419",
+   "MAG": "3028069987",
+   "CorpusId": 218763474
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Why distillation helps: a statistical perspective",
+  "venue": "arXiv.org",
+  "year": 2020,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2005.10419"
+  }
+ },
+ "2512.14954": {
+  "paperId": "861851f5f97ee94daf86a097b9fc16b8283a388e",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2512-14954",
+   "ArXiv": "2512.14954",
+   "DOI": "10.48550/arXiv.2512.14954",
+   "CorpusId": 283920747
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Cross-Tokenizer Likelihood Scoring Algorithms for Language Model Distillation",
+  "venue": "arXiv.org",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2512.14954"
+  }
+ },
+ "2106.15772": {
+  "paperId": "f13e41d24e5d0a68ca662c1b49de398a6fb68251",
+  "externalIds": {
+   "ArXiv": "2106.15772",
+   "DBLP": "conf/acl/MiaoLS20",
+   "MAG": "3034643750",
+   "ACL": "2020.acl-main.92",
+   "DOI": "10.18653/v1/2020.acl-main.92",
+   "CorpusId": 220047831
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "A Diverse Corpus for Evaluating and Developing English Math Word Problem Solvers",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2020,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "975-984"
+  }
+ },
+ "2412.16429": {
+  "paperId": "d78fd2b228f026cd710a023613f9d10624246157",
+  "externalIds": {
+   "ArXiv": "2412.16429",
+   "DBLP": "journals/corr/abs-2412-16429",
+   "DOI": "10.48550/arXiv.2412.16429",
+   "CorpusId": 274982090
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "LearnLM: Improving Gemini for Learning",
+  "venue": "arXiv.org",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2412.16429"
+  }
+ },
+ "2603.01875": {
+  "paperId": "6e46d195a03eadcb0cae108deece2167b3f15d6e",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2603-01875",
+   "ArXiv": "2603.01875",
+   "DOI": "10.48550/arXiv.2603.01875",
+   "CorpusId": 286223214
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "KDFlow: A User-Friendly and Efficient Knowledge Distillation Framework for Large Language Models",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2603.01875"
+  }
+ },
+ "2605.01732": {
+  "paperId": "1b13f0aabe25dff91c382ccf98c49faeac4a17f8",
+  "externalIds": {
+   "ArXiv": "2605.01732",
+   "DBLP": "journals/corr/abs-2605-01732",
+   "DOI": "10.48550/arXiv.2605.01732",
+   "CorpusId": 287950366
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "EGAD: Entropy-Guided Adaptive Distillation for Token-Level Knowledge Transfer",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2605.01732"
+  }
+ },
+ "2605.26246": {
+  "paperId": "4abab363636f38482f108da15640add9d27a8993",
+  "externalIds": {
+   "ArXiv": "2605.26246",
+   "DBLP": "journals/corr/abs-2605-26246",
+   "DOI": "10.48550/arXiv.2605.26246",
+   "CorpusId": 288671899
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "The Bridge-Garden Dilemma in LLM Distillation: Why Mixing Hard and Soft Labels Works",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2605.26246"
+  }
+ },
+ "2503.19786": {
+  "paperId": "adac25c0aebd013f1225ec02636edfcc0bf4cf7c",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2503-19786",
+   "ArXiv": "2503.19786",
+   "DOI": "10.48550/arXiv.2503.19786",
+   "CorpusId": 277313563
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Gemma 3 Technical Report",
+  "venue": "arXiv.org",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2503.19786"
+  }
+ },
+ "2607.02770": {
+  "paperId": "bae8d2f66cd289f690db7d3f89e2951e34229d8e",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2607-02770",
+   "ArXiv": "2607.02770",
+   "DOI": "10.48550/arXiv.2607.02770",
+   "CorpusId": 289923375
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Gemma 4 Technical Report",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2607.02770"
+  }
+ },
+ "2609.24974": {
+  "paperId": "4b69bb6013b619adf35886db4a8a1364307e8d41",
+  "externalIds": {
+   "ArXiv": "2609.24974",
+   "CorpusId": 292220195
+  },
+  "publicationVenue": null,
+  "title": "Harness-Zero: Harness Distillation via Agent-as-Harness",
+  "venue": "",
+  "year": 2026,
+  "publicationTypes": null,
+  "journal": null
+ },
+ "2609.05882": {
+  "paperId": "2c0891739e8ca63e58207d19e00ffc136dbcc295",
+  "externalIds": {
+   "ArXiv": "2609.05882",
+   "CorpusId": 291832345
+  },
+  "publicationVenue": null,
+  "title": "What if LLMs Ate Their Words: Causal History Effects in Multi-Turn Interaction",
+  "venue": "",
+  "year": 2026,
+  "publicationTypes": null,
+  "journal": null
+ },
+ "2605.27186": {
+  "paperId": "460118b4aa1d10d6557e19ce68c3baa84a3a8b81",
+  "externalIds": {
+   "ArXiv": "2605.27186",
+   "DBLP": "journals/corr/abs-2605-27186",
+   "DOI": "10.48550/arXiv.2605.27186",
+   "CorpusId": 288672510
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "MAIGO: Mitigating Lost-in-Conversation with History-Cleaned On-Policy Self-Distillation",
+  "venue": "arXiv.org",
+  "year": 2026,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2605.27186"
+  }
+ },
+ "2402.14762": {
+  "paperId": "9978f937189a279a726545a734d20558095e7a0a",
+  "externalIds": {
+   "DBLP": "conf/acl/BaiLBHLZLSG0O24",
+   "ArXiv": "2402.14762",
+   "DOI": "10.18653/v1/2024.acl-long.401",
+   "CorpusId": 267782920
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "MT-Bench-101: A Fine-Grained Benchmark for Evaluating Large Language Models in Multi-Turn Dialogues",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2402.14762"
+  }
+ },
+ "2309.02427": {
+  "paperId": "e4bb1b1f97711a7634bf4bff72c56891be2222e6",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2309-02427",
+   "ArXiv": "2309.02427",
+   "DOI": "10.48550/arXiv.2309.02427",
+   "CorpusId": 261556862
+  },
+  "publicationVenue": null,
+  "title": "Cognitive Architectures for Language Agents",
+  "venue": "Trans. Mach. Learn. Res.",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Review"
+  ],
+  "journal": {
+   "name": "Trans. Mach. Learn. Res.",
+   "volume": "2024"
+  }
+ },
+ "2301.12609": {
+  "paperId": "99dbbb8266c3fb3e2c5e8b8153d652bf6f4332e3",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2301-12609",
+   "ArXiv": "2301.12609",
+   "DOI": "10.48550/arXiv.2301.12609",
+   "CorpusId": 256461479
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Knowledge Distillation ≈ Label Smoothing: Fact or Fallacy?",
+  "venue": "arXiv.org",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2301.12609"
+  }
+ },
+ "2505.04560": {
+  "paperId": "f0c8677e4c58147dc2e0e30652e8d9588fdfa21a",
+  "externalIds": {
+   "ArXiv": "2505.04560",
+   "DBLP": "conf/icml/00010WWXH25",
+   "DOI": "10.48550/arXiv.2505.04560",
+   "CorpusId": 278367873
+  },
+  "publicationVenue": {
+   "id": "fc0a208c-acb7-47dc-a0d4-af8190e21d29",
+   "name": "International Conference on Machine Learning",
+   "type": "conference",
+   "alternate_names": [
+    "ICML",
+    "Int Conf Mach Learn"
+   ],
+   "url": "https://icml.cc/"
+  },
+  "title": "ABKD: Pursuing a Proper Allocation of the Probability Mass in Knowledge Distillation via α-β-Divergence",
+  "venue": "International Conference on Machine Learning",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2505.04560"
+  }
+ },
+ "2410.11325": {
+  "paperId": "4385314ade0ee492d99bc03c1e8ea98ec577c44c",
+  "externalIds": {
+   "ArXiv": "2410.11325",
+   "DBLP": "journals/corr/abs-2410-11325",
+   "DOI": "10.48550/arXiv.2410.11325",
+   "CorpusId": 273350649
+  },
+  "publicationVenue": {
+   "id": "1901e811-ee72-4b20-8f7e-de08cd395a10",
+   "name": "arXiv.org",
+   "alternate_names": [
+    "ArXiv"
+   ],
+   "issn": "2331-8422",
+   "url": "https://arxiv.org"
+  },
+  "title": "Speculative Knowledge Distillation: Bridging the Teacher-Student Gap Through Interleaved Sampling",
+  "venue": "arXiv.org",
+  "year": 2024,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2410.11325"
+  }
+ },
+ "2311.07052": {
+  "paperId": "a6348981246adcd42e8ba39acf139da745696eff",
+  "externalIds": {
+   "ArXiv": "2311.07052",
+   "DBLP": "conf/acl/ZhangLSYG025",
+   "DOI": "10.48550/arXiv.2311.07052",
+   "CorpusId": 265149926
+  },
+  "publicationVenue": {
+   "id": "1e33b3be-b2ab-46e9-96e8-d4eb4bad6e44",
+   "name": "Annual Meeting of the Association for Computational Linguistics",
+   "type": "conference",
+   "alternate_names": [
+    "Annu Meet Assoc Comput Linguistics",
+    "Meeting of the Association for Computational Linguistics",
+    "ACL",
+    "Meet Assoc Comput Linguistics"
+   ],
+   "url": "https://www.aclweb.org/anthology/venues/acl/"
+  },
+  "title": "Towards the Law of Capacity Gap in Distilling Language Models",
+  "venue": "Annual Meeting of the Association for Computational Linguistics",
+  "year": 2023,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2311.07052"
+  }
+ },
+ "1706.03762": {
+  "paperId": "204e3073870fae3d05bcbc2f6a8e263d9b72e776",
+  "externalIds": {
+   "MAG": "2626778328",
+   "DBLP": "journals/corr/VaswaniSPUJGKP17",
+   "ArXiv": "1706.03762",
+   "CorpusId": 13756489
+  },
+  "publicationVenue": {
+   "id": "d9720b90-d60b-48bc-9df8-87a30b9a60dd",
+   "name": "Neural Information Processing Systems",
+   "type": "conference",
+   "alternate_names": [
+    "Neural Inf Process Syst",
+    "NeurIPS",
+    "NIPS"
+   ],
+   "url": "http://neurips.cc/"
+  },
+  "title": "Attention is All you Need",
+  "venue": "Neural Information Processing Systems",
+  "year": 2017,
+  "publicationTypes": [
+   "JournalArticle",
+   "Conference"
+  ],
+  "journal": {
+   "pages": "5998-6008"
+  }
+ },
+ "2502.08177": {
+  "paperId": "796f0ce165479e22f95c9f8d02b1b239816f46ef",
+  "externalIds": {
+   "DBLP": "journals/corr/abs-2502-08177",
+   "ArXiv": "2502.08177",
+   "DOI": "10.48550/arXiv.2502.08177",
+   "CorpusId": 276287766
+  },
+  "publicationVenue": {
+   "id": "ace94611-0469-4818-ae70-43bdb8082d73",
+   "name": "AAAI/ACM Conference on AI, Ethics, and Society",
+   "type": "conference",
+   "alternate_names": [
+    "AAAI/ACM conference Artificial Intelligence, Ethics, and Society",
+    "AIES",
+    "AAAI/ACM Conf AI Ethics Soc",
+    "AAAI/ACM conf Artif Intell Ethics Soc",
+    "AIES "
+   ]
+  },
+  "title": "SycEval: Evaluating LLM Sycophancy",
+  "venue": "AAAI/ACM Conference on AI, Ethics, and Society",
+  "year": 2025,
+  "publicationTypes": [
+   "JournalArticle"
+  ],
+  "journal": {
+   "name": "ArXiv",
+   "volume": "abs/2502.08177"
+  }
+ },
+ "2410.15288": {
+  "paperId": "37b0c3fc0909a63b0664d400df39adceec4b3184",
+  "externalIds": {
+   "ArXiv": "2410.15288",
+   "CorpusId": 273502612
+  },
+  "publicationVenue": null,
+  "title": "If LLMs Would Just Look: Simple Line-by-line Checking Improves Vulnerability Localization",
+  "venue": "",
+  "year": 2024,
+  "publicationTypes": null,
+  "journal": null
+ }
+}

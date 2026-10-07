@@ -1,0 +1,97 @@
+1) AGENT 7: adversarial review of the BSc thesis's value and novelty -> thesis_work/thesis_positioning.html
+
+2) STATUS: DONE, 2026-10-08 (page written and validated; final report being handed back to the coordinator).
+
+3) BRIEF (complete, as given):
+You are an ADVERSARIAL REVIEWER of a BSc thesis's value and novelty (Obuda University; deadline November 2026).
+The user explicitly asked for this. Your job: decide, with evidence, why this project is (or is not) worth doing,
+where it fits, what is genuinely novel, and which low-hanging fruit would strengthen it. Read-only on the repo;
+your ONLY output file is thesis_work/thesis_positioning.html (check it does not exist first; if it does, stop and
+report). [Later allowed by the coordinator: thesis_work/agent_saves/thesis_positioning.md (append-only) and this
+file.] No git, no GPU. Never upload repository content; web searches use generic topic terms. Scratch notes only in
+C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\positioning\
+READ FIRST: CLAUDE.md; thesis_work/thesis_description.txt; thesis_work/novelty_check.md (verified prior check:
+from-scratch + tiny + domain-only + agentic student with token-level teacher distributions appears new; LLM4Teach,
+Structured Agent Distillation, Gemma 2, Peng et al. pre-training distillation, TinyStories, TinyGSM's random-init
+ablation are the closest); thesis_work/findings.txt; thesis_work/running.txt (PLAN v2 at the top);
+thesis_work/domain_specs.txt (AGENTIC MATH TUTOR, TEMPLATE PUPIL incl. v2 wish list); thesis_work/template_pilot.html
+and thesis_work/harness_explainer.html.
+DO THIS
+1. Red team: 10-15 strongest objections (e.g. why not fine-tune a 0.5B pretrained model; corpus LLM-written and
+   templated; teacher in 4-bit; SVAMP easy and contaminated; a classifier could route; student too small to explain;
+   no human evaluation; one domain does not generalise; framework duplicates toolkits). For each: seriousness, best
+   evidence-based answer (literature or own measurements), cheap experiment or sentence that closes it. Search the
+   literature; do not invent support.
+2. "Why worth doing": 3-5 defensible reasons (practical: on-device, privacy, cost, controllability, verifiability;
+   scientific: what question it answers), each with evidence.
+3. Novelty and low-hanging fruit: test adversarially (a) from-scratch tiny domain-only agent student; (b) task-derived
+   reduced output vocabulary with KL restricted to it; (c) trace-grounded follow-up generation; (d) per-turn-type
+   distillation dynamics (route/solve/explain as entropy regimes); (e) conversation-level gold-history vs own-history
+   evaluation; (f) teacher-forced soft labels on code-verified gold (vs Kim & Rush word-level KD); (g) harness
+   answering out-of-scope itself; plus any discovered. For each: claim, closest prior work (links opened), verdict
+   (novel / partly / not novel), effort (hours), risk.
+4. Recommended framing: title-level claim, 3 contributions, 3 claims to avoid.
+OUTPUT thesis_work/thesis_positioning.html: LOCAL self-contained page (inline CSS, no external resources; :root
+colour tokens + prefers-color-scheme dark variant; phone-width friendly). Sections: TL;DR; red-team table; why worth
+doing; novelty and low-hanging-fruit table; recommended framing; sources. Every reference must be one you opened;
+never invent papers, authors, numbers or venues; mark unverifiable items.
+FINAL MESSAGE: the path, the top 3 objections with best answers, the contributions that survived, and the 3
+cheapest high-value additions.
+
+4) OUTPUTS:
+- D:\preference_destillation\thesis_work\thesis_positioning.html  WRITTEN, 51 KB, validated (tags balanced, all 61
+  sources cited in the body). Sections: TL;DR, red team (15), why worth doing (5), novelty table (a)-(j), framing,
+  cheapest additions (7), corrections to earlier notes, sources (61, grouped).
+- D:\preference_destillation\thesis_work\agent_saves\thesis_positioning.md  append-only log, 2 sections.
+
+5) DONE SO FAR: all READ FIRST files read; code checked (generate_data.py, losses.py, model_handler.py,
+output_tokens.json, tokenizer.json, batches/*/info.json); ~60 sources opened; page written, fixed, validated.
+
+6) RESULTS:
+Project facts: final tutor data planned in bf16 on cloud 5090 (load_in_4bit=False); NF4 only for pilots + Virag;
+info.json records no teacher precision; tutor output vocab 18,357 tokens; teacher tokenizer 262,144; no pytest
+suite (validator_cases.py 24/24 exists); assignment text requires tests + "telefonon futo" agent demo; full logits
+are in memory in ReducedLogitsRecorder and score_training_examples (in-vocab mass = ~10-line add);
+teacher_agreement already logged in forced mode. CLAUDE.md still says Gemma 3 4B / ~525 tokens (drift).
+Objections (severity -> answer -> closer):
+ 1 pretrained small model instead? HIGH -> assignment says from scratch; TinyGSM random init ~-10 pts; Krishna 2023;
+   Gemma 3 270M INT4 runs on a Pixel (so don't argue size alone) -> SmolLM2-135M SFT reference row (~1 day).
+ 2 KD adds nothing (own E-01 null). HIGH -> own it: null at exp(H)~1, strict order at 2.73; Menon theory ->
+   exp(H) per turn type with written prediction (1 h, no training).
+ 3 LLM-written/templated corpus + template pupil. HIGH -> templateness 0.40 vs SVAMP 0.91, 0 leaks, held-out shapes,
+   free-written 175/180 (but LLM-written) -> human-written routing test; templated vs free gap; renumbered-copy spread.
+ 4 4-bit teacher. LOW-MED -> final data bf16; NF4 vs bf16 on 256 turns on the cloud box; precision in info.json.
+ 5 SVAMP easy/contaminated. MED -> contamination is a pretrained issue (GSM1k), 0 leaks; real issue 72.5% UNK ->
+   UNK fix + name-mapping ablation + output-head coverage of SVAMP gold lines.
+ 6 classifier could route. MED-HIGH -> LIDSNet/CLINC150; agent = route+solve+explain+state -> BoW LR router (2 h).
+ 7 too small to explain. HIGH -> fluency known (TinyStories), faithfulness open -> number-grounding check; size study.
+ 8 no human eval. MED-HIGH -> LLM-judge biases -> 40-conversation blind rubric with kappa.
+ 9 one agent domain. MED -> part 1 four domains, 7 entropy points; turn types = within-domain axis.
+ 10 duplicates toolkits. MED -> TRL GKD, DistillKit (offline compressed logits), EasyDistill -> feature table.
+ 11 reduced vocab not new + biased. MED -> TinyStories, VT, Compact, VocabTailor; top-K bias -> log in-vocab mass.
+ 12 statistics. MED -> measured noise floor -> pre-registered primary comparison, paired seeds, 5 seeds on headline.
+ 13 error compounding. MED -> MT-Eval, Laban 2025 -> gold vs own history eval (3-4 h).
+ 14 pedagogy/safety. MED -> Bastani PNAS 2025, MathDial, EU AI Act Annex III 3(b) -> limitation, no learning claims.
+ 15 assignment compliance (tests, phone). HIGH(grading) -> pytest suite + CPU/phone latency table.
+Novelty verdicts: (a) novel as combination; (b) partly (VocabTailor 2508.15229 has task-derived static heads,
+training-free; from-scratch head + renormalised KL survives); (c) partly (MathCAMPS 2407.00900 counterfactual
+follow-ups with solver answers; MalruleLib; MathDial; Schatzmann 2007); (d) novel (narrow): within-agent test of the
+entropy rule (SAD span losses, EGAD token entropy are closest); (e) not novel as method (MT-Eval), cheap new
+measurement; (f) not novel (Kim & Rush word-level KD; Knowledge Adjustment); (g) not novel (NeMo Guardrails,
+CLINC150); (h) context distillation (Snell 2022): cite; (i) first tag = route ~ Self-RAG reflection tokens: cite;
+(j) anti-sycophancy at tiny scale: partly, free metric.
+Framing: "A modular framework that distils a 12B teacher into from-scratch students of a few million parameters,
+showing on four domains and inside one agent that soft labels matter in proportion to teacher entropy."
+C1 framework; C2 entropy rule (E-01 + within-agent Study 2); C3 tutor case study with baselines.
+Avoid: "task vocab is ours"; "helps/safe for children"; "from-scratch/KD beats pretrained/SFT in general".
+Corrections: novelty_check "not found: task-derived output vocabulary" no longer holds (VocabTailor); BabyLM ban
+on teacher distributions is the Interaction track only (2502.10645).
+Links opened: full numbered list with URLs is in thesis_positioning.html (Sources) and in
+thesis_work/agent_saves/thesis_positioning.md (save 1).
+
+7) NEXT (pick up here): nothing remains for this task. Optional follow-ups for the user, not for this agent:
+apply the cheapest additions (in-vocab mass logging + NF4/bf16 sample before the cloud run; per-turn exp(H);
+gold-vs-own-history eval; BoW router + SmolLM2-135M row; pytest + CPU/phone table); amend novelty_check.md.
+
+8) SCRATCH: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\positioning\pages.txt
+(text extract of template_pilot.html + harness_explainer.html).

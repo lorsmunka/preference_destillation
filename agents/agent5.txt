@@ -1,0 +1,71 @@
+AGENT 5: Adversarial code review: tooling & experiments (library/tooling, domains config, experiments/*.py, reports, progress.py, shared/metrics, shared/logging)
+STATUS: running (snapshot 2026-10-08, after step 1 of ~5)
+
+BRIEF (complete):
+  ADVERSARIAL CODE REVIEWER for the BSc thesis codebase D:\preference_destillation (Windows; Git Bash). Read CLAUDE.md first.
+  A previous reviewer stopped early (API error) and left check scripts in
+  C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_tooling\ -- reuse / re-run them.
+  SAVE FILE: append state to thesis_work/agent_saves/review_tooling.md (append, never overwrite) after each major step and when done.
+  HARD RULES: edit no other repository file (except this agents/agent5.txt, allowed by the coordinator). No git. NO GPU (CUDA_VISIBLE_DEVICES=-1);
+  never run training / experiments / data generation. Reading runs/ logs read-only and small CPU-only Python checks are fine.
+  New scratch scripts go in ...\scratchpad\review_tooling2\.
+  AREA: library/tooling/ (analysis.py, run.py, render/, templates/), library/domain/ base + registry + non-math domains
+  (reddit_comment_sentiment, post_generation, code_recall, long_context_recall, math_word_problem) for config consistency,
+  analyze.py, experiments/*.py (_common.py and each script), math_tutor_report.py, domains_report.py, progress.py,
+  library/shared/metrics/, library/shared/logging/.
+  LOOK FOR: analytics that compute something other than claimed (averaging, mean of means, std ddof, cohort grouping,
+  wrong log field/epoch), experiment RUNS vs experiments/results/*.csv mismatches, stale refs to max_input_tokens /
+  max_seq_length (removed 2026-10-07), registry/domain inconsistencies, metric mis-scoring of edge cases (exact-answer
+  extraction, structural validity), report generators crashing on missing data, anything misleading the thesis tables.
+  METHOD: try to disprove each candidate first; report only survivors; say which number in thesis_work/findings.txt or
+  experiments/results/*.csv could have changed.
+  FINAL MESSAGE: findings ranked critical/high/medium/low, each file:line, what is wrong, failure scenario/evidence, 1-2
+  sentence fix; then a short 'checked and fine' list.
+
+OUTPUTS: final report to the coordinator (SubagentHandback); state log thesis_work/agent_saves/review_tooling.md; this file.
+
+DONE SO FAR:
+  1. Read tooling/run.py, analysis.py, render/*, shared/logging/*, shared/metrics/*, domain base/registry/5 domains,
+     training/evaluator.py + batch_handler.py (callers), experiments/_common.py, anneal_direction.py, report_ideas.py,
+     findings.txt (own-numbers section, F-E1).
+  2. Re-ran previous scripts: e01_verify, ideas_verify, majority, math_majority, metric_edges, confusion, lcr_check,
+     code_recall_truth, code_recall_file. math_breakdown (CPU) running in background -> review_tooling2/math_breakdown_s1.txt
+
+FINDINGS SO FAR:
+  C1 VERIFIED (critical; misleading tables) -- no majority-class baseline anywhere; reddit task accuracy == test-set class prior.
+     Majority baseline on the BatchHandler test split: 256 ex 0.6133, 512 0.6172, 1024 0.6708, 2048 0.6262, 4096 0.6202.
+     Students: ideaD best 0.6078 / 0.6164 / 0.6672 (256/512/1024); E-01 reddit arms best 0.621-0.630, final 0.598-0.620.
+     Prediction share of the majority label ~1.0 for tone/safety/toxicity; ideaD-data01024-s2 epoch0 = 0.6708 and
+     ideaD-data02048-s3 epoch0 = 0.6262 exactly (constant output). Affects findings.txt "Data plateau 256->60.8%,
+     1024->66.7%" (= prior 0.613->0.671), "safety 74 / tone 63 / toxicity 59 / sentiment 43" (= label shares
+     .748/.627/.587/.543), and the E-01 reddit null. Math: 'True' is 20.9% of the 2048 test set; students 0.22-0.25.
+     Fix: compute and print the per-field majority baseline of the exact test split next to task accuracy (report_ideas,
+     anneal_direction, Analysis); report excess over baseline.
+  CANDIDATE: F-E1 "no arm separates by more than one seed std on task accuracy" is false on task_accuracy_final:
+     reddit ce-to-kl .6199 vs pure-ce .5982 (2.2pp vs sd 1.7-1.8); math ce-to-kl .2356 vs flat .2180.
+  VERIFIED stale CSVs (write_rows only rewrites when report_ideas is re-run): ideaA_vocab_sweep.csv V=113 runs=3
+     (5 completed now); ideaD_data_plateau.csv 2048 runs=1 (3 completed now: best .625 vs CSV .6028). findings.txt
+     "excess-over-chance 0.169 at V=113" came from the n=3 row.
+  VERIFIED ClassificationMetric._parse (shared/metrics/task.py:147-157) raises TypeError when the output is valid JSON
+     but not an object ('"tone"', '5', 'null') -> would crash an eval. Fix: return None unless isinstance(data, dict).
+  VERIFIED ExactAnswerMetric._extract_answer (task.py:273-276) returns 'answer: 15' when "Answer:" follows a newline
+     (the search starts at the \n); answer-only output vs a working-format reference scores 0. No LCR/code_recall
+     training run exists yet; LCR teacher responses are all clean (4968/4968).
+  CANDIDATE (verify next): code_recall corpus ground truth for last_assignment wrong in 159/971 records (16%):
+     a later `+=` / `-=` / `for` rebinding exists after the recorded line (library/domain/code_recall/corpus.py).
+  Checked fine: e01_anneal_direction.csv == fresh collect_rows (115 rows, 0 diffs), RUNS configs == info.json;
+     F-E1 post-gen numbers match the CSV; Experiment.stats ddof documented (pstdev); compare() uses sample sd;
+     EvalEpoch legacy field mapping; all info.json carry training_test_ratio.
+
+NEXT (pick up here):
+  a. Verify code_recall last_assignment ground truth by reading corpus.py (ProgramBuilder / make_question).
+  b. Read math_breakdown_s1.txt (bool vs number accuracy of a math student).
+  c. Read experiments: data_plateau.py, vocab_rank_sweep.py, probe_bottleneck.py, self_consistency_dividend.py,
+     postgen_kl_anneal.py; check RUNS vs CSVs, completed-status filtering, ddof consistency.
+  d. Read analyze.py, progress.py (re-run progress_check.py), math_tutor_report.py (mtr_check.py), domains_report.py,
+     templates/math_tutor_report.html; crash-on-missing-data checks.
+  e. grep for max_input_tokens / max_seq_length; check Analysis._batch_paths default ratio 0.98 vs spec 0.8;
+     cohort stats include non-completed runs; duplicate eval_epoch records per epoch in logs.
+  f. Final report via SubagentHandback; update this file and the save file.
+
+SCRATCH: previous: ...\scratchpad\review_tooling\*.py ; mine: ...\scratchpad\review_tooling2\ (e01_table.py)

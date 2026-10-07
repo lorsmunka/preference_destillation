@@ -1,0 +1,68 @@
+1) AGENT 1: adversarial code review of the math word-problem items and their checking (functions, items, renumber, prune, similarity, reword, harvest, benchmarks, validator_cases + item data).
+
+2) STATUS: running — snapshot 2026-10-08 00:30
+
+3) BRIEF (original, complete):
+You are an ADVERSARIAL CODE REVIEWER for a BSc thesis codebase (LLM distillation). Repo: D:\preference_destillation (Windows; Git Bash available). Read CLAUDE.md first, then thesis_work/domain_specs.txt (math tutor sections) for the intended rules.
+HARD RULES: Do not edit any repository file. No git. NO GPU: never load Gemma or any large model; never run data generation, label/thread passes, training or experiments. Small CPU-only Python checks are fine (prefix with CUDA_VISIBLE_DEVICES=-1). Put any scratch scripts ONLY in your own folder: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_items\ (create it). No web access needed.
+(Later allowed exceptions from the coordinator: append-only save file thesis_work\agent_saves\review_items.md, and this snapshot agents\agent1.txt.)
+YOUR AREA: the math word-problem items and their checking: library/domain/math_tutor/functions.py (a custom AST interpreter that runs each problem's solve(); must never exec), items.py (validator rules), renumber.py (numbers swapped in text and code together), prune.py + similarity.py (dedup, near-duplicates, test-leak checks against SVAMP), reword.py, harvest.py, benchmarks.py, validator_cases.py. Data: library/domain/math_tutor/items/ (items.jsonl ~34k kept items, renumbered.jsonl ~96k copies may be gitignored but present; benchmarks/).
+LOOK FOR: interpreter bugs or escapes (anything unsafe or a wrong value), validator rules that don't match the spec, renumbering that changes meaning (a number swapped in text but not code, word numbers, 'implied' numbers), splits that leak across train/test (renumbered copies or rewordings of a test family landing in train; held-out shapes add>mul, sub>div, sub>add actually held out), dedup/leak checks that are too weak or too strong, and performance problems at the real data sizes. Where cheap, RUN checks on the real data files (e.g. count test families present in train; re-validate a random sample of items and copies; confirm held-out shapes never appear in train).
+METHOD: for each candidate problem, try hard to DISPROVE it first (read the callers, check real usage, run a tiny CPU test). Report only what survives.
+FINAL MESSAGE (no file): findings ranked critical / high / medium / low. Each: file:line, what is wrong, a concrete failure scenario (input -> wrong output) or measured evidence, and a 1-2 sentence fix. Then a short 'checked and fine' list so coverage is clear.
+
+4) OUTPUTS: final report as the agent's final message (SubagentHandback); save file thesis_work\agent_saves\review_items.md (append-only); this snapshot.
+
+5) DONE SO FAR:
+- Read CLAUDE.md, domain_specs.txt (math tutor), all 9 files in the area in full.
+- Ran on real data: split/family consistency, held-out shapes in train (problem + follow-up turns), seeded-sibling splits,
+  re-validation of 2,000 items + 4,000 copies, renumber semantics (compounds, banknotes, clocks, ordinals, facts),
+  follow-up dataflow (stale answers, state dependence, shadowing), reword targets vs split, SVAMP leak re-check,
+  name-swap leak simulation, seed-vs-SVAMP closeness, prefix index vs brute force, interpreter edge cases,
+  validator_cases (26/26 ok), timing (validate 34k items 5 s; renumber_item ~6 ms/item).
+
+6) FINDINGS SO FAR
+HIGH — VERIFIED — prune.py:215: held-out split looks only at problem_shape (turn 0). Train follow-up turns whose own
+  single-turn shape is held out: items 328 (add>mul 233, sub>add 68, sub>div 27) + copies 861 = 1,189 training turns,
+  contradicting domain_specs.txt:115-116 ("only the single-turn composition is unseen"). e.g. S01-mem-b01-0082 follow-up
+  `state['now'] - 20 + 5`; S03-mem-b04-0075 `shared = state['stickers'] - 15; each = shared // 6`.
+  Fix: heldout_shape if ANY turn shape (item["shape"].split("|")) is held out (or drop those follow-ups), rebuild.
+MEDIUM — VERIFIED — renumber.py:49-53: replace_in_text replaces a whole hyphenated token ("ten-dollar" -> text_numbers
+  [10]) with the new number word, dropping "-dollar". 138 copies, e.g. S08-mem-b08-0031~n1 "11 ten-dollar notes" ->
+  "20 thirteen notes" (code 11*10 -> 20*13, passes validate). Fix: replace only the number half of the compound.
+MEDIUM — VERIFIED — renumber.py:66-84: no notion of fixed-value numbers. 2,682 copies with a non-existent banknote
+  ("$20 note" -> "$35 note"; train 2,540/test 116/heldout 26; originals 14), 136 impossible clock hours ("19 o'clock"),
+  >=145 false facts ("board has 4 wheels" -> "11 wheels"), 27 wrong ordinal suffixes ("51th", "7nd floor").
+  Fix: treat note/bill/o'clock/am/pm/ordinal/legs|wheels|sides numbers as fixed, or redraw from valid sets.
+MEDIUM — VERIFIED — prune.py:213-226 / items.py:145: family = item id, so the 2-3 items reworked from one human seed are
+  split independently: 402 seeds have a family in test and another in train; 438 test items have a same-seed train
+  sibling (same problem shape in all 438; text median ratio 0.23); 28 share the exact numbers (test "7 binders x 24"
+  vs train "7 classes x 24 bookmarks" = 168). Fix: family = seed id for "seeded:*" items.
+LOW — VERIFIED — benchmarks.py:156: range filter checks only the equation's numbers; 11/746 SVAMP real_test problems
+  have a written number >99 (e.g. svamp-chal-211 "Baker made 170 cakes", svamp-chal-316 "266 of the pickers"); the
+  training text never exceeds 99 (spec: numbers <= 99). Fix: check digit_numbers(problem) too, or report separately.
+LOW — VERIFIED — similarity.py:53-61: possessive names "Mia's" are not normalised to NAME (60/1000 SVAMP problems);
+  simulated name+number swaps of all 1,000 SVAMP problems were still caught, so impact is small.
+LOW — caveat — held-out pairs appear contiguously inside longer train problem shapes (sub>div in 800 train originals,
+  e.g. S07 add>sub>div; add>mul 126; sub>add 54): "never trained on" holds only for the exact 2-op shape.
+LOW — seeds include SVAMP's own source problems (SVAMP is built from ASDiv-A): 173/746 test problems have a seed at
+  ratio >=0.6 (65 at 0.7-0.8, e.g. seed "Paco had 35 cookies. He ate 6" vs SVAMP "Paco had 40 cookies. He ate 2. Then
+  he bought 37 more"); 107 items reworked from those 53 seeds. Standard SVAMP protocol, but worth stating.
+LOW — items.py:131-138 accepts a follow-up with no 'answer' (inherits the previous one) or {'answer': x, **state}
+  (state's answer wins); data clean today. functions.py: a 20,000-term chain raises RecursionError (not NotAllowed).
+CHECKED AND FINE: interpreter refuses every escape tried (calls, attributes, imports, loops, walrus, unary minus, **,
+  bool/float, tuple/chained/subscript assign, docstring, nested/async def, defaults, mid return, bare state); 0..999 on
+  every literal and op; exact // outside S07. Re-validation 6,000 records: 0 fails/mismatches. 0 mixed-split families;
+  copies keep split/family; 0 held-out problem shapes in train/test; reword targets all still train, no rewordings in
+  test. Prefix index = brute force (0 mismatches at 0.8 and 0.5). Final SVAMP leak re-check 0 over threshold.
+  Follow-ups: all set answer, all depend on state, no as_code shadowing. Harvest grades <=4. Performance fine.
+
+7) NEXT (pick up here):
+  a. (optional) look for implied-word dependencies missing from CONSTANT_WORDS that renumbering breaks (twins, weekend,
+     doubled...) — first pass found only coincidental co-occurrences.
+  b. Write the final report (ranked as above) and hand it back; append the final section to the save file.
+
+8) SCRATCH: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_items\
+  check_splits.py, check_renumber.py, check_renumber2.py, check_dataflow.py, check_reword_split.py, check_leak.py,
+  check_seed_svamp.py, check_siblings.py, show_siblings.py, interp_tests.py, check_index.py, check_svamp_final.py,
+  check_implied.py, timing.py

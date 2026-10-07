@@ -1,0 +1,12 @@
+{
+  "domain": "math_tutor",
+  "model_name": "fake",
+  "description": "",
+  "max_examples": 1000,
+  "batch_size": 32,
+  "status": "in_progress",
+  "started_at": "2026-10-07T22:17:05.938099+00:00",
+  "completed_at": null,
+  "examples_generated": 0,
+  "batches_written": 0
+}

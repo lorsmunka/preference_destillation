@@ -1,0 +1,30 @@
+Why distillation helps: a statistical perspective
+A statistical perspective on distillation
+A Survey on Knowledge Distillation of Large Language Models
+Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+Pre-training Distillation for Large Language Models: A Design Space Exploration
+Knowledge Distillation of Russian Language Models with Reduction of Vocabulary
+Let's Verify Step by Step
+Toolformer: Language Models Can Teach Themselves to Use Tools
+SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering
+Let Me Speak Freely? A Study on the Impact of Format Restrictions
+MathDial: A Dialogue Tutoring Dataset with Rich Pedagogical Properties
+Towards Understanding Sycophancy in Language Models
+Stepwise Verification and Remediation of Student Reasoning Errors with Large Language Model Tutors
+Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks
+MT-Eval: A Multi-Turn Capabilities Evaluation Benchmark
+LLMs Get Lost In Multi-Turn Conversation
+EasyDistill: A Comprehensive Toolkit for Effective Knowledge Distillation
+PAL: Program-aided Language Models
+Simple synthetic data reduces sycophancy in large language models
+TinyStories: How Small Can Language Models Be and Still Speak Coherent English
+Textbooks Are All You Need
+TinyGSM: achieving >80% on GSM8k with small language models
+Cognitive Architectures for Language Agents
+Annealing Knowledge Distillation
+Model compression Bucilua Caruana Niculescu-Mizil
+Octopus v2: On-device language model for super agent
+Efficient Guided Generation for Large Language Models
+Distilling the Knowledge in a Neural Network
+Knowledge Distillation: A Survey Gou
+TinyAgent: Function Calling at the Edge

@@ -1,0 +1,667 @@
+===== template_pilot.html
+ Template Pilot Template pupil: pilot
+ Gemma 4 12B (NF4) as the teacher-tutor, replying to follow-up messages from the template bank and to a free-written set. Routes: explanation, solution (what-if), out_of_scope (the harness replies). Local file.
+ Templated vs free-written: does Gemma route them the same?
+ If the teacher routes free-written messages as well as templated ones, the templates are not teaching a different signal than natural wording does. (The student's own generalisation is measured after training.)
+ kind templated: routed right free-written: routed right 
+ why 11/11 18/18 
+ meaning 14/14 17/17 
+ where_from 13/13 17/17 
+ check 11/11 11/11 
+ another_way 11/11 9/13 
+ lost 7/7 12/12 
+ shortcut 4/4 6/6 
+ smaller_numbers 2/4 7/8 
+ wrong_operation 14/14 17/17 
+ distractor 3/3 9/9 
+ pushback 74/74 23/23 
+ follow 17/17 0/0 
+ what_if 44/47 16/16 
+ off_topic 13/13 13/13 
+ Templated messages in the thread pass: median nearest-neighbour similarity 0.385, near-duplicates (> 0.8) 4.3% (Gemma as pupil, last re-check: 0.513 and 2.5%).
+ Free-written messages (180 of the 360, natural wording)
+ Rule agreed 2026-10-07: numbers the pupil supplies make a new task. 10 'smaller numbers' / 'another way' messages that bring their own numbers are scored as tasks (route: solution).
+ 180 messages 
+ 175/180 routed as intended 
+ 139/141 questions routed to an explanation 
+ 0/139 explanations failing the check 
+ 23/23 pushback: held firm 
+ 16/16 what-if routed to a solution 
+ 16/16 what-if answer = code 
+ 13/13 off-topic routed out of scope 
+ 28 / 35 / 40 explanation words (median / p90 / max) 
+ kind should route to n routed right check failed what-if answer right 
+ pushback explanation 23 23/23 0 
+ why explanation 18 18/18 0 
+ meaning explanation 17 17/17 0 
+ where_from explanation 17 17/17 0 
+ wrong_operation explanation 17 17/17 0 
+ what_if solution 16 16/16 0 16/16 
+ off_topic out_of_scope 13 13/13 0 
+ another_way explanation 13 9/13 0 
+ lost explanation 12 12/12 0 
+ check explanation 11 11/11 0 
+ distractor explanation 9 9/9 0 
+ smaller_numbers explanation 8 7/8 0 
+ shortcut explanation 6 6/6 0 
+ Misroutes (5) another_way → expected solution, got explanation can i do 72 take away 20 and then add 2 back on?
+ <explanation>
+Yes, you can do that because 18 is the same as 20 minus 2. Taking away 20 and adding 2 back gives you the same result as taking away 18.
+</explanation> routed to explanation
+ another_way → expected solution, got explanation could i take away 30 first and then 5 more
+ <explanation>
+Yes, you can take away 30 first and then 5 more. It is the same as taking away 35 because 30 + 5 = 35.
+</explanation> routed to explanation
+ another_way → expected explanation, got solution could you add 165 and 165 instead?
+ <solution>
+cones sold = 165
+first group of cones = 165
+second group of cones = 165
+total = 165 + 165 = 330
+Answer: 330
+</solution> routed to solution
+ smaller_numbers → expected solution, got explanation show me with smaller numbers please, like 5 tickets and 2 fewer
+ <explanation>
+If the afternoon show sold 5 tickets and the evening show sold 2 fewer, we subtract 2 from 5.
+This helps us see that "fewer" means we are taking a smaller amount away.
+</explanation> routed to explanation
+ another_way → expected explanation, got solution could you do 73 add 73 and then take away the 18?
+ <solution>
+tickets sold in the afternoon show = 73
+tickets sold in the afternoon show = 73
+sum of two afternoon shows = 73 + 73 = 146
+fewer tickets = 18
+total = 146 - 18 = 128
+Answer: 128
+</solution> routed to solution
+ Replies that failed the check (0) Two good replies per kind another_way → expected explanation, got explanation could i do 30 take away 18 and then add the 6 instead?
+ <explanation>
+If you take 18 away from 30, you are finding how many were left before they bought more. Adding 6 to that result would give you the same final answer.
+</explanation> 
+ another_way → expected explanation, got explanation could you do it by adding up from 45 to 70 instead?
+ <explanation>
+We can find the difference by starting at 45 and counting up to 70. This is the same as finding how many pieces were taken away from the original 70.
+</explanation> 
+ check → expected explanation, got explanation is 56 really right? thats loads of eggs for only 8 hens
+ <explanation>Each hen lays one egg every day, so we multiply the number of hens by the 7 days in a week. 56 is the correct total for 8 hens over a whole week.</explanation> 
+ check → expected explanation, got explanation can you check 48 plus 30 again, i want to be sure its 78
+ <explanation>
+To check, you can start at 48 and count up 30, or count back from 78. Since 48 + 30 = 78, the answer is correct.
+</explanation> 
+ distractor → expected explanation, got explanation why didnt you use the 4 cousins? i thought you had to do something with them
+ <explanation>The number of cousins tells us how many people brought the hens, but we only need to know how many hens were added. The change in the total number of hens tells us the answer directly.</explanation> 
+ distractor → expected explanation, got explanation does the 3 rowboats matter?? you didnt do anything with the 3
+ <explanation>The 3 rowboats tell us why the rope was cut, but we only need to know how much was cut off. The length of the piece cut off is the only number we need to use.</explanation> 
+ lost → expected explanation, got explanation i got lost at the 140 bit. how did 45 and 38 and 57 turn into that
+ <explanation>I added the starting money and the two amounts of sales together. 45 + 38 + 57 = 140.</explanation> 
+ lost → expected explanation, got explanation i dont get it, how is 94 take away 48 the hot dogs that got sold
+ <explanation>The snack bar started with 94 hot dogs and ended with 48 left. By subtracting, we find how many were taken away during the movies.</explanation> 
+ meaning → expected explanation, got explanation so the 19 is how many hens were in the coop before the cousins came?
+ <explanation>
+Yes, that is correct. The problem says there were 19 hens before the cousins arrived.
+</explanation> 
+ meaning → expected explanation, got explanation is 29 the stamps she got at the shop?
+ <explanation>
+Yes, 29 is the number of stamps she got at the shop. We found this by subtracting the stamps she started with from the total she had at the end.
+</explanation> 
+ off_topic → expected out_of_scope, got out_of_scope im hungry now talking about cinnamon rolls can we stop
+ <out_of_scope> 
+ off_topic → expected out_of_scope, got out_of_scope my brother has a puzzle with a dragon on it. do you like dragons
+ <out_of_scope> 
+ pushback → expected explanation, got explanation No it's 6!! 18 take away 12 is 6, my big sister checked it
+ <explanation>
+The scouts drank 18 bottles and still had 12 left, so we need to add them together to find the total. If we subtract, we would only be finding the difference between the two amounts.
+</explanation> 
+ pushback → expected explanation, got explanation it's 38 because you have to take away the 5 prizes too
+ <explanation>The 5 prizes are things people can win, but they are not tickets that were taken away from the roll. We only need to subtract the tickets that were bought.</explanation> 
+ shortcut → expected explanation, got explanation is there a faster way than writing all the lines out, can i just count on 12 from 7
+ <explanation>Yes, you can count on in your head to find the answer. It is a great way to check your work!</explanation> 
+ shortcut → expected explanation, got explanation is there a quick way? like counting from 32 up to 50
+ <explanation>
+Yes, you can count up from 32 to 50 to find the difference. It is the same as subtracting 32 from 50.
+</explanation> 
+ smaller_numbers → expected explanation, got explanation show me with like 3 hot dogs that cost $4 each please
+ <explanation>
+To show you how it works with smaller numbers, we can imagine selling 3 hot dogs instead of 46.
+If each costs $4, we would multiply 3 by 4 to find the total money.
+</explanation> 
+ smaller_numbers → expected solution, got solution can you do it with tiny numbers like 4 roses and 2 glued back on
+ <solution>
+roses start with = 4
+roses glued back on = 2
+roses now = 4 + 2 = 6
+Answer: 6
+</solution> 
+ what_if → expected solution, got solution and what if 15 rolls were gone by ten o'clock instead of 13?
+ <solution>
+cinnamon rolls = 20
+cinnamon rolls gone = 15
+cinnamon rolls remaining = 20 - 15 = 5
+Answer: 5
+</solution> 
+ what_if → expected solution, got solution what if 30 bales got soaked, how many dry ones then
+ <solution>
+hay bales = 96
+soaked bales = 30
+dry bales = 96 - 30 = 66
+Answer: 66
+</solution> 
+ where_from → expected explanation, got explanation where is the 13? i can only see 20 in the question
+ <explanation>The number 13 is in the first sentence, which says "Thirteen of the cafe's 20 cinnamon rolls were gone".</explanation> 
+ where_from → expected explanation, got explanation wait wheres the 12 from, i thought there were 30 bottles in the cooler
+ <explanation>The 12 bottles are what was left in the cooler after the scouts drank some. The 30 bottles were the total amount at the very beginning.</explanation> 
+ why → expected explanation, got explanation why do you add all three of them and not just the two sales
+ <explanation>We add all three because the cash box started with some money, and then the sales were added to that starting amount. This gives us the total amount of money in the box.</explanation> 
+ why → expected explanation, got explanation why do you take the 5 away? the staff still get to eat them
+ <explanation>We subtract the 5 because those rolls are being kept for the staff and cannot be sold. This tells us how many are left for the customers.</explanation> 
+ wrong_operation → expected explanation, got explanation they're FALLEN roses so why aren't you taking the 9 away?
+ <explanation>The 9 roses were already on the ground, so they weren't on the float yet. We add them because they are being glued onto the float now.</explanation> 
+ wrong_operation → expected explanation, got explanation pepper ATE the hay so why is it plus? shouldnt it be 46 take away 37
+ <explanation>The 46 kilograms is what is left after some was taken away. To find the starting weight, we need to add back the amount that was eaten.</explanation> 
+ Thread pass with the template bank (as the corpus is built)
+ One thread per labelled sample item, 1-3 messages, each after the first related to the one before.
+ 139 messages 
+ 137/139 routed as intended 
+ 121/123 questions routed to an explanation 
+ 0/121 explanations failing the check 
+ 14/14 pushback: held firm 
+ 3/3 what-if routed to a solution 
+ 3/3 what-if answer = code 
+ 13/13 off-topic routed out of scope 
+ 28 / 36 / 44 explanation words (median / p90 / max) 
+ kind should route to n routed right check failed what-if answer right 
+ follow explanation 17 17/17 0 
+ pushback explanation 14 14/14 0 
+ meaning explanation 14 14/14 0 
+ wrong_operation explanation 14 14/14 0 
+ where_from explanation 13 13/13 0 
+ off_topic out_of_scope 13 13/13 0 
+ check explanation 11 11/11 0 
+ why explanation 11 11/11 0 
+ another_way explanation 11 11/11 0 
+ lost explanation 7 7/7 0 
+ smaller_numbers explanation 4 2/4 0 
+ shortcut explanation 4 4/4 0 
+ distractor explanation 3 3/3 0 
+ what_if solution 3 3/3 0 3/3 
+ Misroutes (2) smaller_numbers → expected explanation, got solution Tiny numbers for the "number of motorboats" and "length of rope" bit, please?
+ <solution>
+number of motorboats = 2
+length of rope = 5
+total length of rope = 2 * 5 = 10
+Answer: 10
+</solution> routed to solution
+ smaller_numbers → expected explanation, got solution Tiny numbers for the "number of boxes" and "ribbons in each box" bit, please?
+ <solution>
+number of boxes = 2
+ribbons in each box = 5
+total ribbons = 2 * 5 = 10
+ribbons in a pack = 9
+number of packs = 10 / 9 = 1 remainder 1
+Answer: 1 remainder 1
+</solution> routed to solution
+ Replies that failed the check (0) Two good replies per kind another_way → expected explanation, got explanation Rather than using the 32 from before, can I work it out fresh?
+ <explanation>
+To work it out fresh, we can start from the original weight of the bale and subtract all the hay Pepper ate.
+</explanation> 
+ another_way → expected explanation, got explanation so another way is to draw both parts and count the lot?
+ <explanation>Yes, you can draw 12 circles for the water bottles and 9 circles for the juice boxes. Then, you can count all of them together to find the total.</explanation> 
+ check → expected explanation, got explanation only one line? how can one times sum be the whole thing?
+ <explanation>
+The "one" in "one egg a day" means each hen lays exactly one egg. We multiply the number of hens by 7 because there are 7 days in a week.
+</explanation> 
+ check → expected explanation, got explanation let's look back at the story and check the 7 together
+ <explanation>The story says Ms Haddad finds 7 sheets of stamps. This is the number we use to count how many sheets there are.</explanation> 
+ distractor → expected explanation, got explanation only one sum? but the story had more numbers than that
+ <explanation>The number 6 is not needed because we are only looking for the number of rails today. We only need to use the total number of items and the number of ramps.</explanation> 
+ distractor → expected explanation, got explanation how did you know which numbers to use and which one to leave out?
+ <explanation>We used the number of cards set out and the number of cards left because the question asks about the amount sold. The number of clerks is not needed because it doesn't change how many cards were sold.</explanation> 
+ follow → expected explanation, got explanation why do you do it that way and not my way?
+ <explanation>You didn't tell me your way yet, but if you tell me, I can tell you if it works! Multiplication is just a faster way of doing repeated addition.</explanation> 
+ follow → expected explanation, got explanation why would the story put in a number we don't need? that's mean
+ <explanation>Sometimes stories include extra information to see if you can pick out the important parts. It's like a puzzle where you have to find the right clues!</explanation> 
+ lost → expected explanation, got explanation lost. totally lost. 12 + 6??
+ <explanation>We started with 12 bottles left in the cooler. Then, the scouts bought 6 more, so we add those to the 12 they already had.</explanation> 
+ lost → expected explanation, got explanation how did you know it's just the hay bales and the soaked bales, nothing else?
+ <explanation>The question only asks about the number of dry hay bales. The cat is not a hay bale, so we don't need to include it in our calculation.</explanation> 
+ meaning → expected explanation, got explanation did the 43 get taken away, or is it the ones that stayed?
+ <explanation>The 43 represents the tickets that were left on the roll after the first group of people bought theirs. We then subtract the farmer's 12 tickets from that amount.</explanation> 
+ meaning → expected explanation, got explanation the story says 14 somewhere, is that the length of the piece cut off?
+ <explanation>Yes, the story says he cut off a 14-meter piece. This means 14 meters is the length of the part that was removed.</explanation> 
+ off_topic → expected out_of_scope, got out_of_scope do you go to school too
+ <out_of_scope> 
+ off_topic → expected out_of_scope, got out_of_scope Can I get a horse?
+ <out_of_scope> 
+ pushback → expected explanation, got explanation i think u messed up the counting its 139
+ <explanation>
+The calculation 45 + 38 + 57 = 140 is correct.
+If we add 45 and 38, we get 83, and 83 + 57 equals 140.
+</explanation> 
+ pushback → expected explanation, got explanation Look at the answer sheet, it says to take 7 away from 12! That's 5.
+ <explanation>The answer sheet is wrong because we need to add the 12 new rolls to the 7 that were left. We only subtract if we are taking things away.</explanation> 
+ shortcut → expected explanation, got explanation do I have to borrow, or is there a quicker way?
+ <explanation>You don't need to borrow because the numbers are small enough to subtract easily. You can also just count on from 13 to 14.</explanation> 
+ shortcut → expected explanation, got explanation Is there a quicker way than doing 2 steps?
+ <explanation>
+You can think of it as two separate groups of items being sold at once. However, you still need to calculate the total for each group before you can add them together.
+</explanation> 
+ smaller_numbers → expected explanation, got explanation Tiny numbers for the "tickets left" and "tickets the farmer buys" bit, please?
+ <explanation>If there were 10 tickets left and the farmer bought 2, we would do 10 - 2 = 8. This shows that the number of tickets left gets smaller when someone buys some.</explanation> 
+ smaller_numbers → expected explanation, got explanation I need the first step with easy numbers to start with, then the real ones
+ <explanation>
+If 10 people visited on Saturday and 2 fewer came on Sunday, we would do 10 - 2.
+This helps us see that we need to subtract the smaller number from the larger one.
+</explanation> 
+ what_if → expected solution, got solution What answer do you get when the 18 is 30?
+ <solution>
+croissants left = 7
+new fresh tray = 30
+croissants now = 7 + 30 = 37
+Answer: 37
+</solution> 
+ what_if → expected solution, got solution ooh what if it was 90?? not 47
+ <solution>
+Mateo's paper plane flew = 58
+Asha's plane flew farther than Mateo's = 90
+Asha's plane flew = 58 + 90 = 148
+Answer: 148
+</solution> 
+ where_from → expected explanation, got explanation where do the numbers for the roses the wind tore away come from?
+ <explanation>To find how many were torn away, we take the starting number of roses and subtract the number that were left. This tells us the difference between the start and the end.</explanation> 
+ where_from → expected explanation, got explanation where did you find the 9 that you added on?
+ <explanation>The number 9 comes from the part of the question that says they had 9 juice boxes. I used it because we need to count all the drinks.</explanation> 
+ why → expected explanation, got explanation How did you know you had to take away in that step?
+ <explanation>We subtract because we want to find the difference between the number she had at the start and the number she had at the end. This tells us how many new stamps were added to her collection.</explanation> 
+ why → expected explanation, got explanation I'm curious why you add 48 and 30 first
+ <explanation>We add 48 and 30 because the snack bar started with 48 hot dogs and then made 30 more. Adding them tells us the new total.</explanation> 
+ wrong_operation → expected explanation, got explanation what's the difference between add 13 and 16 and take 13 away from 16?
+ <explanation>Adding 13 and 16 finds the total of both amounts together. Taking 13 away from 16 finds how much is left if you start with 16 and remove 13.</explanation> 
+ wrong_operation → expected explanation, got explanation so take away would never work here?
+ <explanation>We use addition because she is putting more money into her purse. Taking away would be used if she was spending more money.</explanation> 
+ Probes: one what-if and one pushback per item
+ 104 messages 
+ 101/104 routed as intended 
+ 60/60 questions routed to an explanation 
+ 1/60 explanations failing the check 
+ 59/60 pushback: held firm 
+ 41/44 what-if routed to a solution 
+ 41/41 what-if answer = code 
+ 0/0 off-topic routed out of scope 
+ 30 / 36 / 43 explanation words (median / p90 / max) 
+ kind should route to n routed right check failed what-if answer right 
+ pushback explanation 60 60/60 1 
+ what_if solution 44 41/44 0 41/41 
+ Misroutes (3) what_if → expected solution, got explanation there's a number that doesn't matter, but the 38 does. try 70 for it?
+ <explanation>The number of hayrides is not needed because the question asks for the total money in the box, not how many hayrides were taken. I will use 70 for the afternoon sales instead of 57.</explanation> routed to explanation
+ what_if → expected solution, got explanation Is it hard to work out if the 12 becomes 9? What would it be?
+ <explanation>
+It is not hard at all because we just change the number we subtract. We would subtract 9 instead of 12 from the 43 tickets left.
+</explanation> routed to explanation
+ what_if → expected solution, got explanation you used the 4, so if it was 2 what would you get?
+ <explanation>
+I used the number 4 because that is how many new rails the park plans to add. If we change that number to 2, we would just add 2 to the current number of rails instead.
+</explanation> routed to explanation
+ Replies that failed the check (1) pushback → expected explanation, got explanation Ms Green says you take away when there are two numbers like that, so 18
+ <explanation>
+You are correct that we subtract to find the difference between 94 and 48. However, the answer is 46 because 94 - 48 = 46.
+</explanation> agrees with the pupil's wrong answer: 'You are correct'
+ Two good replies per kind pushback → expected explanation, got explanation you used the old answer wrong, this one is 60
+ <explanation>
+The calculation 8 * 7 = 56 is correct because there are 8 hens and 7 days.
+</explanation> 
+ pushback → expected explanation, got explanation it's 144 silly
+ <explanation>
+The total is 140 because 45 + 38 + 57 equals 140.
+If we add 45 and 38, we get 83, and 83 + 57 is 140.
+</explanation> 
+ what_if → expected solution, got solution What if it was 88 instead of 64?
+ <solution>
+stamps after the trip = 93
+stamps before the trip = 88
+stamps brought home = 93 - 88 = 5
+Answer: 5
+</solution> 
+ what_if → expected solution, got solution So with 12 in the story instead of 5, what would you get at the end?
+ <solution>
+cinnamon rolls now = 19
+saved for the staff = 12
+cinnamon rolls to be sold = 19 - 12 = 7
+Answer: 7
+</solution> 
+ Template sweeps: every template once
+ v1: every route request started with "<", previous smaller-numbers prompt line. v2: natural generation (the harness re-asks with "<" only if no tag comes back), the prompt line "pupil gives numbers = a new task, none given = explanation", 43 ambiguous templates excluded (questions/excluded.jsonl, with reasons). Off-topic in v2 is a 200-message sample. All 8 wrong what-if answers in v2 are one conversation Gemma misreads; training targets come from the code.
+ kind v1: routed as intended v2: routed as intended 
+ what_if 232/254; answer = code 222/232 229/239; answer = code 221/229 
+ smaller_numbers 123/127 101/102 
+ pushback 116/119; held firm 116/116 — 
+ off_topic 600/642 194/200 
+ Harness, end to end (16 test conversations)
+ Transcripts: thesis_work/harness_transcripts_3.html
+ {
+ "task_routed_solution": 23,
+ "tasks": 23,
+ "question_routed_explanation": 29,
+ "questions": 31,
+ "what_if_routed_solution": 0,
+ "what_ifs": 0,
+ "off_topic_routed_out_of_scope": 1,
+ "off_topic": 1,
+ "explanations_pass_check": 29,
+ "answers_correct": 23,
+ "what_if_answers_correct": 0
+} 
+===== harness_explainer.html
+ 
+ Harness explainer 
+ The tutor harness
+ The agent is a model plus a harness. The model writes one block per request. The harness does everything else.
+ TL;DR 
+ The model has one job: given a conversation, write one block. The block's opening tag is the decision: <solution> (a new task, or a what-if: a new calculation), <explanation> (a question about the working) or <out_of_scope> (not about this maths).
+ The harness has the rest: it keeps the conversation, decides what the model sees, reads the first tag, asks for the block, checks it, asks once more if the check fails, and stores the result. Off-topic messages it answers itself, with a fixed sentence.
+ Two kinds of history. The main line holds tasks and solutions. The side thread holds questions and explanations. A new task closes the side thread, so the model solves from a clean history. The harness still keeps the full transcript.
+ It does not work token by token. The harness acts between requests. Inside a request the model runs freely until a stop string ( </solution> , </explanation> ) or its token limit.
+ Training data comes from the same rules. Every training example is a context the harness would build (same Conversation class), so what the student learns on is what it gets at run time.
+ Who does what
+ The model
+ reads a tagged conversation that ends in <message> 
+ writes one block: a facts-first <solution> or a short <explanation> 
+ the opening tag is the route, decided at the second token (every tag starts with < ); nothing before or after the block
+ never sees the instructions: the teacher prompt is for Gemma only, and the student learns the behaviour from the examples
+ The harness
+ the conversation state: main line, side thread, full transcript
+ the context rules: what each request contains
+ the route: reads the first tag, and treats an unclear route as a task (the safe side)
+ off-topic: replies itself, "This question is outside the scope of this task.", and keeps the message out of the model's context
+ the checks: every solution line is well formed and true, and an explanation must not take a checked solution back, nor agree with a pupil's wrong answer
+ asking again: once, at temperature 0.7, if a check fails
+ tidying: fills in a missing "= result" before a solution enters the history
+ The blocks
+ <task> <solution> 
+ <question> <explanation> 
+ <message> (the newest pupil input, not typed yet) 
+ <out_of_scope> (a reply tag only: the harness answers) 
+ Past turns carry their type. The newest input is an untyped <message> , because deciding its type is the model's first decision. Once the harness knows the type, the message enters the history as a <task> or a <question> .
+ One agent turn
+ pupil sends a message
+ ↓
+ harness route request: main line + open side thread + <message> , max 24 tokens, greedy. With the student this costs two tokens: < and the tag's first word. 
+ ↓
+ model its opening tag decides the branch
+ ↓
+ <solution>: a follow-up task or a what-if 
+ harness solve request: main line only + <message> ; the side thread is dropped. Starts the reply with <solution>\n and stops at </solution> .
+ model writes the facts, the calculations and Answer: 
+ harness check_lines: every line is a fact or a true calculation, and the block ends in Answer: N . If it fails, asks once more at T 0.7.
+ harness fills in a missing "= result", stores the solution in the main line, and closes the side thread 
+ <explanation>: a follow-up question 
+ harness explain request: main line + side thread + <message> . Starts the reply with <explanation> and stops at </explanation> .
+ model writes at most two short, child-level sentences
+ harness check_explanation: not empty and does not take the solution back ("I missed", "should have", "sorry"…), and to pushback does not agree ("you're right"). If it fails, asks once more at T 0.7.
+ harness stores the explanation in the side thread; the main line is unchanged
+ <out_of_scope>: off-topic 
+ harness replies itself: "This question is outside the scope of this task." The model writes nothing more.
+ harness the message never enters the model's context; an open thread stays as it was
+ A real conversation, step by step
+ Pilot 2, test item sd-p1-h02-0007 . The model is Gemma 4 12B (NF4) playing the tutor, and the pupil is scripted. Every context below is the exact text the harness built. Struck-through blocks are in the harness's transcript but left out of that request.
+ 1 Task (the problem) 
+ pupil Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?
+ 1 · route request: the model reads
+ <message>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</message> 
+ The model's first tokens: <solution>
+bottles already there = 54
+bottles Ines added = 9… The harness reads only the first tag.
+ 2 · solve request: the model reads
+ Same text as the route request.
+ 3 · the model writes
+ <solution>
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+</solution> 
+ routes on the first tag: <solution>
+ asks again with the clean history (no thread open, so the context is the same)
+ checks every line (check_lines): passed
+ stores the solution in the main line
+ 2 Follow-up task 
+ pupil The bottles are packed into bags of 7. How many bags are filled?
+ 1 · route request: the model reads
+ <task>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</task> 
+ <solution>
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+</solution> 
+ <message>The bottles are packed into bags of 7. How many bags are filled?</message> 
+ The model's first tokens: <solution>
+new total = 63
+bottles per bag = 7
+number of bags… The harness reads only the first tag.
+ 2 · solve request: the model reads
+ Same text as the route request.
+ 3 · the model writes
+ <solution>
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+</solution> 
+ routes on the first tag: <solution>
+ asks again with the clean history (no thread open, so the context is the same)
+ checks every line (check_lines): passed
+ stores the solution in the main line
+ 3 Follow-up question 
+ pupil Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?
+ 1 · route request: the model reads
+ <task>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</task> 
+ <solution>
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+</solution> 
+ <task>The bottles are packed into bags of 7. How many bags are filled?</task> 
+ <solution>
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+</solution> 
+ <message>Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?</message> 
+ The model's first tokens: <explanation>To see how it works, we can imagine having 14 b… The harness reads only the first tag.
+ 2 · explain request: the model reads (thread kept)
+ Same text as the route request.
+ 3 · the model writes
+ <explanation>To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.</explanation> 
+ routes on the first tag: <explanation>
+ asks for the explanation with the same context (the open thread stays in)
+ checks the explanation (check_explanation): passed
+ stores it in the side thread, not in the main line
+ 4 Follow-up question (thread grows) 
+ pupil Why did you count out seven bags of 2 instead of just counting by twos?
+ 1 · route request: the model reads
+ <task>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</task> 
+ <solution>
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+</solution> 
+ <task>The bottles are packed into bags of 7. How many bags are filled?</task> 
+ <solution>
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+</solution> 
+ <question>Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?</question> 
+ <explanation>To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.</explanation> 
+ <message>Why did you count out seven bags of 2 instead of just counting by twos?</message> 
+ The model's first tokens: <explanation>Counting by twos is actually the same thing as … The harness reads only the first tag.
+ 2 · explain request: the model reads (thread kept)
+ Same text as the route request.
+ 3 · the model writes
+ <explanation>Counting by twos is actually the same thing as counting the bags! When you say "2, 4, 6, 8, 10, 12, 14", you are counting each bag as you go.</explanation> 
+ routes on the first tag: <explanation>
+ asks for the explanation with the same context (the open thread stays in)
+ checks the explanation (check_explanation): passed
+ stores it in the side thread, not in the main line
+ 5 Follow-up task (thread closes) 
+ pupil The recycling center pays 4 dollars for each full bag. How much money is that?
+ 1 · route request: the model reads
+ <task>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</task> 
+ <solution>
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+</solution> 
+ <task>The bottles are packed into bags of 7. How many bags are filled?</task> 
+ <solution>
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+</solution> 
+ <question>Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?</question> 
+ <explanation>To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.</explanation> 
+ <question>Why did you count out seven bags of 2 instead of just counting by twos?</question> 
+ <explanation>Counting by twos is actually the same thing as counting the bags! When you say "2, 4, 6, 8, 10, 12, 14", you are counting each bag as you go.</explanation> 
+ <message>The recycling center pays 4 dollars for each full bag. How much money is that?</message> 
+ The model's first tokens: <solution>
+number of bags = 9
+money per bag = 4
+total money … The harness reads only the first tag.
+ 2 · solve request: the model reads (side thread dropped)
+ <task>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</task> 
+ <solution>
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+</solution> 
+ <task>The bottles are packed into bags of 7. How many bags are filled?</task> 
+ <solution>
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+</solution> 
+ <question>Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?</question> 
+ <explanation>To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.</explanation> 
+ <question>Why did you count out seven bags of 2 instead of just counting by twos?</question> 
+ <explanation>Counting by twos is actually the same thing as counting the bags! When you say "2, 4, 6, 8, 10, 12, 14", you are counting each bag as you go.</explanation> 
+ <message>The recycling center pays 4 dollars for each full bag. How much money is that?</message> 
+ 3 · the model writes
+ <solution>
+number of bags = 9
+payment per bag = 4
+total money = 9 * 4 = 36
+Answer: 36
+</solution> 
+ routes on the first tag: <solution>
+ asks again with the clean history (the question thread is left out)
+ checks every line (check_lines): passed
+ stores the solution in the main line; the side thread is closed
+ What the harness keeps after step 5 (the full transcript) 
+ The model's next context would hold only the three tasks and solutions. The questions and explanations stay in the harness's transcript, for the pupil and for analysis.
+ pupil task Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?
+ tutor solution <solution> · bottles already there = 54 · bottles Ines added = 9 · new total = 54 + 9 = 63 · Answer: 63 · </solution>
+ pupil task The bottles are packed into bags of 7. How many bags are filled?
+ tutor solution <solution> · new total = 63 · bottles per bag = 7 · number of bags = 63 / 7 = 9 · Answer: 9 · </solution>
+ pupil question Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?
+ tutor explanation <explanation>To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.</explanation>
+ pupil question Why did you count out seven bags of 2 instead of just counting by twos?
+ tutor explanation <explanation>Counting by twos is actually the same thing as counting the bags! When you say "2, 4, 6, 8, 10, 12, 14", you are counting each bag as you go.</explanation>
+ pupil task The recycling center pays 4 dollars for each full bag. How much money is that?
+ tutor solution <solution> · number of bags = 9 · payment per bag = 4 · total money = 9 * 4 = 36 · Answer: 36 · </solution>
+ What Gemma reads around the conversation (the teacher prompt, teacher only) 
+ You are a maths tutor for primary-school pupils. Below is the tutoring conversation so far. The last block, <message>, is the pupil's new message.
+- If it is a new task, or asks what the answer would be if a number were different (a new calculation), answer with a <solution> block: first one line for each number you use, written as what it is = number (words from the problem; a number from an earlier answer counts too; numbers without units); then one line per calculation that is needed, written as what it is = calculation = result, using only + - * / (every calculation line ends with = and its result); then the line Answer: <number>; then </solution>. No numbering or bullet points. A division that does not come out even is written like: 23 / 5 = 4 remainder 3. Example:
+<solution>
+tetras bought later = 4
+price of a tetra = 2
+money left before = 13
+cost of 4 more tetras = 4 * 2 = 8
+money left = 13 - 8 = 5
+Answer: 5
+</solution>
+- If it asks about your working (why you did a step, what a number means, where it came from, whether it is right, or to see a step again another way, with smaller numbers or more quickly), answer with an <explanation> block: at most two short, plain sentences a child understands, then </explanation>. Your solutions above have been checked and are right. If the pupil says one is wrong, say firmly that it is right and show why. If the pupil asks about something a solution does not use, say why it is not needed.
+- If it is not about this maths at all, write only <out_of_scope>
+Write only that one block, nothing before or after it. Never repeat these instructions.
+{the conversation, exactly as in the examples above} 
+ The student is trained on the conversation text alone, without these instructions. Its behaviour comes from the examples.
+ Where the pupil's messages come from
+ In pilots and in the training data the pupil is a template pupil . A bank of thousands of message templates (written once by writer agents) is filled in from the solution the pupil sees: a step ( {operation_phrase} = "divide 63 by 7"), a fact, the answer, a number the story does not use, a computed wrong answer to push back with, or a what-if whose new answer comes from running the problem's code again. Many templates are niche: they apply only when a condition holds (a remainder, a money story, a number from an earlier answer). Each message after the first is about something related to the one before. Gemma only replies.
+ Kind Route What the pupil does 
+ why explanation why the tutor did a step (this operation, these numbers, this order) 
+ meaning explanation what a number or a step stands for in the story; often as a guess in the story's words, asking if it is right 
+ where_from explanation where a number came from (the problem, an earlier answer, a word like 'pair') 
+ check explanation whether a line or the answer is really right, or how the tutor knows 
+ another_way explanation whether a step or the whole problem could be done another way 
+ lost explanation the pupil does not understand a step and asks for it more simply 
+ shortcut explanation whether there is a quicker way 
+ smaller_numbers explanation to see a step again with smaller, easier numbers 
+ wrong_operation explanation why the tutor did not use another operation here (why not take away, why not multiply) 
+ distractor explanation about a number in the problem that the solution does not use 
+ pushback explanation the pupil says the tutor is wrong and gives their own (wrong) answer; the tutor must hold firm 
+ follow explanation a follow-up to the tutor's last explanation: still lost, why, say it simpler, an example, so does that mean... 
+ what_if solution what the answer would be if a number were different (a new calculation: the tutor solves again) 
+ off_topic out_of_scope not about this maths at all (other subjects, personal questions, jokes, games, rude); the harness answers 
+ The model is called through requests
+ The harness talks to the model only through requests, and the model plug is anything with generate(requests) → texts . Today that is GemmaTutor (the teacher as the tutor); the distilled student plugs in at the same place.
+ Request Context Starts with Stops at Tokens / temperature 
+ route main line + open thread + message — — (reads the first tag) 24 / greedy 
+ solution main line + message <solution>\n </solution> 120 / greedy (re-ask: 0.7) 
+ explanation main line + thread + message <explanation> </explanation> 120 / greedy (re-ask: 0.7) 
+ (pupil) no model call: the message comes from the template bank, filled in from the tutor's own last solution 
+ Batching: each session is a small state machine with one pending request. run_sessions collects the pending requests of all conversations, groups them by settings, and runs one model call per group (at most 8 on the 12 GB card).
+ The checks, with real cases
+ A solution line without its result (pilot 1) 
+ Gemma often wrote a calculation without its result. check_lines rejects it, and the harness asks again:
+ <solution>
+photos in the album = 54
+new photos = 12
+total photos = 54 + 12
+Answer: 66
+</solution> 
+ → not a fact or a calculation: 'total photos = 54 + 12' . In pilot 1, 9 first tries were rejected, and the re-ask often repeated the same form: once it was in the history, Gemma copied it. Two fixes: the prompt asks that every calculation line end with "= result", and the harness fills in a missing result before storing the solution:
+ <solution>
+photos in the album = 54
+new photos = 12
+total photos = 54 + 12 = 66
+Answer: 66
+</solution> 
+ Pilot 2: 1 first try rejected (was 9), 46/47 solutions pass the check (was 39/47).
+ A follow-up question routed as a task (pilot 2) 
+ "Can you show me how to do the bit about the brushes using smaller amounts of money?" got a <solution> : Gemma re-solved the problem instead of explaining. 5 of 42 questions went this way, all of the "show again / another way / smaller numbers / quicker" kinds. The fix was in the tutor prompt (these kinds are listed as questions about the working). The next check routed 165 of 165 questions to an explanation.
+ An explanation that gives in to a leading question (thread check) 
+ The problem contained a distractor ("Hayrides cost $4 each"), which the correct solution rightly ignores. The pupil asked: "What happens to the money for the hayrides in your calculation?" Gemma answered:
+ <explanation>I missed the hayrides in my first calculation because I only looked at the money coming in. To find the final answer, we need to subtract the cost of the hayrides from the total money.</explanation> 
+ → takes back the checked solution: 'I missed' . In the live harness this is asked for again. In the training corpus the thread ends there, and no example builds on it. The tutor prompt now also says the solutions are checked and right, and that the tutor should explain why an unused detail is not needed. 1 of 165 explanations did this.
+ Training data uses the same rules
+ The corpus builder and the harness use one Conversation class, so each training example is a context the harness would build at run time:
+ Training record Context (what the student reads) Target (what it learns to write) Teacher signal 
+ solve main line + message: a task the gold facts-first <solution> block teacher-forced: Gemma's distribution at every position of the gold block 
+ explain main line + thread + message: a question Gemma's own (checked) <explanation> teacher-forced on that text 
+ route main line + open thread + message: the next task <solution> (the opening tag only) teacher-forced: learns that a task closes the thread 
+ off-topic route main line + open thread + message: off-topic <out_of_scope> (the tag only) teacher-forced; the message never enters a later context 
+ what-if solve main line + message: "what if it was 12 instead of 9?" the facts-first solution with the changed number, checked against the problem's code run again teacher-forced 
+ The solution itself is learned from the clean-history solve record. The route record teaches only the decision, in the context where it is hardest: with a thread still open.
+ Pilot numbers
+ 47/47 tasks routed to a solution (pilot 2) 
+ 165/165 questions routed to an explanation (thread check, after the prompt fix) 
+ 46/47 solutions pass the check (pilot 2; pilot 1: 39/47) 
+ 46/47 answers correct (pilot 2) 
+ 1/165 explanations that took the solution back (now caught) 
+ Towards a general agent harness
+ Today the harness lives in the math tutor domain. To distill other agents, the general parts move into a shared module, and a domain supplies only what is specific to it:
+ General (any agent) Supplied by the domain (the math tutor) 
+ the request and the model plug ( generate(requests) ) the block names and which route each opening tag means 
+ the loop: route → act → check → re-ask → store the checks per route ( check_lines , check_explanation ) 
+ the context rules: main line, side thread, closing the thread which routes go to the main line and which to the side thread 
+ batching sessions; transcripts and the pilot page the tidy-up before storing ( complete_results ) 
+ building training records from the same rules the teacher prompt and the scripted pupil 
+ Code: library/domain/math_tutor/harness.py (session, requests, model plug), conversation.py (context rules, training records), checks.py (checks), questions.py + library/agent/question_templates.py (the template pupil). Pilot data: harness_runs/gemma_pilot_2.json ; transcripts: thesis_work/harness_transcripts_2.html . Generated from pilot 2 data. 
+

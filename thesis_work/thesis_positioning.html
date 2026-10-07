@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thesis Positioning Review</title>
+<style>
+:root {
+  --bg: #f8f7f3;
+  --surface: #ffffff;
+  --surface-2: #f1efe9;
+  --fg: #1c1c1e;
+  --muted: #5d6066;
+  --border: #dedbd3;
+  --accent: #2b5a87;
+  --high: #a8261c;
+  --high-bg: #fbe8e5;
+  --med: #7f5300;
+  --med-bg: #fdf1d6;
+  --low: #276436;
+  --low-bg: #e4f3e8;
+  --novel: #1f5f99;
+  --novel-bg: #e3eefa;
+  --code-bg: #efece5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141518;
+    --surface: #1d1e22;
+    --surface-2: #24262b;
+    --fg: #e7e5e0;
+    --muted: #a2a6ad;
+    --border: #34363c;
+    --accent: #8cb6e4;
+    --high: #ff9a90;
+    --high-bg: #3a1e1c;
+    --med: #f0c56e;
+    --med-bg: #372d16;
+    --low: #8ed29f;
+    --low-bg: #1b3122;
+    --novel: #9cc5f2;
+    --novel-bg: #1c2a3b;
+    --code-bg: #2a2c31;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141518;
+  --surface: #1d1e22;
+  --surface-2: #24262b;
+  --fg: #e7e5e0;
+  --muted: #a2a6ad;
+  --border: #34363c;
+  --accent: #8cb6e4;
+  --high: #ff9a90;
+  --high-bg: #3a1e1c;
+  --med: #f0c56e;
+  --med-bg: #372d16;
+  --low: #8ed29f;
+  --low-bg: #1b3122;
+  --novel: #9cc5f2;
+  --novel-bg: #1c2a3b;
+  --code-bg: #2a2c31;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.7rem; margin: 0 0 4px; line-height: 1.2; }
+h2 { font-size: 1.25rem; margin: 40px 0 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 1.02rem; margin: 18px 0 6px; }
+p { margin: 6px 0 10px; }
+a { color: var(--accent); }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+.verdict { border-left: 4px solid var(--accent); }
+ul.tight { margin: 6px 0; padding-left: 20px; }
+ul.tight li { margin: 4px 0; }
+code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; overflow-wrap: anywhere; }
+.badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.high { color: var(--high); background: var(--high-bg); }
+.med { color: var(--med); background: var(--med-bg); }
+.low { color: var(--low); background: var(--low-bg); }
+.novel { color: var(--novel); background: var(--novel-bg); }
+.nav { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 8px 0 4px; font-size: 0.92rem; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+th { background: var(--surface-2); font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: none; }
+td.num { color: var(--muted); font-weight: 600; width: 2.2em; }
+td .closer { display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.card h3 { margin-top: 0; }
+.muted { color: var(--muted); }
+ol.sources { padding-left: 24px; font-size: 0.9rem; }
+ol.sources li { margin: 3px 0; overflow-wrap: anywhere; }
+.small { font-size: 0.88rem; }
+@media (max-width: 760px) {
+  table, thead, tbody, tr, th, td { display: block; width: 100%; }
+  thead { display: none; }
+  table { border: none; background: transparent; }
+  tr { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 0 0 12px; padding: 4px 0; }
+  td { border-bottom: none; padding: 5px 12px; }
+  td::before { content: attr(data-label); display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  td.num { width: auto; }
+  td.num::before { display: inline; margin-right: 6px; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Thesis positioning: an adversarial review</h1>
+<p class="sub">Is the project worth doing, what is new in it, what an examiner will attack, and what cheap additions close the gaps.
+Reviewed 2026-10-08 against the repo state at commit 44c6ff3 (PLAN v2, tutor corpus done, cloud teacher run not yet started).
+Local file. Every outside source in the list at the bottom was opened during this review; items I could not check are marked.</p>
+
+<nav class="nav">
+  <a href="#tldr">TL;DR</a>
+  <a href="#redteam">Red team (15)</a>
+  <a href="#why">Why worth doing</a>
+  <a href="#novelty">Novelty and low-hanging fruit</a>
+  <a href="#framing">Recommended framing</a>
+  <a href="#cheap">Cheapest additions</a>
+  <a href="#corrections">Corrections to earlier notes</a>
+  <a href="#sources">Sources</a>
+</nav>
+
+<h2 id="tldr">TL;DR</h2>
+<div class="box verdict">
+<ul class="tight">
+  <li><b>Worth doing: yes.</b> It holds up as a <i>framework</i> thesis, which is what the assignment asks for. It has one sharp empirical rule: soft labels matter in proportion to teacher entropy. It also has an extreme-scale agent case study: a from-scratch tutor of a few million parameters inside a harness, three to four orders of magnitude smaller than its 12B teacher.</li>
+  <li><b>What survives as novel:</b> the combination of from-scratch, tiny, domain-only and agentic, with token-level teacher distributions (a). Also the test of the entropy rule <i>inside one agent</i>, across turn types (d), and training a from-scratch output head on a task-derived token subset with the teacher renormalised to it (the narrow half of b).</li>
+  <li><b>What does not survive:</b> a task-derived vocabulary as such (VocabTailor [30]). What-if follow-ups with solver-computed answers (MathCAMPS [39]). Soft labels on a gold target (Kim &amp; Rush word-level KD [2]). Out-of-scope handling in the runtime (NeMo Guardrails [27]). Annealed KL/CE (LLM4Teach [20]). Offline stored logits (DistillKit [58]). Cite these, don't claim them.</li>
+  <li><b>Biggest exposures:</b> no pretrained-baseline row, no classifier-router baseline, test messages only from LLMs, and no check that explanations are faithful. Two assignment items are not yet visible in the repo: a test suite and a phone (or CPU) run.</li>
+  <li><b>Cheapest fixes, about 1.5 working days for the top three:</b> (1) before the cloud run, log the in-vocabulary probability mass and compare NF4 with bf16 on a sample; (2) per-turn-type exp(H) plus gold-history vs own-history evaluation, neither needing new training; (3) a bag-of-words router and a SmolLM2-135M row.</li>
+</ul>
+</div>
+
+<h2 id="redteam">Red team: the 15 strongest objections</h2>
+<p class="small muted">Severity = how likely an examiner raises it × how much damage if unanswered. Bracketed numbers point to the sources list. "Own" numbers come from findings.txt, experiment_ledger.txt, domain_specs.txt, template_pilot.html and harness_explainer.html.</p>
+<table>
+<thead><tr><th>#</th><th>Objection</th><th>Severity</th><th>Best evidence-based answer, then what closes it</th></tr></thead>
+<tbody>
+<tr>
+<td class="num" data-label="#">1</td>
+<td data-label="Objection">Why not just fine-tune a small pretrained model (SmolLM2-135M, Gemma 3 270M)?</td>
+<td data-label="Severity"><span class="badge high">high</span></td>
+<td data-label="Answer">The assignment asks for students "nulláról tanított" (trained from scratch). From-scratch training is the variable under study, not a claim that it is better. The cost of random initialisation is known: about 10 points at 125M/350M in TinyGSM's ablation [10]. Self-pretraining on the downstream data alone rivals BookWiki pretraining with 10-500× less data [11], and models under 10M parameters write fluent text in one narrow domain [9]. Size: the part-1 student has 3.4M parameters, 96% of them input embedding (F-68a). Gemma 3 270M is 170M embedding plus 100M transformer [17]. Do not argue that phones cannot run 270M: Google reports the INT4 model used 0.75% of a Pixel 9 Pro battery for 25 conversations [17].
+<span class="closer"><b>Close:</b> one reference row. Fine-tune SmolLM2-135M [16] on the same solve, route and explain records, score it with the same harness, and report "the student reaches X% of the pretrained baseline at 1/Y of the parameters". About 1 day on the 4070.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">2</td>
+<td data-label="Objection">Distillation adds nothing over SFT on teacher text, and your own E-01 says so.</td>
+<td data-label="Severity"><span class="badge high">high</span></td>
+<td data-label="Answer">Own it, because it is the finding. E-01 is null on reddit and math (exp(H) 1.021 / 1.003; 10 seeds; noise floor ±1.8 / ±1.7 pp). On post-gen (exp(H) 2.73) the arms are strictly ordered by overlap: pure KL .305 &gt; CE→KL .298 &gt; flat .291 &gt; KL→CE .284 &gt; pure CE .264, seed std .001-.002. Theory predicts this: KD helps through the teacher's estimate of class probabilities [3], and a near one-hot teacher adds nothing beyond its label. Fidelity and generalisation are separate targets [4], which is why fidelity is reported.
+<span class="closer"><b>Close:</b> before any tutor training, compute exp(H) per turn type (route / solve / explain) from the stored logits and write the prediction down: the arms separate on explain, not on route or solve. No training; about 1 h once the cloud data are home.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">3</td>
+<td data-label="Objection">The corpus is LLM-written and the pupil is a template, so the student learns your templates, not tutoring.</td>
+<td data-label="Severity"><span class="badge high">high</span></td>
+<td data-label="Answer">The split matches TinyGSM [10]: Claude agents write the inputs, executed code gives the answers, Gemma gives the outputs and distributions. Measured: median nearest-neighbour similarity is 0.40 for the corpus, against 0.54 for the human seeds and 0.91 for SVAMP. There are 0 SVAMP leaks, and 3 operation shapes (415 items) are held out. Template messages: NN 0.385, 4.3% near-duplicates. On the free-written set the teacher routes 175/180. The weak spot: the "free-written" messages are also LLM-written, and human-machine conversations differ sharply from the data systems are built on [51].
+<span class="closer"><b>Close:</b> score the student on templated vs free-written messages; the gap is the template-overfit number. Have the planned ~100-message routing test written by people who never saw the templates. 2-3 h. Templates also cut the other way: GSM-Symbolic shows accuracy swings when only the numbers change [38], so report the spread across the renumbered copies of each test item. That is free, because the copies exist.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">4</td>
+<td data-label="Objection">The teacher runs in 4-bit, so its distributions are distorted.</td>
+<td data-label="Severity"><span class="badge low">low-med</span></td>
+<td data-label="Answer">The final tutor and code-finder data are planned in bf16 on the rented RTX 5090 (<code>generate_data.py</code>: <code>load_in_4bit=False</code>). NF4 was used only for the pilots and Virág (F-V1). The part-1 Gemma 3 4B batches do not record precision: <code>info.json</code> has no such field. Google's QAT result (54% smaller perplexity drop at Q4_0 [18]) concerns its own QAT checkpoints, not bitsandbytes NF4, so it is no defence of NF4.
+<span class="closer"><b>Close:</b> on the cloud box, score ~256 pilot turns in NF4 and in bf16. Report route agreement, answer agreement, mean KL on the reduced vocabulary and exp(H) per turn type. Add a precision field to <code>info.json</code>. 1-2 h of rental that is already paid for.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">5</td>
+<td data-label="Objection">SVAMP is easy and contaminated.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">Contamination is a pretrained-model problem: GSM1k shows drops of up to 8% [37]. A from-scratch student sees only its corpus, which was leak-checked against all 1,000 SVAMP problems (0 leaks). SVAMP was built as a challenge set against shallow heuristics [36]. The 746-problem filter (1-3 operations, numbers ≤ 99, grade ≤ 4) matches the grade 2-4 scope. The real weakness is lexical: 72.5% of SVAMP problems contain an input token the student never saw (4.1% of all tokens).
+<span class="closer"><b>Close:</b> report SVAMP per shape (577 one-step / 169 two-step) with the planned UNK + input-dropout fix, plus an ablation where the harness maps unseen names to known ones. Also check the <i>output</i> side: render SVAMP's gold facts-first lines and count the tokens missing from the 18,357-token output head. A missing name means the student cannot write that fact line. Zero GPU, ~1 h.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">6</td>
+<td data-label="Objection">A classifier could route, so "agentic" is a stretch.</td>
+<td data-label="Severity"><span class="badge high">med-high</span></td>
+<td data-label="Answer">Partly true. Intent detection with under 0.59M parameters reaches 98% on SNIPS [53], and out-of-scope detection is a standard task [52]. But the agent does more than route: it solves in facts-first lines the harness checks, explains, holds firm under pushback, and works inside a harness that keeps a main line and a side thread. Define "agentic" as in novelty_check: a response type per message plus structured output that the harness checks and acts on. Anchor "agent = model + harness" in the agent-distillation roadmap, which treats harnesses as a place where knowledge is kept [24].
+<span class="closer"><b>Close:</b> train a bag-of-words logistic-regression router on the same route records and report it next to the student's first-token route accuracy. 1-2 h CPU. If the classifier wins, the harness can use it, and that is the modularity claim at work.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">7</td>
+<td data-label="Objection">The student is too small to explain anything faithfully.</td>
+<td data-label="Severity"><span class="badge high">high</span></td>
+<td data-label="Answer">Fluency below 10M parameters in a narrow domain is shown [9]; faithfulness is the open question. Explanations are the high-entropy turn, and they use the large output head. Today's harness check catches only take-backs and agreeing with a wrong answer (1/165 take-backs caught in the teacher pilot). It does not check that the numbers in an explanation are right.
+<span class="closer"><b>Close:</b> (a) a number-grounding check: every number in an explanation appears in the context or is a true calculation. It is automatic from the trace; 2-3 h. (b) Run the size study (Study 3) on explain turns first, varying depth as well as width, since depth matters at small scale [15]. (c) If explanations fail at the chosen size, narrow the claim to route + solve and report the size at which explain works. That is a result, not a failure.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">8</td>
+<td data-label="Objection">No human evaluation.</td>
+<td data-label="Severity"><span class="badge high">med-high</span></td>
+<td data-label="Answer">Every current metric is automatic and checkable: answer = code, line validity, route, held firm. LLM judges agree with humans over 80% of the time but carry position, verbosity and self-enhancement biases [55]. Learning outcomes need a field study [45] and are out of scope.
+<span class="closer"><b>Close:</b> a small blind rubric study. 40 conversations, student vs teacher, 2-3 raters scoring correct / child-readable / holds firm, with Cohen's kappa. About 1 day. Never claim a learning effect.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">9</td>
+<td data-label="Objection">One agent on one domain: nothing generalises.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">Part 1 already spans four domains on one pipeline, with seven points on the entropy axis (E-00: math 1.003, reddit 1.021 with fields at 1.02-1.09, post-gen 2.73). Part 2 is a case study by design. The tutor's turn types give an entropy axis <i>inside</i> one domain, which removes the domain confound that part 1 cannot.
+<span class="closer"><b>Close:</b> state the scope plainly. Show the harness's general vs domain-specific split (the table at the end of harness_explainer.html) as the evidence of modularity. The code finder stays future work.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">10</td>
+<td data-label="Objection">The framework duplicates existing distillation toolkits.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">TRL's GKDTrainer wraps SFTTrainer around pretrained HF models with on-policy generalised JSD [57]. DistillKit <i>already</i> offers offline distillation from compressed stored logits with KL/JSD/TVD losses, and its configs use pretrained students such as Qwen3-8B [58]. EasyDistill covers black- and white-box KD with SFT, ranking and RL [59]. None of their documentation shows: from-scratch tiny students with a task-derived output head; domain plug-ins (prompt + vocabulary slice + metric + corpus); distribution metrics logged during eval; or an agent harness whose training records come from the same Conversation class it runs with.
+<span class="closer"><b>Close:</b> one feature table marking each item documented or not documented. Make no novelty claim for offline logits or the divergence zoo.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">11</td>
+<td data-label="Objection">A reduced vocabulary is not new, and restricting KL to it biases the teacher.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">The idea is not new. TinyStories keeps the top 10K tokens [9]. Vocabulary trimming removes other languages' tokens [29], and Compact prunes by global frequency [31]. <b>VocabTailor builds a task-specific static LM-head subset from task corpora</b>, training-free, on pretrained SLMs [30]. On bias: caching top-K teacher probabilities gives biased estimates of the teacher [33]. The fixed subset renormalises the teacher in the same way, and the mass outside it is not logged today.
+<span class="closer"><b>Close:</b> log the in-vocabulary mass (logsumexp over the subset minus logsumexp over the full vocabulary) in <code>ReducedLogitsRecorder</code> and <code>score_training_examples</code>. The full logits are already in memory at both points. About 10 lines, before the cloud run; report the mean and the 1st percentile per turn type.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">12</td>
+<td data-label="Objection">Three seeds over ~70 runs and many comparisons: the effects are noise.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">The noise floor is measured: ±1.8 pp reddit and ±1.7 pp math at n=10, and post-gen seed std .001-.002. Few student projects have that. Data order, initialisation and hyperparameters are known to swing benchmark results [56].
+<span class="closer"><b>Close:</b> name one primary comparison per study in advance, use paired seeds, report differences in seed-std units, and label the rest exploratory. Give the headline row 5+ seeds rather than 3 seeds everywhere.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">13</td>
+<td data-label="Objection">Trained on gold histories, deployed on its own: errors compound across turns.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">This is known at token level, as exposure bias, and on-policy distillation targets it [5][6]. It is also known at conversation level. In MT-Eval's gold- vs self-generated-history ablation, Vicuna-13B's recollection score rises from 4.64 to 7.32 with gold history [50], and LLMs lose 39% on average when a task is spread over turns [49]. The harness limits this: a solution is checked, asked for once more if it fails, and tidied before it enters the history, and a new task drops the side thread.
+<span class="closer"><b>Close:</b> run each test conversation twice, once with gold history and once with the student's own, and report accuracy per turn index. Same harness, no training, 3-4 h. This is fruit (e) below.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">14</td>
+<td data-label="Objection">A tutor that hands out answers harms learning, and children's safety is ignored.</td>
+<td data-label="Severity"><span class="badge med">medium</span></td>
+<td data-label="Answer">The evidence is real. In Bastani et al., unrestricted GPT-4 raised practice grades by 48%, but grades fell 17% once access was removed; a safeguarded tutor largely removed the harm [45]. MathDial reports that LLM tutors give wrong feedback and reveal solutions too early [40]. Scope: the thesis distils behaviour. Teaching policy, such as hint first or withhold the answer, is a harness module. Wellbeing messages are already a stated limitation (domain_specs.txt). A tutor that evaluated learning outcomes or steered learning would enter the EU AI Act's high-risk list (Annex III 3(b)) [61].
+<span class="closer"><b>Close:</b> one limitations paragraph. Do not claim learning gains or child safety.</span></td>
+</tr>
+<tr>
+<td class="num" data-label="#">15</td>
+<td data-label="Objection">The assignment asks for tests and a phone agent. Where are they?</td>
+<td data-label="Severity"><span class="badge high">high (grading)</span></td>
+<td data-label="Answer">The assignment says "Tesztek segítségével ellenőrizze a rendszer helyes működését" (verify with tests) and gives as its example "egy telefonon futó ... ágens" (an agent running on a phone). The repo has checks: <code>validator_cases.py</code> 24/24, the bit-exact batch conversion, and the KV-cache loop matched to <code>model.generate</code>. It has no test suite and no phone or CPU measurement.
+<span class="closer"><b>Close:</b> a <code>tests/</code> folder wrapping the existing checks, plus loss sanity tests (KL = 0 when student = teacher; <code>kl_ratio</code> 0 gives pure CE), 4-6 h. A CPU latency and memory table for the student, ideally with one run on a real phone, 3-6 h.</span></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="why">Why this is worth doing</h2>
+<div class="cards">
+  <div class="card">
+    <h3>1. Agents repeat narrow skills, so small models are the economical choice</h3>
+    <p>An NVIDIA position paper argues that agents invoke "a small number of specialized tasks repetitively", and that serving a 7B SLM is 10-30× cheaper in latency, energy and FLOPs than a 70-175B LLM [25]. This project goes to the far end: the part-1 student (3.4M parameters) is about 1/3,500 of its 12B teacher.</p>
+  </div>
+  <div class="card">
+    <h3>2. Privacy and offline use for children</h3>
+    <p>A model that runs on the device keeps a child's messages local. In the EU, offering an information society service directly to a child under 16 needs parental consent; member states may lower the age to 13 [60]. Running locally reduces data processing; it does not remove the obligations. Small on-device models are practical [17].</p>
+  </div>
+  <div class="card">
+    <h3>3. Verifiability and control</h3>
+    <p>Answers come from executing code, every solution line is checked, and the closed output head limits what the model can say. LLM tutors give factually wrong feedback and reveal solutions too early [40]; grounding a tutor in verification makes its responses more often correct, with fewer hallucinations [44]. LLMs flip their answer 46% of the time when asked "Are you sure?" [48]. The teacher pilot held firm in 116/116 sweep pushbacks and 59/60 probes, and that behaviour is in the training data.</p>
+  </div>
+  <div class="card">
+    <h3>4. A scientific question with a measured answer</h3>
+    <p><i>When do soft labels [1] beat imitation?</i> E-01 says: in proportion to teacher entropy. Theory agrees [3], and part 2 tests it within one agent. A second question: how small can the model inside an agent be when the harness carries the state and the checks? Agent distillation with pretrained students goes down to 0.5-0.6B [22][23] (and to GPT-2 sizes in [21], per novelty_check.md). The only from-scratch agentic analogue is an RL policy of 24K / 10M parameters [20].</p>
+  </div>
+  <div class="card">
+    <h3>5. Reproducible on student hardware</h3>
+    <p>The whole pipeline fits a 12 GB card plus one cloud rental. Stored teacher distributions let every loss ablation rerun without new teacher calls. That is the same practical case that makes DistillKit ship offline distillation [58]. The design is a reasonable one, not a novel one.</p>
+  </div>
+</div>
+
+<h2 id="novelty">Novelty and low-hanging fruit, tested adversarially</h2>
+<p class="small muted">Verdict: <span class="badge novel">novel</span> no prior work found combining it · <span class="badge med">partly</span> the core exists, a narrower claim survives · <span class="badge high">not novel</span> cite it, don't claim it. Effort is in hours of work beyond what PLAN v2 already schedules. Absence of evidence is not proof: industry, unpublished and non-English work were not covered.</p>
+<table>
+<thead><tr><th>Candidate</th><th>Claim</th><th>Closest prior work</th><th>Verdict</th><th>Effort / risk</th></tr></thead>
+<tbody>
+<tr>
+<td data-label="Candidate"><b>(a)</b> From-scratch tiny domain-only agent student</td>
+<td data-label="Claim">A randomly initialised student of a few million to tens of millions of parameters, trained on one narrow domain from the teacher's token-level distributions, works as a conversational agent in a harness.</td>
+<td data-label="Closest prior">LLM4Teach: from-scratch 24K / 10M RL policies with an annealed KL to the LLM's action distribution; actions, not text [20]. Structured Agent Distillation: token KL with [REASON]/[ACT] spans [21]. Kang et al.: 0.5-3B [22]. STAR: 0.6B [23]. TinyGSM random-init ablation [10]. From-scratch KD in general pretraining at 143M+ [12][13][14]. Narrow from-scratch LM [9]. Part 1's JSON task on-device with pretrained Qwen3-0.6B + QLoRA [28].</td>
+<td data-label="Verdict"><span class="badge novel">novel as combination</span></td>
+<td data-label="Effort / risk">Already the plan. Risk: medium. If explain fails at the chosen size, the claim narrows to route + solve.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(b)</b> Task-derived reduced output vocabulary, KL restricted to it</td>
+<td data-label="Claim">The student's output head <i>is</i> a task-derived token subset (525 reddit / 18,357 tutor), trained from scratch on the teacher's distribution renormalised to that subset.</td>
+<td data-label="Closest prior">VocabTailor: task-specific static LM-head subset from task corpora, training-free on pretrained 1-3B SLMs [30]. Vocabulary trimming [29]; Compact, frequency-based [31]; TinyStories top-10K [9]; smaller-vocabulary BERT students [32]; top-K cache bias [33].</td>
+<td data-label="Verdict"><span class="badge med">partly</span></td>
+<td data-label="Effort / risk">Only the from-scratch training + renormalised KL half survives. 1-2 h to log in-vocabulary mass; low risk.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(c)</b> Trace-grounded follow-up generation</td>
+<td data-label="Claim">Pupil messages are filled from the executed solution: steps, facts, distractors, computed pushback mistakes, and what-ifs with code-checked answers.</td>
+<td data-label="Closest prior">MathCAMPS: counterfactual and incremental follow-ups as a "difference" applied to the symbolic problem, with answers from the same solver [39]. MalruleLib / MalAlgoPy: executable misconceptions produce erroneous step traces [42][43]. MathDial: LLM-simulated student errors [40]. MathChat: follow-up QA and error-correction dialogues [41]. Template user simulators [46].</td>
+<td data-label="Verdict"><span class="badge med">partly</span></td>
+<td data-label="Effort / risk">Present it as engineering: one trace feeds every message kind and the route labels. 0 h. High risk if claimed as new, because MathCAMPS would be cited against it.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(d)</b> Per-turn-type distillation dynamics</td>
+<td data-label="Claim">Route, solve and explain are low, medium and high teacher-entropy regimes inside one agent. Part 1's entropy rule predicts KL arms separate on explain only.</td>
+<td data-label="Closest prior">Structured Agent Distillation: span-type-specific losses [21]. EGAD: token-entropy curriculum and temperature [34]. SelecTKD: selective token weighting [35]. Statistical view of KD [3]. None tests a cross-domain entropy rule within one agent's turn types.</td>
+<td data-label="Verdict"><span class="badge novel">novel (narrow)</span></td>
+<td data-label="Effort / risk">exp(H) per turn type: 1 h, no training; the arms are Study 2. Risk: the target source differs by turn (gold solve vs teacher-text explain), so state it as a confound.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(e)</b> Gold-history vs own-history evaluation</td>
+<td data-label="Claim">The conversation-level analogue of teacher-forced vs autoregressive accuracy: the error-compounding gap per turn index.</td>
+<td data-label="Closest prior">MT-Eval gold vs self-generated history ablation [50]; multi-turn degradation [49]; gold-history evaluation disagrees with human-machine use [51]; on-policy distillation [5][6].</td>
+<td data-label="Verdict"><span class="badge high">not novel (method)</span></td>
+<td data-label="Effort / risk">New as a measurement on a distilled tiny agent. 3-4 h, low risk, high value: it answers objection 13.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(f)</b> Teacher-forced soft labels on code-verified gold</td>
+<td data-label="Claim">Correct targets from code, soft labels from the teacher reading them in one pass.</td>
+<td data-label="Closest prior">Word-level KD over the <i>reference</i> sequence, mixed with NLL [2]; teacher logits over a given corpus [13]; correcting the teacher with ground truth [7].</td>
+<td data-label="Verdict"><span class="badge high">not novel</span></td>
+<td data-label="Effort / risk">Keep the generate vs forced comparison as an experiment. Free extra: <code>teacher_agreement</code> is already stored, which gives a map of where the teacher disagrees with verified gold. 1-2 h of analysis.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(g)</b> The harness answers out-of-scope itself</td>
+<td data-label="Claim">An off-topic message gets a fixed reply and never enters the model's context.</td>
+<td data-label="Closest prior">Topical rails in a runtime independent of the LLM [27]; out-of-scope detection [52][54].</td>
+<td data-label="Verdict"><span class="badge high">not novel</span></td>
+<td data-label="Effort / risk">A sound design choice. 0 h.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(h)</b> found: the teacher sees instructions, the student never does</td>
+<td data-label="Claim">Behaviour learned from examples alone.</td>
+<td data-label="Closest prior">Context distillation [8].</td>
+<td data-label="Verdict"><span class="badge high">not novel</span></td>
+<td data-label="Effort / risk">Name it: "context distillation across models". 0 h.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(i)</b> found: the first generated tag is the route</td>
+<td data-label="Claim">The model emits a control token and the runtime acts on it.</td>
+<td data-label="Closest prior">Self-RAG reflection tokens [26].</td>
+<td data-label="Verdict"><span class="badge high">not novel</span></td>
+<td data-label="Effort / risk">Cite it. 0 h.</td>
+</tr>
+<tr>
+<td data-label="Candidate"><b>(j)</b> found: anti-sycophancy at tiny scale</td>
+<td data-label="Claim">Does a few-million-parameter student hold firm against computed wrong answers, as the teacher did (116/116)?</td>
+<td data-label="Closest prior">Synthetic data reduces sycophancy in large models [47]; flip rates under "Are you sure?" [48].</td>
+<td data-label="Verdict"><span class="badge med">partly</span></td>
+<td data-label="Effort / risk">A free metric, already computed by the harness check. 0-1 h, low risk, good demo value.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="framing">Recommended framing</h2>
+<div class="box">
+<h3>Title-level claim</h3>
+<p><b>EN:</b> A modular framework that distils a 12B teacher into from-scratch students of a few million parameters, showing on four domains and inside one agent that soft labels matter in proportion to teacher entropy.</p>
+<p><b>HU (suggestion, keeps the assigned title):</b> <i>Keretrendszer nagy nyelvi modellek tudásának desztillációjára kis méretű, szakterület-specifikus modellekbe és ágensekbe</i>. Possible subtitle: "a tanító entrópiája határozza meg, mikor számít a lágy címke" ("the teacher's entropy decides when soft labels matter").</p>
+
+<h3>Three contributions</h3>
+<ol>
+  <li><b>The framework (system contribution).</b> Domain plug-ins (teacher prompt, vocabulary slice, metric, corpus); stored bf16 teacher distributions over a reduced vocabulary, verified bit-exact; typed <code>TrainingRun</code> dials (anneal, divergences, decoupled temperatures, entropy weighting, attention noise); distribution metrics logged during eval; and an agent harness whose training records are built by the same Conversation class it runs with. Evidence: 115 E-01 runs through one pipeline.</li>
+  <li><b>The entropy rule (empirical contribution).</b> Distillation's gain over imitation tracks teacher entropy. It is null at exp(H) ≈ 1 (reddit, math; 10 seeds, ±1.8 pp) and strictly ordered at exp(H) = 2.73 (post-gen, ~7 seed std). The prediction is then tested again inside one agent across route, solve and explain (pending Study 2).</li>
+  <li><b>The agent case study (demonstration).</b> A from-scratch tutor student of N M parameters inside a harness. It routes, solves with code-verified facts-first lines, explains, and holds firm against computed pushback. Measured on SVAMP (never trained on), held-out shapes, free-written and human-written messages, with gold- vs own-history evaluation and one pretrained-baseline reference row.</li>
+</ol>
+
+<h3>Three claims to avoid</h3>
+<ol>
+  <li><b>"A task-specific / reduced vocabulary is our idea."</b> VocabTailor [30], TinyStories [9] and vocabulary trimming [29] have it. Say "a from-scratch head trained on the teacher's distribution restricted to a task-derived subset" and report the kept mass.</li>
+  <li><b>"The tutor helps children learn" or "is safe for children".</b> There is no learning study, no real pupils and no wellbeing handling [45].</li>
+  <li><b>"From-scratch beats pretrained" or "KD beats SFT" in general.</b> Random init costs about 10 points [10]; your own E-01 is null at low entropy; and whether distillation beats supervised training depends on the compute regime [14].</li>
+</ol>
+<p class="small muted">Also drop, or cite as prior art: annealed KL/CE mixing [20][13], what-if follow-ups with solver answers [39], offline logit storage [58], out-of-scope handling in the runtime [27], soft labels on gold [2].</p>
+
+<h3>Revised novelty sentence (amends novelty_check.md)</h3>
+<p>"To our knowledge, no prior work distils a large language model into a randomly initialised student of a few million parameters, trained only on one narrow domain, that then works as a conversational agent inside a harness: it chooses a response type per message and emits structured outputs the harness validates, learning from the teacher's token-level distributions restricted to a task-derived output vocabulary. Each ingredient has precedent: from-scratch logit distillation in general pretraining [12][13][14]; from-scratch small models on narrow LLM-generated text [9][10]; agent distillation into pretrained 0.1-7B students [21][22][23]; task-derived vocabulary subsets for pretrained models [30]; and solver-checked follow-up questions [39]. The closest from-scratch agentic analogue distils an LLM's action distribution into a reinforcement-learning policy [20]."</p>
+</div>
+
+<h2 id="cheap">Cheapest high-value additions, in order</h2>
+<table>
+<thead><tr><th>#</th><th>Addition</th><th>Closes</th><th>Hours</th><th>When</th></tr></thead>
+<tbody>
+<tr><td class="num" data-label="#">1</td><td data-label="Addition">Log the in-vocabulary mass per step; score 256 pilot turns in NF4 and bf16; record teacher precision in <code>info.json</code></td><td data-label="Closes">objections 4, 11</td><td data-label="Hours">3-4</td><td data-label="When">before the cloud run</td></tr>
+<tr><td class="num" data-label="#">2</td><td data-label="Addition">exp(H) per turn type with the prediction written down; gold- vs own-history evaluation</td><td data-label="Closes">2, 9, 13; contributions (d), (e)</td><td data-label="Hours">4-5</td><td data-label="When">exp(H) when the data arrive; history eval with the first student</td></tr>
+<tr><td class="num" data-label="#">3</td><td data-label="Addition">Bag-of-words router baseline + SmolLM2-135M fine-tuned row</td><td data-label="Closes">1, 6</td><td data-label="Hours">2 + ~8</td><td data-label="When">alongside Study 1</td></tr>
+<tr><td class="num" data-label="#">4</td><td data-label="Addition">pytest suite wrapping the existing checks; CPU (ideally phone) latency and memory table</td><td data-label="Closes">15, a formal requirement</td><td data-label="Hours">4-6 + 3-6</td><td data-label="When">any time; needed before submission</td></tr>
+<tr><td class="num" data-label="#">5</td><td data-label="Addition">~100 human-written routing messages; templated vs free-written gap</td><td data-label="Closes">3</td><td data-label="Hours">2-3</td><td data-label="When">before the student eval</td></tr>
+<tr><td class="num" data-label="#">6</td><td data-label="Addition">SVAMP output-head coverage check; explanation number-grounding check</td><td data-label="Closes">5, 7</td><td data-label="Hours">1 + 2-3</td><td data-label="When">now (coverage), with the first student (grounding)</td></tr>
+<tr><td class="num" data-label="#">7</td><td data-label="Addition">40-conversation blind rubric study with kappa</td><td data-label="Closes">8</td><td data-label="Hours">~8</td><td data-label="When">last 2 weeks</td></tr>
+</tbody>
+</table>
+
+<h2 id="corrections">Corrections to earlier notes</h2>
+<ul class="tight">
+  <li><b>novelty_check.md, "not found: a task-derived output vocabulary"</b> no longer holds. VocabTailor derives a static LM-head subset from task corpora [30]. What survives is training a <i>from-scratch</i> head on that subset with KL to the renormalised teacher.</li>
+  <li><b>novelty_check.md, BabyLM "bans using a teacher's distribution"</b> holds only for the 2025 Interaction track ("the external model's weights, hidden states, or output distribution cannot be revealed"). The other tracks permit any training objective within the data limits [19].</li>
+  <li><b>MathCAMPS</b> [39] already generates counterfactual follow-ups whose answers come from the solver. The tutor's what-if mechanism is its close relative; cite it.</li>
+  <li><b>Provenance gap:</b> <code>batches/*/info.json</code> records no teacher precision (NF4 vs bf16).</li>
+  <li><b>Doc drift:</b> CLAUDE.md still describes the teacher as Gemma 3 4B with a ~525-token output vocabulary. Part 2 uses Gemma 4 12B with an 18,357-token tutor head.</li>
+</ul>
+
+<h2 id="sources">Sources</h2>
+<p class="small muted">All opened during this review (2026-10-08). The page each item was read from is linked. "Not verified" marks claims that rest on earlier notes or on a search listing only.</p>
+<h3>Distillation</h3>
+<ol class="sources">
+  <li>Hinton, Vinyals, Dean. Distilling the Knowledge in a Neural Network. <a href="https://arxiv.org/abs/1503.02531">arXiv:1503.02531</a></li>
+  <li>Kim, Rush. Sequence-Level Knowledge Distillation. EMNLP 2016. <a href="https://ar5iv.labs.arxiv.org/html/1606.07947">ar5iv 1606.07947</a>, <a href="https://aclanthology.org/D16-1139/">ACL D16-1139</a>. Word-level KD sums over the reference sequence and can be mixed with NLL.</li>
+  <li>Menon, Rawat, Reddi, Kim, Kumar. Why Distillation Helps: A Statistical Perspective. <a href="https://arxiv.org/abs/2005.10419">arXiv:2005.10419</a> (venue not verified)</li>
+  <li>Stanton et al. Does Knowledge Distillation Really Work? NeurIPS 2021. <a href="https://arxiv.org/abs/2106.05945">arXiv:2106.05945</a></li>
+  <li>Agarwal et al. On-Policy Distillation of Language Models (GKD). ICLR 2024. <a href="https://arxiv.org/abs/2306.13649">arXiv:2306.13649</a></li>
+  <li>Song, Zheng. A Survey of On-Policy Distillation for Large Language Models. <a href="https://arxiv.org/abs/2604.00626">arXiv:2604.00626</a></li>
+  <li>Wen, Lai, Qian. Preparing Lessons: Improve Knowledge Distillation with Better Supervision (Knowledge Adjustment). <a href="https://arxiv.org/abs/1911.07471">arXiv:1911.07471</a></li>
+  <li>Snell, Klein, Zhong. Learning by Distilling Context. <a href="https://arxiv.org/abs/2209.15189">arXiv:2209.15189</a></li>
+</ol>
+<h3>From-scratch and small models</h3>
+<ol class="sources" start="9">
+  <li>Eldan, Li. TinyStories. <a href="https://arxiv.org/abs/2305.07759">arXiv:2305.07759</a>. The top-10K vocabulary detail comes from novelty_check.md, not re-read.</li>
+  <li>Liu et al. TinyGSM. <a href="https://arxiv.org/abs/2312.09241">arXiv:2312.09241</a>. The App. B random-init numbers (53.1 vs 63.3 at 125M, 55.5 vs 65.9 at 350M) come from novelty_check.md; not re-read, and whether they include the verifier is not verified.</li>
+  <li>Krishna, Garg, Bigham, Lipton. Downstream Datasets Make Surprisingly Good Pretraining Corpora. ACL 2023. <a href="https://arxiv.org/abs/2209.14389">arXiv:2209.14389</a></li>
+  <li>Gemma Team. Gemma 2. <a href="https://arxiv.org/abs/2408.00118">arXiv:2408.00118</a>. The 2B and 9B models were trained with KD instead of next-token prediction.</li>
+  <li>Peng et al. Pre-training Distillation for LLMs: A Design Space Exploration. <a href="https://arxiv.org/abs/2410.16215">arXiv:2410.16215</a></li>
+  <li>Busbridge et al. Distillation Scaling Laws. ICML 2025. <a href="https://arxiv.org/abs/2502.08606">arXiv:2502.08606</a>, <a href="https://proceedings.mlr.press/v267/busbridge25a.html">PMLR</a>. Students of 143M-12.6B parameters, pretraining distillation.</li>
+  <li>Liu et al. MobileLLM. ICML 2024. <a href="https://arxiv.org/abs/2402.14905">arXiv:2402.14905</a></li>
+  <li>Ben Allal, Lozhkov, Bakouch et al. SmolLM2. <a href="https://arxiv.org/abs/2502.02737">arXiv:2502.02737</a></li>
+  <li>Google. Introducing Gemma 3 270M. <a href="https://developers.googleblog.com/en/introducing-gemma-3-270m/">developers.googleblog.com</a>. Whether its tokenizer IDs match Gemma 4's, which would allow logit KD into it, is not verified.</li>
+  <li>Google. Gemma 3 QAT Models. <a href="https://developers.googleblog.com/en/gemma-3-quantized-aware-trained-state-of-the-art-ai-to-consumer-gpus/">developers.googleblog.com</a></li>
+  <li>BabyLM 2025 call for papers. <a href="https://arxiv.org/abs/2502.10645">arXiv:2502.10645</a> (<a href="https://arxiv.org/html/2502.10645">rules, html</a>)</li>
+</ol>
+<h3>Agents</h3>
+<ol class="sources" start="20">
+  <li>Zhou et al. LLM as a Policy Teacher for Training RL Agents (LLM4Teach). IJCAI 2024. <a href="https://arxiv.org/abs/2311.13373">arXiv:2311.13373</a>. Annealed KL term; students of 24K and 10M parameters.</li>
+  <li>Liu et al. Structured Agent Distillation for LLM. AAMAS 2026. <a href="https://arxiv.org/abs/2505.13820">arXiv:2505.13820</a>. Student initialisation not verified.</li>
+  <li>Kang et al. Distilling LLM Agent into Small Models with Retrieval and Code Tools. NeurIPS 2025. <a href="https://papers.neurips.cc/paper_files/paper/2025/hash/99263f9bf46874e2b8b7f104b5063864-Abstract-Conference.html">NeurIPS</a></li>
+  <li>Ni et al. STAR (function calling, 0.6B). ICLR 2026. <a href="https://arxiv.org/abs/2602.03022">arXiv:2602.03022</a></li>
+  <li>Luo et al. Distilling Agentic Systems: A Roadmap across Models, Artifacts, and Harnesses. <a href="https://arxiv.org/abs/2609.36630">arXiv:2609.36630</a></li>
+  <li>Belcak et al. Small Language Models are the Future of Agentic AI. <a href="https://arxiv.org/html/2506.02153v1">arXiv:2506.02153</a></li>
+  <li>Asai et al. Self-RAG. <a href="https://arxiv.org/abs/2310.11511">arXiv:2310.11511</a> (venue not verified)</li>
+  <li>Rebedea et al. NeMo Guardrails. EMNLP 2023 Demo. <a href="https://arxiv.org/abs/2310.10501">arXiv:2310.10501</a></li>
+  <li>Chaganti. Different Teachers, Different Capabilities: Sub-1B On-Device Distillation for Structured Text Enrichment. <a href="https://arxiv.org/abs/2607.08268">arXiv:2607.08268</a>. Nearly the part-1 reddit task.</li>
+</ol>
+<h3>Vocabulary and sparse logits</h3>
+<ol class="sources" start="29">
+  <li>Ushio, Zhou, Camacho-Collados. Vocabulary Trimming. EMNLP 2023 Findings. <a href="https://arxiv.org/abs/2305.15020">arXiv:2305.15020</a></li>
+  <li>VocabTailor: Dynamic Vocabulary Selection for Downstream Tasks in Small Language Models. <a href="https://arxiv.org/html/2508.15229v2">arXiv:2508.15229</a>. Static subset from task corpora, training-free, Qwen3-1.7B / Llama 3.2 1-3B and others. ACL 2026 Findings per the search listing (venue not opened).</li>
+  <li>Compact: Common-token Optimized Model Pruning. <a href="https://arxiv.org/html/2509.06836v3">arXiv:2509.06836</a></li>
+  <li>Zhao, Gupta, Song, Zhou. Extremely Small BERT Models from Mixed-Vocabulary Training. EACL 2021. <a href="https://arxiv.org/abs/1909.11687">arXiv:1909.11687</a></li>
+  <li>Anshumann et al. Sparse Logit Sampling. ACL 2025. <a href="https://arxiv.org/abs/2503.16870">arXiv:2503.16870</a></li>
+</ol>
+<h3>Token entropy in distillation</h3>
+<ol class="sources" start="34">
+  <li>Zhang et al. EGAD: Entropy-Guided Adaptive Distillation. <a href="https://arxiv.org/abs/2605.01732">arXiv:2605.01732</a></li>
+  <li>Huang et al. SelecTKD. <a href="https://arxiv.org/abs/2510.24021">arXiv:2510.24021</a></li>
+</ol>
+<h3>Maths, tutoring and simulated pupils</h3>
+<ol class="sources" start="36">
+  <li>Patel, Bhattamishra, Goyal. SVAMP. NAACL 2021. <a href="https://arxiv.org/abs/2103.07191">arXiv:2103.07191</a></li>
+  <li>Zhang et al. GSM1k. NeurIPS 2024 D&amp;B. <a href="https://arxiv.org/abs/2405.00332">arXiv:2405.00332</a></li>
+  <li>Mirzadeh et al. GSM-Symbolic. ICLR (camera-ready per arXiv). <a href="https://arxiv.org/abs/2410.05229">arXiv:2410.05229</a></li>
+  <li>Mishra, Poesia, Mo, Goodman. MathCAMPS. NeurIPS 2024 MATH-AI workshop. <a href="https://arxiv.org/html/2407.00900v1">arXiv:2407.00900v1</a>, <a href="https://mlanthology.org/neuripsw/2024/mishra2024neuripsw-mathcamps">mlanthology</a></li>
+  <li>Macina et al. MathDial. EMNLP 2023 Findings. <a href="https://arxiv.org/abs/2305.14536">arXiv:2305.14536</a></li>
+  <li>Liang et al. MathChat. <a href="https://arxiv.org/abs/2405.19444">arXiv:2405.19444</a></li>
+  <li>Chen, Liu, Sonkar. MalruleLib. <a href="https://arxiv.org/abs/2601.03217">arXiv:2601.03217</a></li>
+  <li>Sonkar et al. LLM-based Cognitive Models of Students with Misconceptions (MalAlgoPy). <a href="https://arxiv.org/abs/2410.12294">arXiv:2410.12294</a></li>
+  <li>Daheim et al. Stepwise Verification and Remediation of Student Reasoning Errors with LLM Tutors. EMNLP 2024. <a href="https://aclanthology.org/2024.emnlp-main.478">ACL 2024.emnlp-main.478</a></li>
+  <li>Bastani et al. Generative AI without guardrails can harm learning. PNAS 122(26), 2025. <a href="https://ideas.repec.org/a/nas/journl/v122y2025pe2422633122.html">RePEc record</a></li>
+  <li>Schatzmann et al. Agenda-Based User Simulation for Bootstrapping a POMDP Dialogue System. NAACL 2007. <a href="https://aclanthology.org/N07-2038/">ACL N07-2038</a> (abstract not shown on the page)</li>
+</ol>
+<h3>Multi-turn behaviour and sycophancy</h3>
+<ol class="sources" start="47">
+  <li>Wei et al. Simple Synthetic Data Reduces Sycophancy in LLMs. <a href="https://arxiv.org/abs/2308.03958">arXiv:2308.03958</a></li>
+  <li>Laban et al. Are You Sure? The FlipFlop Experiment. <a href="https://arxiv.org/abs/2311.08596">arXiv:2311.08596</a></li>
+  <li>Laban et al. LLMs Get Lost In Multi-Turn Conversation. <a href="https://arxiv.org/abs/2505.06120">arXiv:2505.06120</a></li>
+  <li>Kwan et al. MT-Eval. <a href="https://arxiv.org/html/2401.16745">arXiv:2401.16745</a></li>
+  <li>Li, Gao, Goenka, Chen. Ditch the Gold Standard. ACL 2022. <a href="https://arxiv.org/abs/2112.08812">arXiv:2112.08812</a></li>
+</ol>
+<h3>Intent detection and out-of-scope</h3>
+<ol class="sources" start="52">
+  <li>Larson et al. CLINC150: Intent Classification and Out-of-Scope Prediction. EMNLP-IJCNLP 2019. <a href="https://arxiv.org/abs/1909.02027">arXiv:1909.02027</a></li>
+  <li>Agarwal et al. LIDSNet. ICMLA 2021. <a href="https://arxiv.org/abs/2110.15717">arXiv:2110.15717</a></li>
+  <li>Arora, Jain, Merugu. Intent Detection in the Age of LLMs. EMNLP 2024 Industry. <a href="https://arxiv.org/abs/2410.01627">arXiv:2410.01627</a></li>
+</ol>
+<h3>Evaluation and statistics</h3>
+<ol class="sources" start="55">
+  <li>Zheng et al. Judging LLM-as-a-Judge. NeurIPS 2023 D&amp;B. <a href="https://arxiv.org/abs/2306.05685">arXiv:2306.05685</a></li>
+  <li>Bouthillier et al. Accounting for Variance in ML Benchmarks. MLSys 2021. <a href="https://proceedings.mlsys.org/paper_files/paper/2021/hash/0184b0cd3cfb185989f858a1d9f5c1eb-Abstract.html">MLSys proceedings</a></li>
+</ol>
+<h3>Toolkits</h3>
+<ol class="sources" start="57">
+  <li>Hugging Face TRL. GKD Trainer documentation. <a href="https://huggingface.co/docs/trl/main/en/gkd_trainer">huggingface.co/docs/trl</a></li>
+  <li>Arcee AI. DistillKit. <a href="https://github.com/arcee-ai/DistillKit">github.com/arcee-ai/DistillKit</a></li>
+  <li>Wang et al. EasyDistill. <a href="https://arxiv.org/abs/2505.20888">arXiv:2505.20888</a>. EMNLP 2025 demos per the search listing (venue not opened).</li>
+</ol>
+<h3>Regulation</h3>
+<ol class="sources" start="60">
+  <li>GDPR Article 8, conditions applicable to a child's consent. <a href="https://gdpr-info.eu/art-8-gdpr/">gdpr-info.eu</a></li>
+  <li>EU AI Act, Annex III, point 3 (education). <a href="https://artificialintelligenceact.eu/annex/3/">artificialintelligenceact.eu</a></li>
+</ol>
+<h3>Project-internal</h3>
+<p class="small">thesis_work/thesis_description.txt (the assignment text), novelty_check.md, findings.txt (F-68a, F-V1, F-E1), experiment_ledger.txt (E-00, E-01), running.txt (PLAN v2), domain_specs.txt, template_pilot.html, harness_explainer.html; code: <code>generate_data.py</code>, <code>library/training/losses.py</code>, <code>library/data_gen/model_handler.py</code> (<code>ReducedLogitsRecorder</code>, <code>score_training_examples</code>), <code>library/domain/math_tutor/output_tokens.json</code> (18,357 tokens), <code>models/gemma-4-12B-it/tokenizer.json</code> (262,144 tokens).</p>
+
+</main>
+</body>
+</html>

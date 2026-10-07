@@ -1,0 +1,692 @@
+
+============================================================
+Run: straight
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\straight
+============================================================
+
+Initializing Transformer model...
+Built vocabulary: 525 tokens
+  Example tokens: 0-27 (27 tokens)
+  Whitespace tokens: 27-42 (15 tokens)
+  Prompt tokens: 42-64 (22 tokens)
+  Auxiliary tokens: 64-525 (461 tokens)
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.94 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.14 seconds (T_max=8)
+LR Warmup Steps: 0
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001500, current KL ratio: 0.900000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.01 seconds.
+Batch 1 -> LR: 0.00144329, KL ratio: 0.870, Temp: 1.000
+Batch 1 (of Epoch 0) processed: 1242 total steps, loss=5.9014, kl=5.8993, ce=5.9204, accuracy=0.3647 -> took 0.19s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00128179, KL ratio: 0.783, Temp: 1.000
+Batch 2 (of Epoch 0) processed: 1245 total steps, loss=5.0933, kl=5.0909, ce=5.1093, accuracy=0.4859 -> took 0.12s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00104010, KL ratio: 0.653, Temp: 1.000
+Batch 3 (of Epoch 0) processed: 1246 total steps, loss=4.3087, kl=4.3054, ce=4.3208, accuracy=0.4559 -> took 0.13s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00075500, KL ratio: 0.500, Temp: 1.000
+Batch 4 (of Epoch 0) processed: 1243 total steps, loss=3.7292, kl=3.7247, ce=3.7378, accuracy=0.4232 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\straight\checkpoints\checkpoint_epoch_0.pt -> took 0.01s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=3.4922, kl=3.4866, ce=3.4979, tf_acc=0.4409, student_acc=0.1545, task_acc=0.0000 -> took 1.75s
+Eval Loss: 3.4922 | KL Loss: 3.4866 | CE Loss: 3.4979 | TF Accuracy: 0.4409 | Student Accuracy: 0.1545 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3128 mean_rank=3.6 teacher_H=0.020 student_H=5.517 ppl=33.045 termination=0.0000
+
+Epoch 2/2
+
+Training Epoch 1 with starting learning rate: 0.000755, current KL ratio: 0.500000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00046990, KL ratio: 0.347, Temp: 1.000
+Batch 1 (of Epoch 1) processed: 1242 total steps, loss=3.3561, kl=3.3508, ce=3.3613, accuracy=0.4726 -> took 0.12s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00022821, KL ratio: 0.217, Temp: 1.000
+Batch 2 (of Epoch 1) processed: 1245 total steps, loss=3.1455, kl=3.1398, ce=3.1485, accuracy=0.5124 -> took 0.13s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00006671, KL ratio: 0.130, Temp: 1.000
+Batch 3 (of Epoch 1) processed: 1246 total steps, loss=3.0039, kl=2.9988, ce=3.0053, accuracy=0.5128 -> took 0.14s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00001000, KL ratio: 0.100, Temp: 1.000
+Batch 4 (of Epoch 1) processed: 1243 total steps, loss=2.9598, kl=2.9533, ce=2.9608, accuracy=0.5559 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\straight\checkpoints\checkpoint_epoch_1.pt -> took 0.00s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=2.9394, kl=2.9331, ce=2.9400, tf_acc=0.5599, student_acc=0.1569, task_acc=0.0000 -> took 1.71s
+Eval Loss: 2.9394 | KL Loss: 2.9331 | CE Loss: 2.9400 | TF Accuracy: 0.5599 | Student Accuracy: 0.1569 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3142 mean_rank=3.5 teacher_H=0.020 student_H=5.026 ppl=18.917 termination=0.0000
+
+Run 'straight' completed.
+
+
+============================================================
+Run: mid
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\mid
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.96 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001500, current KL ratio: 0.900000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00144329, KL ratio: 0.870, Temp: 1.000
+Batch 1 (of Epoch 0) processed: 1242 total steps, loss=5.9014, kl=5.8993, ce=5.9204, accuracy=0.3647 -> took 0.12s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00128179, KL ratio: 0.783, Temp: 1.000
+Batch 2 (of Epoch 0) processed: 1245 total steps, loss=5.0933, kl=5.0909, ce=5.1093, accuracy=0.4859 -> took 0.12s
+
+98 until next update, 998 until mini-eval
+
+Exit requested. Saving progress...
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\mid\checkpoints\temp_checkpoint.pt -> took 0.00s
+
+stopped: False
+
+============================================================
+Run: mid
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\mid
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.89 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+Checkpoint loaded: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\mid\checkpoints\temp_checkpoint.pt (epoch 0, step 2) -> took 0.02s
+
+Loaded temp checkpoint
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001282, current KL ratio: 0.782843, current temperature: 1.000000
+ 
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00104010, KL ratio: 0.653, Temp: 1.000
+Batch 3 (of Epoch 0) processed: 1246 total steps, loss=4.3087, kl=4.3054, ce=4.3208, accuracy=0.4559 -> took 0.13s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00075500, KL ratio: 0.500, Temp: 1.000
+Batch 4 (of Epoch 0) processed: 1243 total steps, loss=3.7292, kl=3.7247, ce=3.7378, accuracy=0.4232 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\mid\checkpoints\checkpoint_epoch_0.pt -> took 0.00s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=3.4922, kl=3.4866, ce=3.4979, tf_acc=0.4409, student_acc=0.1545, task_acc=0.0000 -> took 1.59s
+Eval Loss: 3.4922 | KL Loss: 3.4866 | CE Loss: 3.4979 | TF Accuracy: 0.4409 | Student Accuracy: 0.1545 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3128 mean_rank=3.6 teacher_H=0.020 student_H=5.517 ppl=33.045 termination=0.0000
+
+Epoch 2/2
+
+Training Epoch 1 with starting learning rate: 0.000755, current KL ratio: 0.500000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00046990, KL ratio: 0.347, Temp: 1.000
+Batch 1 (of Epoch 1) processed: 1242 total steps, loss=3.3561, kl=3.3508, ce=3.3613, accuracy=0.4726 -> took 0.14s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00022821, KL ratio: 0.217, Temp: 1.000
+Batch 2 (of Epoch 1) processed: 1245 total steps, loss=3.1455, kl=3.1398, ce=3.1485, accuracy=0.5124 -> took 0.13s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00006671, KL ratio: 0.130, Temp: 1.000
+Batch 3 (of Epoch 1) processed: 1246 total steps, loss=3.0039, kl=2.9988, ce=3.0053, accuracy=0.5128 -> took 0.13s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00001000, KL ratio: 0.100, Temp: 1.000
+Batch 4 (of Epoch 1) processed: 1243 total steps, loss=2.9598, kl=2.9533, ce=2.9608, accuracy=0.5559 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\mid\checkpoints\checkpoint_epoch_1.pt -> took 0.00s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=2.9394, kl=2.9331, ce=2.9400, tf_acc=0.5599, student_acc=0.1569, task_acc=0.0000 -> took 1.65s
+Eval Loss: 2.9394 | KL Loss: 2.9331 | CE Loss: 2.9400 | TF Accuracy: 0.5599 | Student Accuracy: 0.1569 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3142 mean_rank=3.5 teacher_H=0.020 student_H=5.026 ppl=18.917 termination=0.0000
+
+Run 'mid' completed.
+
+resumed: True
+mid-epoch resume max |dw| vs straight: 0.0
+
+============================================================
+Run: edge
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\edge
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.83 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001500, current KL ratio: 0.900000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00144329, KL ratio: 0.870, Temp: 1.000
+Batch 1 (of Epoch 0) processed: 1242 total steps, loss=5.9014, kl=5.8993, ce=5.9204, accuracy=0.3647 -> took 0.12s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00128179, KL ratio: 0.783, Temp: 1.000
+Batch 2 (of Epoch 0) processed: 1245 total steps, loss=5.0933, kl=5.0909, ce=5.1093, accuracy=0.4859 -> took 0.12s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00104010, KL ratio: 0.653, Temp: 1.000
+Batch 3 (of Epoch 0) processed: 1246 total steps, loss=4.3087, kl=4.3054, ce=4.3208, accuracy=0.4559 -> took 0.12s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00075500, KL ratio: 0.500, Temp: 1.000
+Batch 4 (of Epoch 0) processed: 1243 total steps, loss=3.7292, kl=3.7247, ce=3.7378, accuracy=0.4232 -> took 0.12s
+
+96 until next update, 996 until mini-eval
+
+Exit requested. Saving progress...
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\edge\checkpoints\temp_checkpoint.pt -> took 0.00s
+
+stopped: False
+
+============================================================
+Run: edge
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\edge
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.87 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+Checkpoint loaded: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\edge\checkpoints\temp_checkpoint.pt (epoch 0, step 4) -> took 0.01s
+
+Loaded temp checkpoint
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.000755, current KL ratio: 0.500000, current temperature: 1.000000
+ 
+No training steps completed in epoch 0 (exit requested)
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=3.4922, kl=3.4866, ce=3.4979, tf_acc=0.4409, student_acc=0.1545, task_acc=0.0000 -> took 1.54s
+Eval Loss: 3.4922 | KL Loss: 3.4866 | CE Loss: 3.4979 | TF Accuracy: 0.4409 | Student Accuracy: 0.1545 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3128 mean_rank=3.6 teacher_H=0.020 student_H=5.517 ppl=33.045 termination=0.0000
+
+Epoch 2/2
+
+Training Epoch 1 with starting learning rate: 0.000755, current KL ratio: 0.500000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00046990, KL ratio: 0.347, Temp: 1.000
+Batch 1 (of Epoch 1) processed: 1242 total steps, loss=3.3561, kl=3.3508, ce=3.3613, accuracy=0.4726 -> took 0.13s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00022821, KL ratio: 0.217, Temp: 1.000
+Batch 2 (of Epoch 1) processed: 1245 total steps, loss=3.1455, kl=3.1398, ce=3.1485, accuracy=0.5124 -> took 0.15s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00006671, KL ratio: 0.130, Temp: 1.000
+Batch 3 (of Epoch 1) processed: 1246 total steps, loss=3.0039, kl=2.9988, ce=3.0053, accuracy=0.5128 -> took 0.15s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00001000, KL ratio: 0.100, Temp: 1.000
+Batch 4 (of Epoch 1) processed: 1243 total steps, loss=2.9598, kl=2.9533, ce=2.9608, accuracy=0.5559 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\edge\checkpoints\checkpoint_epoch_1.pt -> took 0.00s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=2.9394, kl=2.9331, ce=2.9400, tf_acc=0.5599, student_acc=0.1569, task_acc=0.0000 -> took 1.60s
+Eval Loss: 2.9394 | KL Loss: 2.9331 | CE Loss: 2.9400 | TF Accuracy: 0.5599 | Student Accuracy: 0.1569 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3142 mean_rank=3.5 teacher_H=0.020 student_H=5.026 ppl=18.917 termination=0.0000
+
+Run 'edge' completed.
+
+resumed: True
+edge resume max |dw| vs straight: 0.0
+edge checkpoints: ['checkpoint_epoch_1.pt', 'temp_checkpoint.pt']
+edge train_epoch records: [1]  eval_epoch records: [0, 1]
+
+============================================================
+Run: stale
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.90 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001500, current KL ratio: 0.900000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00144329, KL ratio: 0.870, Temp: 1.000
+Batch 1 (of Epoch 0) processed: 1242 total steps, loss=5.9014, kl=5.8993, ce=5.9204, accuracy=0.3647 -> took 0.13s
+
+99 until next update, 999 until mini-eval
+
+Exit requested. Saving progress...
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale\checkpoints\temp_checkpoint.pt -> took 0.00s
+
+stopped: False
+
+============================================================
+Run: stale
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.88 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+Checkpoint loaded: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale\checkpoints\temp_checkpoint.pt (epoch 0, step 1) -> took 0.01s
+
+Loaded temp checkpoint
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001443, current KL ratio: 0.869552, current temperature: 1.000000
+ 
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00128179, KL ratio: 0.783, Temp: 1.000
+Batch 2 (of Epoch 0) processed: 1245 total steps, loss=5.0933, kl=5.0909, ce=5.1093, accuracy=0.4859 -> took 0.14s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00104010, KL ratio: 0.653, Temp: 1.000
+Batch 3 (of Epoch 0) processed: 1246 total steps, loss=4.3087, kl=4.3054, ce=4.3208, accuracy=0.4559 -> took 0.14s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00075500, KL ratio: 0.500, Temp: 1.000
+Batch 4 (of Epoch 0) processed: 1243 total steps, loss=3.7292, kl=3.7247, ce=3.7378, accuracy=0.4232 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale\checkpoints\checkpoint_epoch_0.pt -> took 0.00s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=3.4922, kl=3.4866, ce=3.4979, tf_acc=0.4409, student_acc=0.1545, task_acc=0.0000 -> took 1.55s
+Eval Loss: 3.4922 | KL Loss: 3.4866 | CE Loss: 3.4979 | TF Accuracy: 0.4409 | Student Accuracy: 0.1545 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3128 mean_rank=3.6 teacher_H=0.020 student_H=5.517 ppl=33.045 termination=0.0000
+
+Epoch 2/2
+
+Training Epoch 1 with starting learning rate: 0.000755, current KL ratio: 0.500000, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00046990, KL ratio: 0.347, Temp: 1.000
+Batch 1 (of Epoch 1) processed: 1242 total steps, loss=3.3561, kl=3.3508, ce=3.3613, accuracy=0.4726 -> took 0.13s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00022821, KL ratio: 0.217, Temp: 1.000
+Batch 2 (of Epoch 1) processed: 1245 total steps, loss=3.1455, kl=3.1398, ce=3.1485, accuracy=0.5124 -> took 0.15s
+
+98 until next update, 998 until mini-eval
+
+crashed: simulated hard crash (exception / power loss)
+state after crash: {'processed_sentence_count': 0, 'successful_sentence_count': 0, 'current_epoch': 0, 'current_batch': 4, 'total_batches_processed': 4, 'total_runtime_seconds': 4.631647825241089, 'session_count': 2}
+
+============================================================
+Run: stale
+  Description: 
+  Domain: reddit_comment_sentiment
+  Teacher: google/gemma-3-4b-it
+  Architecture: 8h, 1L, 1 heads
+  KL annealing: 0.9 -> 0.1
+  Temperature annealing: 1.0 -> 1.0
+  LR: 0.0015, Epochs: 2
+  Auxiliary token %: 1.0
+  Output: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale
+============================================================
+
+Initializing Transformer model...
+=== Model Parameter Overview ===
+Total trainable parameters: 552,397
+Input embeddings: 546,624
+Transformer Attention: 256
+Transformer Feed-Forward: 768
+RMSNorm layers: 24
+Output projection: 4,725
+
+Sum of all above: 552,397
+Difference (RoPE buffers, non-trainable): 0
+
+Hyperparameters: hidden_dim=8, heads=1, layers=1
+Input vocab size=68,328 (reduced from 262,144), Output vocab size=525
+Model initialized -> took 0.86 seconds.
+
+Initializing Trainer...
+Trainer initialized on cpu -> took 0.10 seconds (T_max=8)
+LR Warmup Steps: 0
+
+Checkpoint loaded: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale\checkpoints\temp_checkpoint.pt (epoch 0, step 1) -> took 0.00s
+
+Loaded temp checkpoint
+
+
+Epoch 1/2
+
+Training Epoch 0 with starting learning rate: 0.001443, current KL ratio: 0.869552, current temperature: 1.000000
+ 
+No training steps completed in epoch 0 (exit requested)
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=5.4927, kl=5.4901, ce=5.5096, tf_acc=0.4996, student_acc=0.1907, task_acc=0.0000 -> took 1.46s
+Eval Loss: 5.4927 | KL Loss: 5.4901 | CE Loss: 5.5096 | TF Accuracy: 0.4996 | Student Accuracy: 0.1907 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3158 mean_rank=3.3 teacher_H=0.020 student_H=6.249 ppl=247.053 termination=0.0000
+
+Epoch 2/2
+
+Training Epoch 1 with starting learning rate: 0.001443, current KL ratio: 0.869552, current temperature: 1.000000
+ 
+Loading batch 1...
+Loaded batch 1 -> took 0.00 seconds.
+Batch 1 -> LR: 0.00128179, KL ratio: 0.783, Temp: 1.000
+Batch 1 (of Epoch 1) processed: 1242 total steps, loss=5.0874, kl=5.0848, ce=5.1049, accuracy=0.4710 -> took 0.13s
+
+99 until next update, 999 until mini-eval
+
+Loading batch 2...
+Loaded batch 2 -> took 0.00 seconds.
+Batch 2 -> LR: 0.00104010, KL ratio: 0.653, Temp: 1.000
+Batch 2 (of Epoch 1) processed: 1245 total steps, loss=4.3180, kl=4.3144, ce=4.3308, accuracy=0.4418 -> took 0.13s
+
+98 until next update, 998 until mini-eval
+
+Loading batch 3...
+Loaded batch 3 -> took 0.00 seconds.
+Batch 3 -> LR: 0.00075500, KL ratio: 0.500, Temp: 1.000
+Batch 3 (of Epoch 1) processed: 1246 total steps, loss=3.7282, kl=3.7237, ce=3.7367, accuracy=0.4133 -> took 0.13s
+
+97 until next update, 997 until mini-eval
+
+Loading batch 4...
+Loaded batch 4 -> took 0.00 seconds.
+Batch 4 -> LR: 0.00046990, KL ratio: 0.347, Temp: 1.000
+Batch 4 (of Epoch 1) processed: 1243 total steps, loss=3.3566, kl=3.3510, ce=3.3622, accuracy=0.4674 -> took 0.13s
+
+96 until next update, 996 until mini-eval
+
+Checkpoint saved: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_training\fake_runs\stale\checkpoints\checkpoint_epoch_1.pt -> took 0.00s
+
+Loading batch 5...
+Loaded batch 5 -> took 0.00 seconds.
+Eval Batch 5: 1243 steps, loss=3.2038, kl=3.1975, ce=3.2072, tf_acc=0.5012, student_acc=0.1553, task_acc=0.0000 -> took 1.58s
+Eval Loss: 3.2038 | KL Loss: 3.1975 | CE Loss: 3.2072 | TF Accuracy: 0.5012 | Student Accuracy: 0.1553 | Task Accuracy: 0.0000
+  top20=0.9863 overlap=0.3166 mean_rank=3.5 teacher_H=0.020 student_H=5.269 ppl=24.709 termination=0.0000
+
+Run 'stale' completed.
+
+restart: True
+stale-restart max |dw| vs straight: 0.04937766492366791
+stale status: completed

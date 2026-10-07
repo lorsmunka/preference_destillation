@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How It Works</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f0efec; --ink: #1d1d1f; --ink-2: #52514e; --muted: #6b6b70;
+  --border: #e2e2de; --grid: #e9e8e3;
+  --task: #e2f3e7; --task-fg: #1e6a39; --q: #e3ecfb; --q-fg: #2a5bb0; --sol: #efe3fb; --sol-fg: #6527ad;
+  --exp: #fdedcf; --exp-fg: #875800; --off: #ececea; --off-fg: #55555a;
+  --ok: #2e8b57; --bad: #c0392b; --warn: #b7791f;
+  --teacher: #2a78d6; --student: #eb6834; --gold: #52514e; --violet: #4a3aa7;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #141416; --surface: #1d1d20; --surface-2: #26262a; --ink: #ececee; --ink-2: #c3c2b7; --muted: #9a9aa2;
+    --border: #2e2e33; --grid: #2a2a2e;
+    --task: #173322; --task-fg: #7fd8a0; --q: #1d2b47; --q-fg: #8db4ff; --sol: #2e1f45; --sol-fg: #c9a3ff;
+    --exp: #3a2c0e; --exp-fg: #f0c060; --off: #2a2a2e; --off-fg: #c4c4ca;
+    --ok: #5cc28a; --bad: #ff7b6b; --warn: #e3b25a;
+    --teacher: #3987e5; --student: #d95926; --gold: #c3c2b7; --violet: #9085e9;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #141416; --surface: #1d1d20; --surface-2: #26262a; --ink: #ececee; --ink-2: #c3c2b7; --muted: #9a9aa2;
+  --border: #2e2e33; --grid: #2a2a2e;
+  --task: #173322; --task-fg: #7fd8a0; --q: #1d2b47; --q-fg: #8db4ff; --sol: #2e1f45; --sol-fg: #c9a3ff;
+  --exp: #3a2c0e; --exp-fg: #f0c060; --off: #2a2a2e; --off-fg: #c4c4ca;
+  --ok: #5cc28a; --bad: #ff7b6b; --warn: #e3b25a;
+  --teacher: #3987e5; --student: #d95926; --gold: #c3c2b7; --violet: #9085e9;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; -webkit-text-size-adjust: 100%; }
+code, pre, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
+code { font-size: .88em; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h1 { font-size: clamp(28px, 4.6vw, 50px); letter-spacing: -.02em; }
+h2 { font-size: clamp(22px, 3.1vw, 34px); letter-spacing: -.01em; margin-bottom: 14px; }
+h3 { font-size: 16px; margin-bottom: 6px; }
+p { margin: 0 0 10px; }
+ul { margin: 6px 0 0; padding-left: 20px; }
+li { margin: 3px 0; }
+.kicker { color: var(--muted); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+.lead { font-size: clamp(16px, 1.6vw, 19px); color: var(--ink-2); max-width: 70ch; }
+.small { font-size: 13px; color: var(--muted); }
+.src { font-size: 12px; color: var(--muted); margin-top: 14px; border-top: 1px dashed var(--border); padding-top: 6px; }
+.planned { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn); border-radius: 6px; padding: 0 6px; vertical-align: 2px; }
+.done { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ok); border: 1px solid var(--ok); border-radius: 6px; padding: 0 6px; vertical-align: 2px; }
+.ink2 { color: var(--ink-2); }
+
+/* deck */
+#deck { position: fixed; inset: 0; overflow: hidden; }
+.slide { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 46px 28px 86px; display: flex; flex-direction: column;
+  opacity: 0; visibility: hidden; transform: translateX(44px); transition: opacity .45s ease, transform .45s ease, visibility 0s linear .45s; }
+.slide.past { transform: translateX(-44px); }
+.slide.active { opacity: 1; visibility: visible; transform: none; transition: opacity .45s ease, transform .45s ease, visibility 0s; }
+.wrap { width: 100%; max-width: 1140px; margin: auto; }
+.frag { opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .45s ease; }
+.frag.on { opacity: 1; transform: none; }
+#progress { position: fixed; top: 0; left: 0; height: 4px; width: 0; background: var(--teacher); transition: width .35s ease; z-index: 20; }
+#bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(6px); border-top: 1px solid var(--border); }
+#bar .title { flex: 1; min-width: 0; font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#bar button, .btn { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 7px 12px; cursor: pointer; min-height: 38px; }
+#bar button:hover, .btn:hover { border-color: var(--teacher); }
+.btn.sel { border-color: var(--teacher); background: color-mix(in srgb, var(--teacher) 14%, var(--surface)); }
+#counter { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--ink-2); min-width: 64px; text-align: center; }
+#hint { font-size: 12px; color: var(--muted); }
+#overview { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; padding: 24px 16px 90px; display: none; }
+#overview.open { display: block; }
+.ov-grid { max-width: 1140px; margin: 14px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.ov-card { text-align: left; font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; cursor: pointer; box-shadow: var(--shadow); }
+.ov-card:hover, .ov-card.cur { border-color: var(--teacher); }
+.ov-card .n { font-size: 12px; color: var(--muted); }
+.ov-card .t { font-weight: 600; margin-top: 2px; }
+.ov-head { max-width: 1140px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#tip { position: fixed; z-index: 40; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 13px; padding: 6px 9px; border-radius: 8px; max-width: 280px; opacity: 0; transition: opacity .12s; }
+#tip.show { opacity: 1; }
+
+/* layout helpers */
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.split { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0; }
+.card.tight { padding: 10px 12px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.mt { margin-top: 12px; } .mt2 { margin-top: 20px; }
+.pill { display: inline-block; font-size: 12.5px; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--border); background: var(--surface); }
+.big { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px; }
+.tile b { display: block; font-size: 21px; font-variant-numeric: tabular-nums; }
+.tile span { font-size: 12.5px; color: var(--muted); display: block; line-height: 1.35; }
+.hl-box { transition: box-shadow .35s, border-color .35s, opacity .35s; }
+.hl { border-color: var(--teacher) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--teacher) 22%, transparent) !important; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-weight: 600; color: var(--ink-2); font-size: 13px; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+
+/* conversation blocks */
+.blk { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere;
+  border-radius: 8px; padding: 6px 9px; margin: 4px 0; transition: opacity .5s, filter .5s, max-height .6s, padding .6s, margin .6s; max-height: 400px; overflow: hidden; }
+.blk.task { background: var(--task); color: var(--task-fg); }
+.blk.q { background: var(--q); color: var(--q-fg); }
+.blk.sol { background: var(--sol); color: var(--sol-fg); }
+.blk.exp { background: var(--exp); color: var(--exp-fg); }
+.blk.msg { background: var(--surface); color: var(--ink); border: 1.5px dashed var(--ink-2); }
+.blk.off { background: var(--off); color: var(--off-fg); }
+.blk.dropped { opacity: .28; text-decoration: line-through; filter: saturate(.3); }
+.blk.gone { max-height: 0; padding-top: 0; padding-bottom: 0; margin: 0; opacity: 0; }
+.chip { display: inline-block; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; border-radius: 6px; padding: 1px 7px; margin: 1px 2px; }
+.chip.task { background: var(--task); color: var(--task-fg); } .chip.q { background: var(--q); color: var(--q-fg); }
+.chip.sol { background: var(--sol); color: var(--sol-fg); } .chip.exp { background: var(--exp); color: var(--exp-fg); }
+.chip.off { background: var(--off); color: var(--off-fg); } .chip.msg { border: 1.5px dashed var(--ink-2); }
+.ctx { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; }
+.ctx-label { font-size: 12px; color: var(--muted); margin: 2px 0 4px; min-height: 18px; }
+.badge { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); }
+.badge.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, var(--border)); }
+.badge.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 50%, var(--border)); font-weight: 600; }
+.badge.warn { color: var(--warn); }
+
+/* bars */
+.hbars { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content; gap: 6px 10px; align-items: center; font-size: 13.5px; }
+.hbars .lab { color: var(--ink-2); white-space: nowrap; }
+.hbars .lab.mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+.hbars .val { font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; font-size: 13px; }
+.track { position: relative; height: 16px; }
+.bar { position: absolute; left: 0; top: 0; height: 100%; width: 0; border-radius: 0 4px 4px 0; transition: width .8s cubic-bezier(.2,.7,.2,1), background-color .5s; min-width: 0; }
+.frag.on .bar.grow, .on .bar.grow { width: var(--w); }
+.bar.t { background: var(--teacher); }
+.bar.g { background: var(--gold); }
+.bar.s { background: var(--student); }
+.bar.neutral { background: var(--ink-2); }
+.track.two .bar.t, .track.two .bar.g { height: 8px; top: 0; }
+.track.two .bar.s { height: 6px; top: 10px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 6px 0; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+
+/* pipeline */
+.pipe { display: flex; align-items: stretch; gap: 0; }
+.node { flex: 1 1 0; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 11px; opacity: .45; transition: opacity .4s, border-color .4s, box-shadow .4s; }
+.node.lit { opacity: 1; border-color: var(--teacher); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teacher) 16%, transparent); }
+.node b { display: block; font-size: 14.5px; }
+.node span { display: block; font-size: 12px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+.conn { position: relative; flex: 0 0 30px; align-self: center; height: 2px; background: var(--border); }
+.conn .dot { position: absolute; top: -3px; left: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--teacher); opacity: 0; }
+.conn.flow .dot { opacity: 1; animation: flowX 1.5s linear infinite; }
+.conn.flow .dot + .dot { animation-delay: .75s; }
+@keyframes flowX { from { left: -4px; } to { left: calc(100% - 4px); } }
+@keyframes flowY { from { top: -4px; } to { top: calc(100% - 4px); } }
+
+/* flow (agent turn) */
+.flowcol { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+.arrow { text-align: center; color: var(--muted); font-size: 18px; line-height: 1; padding: 3px 0; }
+.step-card { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 10px 12px; }
+.who { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 0 6px; border-radius: 5px; margin-right: 6px; vertical-align: 1px; }
+.who.model { background: var(--sol); color: var(--sol-fg); }
+.who.harness { background: var(--off); color: var(--off-fg); }
+.who.pupil { background: var(--task); color: var(--task-fg); }
+.who.gemma { background: color-mix(in srgb, var(--teacher) 18%, var(--surface)); color: var(--teacher); }
+.who.code { background: var(--surface-2); color: var(--ink-2); }
+
+/* check animation */
+.chk { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 3px 10px; align-items: baseline; }
+.chk .line { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; color: var(--sol-fg); background: var(--sol); padding: 1px 7px; border-radius: 5px; overflow-wrap: anywhere; }
+.chk .why { font-size: 12px; color: var(--ok); opacity: 0; transform: translateX(-6px); transition: opacity .35s, transform .35s; transition-delay: calc(var(--i, 0) * .35s); }
+.chk.ok .why { opacity: 1; transform: none; }
+
+/* slots */
+.slot { display: inline-block; vertical-align: bottom; }
+.slot .k, .slot .v { display: inline-block; white-space: nowrap; overflow: hidden; vertical-align: bottom; transition: max-width .5s ease .7s, opacity .5s ease .7s; }
+.slot .k { max-width: 40ch; color: var(--violet); font-family: ui-monospace, Consolas, monospace; font-size: .92em; }
+.slot .v { max-width: 0; opacity: 0; color: var(--ink); font-weight: 600; background: color-mix(in srgb, var(--violet) 14%, transparent); border-radius: 4px; }
+.slot.filled .k { max-width: 0; opacity: 0; }
+.slot.filled .v { max-width: 40ch; opacity: 1; padding: 0 2px; }
+
+/* token chips with soft labels */
+.toks { display: flex; flex-wrap: wrap; gap: 4px; align-items: flex-end; }
+.tk { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; }
+.tk .lbl { display: flex; gap: 1px; align-items: flex-end; height: 22px; opacity: 0; transform: translateY(4px); transition: opacity .4s, transform .4s; transition-delay: calc(var(--i, 0) * 70ms); }
+.tk .lbl i { display: block; width: 3px; border-radius: 1px; background: var(--teacher); }
+.scored .tk .lbl { opacity: 1; transform: none; }
+.tk code { font-size: 12px; padding: 1px 4px; background: var(--sol); color: var(--sol-fg); white-space: pre; }
+
+/* training */
+.controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end; font-size: 13.5px; }
+.controls label { display: flex; flex-direction: column; gap: 3px; color: var(--ink-2); }
+select, input[type="number"] { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
+input[type="number"] { width: 78px; }
+input[type="range"] { width: 100%; accent-color: var(--teacher); height: 28px; }
+.readout { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--ink-2); }
+.readout b { color: var(--ink); }
+.minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.mini { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--surface); }
+.mini .mt-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-2); }
+.mini svg { width: 100%; height: 84px; display: block; }
+.mini .axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+.tokrows { display: grid; grid-template-columns: max-content minmax(0, 1fr) 52px; gap: 4px 10px; align-items: center; font-size: 13px; }
+.tokrows .tl { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; color: var(--ink); white-space: pre; cursor: pointer; }
+.tokrows .tt { position: relative; height: 15px; cursor: pointer; }
+.tokrows .seg { position: absolute; top: 0; height: 100%; transition: width .35s ease, left .35s ease; }
+.tokrows .seg.kl { background: var(--teacher); left: 0; }
+.tokrows .seg.ce { background: var(--gold); border-radius: 0 4px 4px 0; }
+.tokrows .tv { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink-2); }
+.tokrows .sel-row { outline: 2px solid var(--teacher); outline-offset: 2px; border-radius: 3px; }
+.detail { font-size: 13px; color: var(--ink-2); min-height: 66px; }
+.detail .mono { font-size: 12.5px; }
+
+/* misc */
+.formula { font-family: ui-monospace, Consolas, monospace; font-size: 14px; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; overflow-wrap: anywhere; }
+.code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; margin: 0; }
+.scrollbox { max-height: 250px; overflow-y: auto; }
+.stage { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px; }
+.stage .tile { flex: 1 1 130px; }
+.stage .sep { align-self: center; color: var(--muted); }
+.vs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.vs .mid { align-self: center; text-align: center; font-size: 13px; color: var(--muted); max-width: 120px; }
+.warnline { color: var(--bad); font-weight: 600; }
+.okline { color: var(--ok); font-weight: 600; }
+.ex-title { font-size: 12px; color: var(--muted); margin: 0 0 3px; }
+.stepnum { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: var(--surface-2); color: var(--ink-2); margin-right: 6px; flex: none; }
+.title-hero { min-height: 60vh; display: flex; flex-direction: column; justify-content: center; }
+.keys { font-size: 13px; color: var(--muted); }
+.keys kbd { font-family: inherit; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface); color: var(--ink-2); }
+
+@media (max-width: 820px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .pipe { flex-direction: column; }
+  .conn { flex: 0 0 24px; width: 2px; height: auto; align-self: center; }
+  .conn .dot { left: -3px; top: 0; }
+  .conn.flow .dot { animation-name: flowY; }
+  .node { opacity: .5; }
+  .vs { grid-template-columns: minmax(0, 1fr); }
+  .vs .mid { max-width: none; }
+}
+@media (max-width: 560px) {
+  .slide { padding: 40px 16px 84px; }
+  #hint, #bar .title { display: none; }
+  #bar { justify-content: space-between; }
+  .hbars { grid-template-columns: max-content minmax(0, 1fr); }
+  .hbars .val { grid-column: 2; margin-top: -4px; }
+  .big { font-size: 24px; }
+}
+.no-anim *, .no-anim *::before, .no-anim *::after { transition: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .slide, .frag, .bar, .blk, .node, .tk .lbl, .chk .why, .slot .k, .slot .v { transition: none !important; }
+  .conn.flow .dot { animation: none; opacity: 1; left: 45%; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<main id="deck">
+
+<!-- 1 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-title" data-title="The thesis in one sentence">
+<div class="wrap title-hero">
+  <p class="kicker">BSc thesis · how it works so far · repo state at commit 44c6ff3 (2026-10-07)</p>
+  <h1>Distilling a big language model's knowledge of one domain into a tiny model trained from scratch</h1>
+  <p class="lead mt">A framework: a large teacher (Gemma) writes or scores the training data and stores its token distributions; a small, randomly initialised transformer with a reduced vocabulary learns from them. Shown on several domains, and on an agent: a maths tutor made of a distilled student plus a harness.</p>
+  <div class="grid3 mt2">
+    <div class="card frag" data-f="1"><span class="done">done</span><h3 class="mt">Part 1: the method across domains</h3><p class="small">Reddit comment labels, templated maths, post generation (teacher Gemma 3 4B). How the KL/CE mix behaves depends on how uncertain the teacher is.</p></div>
+    <div class="card frag" data-f="2"><span class="planned">in progress</span><h3 class="mt">Part 2: distilling an agent</h3><p class="small">One domain, the maths tutor (teacher Gemma 4 12B). Data, harness and pupil are built, and pilots ran with Gemma as the tutor. Training the student comes next.</p></div>
+    <div class="card frag" data-f="3"><h3>The official brief</h3><p class="small">“Keretrendszer nagy nyelvi modellek tudásának desztillációjára kis méretű, szakterület-specifikus modellekbe és ágensekbe”. Its example is a maths tutor agent that runs on a phone and solves and explains word problems.</p></div>
+  </div>
+  <div class="card frag mt" data-f="4"><p class="small" style="margin:0"><b class="ink2">Novelty check (2026-10-07):</b> no prior work was found that combines all four: a randomly initialised student, about 1M–100M parameters, one narrow domain, and a text-generating agent in a harness, all learned from an LLM teacher's token distributions. Each part has precedent on its own (TinyStories, TinyGSM, LLM4Teach, Structured Agent Distillation). The check found no evidence against the claim, which is not the same as proof.</p></div>
+  <p class="keys mt2"><kbd>→</kbd> <kbd>Space</kbd> or click: next · <kbd>←</kbd>: back · <kbd>O</kbd>: overview · <kbd>T</kbd>: theme · swipe on a phone</p>
+  <p class="src">Sources: thesis_work/thesis_description.txt, running.txt (PLAN v2), novelty_check.md</p>
+</div>
+</section>
+
+<!-- 2 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-models" data-title="Teacher vs student">
+<div class="wrap">
+  <p class="kicker">1 · The two models</p>
+  <h2>A big teacher writes the data once, and a tiny student learns from it</h2>
+  <div class="grid2">
+    <div class="card frag" data-f="1">
+      <span class="who gemma">teacher</span><h3 style="display:inline">Gemma</h3>
+      <ul class="small ink2">
+        <li>Part 1: <b>Gemma 3 4B</b>. Part 2: <b>Gemma 4 12B</b> (48 layers, hidden size 3,840).</li>
+        <li>Vocabulary: <b>262,144</b> tokens.</li>
+        <li>Pilots run 4-bit NF4 on the 12 GB RTX 4070. Bulk data generation in bf16 on a rented RTX 5090 is <span class="planned">planned</span>.</li>
+        <li>Runs offline. It writes or scores every training example, and its logits are stored at every token.</li>
+      </ul>
+    </div>
+    <div class="card frag" data-f="2">
+      <span class="who model">student</span><h3 style="display:inline">A transformer from scratch</h3>
+      <ul class="small ink2">
+        <li>Random initialisation, RMSNorm, rotary positions.</li>
+        <li>Defaults: hidden 48, 3 layers, 1 head. At the reddit default that is <b>3,416,397</b> parameters, <b>96.0%</b> of them the input embedding.</li>
+        <li>It reads only the task text and predicts over a <b>reduced output vocabulary</b>.</li>
+        <li>Student size for the tutor: <span class="planned">open</span>.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card mt frag" data-f="3">
+    <h3>Output vocabulary: Gemma's 262,144 tokens cut down to the tokens the task needs (linear scale)</h3>
+    <div class="hbars mt">
+      <span class="lab">Gemma (full)</span><span class="track"><span class="bar grow neutral" style="--w:100%"></span></span><span class="val">262,144</span>
+      <span class="lab">post-gen (part 1)</span><span class="track"><span class="bar grow t" style="--w:10.17%"></span></span><span class="val">26,659</span>
+      <span class="lab">maths tutor</span><span class="track"><span class="bar grow t" style="--w:7.00%"></span></span><span class="val">18,357 + shared</span>
+      <span class="lab">math v1 (part 1)</span><span class="track"><span class="bar grow t" style="--w:0.2%;min-width:2px"></span></span><span class="val">528</span>
+      <span class="lab">reddit (part 1)</span><span class="track"><span class="bar grow t" style="--w:0.2%;min-width:2px"></span></span><span class="val">525</span>
+    </div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card frag" data-f="4"><h3>Why cut it</h3>
+      <ul class="small ink2">
+        <li>The output head costs V × hidden + V parameters. At 262,144 tokens it would dwarf a body that is 48 wide.</li>
+        <li>The teacher's logits are stored, and learned, only over these tokens.</li>
+        <li>Four sections (<code>vocabulary.py</code>): the task's own answer tokens, whitespace, prompt tokens, and auxiliary common words. The auxiliary words widen the soft label. Reddit has 27 required tokens and 498 auxiliary.</li>
+        <li>During generation, an example is dropped if its response uses a token outside the vocabulary.</li>
+        <li>Tutor: every token of the problems, follow-ups, gold targets and format texts gives 18,357 tokens (<code>output_tokens.json</code>).</li>
+      </ul></div>
+    <div class="card frag" data-f="5"><h3>The input side too</h3>
+      <ul class="small ink2">
+        <li>The student only embeds tokens that occur in its domain: reddit 68,328, math v1 1,282 (against 262,144).</li>
+        <li>Open problem: a token the student has never seen raises an error. On the final tutor corpus (11,286 input tokens), 4.1% of SVAMP's tokens are unseen, and 72.5% of SVAMP problems contain at least one.</li>
+        <li>Fix <span class="planned">planned</span>: an UNK token plus about 2% input-token dropout in training.</li>
+      </ul></div>
+  </div>
+  <p class="src">Sources: findings.txt F-68a; thesis.md (vocabulary sizes); library/shared/vocabulary.py; models/gemma-4-12B-it/config.json; running.txt step 8; library/domain/math_tutor/output_tokens.json</p>
+</div>
+</section>
+
+<!-- 3 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-distill" data-title="What distillation means: KL vs CE">
+<div class="wrap">
+  <p class="kicker">2 · What distillation means here</p>
+  <h2>At every position, the student learns the teacher's whole distribution, not just its pick</h2>
+  <div class="split">
+    <div>
+      <div class="card tight">
+        <p class="ex-title">A real stored step (post-gen, Gemma 3 4B, batch_1, example 7, token 65). Gemma is writing a post:</p>
+        <p class="mono small" style="margin:0;color:var(--ink-2)">“… I just feel like it's a basic courtesy and he's completely oblivious to my feelings<b style="color:var(--teacher)">▮</b>”</p>
+        <p class="small" style="margin:4px 0 0">What comes next? Gemma's choice was <code>,</code>. It also kept a probability for each of the other 26,658 tokens in the vocabulary.</p>
+      </div>
+      <div class="card mt">
+        <div class="legend" id="d-legend"><span><i style="background:var(--teacher)"></i>teacher</span><span id="d-leg-gold"><i style="background:var(--gold)"></i>gold one-hot</span><span id="d-leg-s"><i style="background:var(--student)"></i>toy student</span></div>
+        <div class="hbars" id="d-bars"></div>
+        <p class="small mt" style="margin-bottom:0">▁ = a leading space. ▁&lt; is the start of <code>&lt;end&gt;</code>, the post-gen stop token. Hover a bar for its value.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card frag" data-f="1"><h3>1 · The teacher's distribution</h3><p class="small ink2" style="margin:0">p(“,”) = 0.478, p(“▁about”) = 0.199, p(“.”) = 0.199 … Gemma considers several continuations good. exp(entropy) = <b>4.95</b>: roughly five options here.</p></div>
+      <div class="card frag mt" data-f="2"><h3>2 · Cross-entropy sees one token</h3><p class="small ink2">CE = −log p<sub>student</sub>(gold). The target is the token Gemma actually wrote, as a one-hot vector. Nothing about “▁about” or “.” gets through.</p></div>
+      <div class="card frag mt" data-f="3"><h3>3 · KL sees all of it</h3><p class="small ink2">KL(teacher ‖ student) = Σ p<sub>t</sub> · log(p<sub>t</sub> / p<sub>s</sub>). This is forward KL, the default divergence. The student is pushed toward the whole shape, including the alternatives (“dark knowledge”).</p>
+        <div class="row" id="d-students"></div>
+        <p class="readout mt" id="d-readout" style="margin-bottom:0"></p>
+        <p class="small" style="margin:2px 0 0">Toy students, computed live over these 9 buckets. The real loss sums over all 26,659 tokens.</p></div>
+      <div class="card frag mt" data-f="4"><h3>4 · The mix</h3><div class="formula">loss per token = r · KL + (1 − r) · CE<br>(both × T², summed over the answer's tokens)</div><p class="small ink2" style="margin:6px 0 0">r is the KL ratio. It anneals over training (slide 12). <code>losses.py</code> also has reverse KL, JS and TVD.</p></div>
+      <div class="card frag mt" data-f="5"><h3>5 · Temperature softens the teacher</h3><div class="row" id="d-temps"></div><p class="small ink2" style="margin:6px 0 0" id="d-tnote"></p></div>
+      <div class="card frag mt" data-f="6"><h3>6 · Why it depends on the domain</h3><p class="small ink2" style="margin:0">Positions where the teacher is effectively one-hot (entropy &lt; 0.1 nats): reddit 96.4%, math 99.7%, post-gen 20.0%. A one-hot teacher makes KL equal to CE. For example, a stored math v1 step puts p(“:”) = 0.999997.</p></div>
+    </div>
+  </div>
+  <p class="src">Real logits: batches/post_generation/google_gemma-3-4b-it/batch_1.npz (softmax over the stored 26,659-token row; T = 0.5 and 2 recomputed from the same row). Loss: library/training/losses.py. One-hot shares: experiments/results/domain_entropy.csv (256 examples each).</p>
+</div>
+</section>
+
+<!-- 4 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-pipeline" data-title="The framework pipeline">
+<div class="wrap">
+  <p class="kicker">3 · The framework</p>
+  <h2>One pipeline for every domain</h2>
+  <div class="pipe">
+    <div class="node" data-cls="lit@1"><b>Domain</b><span>prompt, stop, metric, vocab slice, corpus</span></div>
+    <div class="conn" data-cls="flow@2"><i class="dot"></i><i class="dot"></i></div>
+    <div class="node" data-cls="lit@2"><b>Teacher data</b><span>generate or teacher-forced score</span></div>
+    <div class="conn" data-cls="flow@3"><i class="dot"></i><i class="dot"></i></div>
+    <div class="node" data-cls="lit@3"><b>Batches</b><span>tokens + logits, .npz</span></div>
+    <div class="conn" data-cls="flow@4"><i class="dot"></i><i class="dot"></i></div>
+    <div class="node" data-cls="lit@4"><b>Training</b><span>TrainingRun dials</span></div>
+    <div class="conn" data-cls="flow@5"><i class="dot"></i><i class="dot"></i></div>
+    <div class="node" data-cls="lit@5"><b>Evaluation</b><span>metrics logged during eval</span></div>
+    <div class="conn" data-cls="flow@6"><i class="dot"></i><i class="dot"></i></div>
+    <div class="node" data-cls="lit@6"><b>Analysis</b><span>reads logs only</span></div>
+  </div>
+  <div class="grid3 mt2">
+    <div class="card tight frag" data-f="1"><h3>Domain</h3><p class="small ink2" style="margin:0">One package per domain holds the teacher prompt, stop strings, task metric, its slice of the output vocabulary, and <code>corpus.py</code>. It is passed as an object: <code>TrainingRun(domain=…)</code>. Built so far: reddit, math v1, post-gen, long-context recall (Virág), and the maths tutor. The tutor has one agentic variant per annotation and teacher mode, e.g. <code>math_tutor_facts_forced</code>.</p></div>
+    <div class="card tight frag" data-f="2"><h3>Teacher data: two modes</h3><p class="small ink2" style="margin:0"><b>generate</b>: Gemma writes the answer greedily, and its logits over the reduced vocabulary are kept at every step. The example is dropped if it uses an out-of-vocabulary token or runs too long.<br><b>forced</b> (teacher-forced scoring): Gemma reads a given gold target in one forward pass, and its distribution is kept at every target position. The targets stay correct and still carry soft labels. Answers are flagged with <code>answer_correct</code>, which is never used to drop an example.</p></div>
+    <div class="card tight frag" data-f="3"><h3>Batches</h3><p class="small ink2" style="margin:0"><code>batches/&lt;domain&gt;/&lt;teacher&gt;/batch_N.npz</code> holds 32 examples per file: logits as bf16 bit patterns (bit-exact with the teacher), strings as JSON. Part 1's conversion went from 161.6 GB of jsonl to 34.8 GB of npz.</p></div>
+    <div class="card tight frag" data-f="4"><h3>Training</h3><p class="small ink2" style="margin:0"><code>TrainingRun</code> dials: <code>kl_ratio_start/_end</code>, divergence (forward_kl | reverse_kl | js | tvd), distillation and teacher temperature, entropy-weighted KL, KL-ratio cycling, attention noise, size (<code>hidden_dim</code>, <code>num_layers</code>, <code>num_heads</code>), learning rate, epochs, and data size. A run is a Python object in a <code>RUNS</code> list.</p></div>
+    <div class="card tight frag" data-f="5"><h3>Evaluation</h3><p class="small ink2" style="margin:0">Runs every epoch, plus a mini-eval every 1,000 batches. A teacher-forced pass (gold context) gives loss, token accuracy, top-k, overlap, mean target rank, both entropies and perplexity. A free-running rollout (the student's own tokens) gives student accuracy, task accuracy, validity, natural termination and length ratio. Everything goes to JSONL logs.</p></div>
+    <div class="card tight frag" data-f="6"><h3>Analysis</h3><p class="small ink2" style="margin:0"><code>from library import Analysis</code> reads the logs and never reloads the model. <code>Experiment</code> groups seed replicates (mean ± std). Each <code>experiments/*.py</code> holds its runs and their analysis, and writes results to <code>experiments/results/*.csv</code>.</p></div>
+  </div>
+  <p class="src">Sources: CLAUDE.md; library/specs.py; data_gen/model_handler.py (generate_training_example, score_training_examples); shared/batch_files.py; training/evaluator.py; running.txt (batch conversion)</p>
+</div>
+</section>
+
+<!-- 5 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-part1" data-title="Part 1 results">
+<div class="wrap">
+  <p class="kicker">4 · Part 1 results <span class="done">done</span></p>
+  <h2>The KL/CE dial only matters where the teacher is uncertain</h2>
+  <div class="grid2">
+    <div class="card frag" data-f="1">
+      <h3>Teacher uncertainty: exp(mean entropy) = effective options per token</h3>
+      <div class="hbars mt">
+        <span class="lab">reddit</span><span class="track"><span class="bar grow t" style="--w:37.3%"></span></span><span class="val">1.02</span>
+        <span class="lab">math v1</span><span class="track"><span class="bar grow t" style="--w:36.7%"></span></span><span class="val">1.003</span>
+        <span class="lab">post-gen</span><span class="track"><span class="bar grow t" style="--w:100%"></span></span><span class="val">2.73</span>
+      </div>
+      <p class="small mt" style="margin-bottom:0">Gemma 3 4B, 256 examples per domain. Scale from 0 to 2.73. Reddit and math are effectively one-option domains.</p>
+    </div>
+    <div class="card frag" data-f="2">
+      <h3>E-01, post-gen (3 seeds): teacher–student overlap at the end</h3>
+      <div class="hbars mt">
+        <span class="lab">pure KL</span><span class="track"><span class="bar grow t" style="--w:100%"></span></span><span class="val">.305 · rank 694</span>
+        <span class="lab">CE → KL</span><span class="track"><span class="bar grow t" style="--w:83.6%"></span></span><span class="val">.298 · rank 743</span>
+        <span class="lab">flat 0.5</span><span class="track"><span class="bar grow t" style="--w:65.3%"></span></span><span class="val">.291 · rank 769</span>
+        <span class="lab">KL → CE</span><span class="track"><span class="bar grow t" style="--w:47.6%"></span></span><span class="val">.284 · rank 806</span>
+        <span class="lab">pure CE</span><span class="track"><span class="bar grow neutral" style="--w:2%"></span></span><span class="val">.264 · rank 1071</span>
+      </div>
+      <p class="small mt" style="margin-bottom:0">The axis starts at 0.263, so bars show differences, not totals. Seed std is 0.001–0.002, so the arms sit about 7 std apart, in strict order: more KL late is better. Task accuracy (validity) is 0.99–1.00 on every arm.</p>
+    </div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card frag" data-f="3">
+      <h3>Reddit and math (10 seeds each): a null result</h3>
+      <div class="tablewrap"><table>
+        <tr><th>arm (KL ratio)</th><th class="num">reddit best task acc.</th><th class="num">math best task acc.</th></tr>
+        <tr><td>CE → KL (0.1→0.9)</td><td class="num">62.9 ± 0.9</td><td class="num">24.6 ± 1.7</td></tr>
+        <tr><td>KL → CE (0.9→0.1)</td><td class="num">62.7 ± 1.6</td><td class="num">23.5 ± 1.8</td></tr>
+        <tr><td>flat 0.5</td><td class="num">63.0 ± 0.7</td><td class="num">23.1 ± 1.6</td></tr>
+        <tr><td>pure CE</td><td class="num">62.1 ± 0.7</td><td class="num">23.8 ± 1.7</td></tr>
+        <tr><td>pure KL</td><td class="num">62.3 ± 2.1</td><td class="num">24.1 ± 1.7</td></tr>
+      </table></div>
+      <p class="small mt" style="margin-bottom:0">Mean ± std over seeds (%). No arm separates from another by more than one seed std. The noise floor is ±1.8 pp.</p>
+    </div>
+    <div class="card frag" data-f="4">
+      <h3>Other measured facts</h3>
+      <ul class="small ink2">
+        <li><b>Structure vs value</b> (reddit): structural validity 100% against task accuracy of about 60%. By field: safety 74%, tone 63%, toxicity 59%, sentiment 43%.</li>
+        <li>Students <b>overfit</b> at 2k examples: task accuracy falls from 62.7% to 59.2% over 3 epochs.</li>
+        <li>The 3.4M student is <b>96% input embedding</b>.</li>
+        <li>Virág (long-context recall, Gemma 4 12B): the teacher is right on 4,962/4,968 = <b>99.88%</b>.</li>
+      </ul>
+      <p class="small" style="margin:6px 0 0"><b class="ink2">So part 2 reports fidelity</b> (overlap, mean target rank) next to accuracy.</p>
+    </div>
+  </div>
+  <p class="src">Sources: findings.txt (F-E1, F-V1, own numbers); experiments/results/e01_anneal_direction.csv (means recomputed from it); experiments/results/domain_entropy.csv</p>
+</div>
+</section>
+
+<!-- 6 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-agent" data-title="Agent = model + harness">
+<div class="wrap">
+  <p class="kicker">5 · Part 2: the agent</p>
+  <h2>Agent = model + harness</h2>
+  <p class="lead">The model writes one block per request. The harness does everything else.</p>
+  <div class="grid2 mt">
+    <div class="card frag" data-f="1"><span class="who model">model</span><b>the distilled student (Gemma during the pilots)</b>
+      <ul class="small ink2">
+        <li>reads a tagged conversation that ends in <span class="chip msg">&lt;message&gt;</span></li>
+        <li>writes one block: a facts-first <span class="chip sol">&lt;solution&gt;</span> or a short <span class="chip exp">&lt;explanation&gt;</span>, or only the tag <span class="chip off">&lt;out_of_scope&gt;</span></li>
+        <li>the opening tag is the route, decided at its second token (<code>&lt;</code> then <code>solution</code>, <code>explanation</code> or <code>out</code>)</li>
+        <li>never sees the instructions: the teacher prompt is Gemma's alone</li>
+      </ul></div>
+    <div class="card frag" data-f="2"><span class="who harness">harness</span><b>code: <code>harness.py</code>, <code>conversation.py</code>, <code>checks.py</code></b>
+      <ul class="small ink2">
+        <li>holds the conversation state: the main line, the side thread, and the full transcript</li>
+        <li>applies the context rules that decide what each request contains</li>
+        <li>reads the route from the first tag, and treats an unclear route as a task (the safe side)</li>
+        <li>answers off-topic messages itself, with a fixed sentence</li>
+        <li>checks every block and asks once more if a check fails</li>
+        <li>tidies up: fills in a missing “= result” before a solution enters the history</li>
+      </ul></div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card frag" data-f="3"><h3>The model plug</h3><p class="small ink2" style="margin:0">The model can be anything with <code>generate(requests) → texts</code>. Today that is <code>GemmaTutor</code> (the teacher playing the tutor). The student plugs into the same place. Each session is a small state machine with one pending request, so <code>run_sessions</code> batches many conversations into each model call (at most 8 on the 12 GB card).</p></div>
+    <div class="card frag" data-f="4"><h3>What “agentic” means in the thesis</h3><p class="small ink2" style="margin:0">The model chooses a response type for each message and produces structured output that the harness checks and acts on. The novelty check suggests defining this explicitly, so a reviewer does not reduce it to “structured intent routing”.</p></div>
+  </div>
+  <p class="src">Sources: thesis_work/harness_explainer.html; library/domain/math_tutor/harness.py; novelty_check.md (“Define in the thesis”)</p>
+</div>
+</section>
+
+<!-- 7 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-items" data-title="The items and the corpus">
+<div class="wrap">
+  <p class="kicker">6 · The items</p>
+  <h2>Word problems whose answers come from running code</h2>
+  <div class="split">
+    <div class="card frag" data-f="1">
+      <p class="ex-title">A real item (items.jsonl, sd-p1-h02-0007, slice S01, grade 2, seeded from an EngageNY problem)</p>
+      <div class="blk task">problem: Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</div>
+      <pre class="code">def solve():
+    there = 54
+    added = 9
+    total = there + added
+    return {'total': total, 'answer': total}</pre>
+      <div class="blk task">follow-up: The bottles are packed into bags of 7. How many bags are filled?</div>
+      <pre class="code">def solve(state):
+    bags = state['total'] // 7
+    return {**state, 'bags': bags, 'answer': bags}</pre>
+      <div class="blk task">follow-up: The recycling center pays 4 dollars for each full bag. How much money is that?</div>
+      <pre class="code">def solve(state):
+    money = state['bags'] * 4
+    return {**state, 'money': money, 'answer': money}</pre>
+      <p class="small" style="margin:6px 0 0">answers <b>[63, 9, 36]</b> come from executing the code · shape <code>add|div|mul</code> · split <code>test</code></p>
+    </div>
+    <div>
+      <div class="card frag" data-f="2"><h3>The validator drops an item if any check fails</h3>
+        <ul class="small ink2">
+          <li>Every function runs in a sandbox: no imports, no I/O, a 1 s limit, through the project's own interpreter (<code>solve()</code> is never <code>exec</code>'d).</li>
+          <li>Every value is a whole number from 0 to 999. Division must be exact, except in S07, the remainder slice.</li>
+          <li>Every number in the code appears in the text, as digits or as a word (two, dozen, half…).</li>
+          <li>Unused digit numbers must match the distractor label.</li>
+          <li>Each follow-up must read the previous state.</li>
+        </ul></div>
+      <div class="card frag mt" data-f="4"><h3>Splits</h3>
+        <ul class="small ink2">
+          <li>train 32,377 · test 1,210 (10%, stratified by slice) · held-out shapes 415 (<code>add&gt;mul</code>, <code>sub&gt;div</code>, <code>sub&gt;add</code>, never trained)</li>
+          <li>Test items and held-out shapes are cut by family <i>before</i> rewording and renumbering, so their copies stay out of training.</li>
+          <li><b>SVAMP: 746 human-written problems</b>, the real-world test, single turn. Never trained on and never shown to a writer. 577 one-step, 169 two-step.</li>
+        </ul></div>
+    </div>
+  </div>
+  <div class="card mt frag" data-f="3">
+    <h3>How the corpus grew (counts from the build logs)</h3>
+    <div class="stage mt">
+      <div class="tile"><b>2,153</b><span>human seeds (ASDiv, MAWPS, open school material)</span></div><span class="sep">→</span>
+      <div class="tile"><b>12,476</b><span>items written by Claude agents (10 slices)</span></div><span class="sep">+</span>
+      <div class="tile"><b>21,694</b><span>rewordings (same code, new text)</span></div><span class="sep">→</span>
+      <div class="tile"><b>34,002</b><span>kept after pruning (7 exact, 161 near duplicates)</span></div><span class="sep">→</span>
+      <div class="tile"><b>130,546</b><span>problems with 96,544 renumbered copies</span></div><span class="sep">→</span>
+      <div class="tile"><b>306,389</b><span>turns: 295,458 train + 10,931 test</span></div>
+    </div>
+    <p class="small mt" style="margin-bottom:0">Pruning: normalise (numbers to N, names to NAME), drop exact and near duplicates (word-sequence ratio &gt; 0.8), test leaks against SVAMP (0), and a shape cap. The rebuild is byte-identical. About 38M agent tokens were used to write the items.</p>
+  </div>
+  <div class="card mt frag" data-f="5">
+    <h3>How templated is it? Median nearest-neighbour similarity (2,000 sample; lower = more varied)</h3>
+    <div class="hbars mt">
+      <span class="lab">this corpus</span><span class="track"><span class="bar grow t" style="--w:40%"></span></span><span class="val">0.40</span>
+      <span class="lab">human seeds</span><span class="track"><span class="bar grow neutral" style="--w:54%"></span></span><span class="val">0.54</span>
+      <span class="lab">SVAMP</span><span class="track"><span class="bar grow neutral" style="--w:91%"></span></span><span class="val">0.91</span>
+      <span class="lab">v1 templates (part 1 math)</span><span class="track"><span class="bar grow neutral" style="--w:100%"></span></span><span class="val">1.00</span>
+    </div>
+  </div>
+  <p class="src">Sources: domain_specs.txt (ITEM, VALIDATION, PRUNING, SPLITS, HUMAN SETS, BUILD RESULT); running.txt; features_ledger.txt; items/items.jsonl</p>
+</div>
+</section>
+
+<!-- 8 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-facts" data-title="Facts-first solutions and the label pass">
+<div class="wrap">
+  <p class="kicker">7 · How a solution is written</p>
+  <h2>Facts first: Gemma writes the words, the code checks the numbers</h2>
+  <div class="card frag" data-f="1">
+    <h3>Annotation formats, all rendered from the executed <code>solve()</code> (the tetras example from the prompts)</h3>
+    <div class="grid3 mt">
+      <div><p class="ex-title">answer</p><div class="blk sol">Answer: 5</div></div>
+      <div><p class="ex-title">working</p><div class="blk sol">4 * 2 = 8
+13 - 8 = 5
+Answer: 5</div></div>
+      <div><p class="ex-title">named</p><div class="blk sol">cost of 4 more tetras = 4 * 2 = 8
+money left = 13 - 8 = 5
+Answer: 5</div></div>
+      <div><p class="ex-title">code (the harness would run it)</p><div class="blk sol">cost_of_more_tetras = 4 * 2
+money_left = 13 - cost_of_more_tetras
+Answer: money_left</div></div>
+      <div><p class="ex-title"><b>facts</b>, chosen 2026-10-06, used in every pilot</p><div class="blk sol">tetras bought later = 4
+price of a tetra = 2
+money left before = 13
+cost of 4 more tetras = 4 * 2 = 8
+money left = 13 - 8 = 5
+Answer: 5</div></div>
+    </div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card frag" data-f="2"><h3>Why the code alone cannot write the labels</h3>
+      <p class="small ink2">45% of numbers are written inline in <code>solve()</code>, so they have no name to read. Rewordings reuse the original's code, so its variable names describe a different story. A real verified sample label:</p>
+      <p class="ex-title">S07-mem-b02-0070~w1 (a rewording): “The craft shop gets 6 boxes of ribbons, with 15 ribbons in each box. The owner sells them in packs of 9 ribbons. How many packs can she make?”</p>
+      <pre class="code">crates = 6; per_crate = 15; per_bag = 9
+apples = crates * per_crate
+bags = apples // per_bag</pre>
+    </div>
+    <div class="card frag" data-f="3"><h3>The label pass: Gemma's block, kept only if <code>check_against_trace</code> passes</h3>
+      <div class="chk" data-cls="ok@4">
+        <span class="line">number of boxes = 6</span><span class="why" style="--i:0">✓ fact: 6 is in the text</span>
+        <span class="line">ribbons in each box = 15</span><span class="why" style="--i:1">✓ fact: 15 is in the text</span>
+        <span class="line">ribbons in a pack = 9</span><span class="why" style="--i:2">✓ fact: 9 is in the text</span>
+        <span class="line">total ribbons = 6 * 15 = 90</span><span class="why" style="--i:3">✓ true, and 90 is a value solve() computes</span>
+        <span class="line">number of packs = 90 / 9 = 10</span><span class="why" style="--i:4">✓ true, uses only known numbers</span>
+        <span class="line">Answer: 10</span><span class="why" style="--i:5">✓ the function's answer</span>
+      </div>
+      <p class="small mt" style="margin-bottom:0">Gemma is given the conversation and the exact calculations (<code>6 * 15 = 90</code>, <code>90 / 9 = 10</code>). Facts may also come from implied words (“a pair” = 2), and a long step may be split into smaller ones.</p>
+    </div>
+  </div>
+  <div class="card mt frag" data-f="5">
+    <div class="tiles">
+      <div class="tile"><b>84/91</b><span>turns verified (92%), sample of 40 items</span></div>
+      <div class="tile"><b>37/40</b><span>items with every turn verified</span></div>
+      <div class="tile"><b>192</b><span>renumbered-copy turns given carried-over labels (numbers mapped, re-checked)</span></div>
+      <div class="tile"><b>409</b><span>verified labels in the sample set the pupil templates were written on</span></div>
+      <div class="tile"><b>3 tries</b><span>greedy first, then two sampled retries; turns run in waves</span></div>
+      <div class="tile"><b>full pass</b><span><span class="planned">planned</span> on the GPU (<code>labels.py</code>, resumable)</span></div>
+    </div>
+  </div>
+  <p class="src">Sources: library/domain/math_tutor/{annotations.py, agentic.py FORMATS, labels.py, checks.py}; questions/sample_labels.jsonl; commit messages 97f6f4d, 7981150, 2dad5cf</p>
+</div>
+</section>
+
+<!-- 9 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-conv" data-title="The conversation format">
+<div class="wrap">
+  <p class="kicker">8 · The conversation format</p>
+  <h2>Typed blocks, a main line, and a side thread that a new task drops</h2>
+  <div class="split">
+    <div class="ctx">
+      <p class="ctx-label" id="conv-label">What the model reads (pilot 2, item sd-p1-h02-0007; exact harness text)</p>
+      <div class="blk task">&lt;task&gt;Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?&lt;/task&gt;</div>
+      <div class="blk sol">&lt;solution&gt;
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+&lt;/solution&gt;</div>
+      <div class="blk task">&lt;task&gt;The bottles are packed into bags of 7. How many bags are filled?&lt;/task&gt;</div>
+      <div class="blk sol">&lt;solution&gt;
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+&lt;/solution&gt;</div>
+      <div class="blk q frag" data-f="1" data-cls="dropped@4 gone@5">&lt;question&gt;Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?&lt;/question&gt;</div>
+      <div class="blk exp frag" data-f="1" data-cls="dropped@4 gone@5">&lt;explanation&gt;To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.&lt;/explanation&gt;</div>
+      <div class="blk q frag" data-f="2" data-cls="dropped@4 gone@5">&lt;question&gt;Why did you count out seven bags of 2 instead of just counting by twos?&lt;/question&gt;</div>
+      <div class="blk exp frag" data-f="2" data-cls="dropped@4 gone@5">&lt;explanation&gt;Counting by twos is actually the same thing as counting the bags! When you say "2, 4, 6, 8, 10, 12, 14", you are counting each bag as you go.&lt;/explanation&gt;</div>
+      <div class="blk msg frag" data-f="3" data-cls="gone@5">&lt;message&gt;The recycling center pays 4 dollars for each full bag. How much money is that?&lt;/message&gt;</div>
+      <div class="blk task frag" data-f="5">&lt;task&gt;The recycling center pays 4 dollars for each full bag. How much money is that?&lt;/task&gt;</div>
+      <div class="blk sol frag" data-f="5">&lt;solution&gt;
+number of bags = 9
+payment per bag = 4
+total money = 9 * 4 = 36
+Answer: 36
+&lt;/solution&gt;</div>
+    </div>
+    <div>
+      <div class="card tight"><h3>The blocks</h3>
+        <p class="small" style="margin:0"><span class="chip task">&lt;task&gt;</span>+<span class="chip sol">&lt;solution&gt;</span> main line · <span class="chip q">&lt;question&gt;</span>+<span class="chip exp">&lt;explanation&gt;</span> side thread · <span class="chip msg">&lt;message&gt;</span> the newest input, untyped · <span class="chip off">&lt;out_of_scope&gt;</span> a reply tag only</p>
+        <p class="small ink2" style="margin:6px 0 0">Past turns carry their type. The newest input is left untyped because deciding its type is the model's first decision. Three routes: <b>solution</b> (a new task, or a what-if, which is a new calculation), <b>explanation</b> (a question about the working), and <b>out_of_scope</b>.</p></div>
+      <div class="card tight mt frag" data-f="1"><span class="stepnum">1</span>A follow-up question opens a <b>side thread</b>. The explanation goes there, and the main line is unchanged.</div>
+      <div class="card tight mt frag" data-f="2"><span class="stepnum">2</span>A second question: the thread grows.</div>
+      <div class="card tight mt frag" data-f="3"><span class="stepnum">3</span>A new task arrives as <span class="chip msg">&lt;message&gt;</span>. The <b>route request</b> still shows the open thread, and the model opens with <span class="chip sol">&lt;solution&gt;</span>.</div>
+      <div class="card tight mt frag" data-f="4"><span class="stepnum">4</span>The <b>solve request</b> leaves the thread out, so the model solves from a clean history.</div>
+      <div class="card tight mt frag" data-f="5"><span class="stepnum">5</span>The message is stored as a <span class="chip task">&lt;task&gt;</span> with its checked solution, and the thread is closed. The harness still keeps the questions and explanations in its full transcript.</div>
+    </div>
+  </div>
+  <p class="src">Sources: thesis_work/harness_explainer.html (“A real conversation, step by step”); library/domain/math_tutor/conversation.py</p>
+</div>
+</section>
+
+<!-- 10 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-turn" data-title="One agent turn">
+<div class="wrap">
+  <p class="kicker">9 · One agent turn</p>
+  <h2>Route first, then act, check, and if needed ask once more</h2>
+  <div class="flowcol">
+    <div class="step-card hl-box" data-hl="1"><span class="who pupil">pupil</span>sends a message <span class="small">(a template message during the pilots, slide 10)</span></div>
+    <div class="arrow">↓</div>
+    <div class="step-card hl-box frag" data-f="1" data-hl="1,2"><span class="who harness">harness</span><b>Route request:</b> main line + open thread + <span class="chip msg">&lt;message&gt;</span>, at most 24 tokens, greedy. <span class="who model" style="margin-left:6px">model</span>its opening tag is the branch. The student needs only two tokens for this: <code>&lt;</code> and the tag's first word.
+      <div class="frag small ink2" data-f="2" style="margin-top:6px">If no tag comes back (in pilot 3, 2 of 31 replies opened with bullets), the harness asks again with the reply already started as <code>&lt;</code>. Starting <i>every</i> route with <code>&lt;</code> was tried and dropped: it garbled 35 of 642 off-topic tags. If the route is still unclear, it is treated as a task (the safe side).</div></div>
+    <div class="arrow frag" data-f="3">↓</div>
+    <div class="grid3">
+      <div class="step-card hl-box frag" data-f="3" data-hl="3,4"><span class="chip sol">&lt;solution&gt;</span> <b>a task or a what-if</b>
+        <ul class="small ink2">
+          <li><span class="who harness">harness</span> solve request: <b>main line only</b> + message, starting <code>&lt;solution&gt;\n</code>, stopping at <code>&lt;/solution&gt;</code>, 120 tokens, greedy</li>
+          <li><span class="who model">model</span> facts, calculations, <code>Answer: N</code></li>
+          <li class="frag" data-f="4"><span class="who harness">harness</span> <code>check_lines</code>: every line is a fact or a true calculation, and the block ends in <code>Answer: N</code>. On failure it asks once more at T 0.7.</li>
+          <li class="frag" data-f="4"><span class="who harness">harness</span> fills in a missing “= result”, stores the solution in the main line, and <b>closes the side thread</b></li>
+        </ul></div>
+      <div class="step-card hl-box frag" data-f="5" data-hl="5"><span class="chip exp">&lt;explanation&gt;</span> <b>a question about the working</b>
+        <ul class="small ink2">
+          <li><span class="who harness">harness</span> explain request: <b>the same context as the route</b> (thread kept), stopping at <code>&lt;/explanation&gt;</code></li>
+          <li><span class="who model">model</span> at most two short sentences a child understands</li>
+          <li><span class="who harness">harness</span> <code>check_explanation</code>: not empty, never takes the solution back (“I missed”, “should have”, “sorry”…), and does not give in to pushback (“you're right”). On failure it asks once more at T 0.7.</li>
+          <li><span class="who harness">harness</span> stores the explanation in the side thread</li>
+        </ul></div>
+      <div class="step-card hl-box frag" data-f="6" data-hl="6"><span class="chip off">&lt;out_of_scope&gt;</span> <b>not about this maths</b>
+        <ul class="small ink2">
+          <li><span class="who harness">harness</span> replies itself: “This question is outside the scope of this task.”</li>
+          <li>The model writes nothing more.</li>
+          <li>The message never enters the model's context, and an open thread stays as it was.</li>
+        </ul></div>
+    </div>
+    <div class="grid2 mt">
+      <div class="card tight frag" data-f="7"><p class="ex-title">A check that caught a real habit (pilot 1)</p><div class="blk sol">total photos = 54 + 12</div><p class="small ink2" style="margin:4px 0 0">→ “not a fact or a calculation”. 9 first tries were rejected, and once the short form was in the history Gemma kept copying it. The prompt now asks for “= result” on every line, and the harness fills it in before storing. In pilot 2, 1 first try was rejected.</p></div>
+      <div class="card tight frag" data-f="7"><p class="ex-title">An explanation that gave in (thread check)</p><div class="blk exp">I missed the hayrides in my first calculation because I only looked at the money coming in. …</div><p class="small ink2" style="margin:4px 0 0">→ “takes back the checked solution: 'I missed'”. This happened in 1 of 165 explanations. The live harness asks again, and in the training corpus the thread ends at that point.</p></div>
+    </div>
+  </div>
+  <p class="src">Sources: library/domain/math_tutor/harness.py (Request, TutorSession.receive), checks.py, conversation.parse_route; harness_explainer.html; commit messages 70ca774, eea3f3d</p>
+</div>
+</section>
+
+<!-- 11 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-pupil" data-title="The template pupil">
+<div class="wrap">
+  <p class="kicker">10 · The template pupil</p>
+  <h2>Follow-up messages come from templates filled from the solution on screen. Gemma only replies.</h2>
+  <div class="split">
+    <div>
+      <div class="card tight frag" data-f="1"><p class="ex-title">1 · The shown solution (Ines, turn 2) becomes <b>foci</b>, each with slots and features</p>
+        <div class="blk sol">new total = 63
+bottles per bag = 7
+<b>number of bags = 63 / 7 = 9</b>
+Answer: 9</div>
+        <p class="small ink2" style="margin:4px 0 0">focus <b>step0</b>: a = 63, b = 7, operation_phrase = “divide 63 by 7”, other_phrase = “multiply 63 by 7” · features: divide, only_step, uses_earlier_answer, follow_up_task… The other foci here are 2 facts, the answer, 2 computed mistakes, and none.</p></div>
+      <div class="card tight mt frag" data-f="2"><p class="ex-title">2 · A kind is drawn by weight, then a (template, focus) pair. Each required feature doubles a template's weight, so niche templates win whenever their condition holds.</p>
+        <p style="margin:0">why · <span class="mono small">seed.jsonl</span><br>“Why did you <span class="slot" data-cls="filled@2"><span class="k">{operation_phrase}</span><span class="v">divide 63 by 7</span></span>?”</p>
+        <p style="margin:6px 0 0">where_from · requires <code>uses_earlier_answer</code> (weight 2)<br>“in <span class="slot" data-cls="filled@2"><span class="k">{calculation}</span><span class="v">63 / 7</span></span>, is one number from the last question?”</p></div>
+      <div class="card tight mt frag" data-f="3"><p class="ex-title">3 · Pushback with a <b>computed</b> wrong answer (turn 1: the wrong operation on 54 + 9)</p>
+        <p style="margin:0">“if you <span class="slot" data-cls="filled@3"><span class="k">{wrong_phrase}</span><span class="v">take 9 away from 54</span></span> you get <span class="slot" data-cls="filled@3"><span class="k">{wrong_answer}</span><span class="v">45</span></span>, so that's the answer”</p>
+        <p class="small ink2" style="margin:4px 0 0">Mistake foci: the wrong operation, using the distractor, skipping the last step, or a slip of ±1 or ±10. The tutor must hold firm.</p></div>
+      <div class="card tight mt frag" data-f="4"><p class="ex-title">4 · What-if: change a number and <b>run the code again</b> (turn 3, the last task)</p>
+        <p style="margin:0">“Suppose the <span class="slot" data-cls="filled@4"><span class="k">{old}</span><span class="v">4</span></span> was <span class="slot" data-cls="filled@4"><span class="k">{new}</span><span class="v">11</span></span>. What would the answer be then?” → route <span class="chip sol">&lt;solution&gt;</span></p>
+        <p class="small ink2" style="margin:4px 0 0">11 is new to the whole conversation. Re-running <code>solve()</code> gives <b>99</b>, and the facts-first label is carried over and re-checked: <span class="mono">payment per bag = 11 · total money = 9 * 11 = 99</span>.</p></div>
+      <div class="card tight mt frag" data-f="5"><p class="ex-title">5 · Off-topic</p><p style="margin:0">“are you a robot” → <span class="chip off">&lt;out_of_scope&gt;</span> → the harness: “This question is outside the scope of this task.”</p></div>
+    </div>
+    <div>
+      <div class="card frag" data-f="6"><h3>The bank: 3,461 templates from 10 writer agents, 1,842 of them niche</h3>
+        <div class="legend"><span><i style="background:var(--exp-fg)"></i>explanation</span><span><i style="background:var(--sol-fg)"></i>solution</span><span><i style="background:var(--off-fg)"></i>out_of_scope</span></div>
+        <div class="hbars" id="kind-bars"></div>
+        <p class="small mt" style="margin-bottom:0">43 ambiguous templates were later excluded, each with its reason (<code>questions/excluded.jsonl</code>). Each message after the first is about something linked to the one before: the same step, a number it used, or the step that used its result.</p></div>
+      <div class="card tight mt frag" data-f="7"><p class="small ink2" style="margin:0"><b>Threads:</b> in the corpus each item gets one thread on one of its turns, with 1, 2 or 3 messages (50 / 35 / 15%). In the live harness, after each task there is a 70% chance of 1–3 messages, and what-ifs come only on the last task. The engine is domain-free (<code>library/agent/question_templates.py</code>). The domain supplies the foci, kinds and features.</p></div>
+    </div>
+  </div>
+  <p class="src">Sources: library/domain/math_tutor/questions.py (solution_foci, mistake_foci, what_if_foci; foci above computed by this code for item sd-p1-h02-0007); questions/bank/*.jsonl; threads.py; harness.TemplatePupil; commit ba050d5</p>
+</div>
+</section>
+
+<!-- 12 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-records" data-title="Training records">
+<div class="wrap">
+  <p class="kicker">11 · Training records</p>
+  <h2>Every training record is a context the harness would build</h2>
+  <p class="lead">The corpus builder and the harness share one <code>Conversation</code> class, so the student learns on the same contexts it will see at run time.</p>
+  <div class="grid3 mt">
+    <div class="card tight frag" data-f="1"><h3>solve</h3><p class="small" style="margin:0"><span class="chip task">main line</span> + <span class="chip msg">message: a task</span></p><p class="small ink2" style="margin:4px 0 0">→ the <b>gold</b> facts-first <span class="chip sol">&lt;solution&gt;</span> block, one record per turn</p></div>
+    <div class="card tight frag" data-f="2"><h3>explain</h3><p class="small" style="margin:0"><span class="chip task">main line</span> + <span class="chip q">thread</span> + <span class="chip msg">message: a question</span></p><p class="small ink2" style="margin:4px 0 0">→ Gemma's own checked <span class="chip exp">&lt;explanation&gt;</span> (its greedy text from the thread pass)</p></div>
+    <div class="card tight frag" data-f="3"><h3>route</h3><p class="small" style="margin:0"><span class="chip task">main line</span> + <span class="chip q">open thread</span> + <span class="chip msg">message: the next task</span></p><p class="small ink2" style="margin:4px 0 0">→ only the tag <span class="chip sol">&lt;solution&gt;</span>: it teaches the decision exactly where it is hardest</p></div>
+    <div class="card tight frag" data-f="4"><h3>off-topic route</h3><p class="small" style="margin:0"><span class="chip task">main line</span> + <span class="chip q">thread</span> + <span class="chip msg">message: off-topic</span></p><p class="small ink2" style="margin:4px 0 0">→ only <span class="chip off">&lt;out_of_scope&gt;</span>, and the message never enters a later context</p></div>
+    <div class="card tight frag" data-f="5"><h3>what-if solve</h3><p class="small" style="margin:0"><span class="chip task">main line</span> + <span class="chip msg">message: what if…</span></p><p class="small ink2" style="margin:4px 0 0">→ the carried-over solution with the new number, checked against the re-run code. It ends the thread.</p></div>
+    <div class="card tight frag" data-f="6"><h3>when a thread stops</h3><p class="small ink2" style="margin:0">If the tutor did not explain, or took its solution back, the thread ends there and no record builds on it. The solution itself is learned only from the clean-history solve record.</p></div>
+  </div>
+  <div class="card mt frag" data-f="7">
+    <h3>Teacher-forced scoring: soft labels at every position of a <i>correct</i> target</h3>
+    <p class="small ink2">Gemma reads the gold target after the context in one forward pass, and its distribution over the output vocabulary is stored at every token. Below is a real target as Gemma 4's tokenizer splits it (41 tokens, numbers digit by digit). Each mark stands for one stored distribution; no values are shown because tutor batches do not exist yet.</p>
+    <div class="toks" id="rec-toks" data-cls="scored@8"></div>
+    <p class="small mt" style="margin-bottom:0">Explanations are scored again in forced mode on Gemma's own text: the same logits generation would give, at an eighth of the cost. All record types use <code>teacher: "forced"</code>.</p>
+  </div>
+  <div class="card tight mt frag" data-f="9"><p class="small" style="margin:0"><b>Status:</b> the code for every record type exists (<code>conversation.solve_turns</code>, <code>thread_turns</code>, <code>corpus.build_agentic_corpus</code>). The verified labels at scale (label pass) and the threads (thread pass) are <span class="planned">planned</span> GPU runs. Corpus order is train first and test last, and the train/test cut is set from the batches.</p></div>
+  <p class="src">Sources: harness_explainer.html (“Training data uses the same rules”); conversation.py (solve_turns, thread_turns); corpus.py; model_handler.score_training_examples; tokenisation by models/gemma-4-12B-it</p>
+</div>
+</section>
+
+<!-- 13 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-training" data-title="How training works (interactive)">
+<div class="wrap">
+  <p class="kicker">12 · How training works</p>
+  <h2>An annealed mix of KL and CE, one example at a time</h2>
+  <div class="card frag" data-f="1">
+    <div class="controls">
+      <label>KL ratio arm
+        <select id="tr-arm" data-nonav>
+          <option value="0.9,0.1">KL → CE: 0.9 → 0.1 (E-01 arm)</option>
+          <option value="0.1,0.9">CE → KL: 0.1 → 0.9 (E-01 arm)</option>
+          <option value="0.5,0.5">flat 0.5 (E-01 arm)</option>
+          <option value="0,0">pure CE: 0 (E-01 arm)</option>
+          <option value="1,1">pure KL: 1 (E-01 arm)</option>
+          <option value="0.99,0.5">TrainingRun default: 0.99 → 0.5</option>
+        </select></label>
+      <label>Run length
+        <select id="tr-len" data-nonav>
+          <option value="960">post-gen E-01: 10 epochs × 96 batches = 960 steps</option>
+          <option value="153">reddit / math E-01: 3 epochs × 51 batches = 153 steps</option>
+        </select></label>
+      <label>Temperature start <input type="number" id="tr-t0" min="0.5" max="5" step="0.5" value="1" data-nonav></label>
+      <label>end <input type="number" id="tr-t1" min="0.5" max="5" step="0.5" value="1" data-nonav></label>
+    </div>
+    <label class="small" style="display:block;margin-top:10px">Training step (one step = one batch file of 32 examples) <input type="range" id="tr-step" min="0" max="960" value="0" data-nonav></label>
+    <p class="readout" id="tr-readout"></p>
+    <div class="minis">
+      <div class="mini"><div class="mt-row"><b>KL ratio r</b><span>0 … 1</span></div><svg viewBox="0 0 300 84" preserveAspectRatio="none" id="tr-c-kl"></svg><div class="axis"><span>step 0</span><span id="tr-ax1">960</span></div></div>
+      <div class="mini"><div class="mt-row"><b>temperature T</b><span id="tr-tmax">0 … 1.1</span></div><svg viewBox="0 0 300 84" preserveAspectRatio="none" id="tr-c-t"></svg><div class="axis"><span>step 0</span><span id="tr-ax2">960</span></div></div>
+      <div class="mini"><div class="mt-row"><b>learning rate</b><span>0 … 0.0015</span></div><svg viewBox="0 0 300 84" preserveAspectRatio="none" id="tr-c-lr"></svg><div class="axis"><span>step 0</span><span id="tr-ax3">960</span></div></div>
+    </div>
+    <p class="small mt" style="margin-bottom:0">The curves are the formulas from <code>schedules.py</code>, ported line by line. r and T follow a cosine from <i>start</i> at step 0 to <i>end</i> at the last step. The learning rate warms up linearly over 10% of the steps to 0.0015, then follows a cosine down to 1e-5. Every E-01 run kept T = 1. The teacher's temperature follows the student's unless <code>teacher_temperature_start</code> is set.</p>
+  </div>
+  <div class="card mt frag" data-f="2">
+    <h3>Per-token loss on a real sequence, weighted by r at the chosen step</h3>
+    <p class="small ink2">Post-gen test example (batch_97). Input: “Harden won't be healed from an injury to both eyes for at least a week I'd imagine.” Gemma 3 4B continued: “Seriously, the reports are saying it's worse than initially thought. …”. KL and CE are measured on stored E-01 checkpoints (seed 1, CPU, T = 1). Bar = <span style="color:var(--teacher);font-weight:600">r · KL</span> + <span style="font-weight:600">(1 − r) · CE</span>.</p>
+    <div class="row" id="tr-students"></div>
+    <div class="grid2 mt">
+      <div class="tokrows" id="tr-rows"></div>
+      <div><div class="detail card tight" id="tr-detail"></div><p class="readout mt" id="tr-sum"></p></div>
+    </div>
+  </div>
+  <div class="card tight mt frag" data-f="3"><p class="small" style="margin:0"><b>The loop</b> (<code>trainer.py</code>): each example is encoded as the context plus the target tokens shifted by one. One forward pass gives the student's logits at every target position, and the loss is summed over those positions. Then <code>zero_grad</code> / <code>backward</code> / <code>step</code> runs <b>per example</b>, so the effective batch is 1 (findings). AdamW is the optimiser. The schedules advance once per batch file. Evaluation after each epoch uses the same encoder.</p>
+    <p class="small" style="margin:6px 0 0">A code detail flagged by the running code review (M1) and visible in <code>trainer.py</code>: the optimiser starts at the full learning rate, and the schedule is applied only after each batch. So the first batch trains at 0.0015, not at the warm-up's 0.</p></div>
+  <p class="src">Sources: library/training/{schedules.py, losses.py, trainer.py, example_encoder.py}; library/specs.py (defaults); experiments/anneal_direction.py (arms, run sizes); runs/e01-postgen-pure-kl-s1, -pure-ce-s1 checkpoints</p>
+</div>
+</section>
+
+<!-- 14 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-inputs" data-title="What the student sees vs what Gemma sees">
+<div class="wrap">
+  <p class="kicker">13 · Inputs</p>
+  <h2>Gemma reads instructions; the student reads only the conversation</h2>
+  <div class="vs">
+    <div class="card frag" data-f="1"><span class="who gemma">Gemma</span><b>558 tokens</b> for Ines, turn 2 (chat template + instructions + conversation)
+      <div class="code scrollbox mt">&lt;bos&gt;&lt;|turn&gt;user
+You are a maths tutor for primary-school pupils. Below is the tutoring conversation so far. The last block, &lt;message&gt;, is the pupil's new message.
+- If it is a new task, or asks what the answer would be if a number were different, or gives new numbers to work with (a new calculation), answer with a &lt;solution&gt; block: first one line for each number you use, written as what it is = number (words from the problem; a number from an earlier answer counts too; numbers without units); then one line per calculation that is needed, written as what it is = calculation = result, using only + - * / (every calculation line ends with = and its result); then the line Answer: &lt;number&gt;; then &lt;/solution&gt;. No numbering or bullet points. A division that does not come out even is written like: 23 / 5 = 4 remainder 3. Example:
+&lt;solution&gt;
+tetras bought later = 4
+price of a tetra = 2
+money left before = 13
+cost of 4 more tetras = 4 * 2 = 8
+money left = 13 - 8 = 5
+Answer: 5
+&lt;/solution&gt;
+- If it asks about your working (why you did a step, what a number means, where it came from, whether it is right, or to see a step again another way, with smaller numbers or more quickly), answer with an &lt;explanation&gt; block (if the pupil asks for smaller numbers but gives none, pick small numbers yourself; if the pupil gives the numbers, it is a new task): at most two short, plain sentences a child understands, then &lt;/explanation&gt;. Your solutions above have been checked and are right. If the pupil says one is wrong, say firmly that it is right and show why. If the pupil asks about something a solution does not use, say why it is not needed.
+- If it is not about this maths at all, write only &lt;out_of_scope&gt;
+Write only that one block, nothing before or after it. Never repeat these instructions.
+
+<span style="color:var(--task-fg)">&lt;task&gt;Ines emptied her backpack … What is the new total?&lt;/task&gt;
+&lt;solution&gt; … Answer: 63 &lt;/solution&gt;
+&lt;message&gt;The bottles are packed into bags of 7. How many bags are filled?&lt;/message&gt;</span>&lt;turn|&gt;
+&lt;|turn&gt;model
+&lt;|channel&gt;thought
+&lt;channel|&gt;</div></div>
+    <div class="mid frag" data-f="3">same target tokens,<br>same positions →<br>the student learns Gemma's distributions without the instructions</div>
+    <div class="card frag" data-f="2"><span class="who model">student</span><b>101 tokens</b> + the delimiter <code>\n\n</code>
+      <div class="code mt"><span style="color:var(--task-fg)">&lt;task&gt;Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?&lt;/task&gt;
+&lt;solution&gt;
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+&lt;/solution&gt;
+&lt;message&gt;The bottles are packed into bags of 7. How many bags are filled?&lt;/message&gt;</span></div>
+      <p class="small ink2 mt" style="margin-bottom:0">Then it produces the target one token at a time: <span class="mono">&lt;solution&gt;\nnew total = 63\n…</span>. Everything else (the format, the routes, holding firm on pushback, the off-topic tag) has to come from the examples.</p></div>
+  </div>
+  <div class="card tight mt frag" data-f="4"><p class="small" style="margin:0">In forced scoring, Gemma's logits at each target position are computed with the instructions in view. The student is trained on the same positions with the instructions missing. That is the distillation: the behaviour the prompt produces in Gemma has to be reproduced by the student's weights alone (<code>Domain.student_prompt</code> = text + <code>"\n\n"</code>).</p></div>
+  <p class="src">Sources: library/domain/math_tutor/agentic.py (HEADER, FORMATS["facts"]); domain/base.py (student_prompt); shared/config.py (PROMPT_DELIMITER); token counts from the Gemma 4 tokenizer on this exact context</p>
+</div>
+</section>
+
+<!-- 15 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-eval" data-title="Evaluation plan">
+<div class="wrap">
+  <p class="kicker">14 · Evaluation plan <span class="planned">planned</span></p>
+  <h2>Score each turn on gold history, and whole conversations on the model's own</h2>
+  <div class="vs">
+    <div class="card frag" data-f="1"><h3>Per turn, gold history</h3><p class="small ink2" style="margin:0">The test records' contexts hold the gold earlier turns, as the corpus builds them. This measures one turn in isolation: its route, its solution, its explanation. It mirrors <b>teacher-forced</b> accuracy (ground truth as context, optimistic).</p></div>
+    <div class="mid frag" data-f="3">the gap between the two = <b>error compounding</b></div>
+    <div class="card frag" data-f="2"><h3>Whole conversation, own history</h3><p class="small ink2" style="margin:0">The harness runs the student, and earlier turns hold its own answers, uncorrected, as in the Gemma pilots. This measures what a pupil would actually see. It mirrors <b>student</b> (autoregressive) accuracy.</p></div>
+  </div>
+  <div class="grid2 mt">
+    <div class="card frag" data-f="4"><h3>What is scored</h3>
+      <ul class="small ink2">
+        <li><b>Solutions:</b> task accuracy (the <code>Answer</code> equals the executed answer) per turn, slice and shape; line validity (<code>check_lines</code>); held-out shapes (415 items, 3,648 turns); SVAMP (746, single turn, reported per shape; needs the UNK fix first).</li>
+        <li><b>Routing:</b> the test records; 360 free-written messages (Gemma routed 175 of 180 as intended); about 100 follow-up messages that you write by hand on test problems, <span class="planned">planned</span>.</li>
+        <li><b>Explanations:</b> <code>check_explanation</code> pass rate (no taking the solution back, holding firm on pushback) and length; what-if answers against the re-run code.</li>
+      </ul></div>
+    <div class="card frag" data-f="5"><h3>Logged during eval, never recomputed</h3>
+      <ul class="small ink2">
+        <li>teacher-forced and student token accuracy, task accuracy, structural validity (a <code>&lt;solution&gt;</code> with an <code>Answer</code>, an <code>&lt;explanation&gt;</code>, or exactly <code>&lt;out_of_scope&gt;</code>)</li>
+        <li>top-k accuracy (k = 20), teacher–student overlap, mean target rank</li>
+        <li>teacher and student entropy, perplexity</li>
+        <li>natural termination rate and length ratio (rollouts are capped at 2× the teacher's length)</li>
+      </ul>
+      <p class="small" style="margin:6px 0 0">Post-run analysis only reads these logs (<code>Analysis</code>).</p></div>
+  </div>
+  <p class="src">Sources: training/evaluator.py; math_tutor/agentic.py (TutorAnswerMetric, structural_validity); domain_specs.txt (METRICS, SPLITS, AGENTIC MATH TUTOR v1: “Routing test: ~100 hand-written messages”); template_pilot.html; harness_transcripts_*.html (“Earlier turns hold the model's own answers, uncorrected”)</p>
+</div>
+</section>
+
+<!-- 16 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-pilots" data-title="Pilot results so far">
+<div class="wrap">
+  <p class="kicker">15 · Pilot results so far</p>
+  <h2>Gemma 4 12B (NF4) as the tutor: routing, checks and answers</h2>
+  <p class="small">These are all teacher pilots. No student has been trained on tutor data yet.</p>
+  <div class="card tight frag" data-f="1"><h3>Harness pilots 1–2 (16 conversations, 47 tasks; questions written by Gemma as the pupil)</h3>
+    <div class="tiles">
+      <div class="tile"><b>39 → 46</b><span>of 47 solutions pass the check (pilot 1 → 2)</span></div>
+      <div class="tile"><b>9 → 1</b><span>first tries rejected (missing “= result”)</span></div>
+      <div class="tile"><b>46/47</b><span>answers correct (pilot 2)</span></div>
+      <div class="tile"><b>5/42</b><span>questions routed as tasks in pilot 2 (show again, another way, smaller numbers, quicker)</span></div>
+      <div class="tile"><b>165/165</b><span>questions explained after the prompt fix (thread check)</span></div>
+      <div class="tile"><b>1/165</b><span>explanations took the solution back (now caught)</span></div>
+    </div></div>
+  <div class="card tight mt frag" data-f="2"><h3>Template pilot (template bank + 180 free-written messages)</h3>
+    <div class="tiles">
+      <div class="tile"><b>175/180</b><span>free-written messages routed as intended</span></div>
+      <div class="tile"><b>137/139</b><span>templated thread messages routed as intended</span></div>
+      <div class="tile"><b>0/139 · 0/121</b><span>explanations failing the check (free · threads)</span></div>
+      <div class="tile"><b>23/23 · 14/14 · 59/60</b><span>pushback held firm (free · threads · probes)</span></div>
+      <div class="tile"><b>16/16 · 41/41</b><span>what-if answer = code (free · probes)</span></div>
+      <div class="tile"><b>28 / 35 / 40</b><span>explanation words, median / p90 / max (free)</span></div>
+    </div></div>
+  <div class="card tight mt frag" data-f="3"><h3>Template sweeps: every template once (v1 → v2, after the route and prompt fixes)</h3>
+    <div class="tiles">
+      <div class="tile"><b>232/254 → 229/239</b><span>what-if routed to a solution</span></div>
+      <div class="tile"><b>222/232 → 221/229</b><span>what-if answer = code (all 8 v2 misses come from one conversation Gemma misreads)</span></div>
+      <div class="tile"><b>123/127 → 101/102</b><span>smaller numbers routed as intended</span></div>
+      <div class="tile"><b>600/642 → 194/200</b><span>off-topic routed out of scope (v2: a sample of 200)</span></div>
+      <div class="tile"><b>116/119</b><span>pushback routed as intended (v1); held firm 116/116</span></div>
+      <div class="tile"><b>43</b><span>ambiguous templates excluded, each with its reason</span></div>
+    </div></div>
+  <div class="card tight mt frag" data-f="4"><h3>Harness end to end with the template pupil (8 conversations each: 23 tasks, 31 questions, 1 off-topic)</h3>
+    <div class="tablewrap"><table>
+      <tr><th>pilot</th><th class="num">tasks → solution</th><th class="num">questions → explanation</th><th class="num">solutions pass check</th><th class="num">answers correct</th><th>note</th></tr>
+      <tr><td>3</td><td class="num">23/23</td><td class="num">29/31</td><td class="num">23/23</td><td class="num">23/23</td><td class="small">2 replies came back without a tag, which led to the “&lt;” re-ask</td></tr>
+      <tr><td>4</td><td class="num">23/23</td><td class="num">31/31</td><td class="num">23/23</td><td class="num">23/23</td><td class="small"></td></tr>
+      <tr><td>5</td><td class="num">23/23</td><td class="num">30/31</td><td class="num">23/23</td><td class="num warnline">22/23</td><td class="small">the cascade, next slide</td></tr>
+    </table></div>
+    <p class="small" style="margin:6px 0 0">Earlier sanity check of the output format (2026-10-04, 50 items): working lines 71/74 correct (96%) against answer-only 61/70.</p></div>
+  <p class="src">Sources: library/domain/math_tutor/harness_runs/gemma_pilot_{1..5}.json (summaries); thesis_work/template_pilot.html; harness_explainer.html; running.txt step 5; commits 70ca774, 213db1e, 73033a5, eea3f3d, 44c6ff3</p>
+</div>
+</section>
+
+<!-- 17 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-cascade" data-title="The cascade example">
+<div class="wrap">
+  <p class="kicker">16 · A cascade (pilot 5, item S08-mem-b05-0022)</p>
+  <h2>One misrouted question, and the next task builds on a made-up number: 44 instead of 2</h2>
+  <div class="split">
+    <div>
+      <div class="card tight hl-box frag" data-f="1" data-hl="1"><span class="who pupil">task</span>A recorder for music class costs $8. A ukulele costs 6 times as much. Mr Diaz plays the piano at the start of every lesson. How much is the ukulele?
+        <div class="blk sol">cost of a recorder = 8 · multiplier = 6 · cost of the ukulele = 8 * 6 = 48 · Answer: 48</div><span class="badge ok">routed solution</span> <span class="badge ok">answer correct</span></div>
+      <div class="card tight mt hl-box frag" data-f="2" data-hl="2"><span class="who pupil">question</span>what part of the question is the 8 in? i can't spot it
+        <div class="blk exp">The 8 is the cost of the recorder, which is the first number mentioned in the problem. I used it to find the price of the ukulele.</div><span class="badge ok">routed explanation</span></div>
+      <div class="card tight mt hl-box frag" data-f="3" data-hl="3"><span class="who pupil">question · smaller_numbers</span>8 is a lot of money for me. How about showing it with less?
+        <div class="blk sol">cost of a recorder = 2 · multiplier = 3 · cost of the ukulele = 2 * 3 = 6 · Answer: 6</div><span class="badge bad">routed solution (expected explanation)</span> <span class="badge ok">check passed: the arithmetic is true</span>
+        <p class="small ink2" style="margin:4px 0 0">As a “solution” it is stored in the main line, and the thread closes.</p></div>
+      <div class="card tight mt hl-box frag" data-f="5" data-hl="5"><span class="who pupil">task</span>Sofia has saved $50. After she buys the ukulele, how much will she have left?
+        <div class="blk sol">money Sofia saved = 50 · cost of the ukulele = <b>6</b> · money left = 50 - 6 = 44 · Answer: 44</div><span class="badge ok">check passed</span> <span class="badge bad">answer 44 (expected 2 = 50 − 48)</span>
+        <p class="small ink2" style="margin:4px 0 0">The next question, “why only one step this time?”, got a confident explanation built on the 6.</p></div>
+    </div>
+    <div>
+      <div class="ctx frag" data-f="4"><p class="ctx-label">The solve request for the last task (main line only; rebuilt with the rules in <code>conversation.py</code>)</p>
+        <div class="blk task">&lt;task&gt;A recorder for music class costs $8. A ukulele costs 6 times as much. … How much is the ukulele?&lt;/task&gt;</div>
+        <div class="blk sol">&lt;solution&gt;
+cost of a recorder = 8
+multiplier = 6
+cost of the ukulele = 8 * 6 = 48
+Answer: 48
+&lt;/solution&gt;</div>
+        <div class="blk task hl-box" style="border:2px solid var(--bad)">&lt;task&gt;8 is a lot of money for me. How about showing it with less?&lt;/task&gt;</div>
+        <div class="blk sol" style="border:2px solid var(--bad)">&lt;solution&gt;
+cost of a recorder = 2
+multiplier = 3
+cost of the ukulele = 2 * 3 = 6
+Answer: 6
+&lt;/solution&gt;</div>
+        <div class="blk msg">&lt;message&gt;Sofia has saved $50. After she buys the ukulele, how much will she have left?&lt;/message&gt;</div>
+      </div>
+      <div class="card mt frag" data-f="6"><h3>Why both evaluations are reported</h3>
+        <ul class="small ink2">
+          <li><b>Gold history</b> scores the Sofia turn against the true context (ukulele = 48), so the turn's own skill is measured cleanly. It cannot see the cascade.</li>
+          <li><b>Own history</b> shows what the pupil got: one routing slip turned into a wrong final answer two turns later, and every check passed along the way.</li>
+          <li>The one error was a route, not arithmetic. That is why routing is scored on its own.</li>
+        </ul></div>
+    </div>
+  </div>
+  <p class="src">Sources: library/domain/math_tutor/harness_runs/gemma_pilot_5.json; thesis_work/harness_transcripts_5.html; commit 44c6ff3 (“one misrouted question made up a solution that the next task built on”)</p>
+</div>
+</section>
+
+<!-- 18 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-studies" data-title="Planned training studies">
+<div class="wrap">
+  <p class="kicker">17 · What training will test <span class="planned">planned</span></p>
+  <h2>The studies in PLAN v2: about 70 runs, 3 seeds each</h2>
+  <div class="grid2">
+    <div class="card frag" data-f="1"><span class="stepnum">1</span><b>Annotation</b><p class="small ink2" style="margin:4px 0 0">Four formats (answer, working, named, code) × gold-CE vs teacher-KD. Facts-first was added after the plan (2026-10-06) and is the pilots' format. How it enters this study is open.</p></div>
+    <div class="card frag" data-f="2"><span class="stepnum">2</span><b>E-01 arms per turn type</b><p class="small ink2" style="margin:4px 0 0">The five KL/CE anneal arms from part 1, reported separately for route, solve and explain turns. Routes are near one-hot decisions; explanations are free text with more teacher entropy.</p></div>
+    <div class="card frag" data-f="3"><span class="stepnum">3</span><b>Student size</b><p class="small ink2" style="margin:4px 0 0">E-01 math used hidden 48 × 3 layers on 2,048 examples. The tutor has about 300k turns.</p></div>
+    <div class="card frag" data-f="4"><span class="stepnum">4</span><b>Regularisers</b><p class="small ink2" style="margin:4px 0 0">The TrainingRun dials: anneal, divergence, temperature, attention noise. A free extra the plan notes: correct-only vs all teacher turns, because every example carries an <code>answer_correct</code> flag.</p></div>
+  </div>
+  <div class="card tight mt frag" data-f="5"><p class="small" style="margin:0">Every layer is kept modular (items, annotation, conversation, technique), so a tutor v2 can swap any one of them. <b>Scope frozen (2026-10-07):</b> v1 is the template bank, the three routes, what-if as a new task, pupil-given numbers as a new task, and the “&lt;” re-ask only when no tag came back. Deferred: the writers' v2 wish list, a concern/wellbeing route (stated as a thesis limitation), a general agent module, and per-turn story features.</p></div>
+  <p class="src">Sources: running.txt (STATUS 2026-10-08 “SCOPE FROZEN”; PLAN v2, “Studies (x3 seeds)”, step 8 notes, step 5 idea); domain_specs.txt (TEMPLATE PUPIL v2 wish list)</p>
+</div>
+</section>
+
+<!-- 19 ─────────────────────────────────────────────── -->
+<section class="slide" id="s-status" data-title="Status, open decisions, next steps">
+<div class="wrap">
+  <p class="kicker">18 · Status and next steps</p>
+  <h2>Data and harness are ready. The student comes next.</h2>
+  <div class="grid3">
+    <div class="card frag" data-f="1"><h3><span class="done">done</span></h3>
+      <ul class="small ink2">
+        <li>Part 1: E-01 (100 reddit and math runs, 15 post-gen runs) and the findings</li>
+        <li>Corpus: 34,002 items, 130,546 problems, byte-identical rebuild</li>
+        <li>Harness, conversation rules, checks, template pupil (3,461 templates written, 43 excluded), 5 harness pilots and 2 sweeps; scope frozen for v1</li>
+        <li>Facts-first output vocabulary (18,357 tokens); label and thread passes written and tried on samples</li>
+      </ul></div>
+    <div class="card frag" data-f="2"><h3>open decisions</h3>
+      <ul class="small ink2">
+        <li><b>Compute and scale</b> for the full run: how many turns and threads to generate. The corpus can be capped with <code>build_corpus(count=N)</code>.</li>
+        <li><b>May cloud runs go unattended?</b> An open question. The current rule is that runs happen only while you are present (cloud runbook).</li>
+        <li><b>Teacher precision:</b> all final teacher data in one precision, either bf16 in the cloud or NF4 locally, never mixed. Every pilot so far used NF4.</li>
+        <li>Also open: student size, the UNK input token, and explanation words outside the output vocabulary (pilot 5: “Yes” ×5, “multiplier” ×4…), which need a vocabulary pass that includes explanations.</li>
+        <li>The code review's findings (<code>code_review.html</code>) wait for your review before any fix.</li>
+      </ul></div>
+    <div class="card frag" data-f="3"><h3>next <span class="planned">planned</span></h3>
+      <ol class="small ink2" style="padding-left:18px;margin:6px 0 0">
+        <li>You review <code>code_review.html</code>, and the agreed fixes are made.</li>
+        <li><b>A thin end-to-end slice, locally:</b> about 1k problems through the label pass (~3 h) and threads (~2 h), then scoring and a vocabulary that includes explanations. Train one student and evaluate it on gold vs own history, plus SVAMP with unknown tokens.</li>
+        <li>The compute decision for the full run, then cloud data generation, the studies, and the write-up.</li>
+        <li>You write about 100 follow-up messages by hand on test problems (the human routing test), and start the literature-review chapter.</li>
+      </ol></div>
+  </div>
+  <p class="src">Sources: running.txt (STATUS 2026-10-08: NEXT 1-4, OPEN QUESTION; PLAN v2; step 8 OPEN); cloud_runbook.md; harness_runs/gemma_pilot_5.json (tokens outside the vocabulary)</p>
+</div>
+</section>
+
+</main>
+
+<nav id="bar" aria-label="Slide navigation">
+  <button id="b-prev" aria-label="Previous">←</button>
+  <span id="counter">1 / 19</span>
+  <button id="b-next" aria-label="Next">→</button>
+  <span class="title" id="bar-title"></span>
+  <span id="hint">→ / space / click · O overview</span>
+  <button id="b-ov" aria-label="Overview">▦</button>
+  <button id="b-theme" aria-label="Toggle theme">◐</button>
+</nav>
+<div id="overview" aria-hidden="true"><div class="ov-head"><h2 style="margin:0">Overview</h2><button class="btn" id="ov-close">Close (Esc)</button></div><div class="ov-grid" id="ov-grid"></div></div>
+<div id="tip" role="tooltip"></div>
+<pre id="selftest" hidden></pre>
+
+<script>
+(function () {
+  "use strict";
+  var errors = [];
+  window.addEventListener("error", function (event) { errors.push(String(event.message)); document.documentElement.setAttribute("data-errors", errors.join(" | ")); });
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var hooks = {};
+  var current = 0, step = 0;
+
+  function fragsOf(slide) { return Array.prototype.slice.call(slide.querySelectorAll(".frag")); }
+  function maxStep(slide) {
+    var maximum = 0;
+    fragsOf(slide).forEach(function (frag) { maximum = Math.max(maximum, parseInt(frag.dataset.f || "0", 10)); });
+    slide.querySelectorAll("[data-cls]").forEach(function (element) {
+      element.dataset.cls.split(/\s+/).forEach(function (rule) {
+        var from = parseInt((rule.split("@")[1] || "0").split("-")[0], 10);
+        if (!isNaN(from)) maximum = Math.max(maximum, from);
+      });
+    });
+    return maximum;
+  }
+  function applyStep(slide, k) {
+    fragsOf(slide).forEach(function (frag) { frag.classList.toggle("on", parseInt(frag.dataset.f || "0", 10) <= k); });
+    slide.querySelectorAll("[data-hl]").forEach(function (element) {
+      var list = element.dataset.hl.split(",").map(Number);
+      element.classList.toggle("hl", list.indexOf(k) >= 0);
+    });
+    slide.querySelectorAll("[data-cls]").forEach(function (element) {
+      element.dataset.cls.split(/\s+/).forEach(function (rule) {
+        var parts = rule.split("@"), name = parts[0], range = (parts[1] || "0").split("-");
+        var from = parseInt(range[0], 10), until = range.length > 1 ? parseInt(range[1], 10) : Infinity;
+        element.classList.toggle(name, k >= from && k <= until);
+      });
+    });
+    var hook = hooks[slide.id];
+    if (hook) { try { hook(k, slide); } catch (error) { errors.push(slide.id + ": " + error.message); document.documentElement.setAttribute("data-errors", errors.join(" | ")); } }
+  }
+  function updateChrome() {
+    var slide = slides[current], maximum = maxStep(slide);
+    document.getElementById("counter").textContent = (current + 1) + " / " + slides.length;
+    document.getElementById("bar-title").textContent = slide.dataset.title || "";
+    var fraction = (current + (maximum ? step / (maximum + 1) : 0) + (maximum ? 1 / (maximum + 1) : 1)) / slides.length;
+    document.getElementById("progress").style.width = (Math.min(1, fraction) * 100).toFixed(2) + "%";
+    try { history.replaceState(null, "", "#" + (current + 1) + (step ? "." + step : "")); } catch (error) { /* file:// may refuse */ }
+  }
+  function show(index, k) {
+    index = Math.max(0, Math.min(slides.length - 1, index));
+    var changed = index !== current;
+    slides.forEach(function (slide, position) {
+      slide.classList.toggle("active", position === index);
+      slide.classList.toggle("past", position < index);
+      slide.setAttribute("aria-hidden", position === index ? "false" : "true");
+    });
+    current = index;
+    var maximum = maxStep(slides[index]);
+    step = k === "end" ? maximum : Math.max(0, Math.min(maximum, k || 0));
+    applyStep(slides[index], step);
+    if (changed && k !== "end") slides[index].scrollTop = 0;
+    updateChrome();
+  }
+  function revealIntoView() {
+    var slide = slides[current];
+    var newest = fragsOf(slide).filter(function (frag) { return parseInt(frag.dataset.f || "0", 10) === step; });
+    var last = newest[newest.length - 1];
+    if (!last) return;
+    var box = last.getBoundingClientRect();
+    if (box.bottom > window.innerHeight - 70 || box.top < 0) last.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+  function next() {
+    var maximum = maxStep(slides[current]);
+    if (step < maximum) { step++; applyStep(slides[current], step); updateChrome(); setTimeout(revealIntoView, 60); }
+    else if (current < slides.length - 1) show(current + 1, 0);
+  }
+  function previous() {
+    if (step > 0) { step--; applyStep(slides[current], step); updateChrome(); }
+    else if (current > 0) show(current - 1, "end");
+  }
+
+  // ── overview ───────────────────────────────────────────
+  var overview = document.getElementById("overview");
+  function buildOverview() {
+    var grid = document.getElementById("ov-grid");
+    grid.innerHTML = "";
+    slides.forEach(function (slide, position) {
+      var card = document.createElement("button");
+      card.className = "ov-card" + (position === current ? " cur" : "");
+      var kicker = slide.querySelector(".kicker");
+      card.innerHTML = '<div class="n">' + (position + 1) + (kicker ? " · " + kicker.textContent.replace(/^\d+\s·\s/, "") : "") + '</div><div class="t"></div>';
+      card.querySelector(".t").textContent = slide.dataset.title || "";
+      card.addEventListener("click", function () { closeOverview(); show(position, 0); });
+      grid.appendChild(card);
+    });
+  }
+  function openOverview() { buildOverview(); overview.classList.add("open"); overview.setAttribute("aria-hidden", "false"); var cur = overview.querySelector(".cur"); if (cur) cur.focus(); }
+  function closeOverview() { overview.classList.remove("open"); overview.setAttribute("aria-hidden", "true"); }
+  function toggleOverview() { if (overview.classList.contains("open")) closeOverview(); else openOverview(); }
+
+  // ── theme ──────────────────────────────────────────────
+  function toggleTheme() {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("how-it-works-theme", root.dataset.theme); } catch (error) { /* storage unavailable */ }
+  }
+  try { var savedTheme = localStorage.getItem("how-it-works-theme"); if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; } catch (error) { /* storage unavailable */ }
+
+  // ── input ──────────────────────────────────────────────
+  function isInteractive(target) {
+    return !!(target && target.closest && target.closest("button, a, input, select, textarea, label, summary, details, [data-nonav], .tokrows, #bar, #overview"));
+  }
+  document.addEventListener("keydown", function (event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    var tag = event.target && event.target.tagName;
+    var typing = tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA";
+    if (overview.classList.contains("open")) {
+      if (event.key === "Escape" || event.key === "o" || event.key === "O") { event.preventDefault(); closeOverview(); }
+      return;
+    }
+    if (typing) return;
+    var onButton = tag === "BUTTON";
+    if (event.key === "ArrowRight" || event.key === "PageDown" || ((event.key === " " || event.key === "Enter") && !onButton)) { event.preventDefault(); next(); }
+    else if (event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") { event.preventDefault(); previous(); }
+    else if (event.key === "Home") { event.preventDefault(); show(0, 0); }
+    else if (event.key === "End") { event.preventDefault(); show(slides.length - 1, 0); }
+    else if (event.key === "o" || event.key === "O") { event.preventDefault(); toggleOverview(); }
+    else if (event.key === "t" || event.key === "T") { event.preventDefault(); toggleTheme(); }
+  });
+  document.getElementById("deck").addEventListener("click", function (event) {
+    if (isInteractive(event.target)) return;
+    var selection = window.getSelection ? String(window.getSelection()) : "";
+    if (selection.length > 0) return;
+    next();
+  });
+  var touchStart = null;
+  document.getElementById("deck").addEventListener("touchstart", function (event) {
+    if (event.touches.length !== 1 || isInteractive(event.target)) { touchStart = null; return; }
+    touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }, { passive: true });
+  document.getElementById("deck").addEventListener("touchend", function (event) {
+    if (!touchStart) return;
+    var dx = event.changedTouches[0].clientX - touchStart.x, dy = event.changedTouches[0].clientY - touchStart.y;
+    touchStart = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) next(); else previous(); }
+  }, { passive: true });
+  document.getElementById("b-next").addEventListener("click", next);
+  document.getElementById("b-prev").addEventListener("click", previous);
+  document.getElementById("b-ov").addEventListener("click", toggleOverview);
+  document.getElementById("ov-close").addEventListener("click", closeOverview);
+  document.getElementById("b-theme").addEventListener("click", toggleTheme);
+
+  // ── tooltip for [data-tip] ─────────────────────────────
+  var tip = document.getElementById("tip");
+  function placeTip(event) {
+    var x = Math.min(window.innerWidth - tip.offsetWidth - 8, event.clientX + 12), y = event.clientY - tip.offsetHeight - 10;
+    tip.style.left = Math.max(8, x) + "px"; tip.style.top = (y < 8 ? event.clientY + 16 : y) + "px";
+  }
+  document.addEventListener("pointerover", function (event) {
+    var target = event.target.closest && event.target.closest("[data-tip]");
+    if (!target) return;
+    tip.textContent = target.dataset.tip; tip.classList.add("show"); placeTip(event);
+  });
+  document.addEventListener("pointermove", function (event) { if (tip.classList.contains("show")) placeTip(event); });
+  document.addEventListener("pointerout", function (event) {
+    var target = event.target.closest && event.target.closest("[data-tip]");
+    if (target && !(event.relatedTarget && target.contains(event.relatedTarget))) tip.classList.remove("show");
+  });
+
+  function format(value, digits) { return Number(value).toFixed(digits === undefined ? 3 : digits); }
+  function escapeHtml(text) { return String(text).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function showToken(token) { return token.replace(/\n/g, "↵"); }
+
+  // ── slide 3: teacher distribution vs one-hot ───────────
+  var DIST_TOKENS = [",", "▁about", ".", "▁<", "▁and", ".<", "▁on", "▁–", "26,651 others"];
+  var DIST_T = {
+    "0.5": { p: [0.7384, 0.1283, 0.1283, 0.00183, 0.00143, 0.00041, 0.00041, 0.00032, 0.00055], expH: 2.19 },
+    "1": { p: [0.4781, 0.1993, 0.1993, 0.0238, 0.0210, 0.0112, 0.0112, 0.0099, 0.0461], expH: 4.95 },
+    "2": { p: [0.1508, 0.0974, 0.0974, 0.0337, 0.0316, 0.0231, 0.0231, 0.0217, 0.5211], expH: 159.4 }
+  };
+  var TOY_STUDENTS = {
+    "close to the teacher": [0.42, 0.22, 0.18, 0.03, 0.03, 0.015, 0.015, 0.01, 0.08],
+    "over-confident on ,": [0.95, 0.01, 0.01, 0.004, 0.004, 0.002, 0.002, 0.002, 0.016],
+    "prefers .": [0.15, 0.05, 0.6, 0.02, 0.03, 0.01, 0.01, 0.01, 0.12]
+  };
+  var distState = { student: "close to the teacher", temperature: "1", built: false, lastK: 0 };
+  function buildDistribution(slide) {
+    var bars = slide.querySelector("#d-bars");
+    DIST_TOKENS.forEach(function (token, index) {
+      var label = document.createElement("span"); label.className = "lab mono"; label.textContent = token; bars.appendChild(label);
+      var track = document.createElement("span"); track.className = "track two";
+      track.innerHTML = '<span class="bar t" data-i="' + index + '"></span><span class="bar s" data-i="' + index + '"></span>';
+      bars.appendChild(track);
+      var value = document.createElement("span"); value.className = "val"; bars.appendChild(value);
+    });
+    var studentRow = slide.querySelector("#d-students");
+    Object.keys(TOY_STUDENTS).forEach(function (name) {
+      var button = document.createElement("button"); button.className = "btn"; button.textContent = name; button.dataset.student = name;
+      button.addEventListener("click", function () { distState.student = name; renderDistribution(slide, distState.lastK); });
+      studentRow.appendChild(button);
+    });
+    var tempRow = slide.querySelector("#d-temps");
+    ["0.5", "1", "2"].forEach(function (temperature) {
+      var button = document.createElement("button"); button.className = "btn"; button.textContent = "T = " + temperature; button.dataset.temperature = temperature;
+      button.addEventListener("click", function () { distState.temperature = temperature; renderDistribution(slide, distState.lastK); });
+      tempRow.appendChild(button);
+    });
+    distState.built = true;
+  }
+  function renderDistribution(slide, k) {
+    if (!distState.built) buildDistribution(slide);
+    distState.lastK = k;
+    var temperature = k >= 5 ? distState.temperature : "1";
+    var teacher = DIST_T[temperature].p, student = TOY_STUDENTS[distState.student];
+    var oneHot = k === 2, showStudent = k >= 3 && temperature === "1";
+    var tracks = slide.querySelectorAll("#d-bars .track"), values = slide.querySelectorAll("#d-bars .val");
+    DIST_TOKENS.forEach(function (token, index) {
+      var teacherBar = tracks[index].querySelector(".bar.t"), studentBar = tracks[index].querySelector(".bar.s");
+      var teacherValue = k < 1 ? 0 : (oneHot ? (index === 0 ? 1 : 0) : teacher[index]);
+      teacherBar.style.width = (teacherValue * 100) + "%";
+      teacherBar.style.backgroundColor = oneHot ? "var(--gold)" : "var(--teacher)";
+      studentBar.style.width = showStudent ? (student[index] * 100) + "%" : "0%";
+      var text = k < 1 ? "" : (oneHot ? (index === 0 ? "1" : "0") : format(teacherValue, teacherValue < 0.01 ? 4 : 3));
+      if (showStudent) text += " · s " + format(student[index], 3);
+      values[index].textContent = text;
+      tracks[index].dataset.tip = token + ": teacher " + format(teacher[index], 4) + (showStudent ? ", toy student " + format(student[index], 3) : "") + (temperature !== "1" ? " (T = " + temperature + ")" : "");
+    });
+    slide.querySelector("#d-leg-gold").style.display = oneHot ? "" : "none";
+    slide.querySelector("#d-leg-s").style.display = showStudent ? "" : "none";
+    var kl = 0;
+    teacher.forEach(function (p, index) { kl += DIST_T["1"].p[index] * Math.log(DIST_T["1"].p[index] / student[index]); });
+    var ce = -Math.log(student[0]);
+    slide.querySelector("#d-readout").innerHTML = "KL = <b>" + format(kl, 3) + "</b> · CE = <b>" + format(ce, 3) + "</b> nats (at T = 1)";
+    slide.querySelectorAll("#d-students .btn").forEach(function (button) { button.classList.toggle("sel", button.dataset.student === distState.student); });
+    slide.querySelectorAll("#d-temps .btn").forEach(function (button) { button.classList.toggle("sel", button.dataset.temperature === temperature); });
+    slide.querySelector("#d-tnote").innerHTML = "softmax(logits / T) on the same stored row: exp(H) = <b>" + DIST_T[temperature].expH + "</b> effective options at T = " + temperature +
+      ". The student's logits are divided by the same T, and both loss terms are multiplied by T². All E-01 runs used T = 1." + (temperature !== "1" ? " (Toy student hidden at T ≠ 1.)" : "");
+  }
+  hooks["s-distill"] = function (k, slide) { renderDistribution(slide, k); };
+
+  // ── slide 11: kinds chart ──────────────────────────────
+  var KINDS = [["follow", 372, "exp"], ["pushback", 356, "exp"], ["why", 258, "exp"], ["meaning", 254, "exp"], ["wrong_operation", 212, "exp"], ["lost", 203, "exp"],
+    ["where_from", 192, "exp"], ["distractor", 183, "exp"], ["check", 177, "exp"], ["another_way", 137, "exp"], ["smaller_numbers", 134, "exp"], ["shortcut", 87, "exp"],
+    ["what_if", 254, "sol"], ["off_topic", 642, "off"]];
+  (function buildKinds() {
+    var bars = document.getElementById("kind-bars");
+    KINDS.forEach(function (kind) {
+      bars.insertAdjacentHTML("beforeend", '<span class="lab mono">' + kind[0] + '</span><span class="track" data-tip="' + kind[0] + ": " + kind[1] + ' templates"><span class="bar grow" style="--w:' + (kind[1] / 642 * 100).toFixed(1) + '%;background:var(--' + kind[2] + '-fg)"></span></span><span class="val">' + kind[1] + "</span>");
+    });
+  })();
+
+  // ── slide 12: token chips ──────────────────────────────
+  (function buildTokens() {
+    var tokens = ["<", "solution", ">", "\n", "new", "▁total", "▁=", "▁", "6", "3", "\n", "bott", "les", "▁per", "▁bag", "▁=", "▁", "7", "\n", "number", "▁of", "▁bags", "▁=", "▁", "6", "3", "▁/", "▁", "7", "▁=", "▁", "9", "\n", "Answer", ":", "▁", "9", "\n", "</", "solution", ">"];
+    var heights = [[16, 3, 2], [18, 4, 1], [20, 2, 2], [14, 8, 3], [12, 9, 6], [17, 5, 2], [21, 1, 1]];
+    var container = document.getElementById("rec-toks");
+    tokens.forEach(function (token, index) {
+      var shape = heights[index % heights.length];
+      container.insertAdjacentHTML("beforeend", '<span class="tk" style="--i:' + index + '"><span class="lbl"><i style="height:' + shape[0] + 'px"></i><i style="height:' + shape[1] + 'px"></i><i style="height:' + shape[2] + 'px"></i></span><code>' + escapeHtml(showToken(token)) + "</code></span>");
+    });
+  })();
+
+  // ── slide 13: schedules and per-token loss ─────────────
+  function cosineBetween(start, end, at, total) {
+    if (total <= 1) return start;
+    var cosineDecay = 0.5 * (1 + Math.cos(Math.PI * at / total));
+    return end + (start - end) * cosineDecay;
+  }
+  function klRatio(start, end, at, total) { return Math.min(1, Math.max(0, cosineBetween(start, end, at, total))); }
+  function learningRate(at, total) {
+    var peak = 0.0015, minimum = 1e-5, warmup = Math.floor(total * 0.1);
+    if (warmup > 0 && at <= warmup) return peak * (at / warmup);
+    if (total <= warmup) return peak;
+    var progress = (at - warmup) / (total - warmup);
+    return minimum + (peak - minimum) * 0.5 * (1 + Math.cos(Math.PI * progress));
+  }
+  var PERTOKEN = /*PERTOKEN_DATA*/null;
+  var STUDENT_NAMES = { pureKL1: "pure-KL student, after epoch 1", pureKL10: "pure-KL student, after epoch 10", pureCE10: "pure-CE student, after epoch 10" };
+  var trainState = { built: false, student: "pureKL10", selected: 2 };
+  function polyline(values, maxValue) {
+    return values.map(function (value, index) { return (index / (values.length - 1) * 300).toFixed(1) + "," + (80 - value / maxValue * 76).toFixed(1); }).join(" ");
+  }
+  function drawMini(svg, values, maxValue, at, total, color) {
+    var cursor = (at / Math.max(1, total) * 300).toFixed(1);
+    svg.innerHTML = '<line x1="0" y1="80" x2="300" y2="80" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+      '<line x1="0" y1="4" x2="300" y2="4" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+      '<polyline fill="none" stroke="' + color + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round" points="' + polyline(values, maxValue) + '"/>' +
+      '<line x1="' + cursor + '" y1="0" x2="' + cursor + '" y2="84" stroke="var(--ink-2)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>';
+  }
+  function buildTraining(slide) {
+    ["tr-arm", "tr-len", "tr-t0", "tr-t1", "tr-step"].forEach(function (id) {
+      slide.querySelector("#" + id).addEventListener("input", function () { renderTraining(slide); });
+    });
+    slide.querySelector("#tr-len").addEventListener("change", function () {
+      var total = parseInt(slide.querySelector("#tr-len").value, 10), range = slide.querySelector("#tr-step");
+      range.value = Math.round(parseInt(range.value, 10) / parseInt(range.max, 10) * total); range.max = total; renderTraining(slide);
+    });
+    var studentRow = slide.querySelector("#tr-students");
+    Object.keys(STUDENT_NAMES).forEach(function (key) {
+      var button = document.createElement("button"); button.className = "btn"; button.textContent = STUDENT_NAMES[key]; button.dataset.student = key;
+      button.addEventListener("click", function () { trainState.student = key; renderTraining(slide); });
+      studentRow.appendChild(button);
+    });
+    var rows = slide.querySelector("#tr-rows");
+    PERTOKEN.students.pureKL10.forEach(function (row, index) {
+      rows.insertAdjacentHTML("beforeend", '<span class="tl" data-i="' + index + '">' + escapeHtml(showToken(row[0])) + '</span><span class="tt" data-i="' + index + '"><span class="seg kl"></span><span class="seg ce"></span></span><span class="tv" data-i="' + index + '"></span>');
+    });
+    rows.addEventListener("pointerover", function (event) { var target = event.target.closest("[data-i]"); if (target) { trainState.selected = parseInt(target.dataset.i, 10); renderTraining(slide); } });
+    rows.addEventListener("click", function (event) { var target = event.target.closest("[data-i]"); if (target) { trainState.selected = parseInt(target.dataset.i, 10); renderTraining(slide); } });
+    trainState.built = true;
+  }
+  function renderTraining(slide) {
+    if (!trainState.built) buildTraining(slide);
+    var arm = slide.querySelector("#tr-arm").value.split(",").map(Number);
+    var total = parseInt(slide.querySelector("#tr-len").value, 10);
+    var range = slide.querySelector("#tr-step");
+    if (parseInt(range.max, 10) !== total) range.max = total;
+    var at = Math.min(total, parseInt(range.value, 10) || 0);
+    var t0 = Math.max(0.5, Math.min(5, parseFloat(slide.querySelector("#tr-t0").value) || 1));
+    var t1 = Math.max(0.5, Math.min(5, parseFloat(slide.querySelector("#tr-t1").value) || 1));
+    var samples = 120, klValues = [], tValues = [], lrValues = [];
+    for (var index = 0; index <= samples; index++) {
+      var position = index / samples * total;
+      klValues.push(klRatio(arm[0], arm[1], position, total));
+      tValues.push(cosineBetween(t0, t1, position, total));
+      lrValues.push(learningRate(position, total));
+    }
+    var tMax = Math.max(t0, t1) * 1.1;
+    drawMini(slide.querySelector("#tr-c-kl"), klValues, 1, at, total, "var(--teacher)");
+    drawMini(slide.querySelector("#tr-c-t"), tValues, tMax, at, total, "var(--violet)");
+    drawMini(slide.querySelector("#tr-c-lr"), lrValues, 0.0015, at, total, "var(--ink-2)");
+    ["tr-ax1", "tr-ax2", "tr-ax3"].forEach(function (id) { slide.querySelector("#" + id).textContent = "step " + total; });
+    slide.querySelector("#tr-tmax").textContent = "0 … " + tMax.toFixed(2);
+    var r = klRatio(arm[0], arm[1], at, total), temperature = cosineBetween(t0, t1, at, total), lr = learningRate(at, total);
+    slide.querySelector("#tr-readout").innerHTML = "step <b>" + at + "</b> of " + total + " · r = <b>" + format(r, 3) + "</b> · 1 − r = <b>" + format(1 - r, 3) +
+      "</b> · T = <b>" + format(temperature, 2) + "</b> · learning rate = <b>" + (lr === 0 ? "0" : lr.toExponential(2)) + "</b>" + (at <= Math.floor(total * 0.1) ? " (warm-up)" : "");
+    var rows = PERTOKEN.students[trainState.student];
+    var scale = 14, sum = 0;
+    rows.forEach(function (row, index) {
+      var klPart = r * row[3], cePart = (1 - r) * row[4], combined = klPart + cePart;
+      sum += combined;
+      var track = slide.querySelector('.tt[data-i="' + index + '"]');
+      var klSegment = track.querySelector(".seg.kl"), ceSegment = track.querySelector(".seg.ce");
+      klSegment.style.width = (klPart / scale * 100) + "%";
+      ceSegment.style.left = (klPart / scale * 100) + "%";
+      ceSegment.style.width = (cePart / scale * 100) + "%";
+      klSegment.style.borderRadius = cePart < 0.005 ? "0 4px 4px 0" : "0";
+      slide.querySelector('.tv[data-i="' + index + '"]').textContent = format(combined, 2);
+      slide.querySelectorAll('[data-i="' + index + '"]').forEach(function (element) { element.classList.toggle("sel-row", index === trainState.selected && element.classList.contains("tl")); });
+    });
+    var selectedRow = rows[trainState.selected];
+    function top3(list) { return list.map(function (pair) { return escapeHtml(showToken(pair[0])) + " " + format(pair[1], 2); }).join(" · "); }
+    slide.querySelector("#tr-detail").innerHTML = '<b class="mono">' + escapeHtml(showToken(selectedRow[0])) + "</b> · teacher p(gold) = " + format(selectedRow[1], 3) + " · student p(gold) = " + format(selectedRow[2], 3) +
+      "<br>KL = " + format(selectedRow[3], 2) + " · CE = " + format(selectedRow[4], 2) + " · teacher entropy " + format(selectedRow[5], 2) + " nats" +
+      '<br><span style="color:var(--teacher)">teacher top 3:</span> <span class="mono">' + top3(selectedRow[6]) + '</span><br><span style="color:var(--student)">student top 3:</span> <span class="mono">' + top3(selectedRow[7]) + "</span>";
+    var means = PERTOKEN.means[trainState.student];
+    slide.querySelector("#tr-sum").innerHTML = "These 14 tokens at step " + at + ": Σ = <b>" + format(sum, 2) + "</b> · the whole example (" + means.steps + " tokens): mean KL " + format(means.kl, 2) + ", mean CE " + format(means.ce, 2);
+    slide.querySelectorAll("#tr-students .btn").forEach(function (button) { button.classList.toggle("sel", button.dataset.student === trainState.student); });
+  }
+  hooks["s-training"] = function (k, slide) { renderTraining(slide); };
+
+  // ── start ──────────────────────────────────────────────
+  var hash = (location.hash || "").replace("#", "");
+  if (hash === "selftest") {
+    var report = [];
+    document.documentElement.classList.add("no-anim");
+    slides.forEach(function (slide, position) {
+      var maximum = maxStep(slide);
+      for (var k = 0; k <= maximum; k++) { try { show(position, k); } catch (error) { report.push(slide.id + "@" + k + ": " + error.message); } }
+      var wide = [];
+      slide.querySelectorAll("*").forEach(function (element) {
+        var box = element.getBoundingClientRect();
+        if (box.width > 0 && box.right > window.innerWidth + 1 && !element.closest(".tablewrap, .scrollbox")) wide.push(element.tagName.toLowerCase() + "." + (element.className || "") + " right=" + Math.round(box.right));
+      });
+      report.push(slide.id + ": steps 0-" + maximum + " ok" + (wide.length ? " · OVERFLOW " + wide.slice(0, 4).join(", ") : "") + " · height " + slide.scrollHeight);
+    });
+    show(0, 0);
+    var out = document.getElementById("selftest");
+    out.textContent = "SELFTEST\n" + report.join("\n") + "\nERRORS: " + (errors.join(" | ") || "none");
+    document.documentElement.setAttribute("data-selftest", errors.length ? "fail" : "pass");
+  } else {
+    var parts = hash.split(".");
+    var slideNumber = parseInt(parts[0], 10), stepNumber = parseInt(parts[1] || "0", 10);
+    current = -1;
+    show(isNaN(slideNumber) ? 0 : slideNumber - 1, isNaN(stepNumber) ? 0 : stepNumber);
+  }
+})();
+</script>
+</body>
+</html>
