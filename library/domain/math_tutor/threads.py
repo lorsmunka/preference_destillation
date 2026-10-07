@@ -7,6 +7,8 @@ One thread per kept item, on one of its turns (seeded), 1-3 questions deep:
   pupil   Gemma playing a curious pupil, sampled, one question of a given kind about the
           tutor's last solution (depth 1) or last explanation (depth 2-3)
   tutor   the agentic domain's own teacher prompt on the explain context, greedy
+  check   an explanation that is not routed as one, or takes the solution back
+          (checks.check_explanation), ends the thread; it is stored with its "check"
 
     python -m library.domain.math_tutor.threads     # GPU; resumable (done items skipped)
 
@@ -18,6 +20,7 @@ import random
 from pathlib import Path
 from typing import Dict, List
 
+from .checks import check_explanation
 from .conversation import Conversation
 from .labels import read_labels
 
@@ -29,7 +32,7 @@ BATCH = 16
 
 QUESTION_KINDS = {
     "why": "why the tutor did one particular step (for example: why multiply here, why take that away)",
-    "meaning": "what one particular number in the working stands for",
+    "meaning": "what one particular number in the working stands for: say what you guess it is, in the story's words, and ask if that is right",
     "another way": "whether the step could be done another way",
     "lost": "that they do not understand one particular step, asking for it to be explained more simply",
     "check": "whether one particular line is really right, or how the tutor knows",
@@ -57,7 +60,7 @@ PUPIL_PROMPT = """You are a primary-school pupil working with your maths tutor. 
 {conversation}
 
 Ask your tutor ONE question about {about}: {kind}.
-Say which step you mean by what it is about in the story (the buses, the stickers, the money left...), not only by its numbers.
+Say which step you mean by what it is about in the story, not only by its numbers.
 Ask it the way a child like you would, in your own words. Start your question with "{opening}" if that fits, otherwise start your own way.
 Write only the question."""
 
@@ -104,7 +107,7 @@ def run_threads(handler, domain, items: List[Dict] = None) -> int:
         plan["thread"] = []
     THREADS_PATH.parent.mkdir(parents=True, exist_ok=True)
     for depth in range(max(len(plan["kinds"]) for plan in plans) if plans else 0):
-        active = [plan for plan in plans if len(plan["kinds"]) > depth]
+        active = [plan for plan in plans if len(plan["kinds"]) > depth and not plan.get("stopped")]
         for start in range(0, len(active), BATCH):
             batch = active[start:start + BATCH]
             pupil_prompts = [PUPIL_PROMPT.format(
@@ -121,10 +124,15 @@ def run_threads(handler, domain, items: List[Dict] = None) -> int:
                                              stop_strings=["</explanation>", "</solution>"])
             for plan, question, answer in zip(batch, questions, answers):
                 explanation = answer.replace("<explanation>", "").split("</explanation>")[0].strip()
+                routed = ("explanation" if answer.startswith("<explanation>") else
+                          "solution" if answer.startswith("<solution>") else "neither")
+                check = check_explanation(explanation) if routed == "explanation" else f"routed to {routed}"
                 plan["thread"].append({"question": question, "kind": plan["kinds"][depth], "explanation": explanation,
-                                       "routed": "explanation" if answer.startswith("<explanation>") else
-                                       ("solution" if answer.startswith("<solution>") else "neither")})
-                plan["conversation"].add_explanation(question, explanation)
+                                       "routed": routed, "check": check})
+                if check:   # kept for analysis, but the thread ends here: no turn builds on it
+                    plan["stopped"] = True
+                else:
+                    plan["conversation"].add_explanation(question, explanation)
     with open(THREADS_PATH, "a", encoding="utf-8") as out:
         for plan in plans:
             out.write(json.dumps({"item_id": plan["item"]["id"], "turn": plan["turn"], "thread": plan["thread"]},

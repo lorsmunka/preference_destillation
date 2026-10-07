@@ -6,6 +6,9 @@
                says exactly what the solve() trace computed (check_against_trace)
   analysis     how teacher-written solutions relate to the function (same numbers or not)
 
+Explanations get their own check (check_explanation): they must not take a checked solution
+back, as a tutor led on by a question about an unused detail does ("I missed the hayrides").
+
 A facts-first solution block:
 
     <solution>
@@ -130,6 +133,22 @@ def check_lines(block: str) -> Optional[str]:
             return "Answer line before the end"
         if line.kind == "calculation" and not arithmetic_true(line):
             return f"arithmetic does not hold: {line.text!r}"
+    return None
+
+
+CONCESSION = re.compile(
+    r"\b(I|we) (missed|forgot|made a mistake|made an error|got it wrong|was wrong|were wrong|should have)\b"
+    r"|\bmy (mistake|error)\b|\bsorry\b|\blet me (fix|correct|redo)\b", re.IGNORECASE)
+
+
+def check_explanation(text: str) -> Optional[str]:
+    """None if the explanation is usable: not empty, and it does not say the checked solution
+    was wrong (that would teach the student to give in to a leading question)."""
+    if not text.strip():
+        return "empty explanation"
+    concession = CONCESSION.search(text)
+    if concession:
+        return f"takes back the checked solution: {concession.group(0)!r}"
     return None
 
 

@@ -8,6 +8,8 @@ Parts, each replaceable on its own:
                  a follow-up task closes the side thread of follow-up questions.
   checker        a function block -> problem or None (checks.check_lines: well formed, every
                  calculation true). A failed solution is asked for once more.
+  explanation_checker  the same for an explanation (checks.check_explanation: it must not take
+                 a checked solution back). A failed explanation is asked for once more.
   pupil          ScriptedPupil plays an item: its problem, then its follow-up tasks, with
                  follow-up questions in between (written by Gemma playing a pupil).
 
@@ -31,7 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
-from .checks import check_lines, complete_results
+from .checks import check_explanation, check_lines, complete_results
 from .conversation import Conversation
 from .threads import OPENINGS, PERSONAS, PUPIL_PROMPT, QUESTION_KINDS
 
@@ -109,8 +111,9 @@ class ScriptedPupil:
 class TutorSession:
     """One conversation: the scripted pupil's events, driven through the agent turn above."""
 
-    def __init__(self, pupil: ScriptedPupil, checker: Callable[[str], Optional[str]] = check_lines, retries: int = 1):
-        self.pupil, self.checker, self.retries = pupil, checker, retries
+    def __init__(self, pupil: ScriptedPupil, checker: Callable[[str], Optional[str]] = check_lines,
+                 explanation_checker: Callable[[str], Optional[str]] = check_explanation, retries: int = 1):
+        self.pupil, self.checker, self.explanation_checker, self.retries = pupil, checker, explanation_checker, retries
         self.conversation = Conversation()
         self.transcript: List[Dict] = []
         self.event_index = 0
@@ -173,8 +176,15 @@ class TutorSession:
             self.conversation.add_solution(turn["message"], body)
             self.finish_turn()
         elif request.kind == "explanation":
+            turn["attempts"] += 1
             explanation = text.replace("</explanation>", "").strip()
-            turn.update(output=EXPLANATION_PREFIX + text)
+            problem = self.explanation_checker(explanation)
+            if problem and turn["attempts"] <= self.retries:
+                turn.setdefault("rejected", []).append({"output": EXPLANATION_PREFIX + text, "problem": problem})
+                self.pending = Request("explanation", request.context, prefix=EXPLANATION_PREFIX,
+                                       stop=["</explanation>"], temperature=0.7)
+                return
+            turn.update(output=EXPLANATION_PREFIX + text, check=problem)
             self.conversation.add_explanation(turn["message"], explanation)
             self.finish_turn()
 
@@ -204,6 +214,8 @@ def summarise(sessions: List[TutorSession], tokenizer=None, allowed_tokens=None)
         "question_routed_explanation": sum(turn.get("route") == "explanation" for turn in questions),
         "solutions_pass_check": sum(turn.get("check") is None for turn in tasks if "check" in turn),
         "solutions_needed_retry": sum(bool(turn.get("rejected")) for turn in tasks),
+        "explanations_pass_check": sum(turn.get("check") is None for turn in questions if turn.get("route") == "explanation"),
+        "explanations_needed_retry": sum(bool(turn.get("rejected")) for turn in questions),
         "answers_correct": sum(bool(turn.get("answer_correct")) for turn in tasks),
         "conversations_all_correct": sum(all(t.get("answer_correct") for t in s.transcript if t["event"] == "task") for s in sessions),
         "question_kinds": dict(Counter(turn["kind"] for turn in questions)),
@@ -306,6 +318,8 @@ def transcript_page(record: Dict) -> str:
                     meta.append('<span class="badge warn">second try</span>')
             else:
                 meta.append(f'<span class="chip">{html.escape(turn["kind"])} / {html.escape(turn["persona"])}</span>')
+                if turn.get("check") or turn.get("rejected"):
+                    meta.append(badge(turn.get("check") is None, "second try", f"check: {turn.get('check')}"))
             kind = "task" if turn["event"] == "task" else "question"
             rejected = "".join(f'<details class="rejected"><summary>first try, rejected: {html.escape(r["problem"])}</summary>'
                                f'<pre>{html.escape(r["output"])}</pre></details>' for r in turn.get("rejected", []))

@@ -137,8 +137,8 @@ def thread_turns(item: Dict, annotation: str, thread_record: Dict) -> Iterator[D
     base = {"annotation": annotation, "item_id": item["id"], "family": item["family"], "turn": turn,
             "slice": item["slice"], "problem_shape": item["problem_shape"], "split": item["split"]}
     for depth, entry in enumerate(thread_record["thread"]):
-        if entry["routed"] != "explanation" or not entry["explanation"]:
-            break   # the tutor did not explain: the thread ends here
+        if entry["routed"] != "explanation" or not entry["explanation"] or entry.get("check"):
+            break   # the tutor did not explain, or took its solution back: the thread ends here
         yield {**base, "text": conversation.explain_context(entry["question"]),
                "target": explanation_target(entry["explanation"]), "turn_type": "explain",
                "depth": depth + 1, "question_kind": entry["kind"], "teacher": "forced"}
