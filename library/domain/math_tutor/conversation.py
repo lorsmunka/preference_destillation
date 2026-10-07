@@ -30,8 +30,17 @@ from typing import Dict, Iterator, List, Optional, Tuple
 
 from .annotations import NEEDS_STORY_NAMES, render
 
-SOLUTION, EXPLANATION = "<solution>", "<explanation>"
+SOLUTION, EXPLANATION, OUT_OF_SCOPE = "<solution>", "<explanation>", "<out_of_scope>"
 CLOSING = {SOLUTION: "</solution>", EXPLANATION: "</explanation>"}
+ROUTES = ("solution", "explanation", "out_of_scope")   # <out_of_scope> is only a tag: the harness replies
+
+
+def parse_route(text: str) -> str:
+    """The route from the first tag the model wrote (anything before it, such as an empty
+    thought preamble, is ignored); "unclear" if there is none."""
+    positions = {route: text.find(f"<{route}") for route in ROUTES}
+    found = {route: position for route, position in positions.items() if position >= 0}
+    return min(found, key=found.get) if found else "unclear"
 
 
 def block(tag: str, text: str, multiline: bool = False) -> str:
@@ -123,25 +132,44 @@ def usable(item: Dict, annotation: str) -> bool:
 
 
 def thread_turns(item: Dict, annotation: str, thread_record: Dict) -> Iterator[Dict]:
-    """The explain records of one thread, and the route record that follows it: the next
+    """The records of one thread (threads.py), and the route record that follows it: the next
     task arriving while the thread is still open. Explanations are the teacher's own greedy
     text from the thread pass, scored again in the forced mode (the same logits generation
     would give, at an eighth of the cost); a route record's target is only the opening tag
-    (the solution itself is learned from the clean-history solve record)."""
-    solutions = render(item, annotation)
-    tasks = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
+    (the solution itself is learned from the clean-history solve record). An off-topic
+    message gives a route record with the target <out_of_scope> and leaves the context as it
+    was; a what-if gives a route record (if a thread is open) and a solve record whose target
+    is the facts-first label carried over to the new number (facts annotation only), and ends
+    the thread."""
     turn = thread_record["turn"]
+    solutions = render(item, annotation, turns=turn + 1)
+    tasks = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
     conversation = Conversation()
     for earlier in range(turn + 1):
         conversation.add_solution(tasks[earlier], solutions[earlier])
     base = {"annotation": annotation, "item_id": item["id"], "family": item["family"], "turn": turn,
             "slice": item["slice"], "problem_shape": item["problem_shape"], "split": item["split"]}
-    for depth, entry in enumerate(thread_record["thread"]):
+    for entry in thread_record["thread"]:
+        route = entry.get("route", "explanation")
+        if route == "out_of_scope":   # only the tag is learned; the message never enters the context
+            yield {**base, "text": conversation.route_context(entry["question"]), "target": OUT_OF_SCOPE,
+                   "turn_type": "route", "answer": None, "question_kind": entry["kind"], "teacher": "forced"}
+            continue
+        if route == "solution":   # a what-if: a new calculation, solved from the clean history
+            if not entry.get("target") or annotation != "facts":
+                break
+            if conversation.thread:
+                yield {**base, "text": conversation.route_context(entry["question"]), "target": SOLUTION,
+                       "turn_type": "route", "answer": None, "question_kind": entry["kind"], "teacher": "forced"}
+            yield {**base, "text": conversation.solve_context(entry["question"]), "target": entry["target"],
+                   "turn_type": "solve", "answer": entry["answer"], "origin": "what_if", "teacher": "forced"}
+            conversation.add_solution(entry["question"], entry["target"].replace("<solution>", "").replace("</solution>", "").strip())
+            break
         if entry["routed"] != "explanation" or not entry["explanation"] or entry.get("check"):
             break   # the tutor did not explain, or took its solution back: the thread ends here
         yield {**base, "text": conversation.explain_context(entry["question"]),
                "target": explanation_target(entry["explanation"]), "turn_type": "explain",
-               "depth": depth + 1, "question_kind": entry["kind"], "teacher": "forced"}
+               "depth": len(conversation.thread) + 1, "question_kind": entry["kind"], "teacher": "forced"}
         conversation.add_explanation(entry["question"], entry["explanation"])
     if turn + 1 < len(tasks) and conversation.thread:
         yield {**base, "text": conversation.route_context(tasks[turn + 1]), "target": SOLUTION,

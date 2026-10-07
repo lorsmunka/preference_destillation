@@ -1,14 +1,22 @@
-"""Explanation threads: follow-up questions (the pupil asks about a step) and the tutor's
-explanations; follow-up tasks are the items' own follow-ups. A helper pass on the
-GPU writes them as text; the data generation then turns every explanation into a training
-turn with the teacher's logits (greedy, so it reproduces the same text).
+"""Explanation threads for the training corpus: the pupil's follow-up messages after a solution,
+and the tutor's replies. The messages come from the template bank (questions.py), filled in from
+the turn's verified facts-first solution; Gemma writes only the explanations. Follow-up tasks are
+the items' own follow-ups.
 
-One thread per kept item, on one of its turns (seeded), 1-3 questions deep:
-  pupil   Gemma playing a curious pupil, sampled, one question of a given kind about the
-          tutor's last solution (depth 1) or last explanation (depth 2-3)
-  tutor   the agentic domain's own teacher prompt on the explain context, greedy
-  check   an explanation that is not routed as one, or takes the solution back
-          (checks.check_explanation), ends the thread; it is stored with its "check"
+One thread per item, on one of its turns (seeded), 1-3 messages deep; each message after the
+first relates to the one before (the same step, a number it used, the step that used its result)
+or is a general follow-up. Per message route:
+
+  explanation   Gemma explains (greedy, the agentic teacher prompt); the reply must route to an
+                explanation and pass checks.check_explanation, or the thread ends there
+  out_of_scope  off-topic: only the route is learned (target <out_of_scope>); the context is left
+                unchanged and the thread goes on
+  solution      a what-if (only on the item's last turn): the target is the facts-first label
+                carried over to the changed number, verified against the re-run code; it ends
+                the thread
+
+Gemma's reply is generated for every message (its route and, for a what-if, its answer are
+recorded), so the pass also measures the teacher on each kind of message.
 
     python -m library.domain.math_tutor.threads     # GPU; resumable (done items skipped)
 
@@ -18,121 +26,121 @@ Writes items/threads/threads.jsonl (appended).
 import json
 import random
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from .checks import check_explanation
-from .conversation import Conversation
+from library.agent.question_templates import related
+from .checks import check_explanation, final_answer
+from .conversation import Conversation, parse_route
 from .labels import read_labels
+from .questions import generator as question_generator, kind_weights, solution_foci, tasks_of, what_if_foci
 
 ITEMS_DIR = Path(__file__).resolve().parent / "items"
 THREADS_PATH = ITEMS_DIR / "threads" / "threads.jsonl"
 SEED = 0
-DEPTHS = [1] * 50 + [2] * 35 + [3] * 15       # share of threads by number of questions
+DEPTHS = [1] * 50 + [2] * 35 + [3] * 15       # share of threads by number of messages
 BATCH = 16
-
-QUESTION_KINDS = {
-    "why": "why the tutor did one particular step (for example: why multiply here, why take that away)",
-    "meaning": "what one particular number in the working stands for: say what you guess it is, in the story's words, and ask if that is right",
-    "another way": "whether the step could be done another way",
-    "lost": "that they do not understand one particular step, asking for it to be explained more simply",
-    "check": "whether one particular line is really right, or how the tutor knows",
-    "where from": "where one particular number in the working came from",
-    "shortcut": "whether there is a quicker way to get the answer",
-    "smaller numbers": "to explain one step again with smaller, easier numbers",
-}
-
-# Who is asking: varies the voice of the follow-up questions, not their content.
-PERSONAS = {
-    "curious": "curious and chatty; you start with what you noticed",
-    "shy": "shy; you ask in just a few words",
-    "confused": "a bit confused; you say which part lost you",
-    "confident": "confident; you say what you think first, then ask",
-    "impatient": "impatient; you want a quick, short answer",
-    "careful": "careful; you ask about one small detail",
-}
-
-# How the question starts: drawn per question, so the same kind is not always asked the same way.
-OPENINGS = ["Why", "How come", "Wait,", "I don't get", "So", "Is it", "What", "Hmm,", "Could you",
-            "But", "Where", "Does", "I thought", "Hang on,", "How"]
-
-PUPIL_PROMPT = """You are a primary-school pupil working with your maths tutor. You are {persona}. Here is your conversation so far:
-
-{conversation}
-
-Ask your tutor ONE question about {about}: {kind}.
-Say which step you mean by what it is about in the story, not only by its numbers.
-Ask it the way a child like you would, in your own words. Start your question with "{opening}" if that fits, otherwise start your own way.
-Write only the question."""
 
 
 def solution_body(block: str) -> str:
     return block.replace("<solution>", "").replace("</solution>", "").strip()
 
 
-def plan_threads(items: List[Dict], labels: Dict[tuple, str]) -> List[Dict]:
-    """Which turn of which item gets a thread, how deep, and which kinds of question (seeded)."""
+def plan_messages(item: Dict, turn: int, block: str, depth: int, generator, random_generator: random.Random) -> List[Dict]:
+    """The thread's messages, drawn before any reply exists (the templates only need the solution)."""
+    foci = solution_foci(item, turn, block, random_generator)
+    if turn == len(item["follow_ups"]):
+        foci += [focus for focus in what_if_foci(item, turn, block, random_generator) if focus.data.get("gold")]
+    messages, previous = [], None
+    for position in range(depth):
+        candidates = related(foci, previous) if position > 0 else foci
+        message = generator.draw(candidates, position, random_generator, kind_weights=kind_weights(position))
+        if message is None:
+            break
+        entry = {"question": message.text, "kind": message.kind, "route": message.route,
+                 "template": message.template.text, "focus": message.focus.type}
+        if message.kind == "what_if":
+            entry.update(target=message.focus.data["gold"], answer=message.focus.data["answer"])
+        messages.append(entry)
+        if message.kind == "what_if":
+            break   # a new solution closes the thread
+        if message.kind != "off_topic":
+            previous = message.focus
+    return messages
+
+
+def plan_threads(items: List[Dict], labels: Dict[tuple, str], generator) -> List[Dict]:
+    """Which turn of which item gets a thread, and its messages (seeded)."""
     random_generator = random.Random(SEED)
     plans = []
     for item in items:
-        turns = [turn for turn in range(1 + len(item["follow_ups"])) if (item["id"], turn) in labels]
+        turns = [turn for turn in range(1 + len(item["follow_ups"]))
+                 if all((item["id"], earlier) in labels for earlier in range(turn + 1))]
         if not turns:
             continue
         turn = random_generator.choice(turns)
         depth = random_generator.choice(DEPTHS)
-        kinds = [random_generator.choice(list(QUESTION_KINDS)) for _ in range(depth)]
-        plans.append({"item": item, "turn": turn, "kinds": kinds})
+        messages = plan_messages(item, turn, labels[(item["id"], turn)], depth, generator, random_generator)
+        if messages:
+            plans.append({"item": item, "turn": turn, "messages": messages})
     return plans
 
 
 def main_line(item: Dict, turn: int, labels: Dict[tuple, str]) -> Conversation:
     """The conversation up to and including this turn's facts-first solution."""
-    tasks = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
+    tasks = tasks_of(item)
     conversation = Conversation()
     for earlier in range(turn + 1):
         conversation.add_solution(tasks[earlier], solution_body(labels[(item["id"], earlier)]))
     return conversation
 
 
-def run_threads(handler, domain, items: List[Dict] = None) -> int:
-    """Build every planned thread depth by depth, appending finished threads."""
+def reply_entry(message: Dict, reply: str) -> Dict:
+    """The message with Gemma's reply, its route and the check."""
+    routed = parse_route(reply)
+    entry = dict(message, routed=routed, reply=reply)
+    if message["route"] == "explanation":
+        explanation = reply[reply.find("<explanation>") + len("<explanation>"):] if routed == "explanation" else ""
+        entry["explanation"] = explanation.split("</explanation>")[0].strip()
+        entry["check"] = check_explanation(entry["explanation"], message["kind"]) if routed == "explanation" else f"routed to {routed}"
+    else:
+        entry["check"] = None if routed == message["route"] else f"routed to {routed}"
+        if message["route"] == "solution":
+            entry["teacher_answer"] = final_answer(reply)
+    return entry
+
+
+def run_threads(handler, domain, items: Optional[List[Dict]] = None, generator=None) -> int:
+    """Run every planned thread message by message, appending finished threads."""
     if items is None:
         items = [json.loads(line) for line in open(ITEMS_DIR / "items.jsonl", encoding="utf-8")]
+    generator = generator or question_generator()
     labels = read_labels()
     done = set()
     if THREADS_PATH.exists():
         done = {json.loads(line)["item_id"] for line in open(THREADS_PATH, encoding="utf-8")}
-    plans = [plan for plan in plan_threads(items, labels) if plan["item"]["id"] not in done]
+    plans = [plan for plan in plan_threads(items, labels, generator) if plan["item"]["id"] not in done]
     for plan in plans:
         plan["conversation"] = main_line(plan["item"], plan["turn"], labels)
         plan["thread"] = []
     THREADS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    for depth in range(max(len(plan["kinds"]) for plan in plans) if plans else 0):
-        active = [plan for plan in plans if len(plan["kinds"]) > depth and not plan.get("stopped")]
+    for position in range(max((len(plan["messages"]) for plan in plans), default=0)):
+        active = [plan for plan in plans if len(plan["messages"]) > position and not plan.get("stopped")]
         for start in range(0, len(active), BATCH):
             batch = active[start:start + BATCH]
-            pupil_prompts = [PUPIL_PROMPT.format(
-                persona=PERSONAS[random.Random(f"{plan['item']['id']}-{depth}").choice(list(PERSONAS))],
-                opening=random.Random(f"{plan['item']['id']}-{depth}-opening").choice(OPENINGS),
-                conversation=plan["conversation"].history(with_thread=True),
-                about="the tutor's last solution" if depth == 0 else "the tutor's last explanation",
-                kind=QUESTION_KINDS[plan["kinds"][depth]]) for plan in batch]
-            questions = handler.generate_texts(pupil_prompts, max_new_tokens=60, temperature=0.9, seed=SEED + depth + start)
-            questions = [question.strip().strip('"').split("\n")[0] for question in questions]
-            tutor_prompts = [domain.teacher_prompt(plan["conversation"].explain_context(question))
-                             for plan, question in zip(batch, questions)]
-            answers = handler.generate_texts(tutor_prompts, max_new_tokens=domain.max_steps,
-                                             stop_strings=["</explanation>", "</solution>"])
-            for plan, question, answer in zip(batch, questions, answers):
-                explanation = answer.replace("<explanation>", "").split("</explanation>")[0].strip()
-                routed = ("explanation" if answer.startswith("<explanation>") else
-                          "solution" if answer.startswith("<solution>") else "neither")
-                check = check_explanation(explanation) if routed == "explanation" else f"routed to {routed}"
-                plan["thread"].append({"question": question, "kind": plan["kinds"][depth], "explanation": explanation,
-                                       "routed": routed, "check": check})
-                if check:   # kept for analysis, but the thread ends here: no turn builds on it
+            messages = [plan["messages"][position] for plan in batch]
+            prompts = [domain.teacher_prompt(plan["conversation"].route_context(message["question"]))
+                       for plan, message in zip(batch, messages)]
+            replies = handler.generate_texts(prompts, max_new_tokens=domain.max_steps, stop_strings=domain.stop_strings)
+            for plan, message, reply in zip(batch, messages, replies):
+                entry = reply_entry(message, reply)
+                plan["thread"].append(entry)
+                if message["route"] == "explanation":
+                    if entry["check"]:   # kept for analysis, but no turn builds on it
+                        plan["stopped"] = True
+                    else:
+                        plan["conversation"].add_explanation(message["question"], entry["explanation"])
+                elif message["route"] == "solution":
                     plan["stopped"] = True
-                else:
-                    plan["conversation"].add_explanation(question, explanation)
     with open(THREADS_PATH, "a", encoding="utf-8") as out:
         for plan in plans:
             out.write(json.dumps({"item_id": plan["item"]["id"], "turn": plan["turn"], "thread": plan["thread"]},

@@ -31,13 +31,15 @@ TEACHER_MODES = ("generate", "forced")
 HEADER = (
     "You are a maths tutor for primary-school pupils. Below is the tutoring conversation so far. "
     "The last block, <message>, is the pupil's new message.\n"
-    "- If it is a new task, answer with a <solution> block{format}\n"
+    "- If it is a new task, or asks what the answer would be if a number were different (a new "
+    "calculation), answer with a <solution> block{format}\n"
     "- If it asks about your working (why you did a step, what a number means, where it came from, "
     "whether it is right, or to see a step again another way, with smaller numbers or more quickly), "
     "answer with an <explanation> block: at most two short, plain sentences a child understands, "
     "then </explanation>. Your solutions above have been checked and are right. If the pupil says "
     "one is wrong, say firmly that it is right and show why. If the pupil asks about something a "
     "solution does not use, say why it is not needed.\n"
+    "- If it is not about this maths at all, write only <out_of_scope>\n"
     "Write only that one block, nothing before or after it. Never repeat these instructions.\n\n{conversation}"
 )
 REMAINDERS = " A division that does not come out even is written like: 23 / 5 = 4 remainder 3."
@@ -74,7 +76,7 @@ class TutorAnswerMetric(ExactAnswerMetric):
 
 class MathTutorAgenticDomain(Domain):
     stop_token = "</solution>"
-    stop_strings = ["</solution>", "</explanation>"]   # batched generation stops at either block's end
+    stop_strings = ["</solution>", "</explanation>", "<out_of_scope>"]   # generation stops at any reply's end
     max_steps = 150     # runaway guard: longest measured target 96 tokens (facts-first), ~110 expected at scale, +35%
 
     def __init__(self, annotation: str = "named", teacher: str = "generate"):
@@ -105,7 +107,7 @@ class MathTutorAgenticDomain(Domain):
         return HEADER.format(format=FORMATS[self.annotation], conversation=text)
 
     def is_stop(self, last_token_decoded: str, generated_text: str) -> bool:
-        return "</solution>" in generated_text or "</explanation>" in generated_text
+        return any(stop in generated_text for stop in self.stop_strings)
 
     def task_metric(self) -> TutorAnswerMetric:
         return TutorAnswerMetric()
@@ -114,6 +116,8 @@ class MathTutorAgenticDomain(Domain):
         output = output.strip()
         if output.startswith("<solution>"):
             return output.endswith("</solution>") and re.search(r"Answer:\s*\S+", output) is not None
+        if output == "<out_of_scope>":   # only the tag: the harness writes the reply
+            return True
         return output.startswith("<explanation>") and output.endswith("</explanation>")
 
     def answer_matches(self, response: str, ground_truth) -> Optional[bool]:
@@ -122,7 +126,7 @@ class MathTutorAgenticDomain(Domain):
 
 
 FORMAT_TEXTS = [
-    "<solution>\nAnswer: 1234567890\n</solution>", "<explanation>Because</explanation>",
+    "<solution>\nAnswer: 1234567890\n</solution>", "<explanation>Because</explanation>", "<out_of_scope>",
     "4 * 2 = 8\n13 - 8 = 5\n52 / 8 = 6\n7 + 1 = 8\n(16 + 3 - 1) // 3 = 6\n23 % 5 = 3",
     "35-23=12\n4*6=24\n8/2=4\n3+4=7",
     "16 / 3 = 5 remainder 1, rounded up = 6\nremainder of 23 / 5 = 3\n23 / 5 = 4 remainder 3",

@@ -144,14 +144,22 @@ CONCESSION = re.compile(
     r"|\bmy (mistake|error)\b|\bsorry\b|\blet me (fix|correct|redo)\b", re.IGNORECASE)
 
 
-def check_explanation(text: str) -> Optional[str]:
+AGREEMENT = re.compile(r"\byou('re| are) (right|correct)\b|\bgood catch\b|\bwell spotted\b", re.IGNORECASE)
+
+
+def check_explanation(text: str, kind: Optional[str] = None) -> Optional[str]:
     """None if the explanation is usable: not empty, and it does not say the checked solution
-    was wrong (that would teach the student to give in to a leading question)."""
+    was wrong (that would teach the student to give in to a leading question). To a pupil's
+    pushback (kind "pushback") it must not agree either."""
     if not text.strip():
         return "empty explanation"
     concession = CONCESSION.search(text)
     if concession:
         return f"takes back the checked solution: {concession.group(0)!r}"
+    if kind == "pushback":
+        agreement = AGREEMENT.search(text)
+        if agreement:
+            return f"agrees with the pupil's wrong answer: {agreement.group(0)!r}"
     return None
 
 
@@ -186,3 +194,8 @@ def check_against_trace(block: str, computed: List[int], answer: int, context: s
                 return f"result {line.number} is not a value the function computes {sorted(function_values)}"
             known.add(line.number)
     return None
+
+
+def final_answer(block: str) -> Optional[int]:
+    match = re.search(r"Answer:\s*(\d+)", block)
+    return int(match.group(1)) if match else None

@@ -20,7 +20,7 @@ for items whose source is not "reword:" until a relabel pass has renamed them.
 """
 
 import ast
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Optional
 
 from .functions import Execution, execute
 from .items import REMAINDER_SLICE
@@ -145,10 +145,11 @@ RENDERERS: Dict[str, Callable[[Dict, int, List[Execution]], str]] = {
 NEEDS_STORY_NAMES = {"named", "code"}   # wrong for rewordings until they are relabelled
 
 
-def render(item: Dict, annotation: str) -> List[str]:
-    """The gold solution text of every turn of an item, in one annotation format."""
+def render(item: Dict, annotation: str, turns: Optional[int] = None) -> List[str]:
+    """The gold solution text of every turn of an item (or of its first `turns`), in one
+    annotation format."""
     if annotation in NEEDS_STORY_NAMES and str(item.get("source", "")).startswith("reword:"):
         raise ValueError(f"{item['id']}: '{annotation}' labels come from the original story; relabel rewordings first")
     executions = turn_executions(item)
     renderer = RENDERERS[annotation]
-    return [renderer(item, turn, executions) for turn in range(len(executions))]
+    return [renderer(item, turn, executions) for turn in range(len(executions) if turns is None else turns)]
