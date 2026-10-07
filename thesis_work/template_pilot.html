@@ -10,48 +10,20 @@ th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}th{
 details{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin:8px 0}summary{cursor:pointer;font-weight:600}
 .ex{border-top:1px solid var(--border);padding:8px 0}.q{margin:4px 0}.chip{font-size:12px;color:var(--muted)}
 pre{white-space:pre-wrap;word-break:break-word;background:var(--code);border-radius:8px;padding:8px 10px;font:12.5px/1.5 ui-monospace,Consolas,monospace;margin:4px 0}
-.bad{color:var(--bad);font-size:13px}</style></head><body><main><h1>Template pupil: pilot</h1><p class="note">Gemma 4 12B (NF4) as the teacher-tutor, replying to follow-up messages from the template bank and to a free-written set. Routes: explanation, solution (what-if), out_of_scope (the harness replies). Local file.</p><h2>Free-written messages (360, natural wording)</h2><div class="tiles"><div class="tile"><b>180</b><span>messages</span></div><div class="tile"><b>171/180</b><span>routed as intended</span></div><div class="tile"><b>142/151</b><span>questions routed to an explanation</span></div><div class="tile"><b>0/142</b><span>explanations failing the check</span></div><div class="tile"><b>23/23</b><span>pushback: held firm</span></div><div class="tile"><b>16/16</b><span>what-if routed to a solution</span></div><div class="tile"><b>16/16</b><span>what-if answer = code</span></div><div class="tile"><b>13/13</b><span>off-topic routed out of scope</span></div><div class="tile"><b>28 / 35 / 40</b><span>explanation words (median / p90 / max)</span></div></div><div class="wrap"><table><tr><th>kind</th><th>should route to</th><th>n</th><th>routed right</th><th>check failed</th><th>what-if answer right</th></tr><tr><td>pushback</td><td>explanation</td><td>23</td><td>23/23</td><td>0</td><td></td></tr><tr><td>why</td><td>explanation</td><td>18</td><td>18/18</td><td>0</td><td></td></tr><tr><td>meaning</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>where_from</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>wrong_operation</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>what_if</td><td>solution</td><td>16</td><td>16/16</td><td>0</td><td>16/16</td></tr><tr><td>off_topic</td><td>out_of_scope</td><td>13</td><td>13/13</td><td>0</td><td></td></tr><tr><td>another_way</td><td>explanation</td><td>13</td><td>10/13</td><td>0</td><td></td></tr><tr><td>lost</td><td>explanation</td><td>12</td><td>12/12</td><td>0</td><td></td></tr><tr><td>check</td><td>explanation</td><td>11</td><td>11/11</td><td>0</td><td></td></tr><tr><td>distractor</td><td>explanation</td><td>9</td><td>9/9</td><td>0</td><td></td></tr><tr><td>smaller_numbers</td><td>explanation</td><td>8</td><td>2/8</td><td>0</td><td></td></tr><tr><td>shortcut</td><td>explanation</td><td>6</td><td>6/6</td><td>0</td><td></td></tr></table></div><details><summary>Misroutes (9)</summary><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with tiny numbers like 4 roses and 2 glued back on</div><pre>&lt;solution&gt;
-roses start with = 4
-roses glued back on = 2
-roses now = 4 + 2 = 6
-Answer: 6
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you also do 3 nets times 8 kilos? would that work</div><pre>&lt;solution&gt;
-number of other nets = 3
-weight of each net = 8
-weight of 3 nets = 3 * 8 = 24
-Answer: 24
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with 2 water bottles and 3 juice boxes so its easier</div><pre>&lt;solution&gt;
-water bottles = 2
-juice boxes = 3
-total drinks = 2 + 3 = 5
-Answer: 5
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with 4 kids on red and 2 kids on blue</div><pre>&lt;solution&gt;
-children in the red team = 4
-children in the blue team = 2
-difference = 4 - 2 = 2
-Answer: 2
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with 3 boats and ropes that are 2 metres</div><pre>&lt;solution&gt;
-number of boats = 3
-length of rope = 2
-total length of rope = 3 * 2 = 6
-Answer: 6
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">show me with tiny fish, like a 2 cm fish and one 3 cm longer</div><pre>&lt;solution&gt;
-length of the tiny fish = 2
-length difference = 3
-length of the other fish = 2 + 3 = 5
-Answer: 5
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you show sharing with 6 candles and 3 tables</div><pre>&lt;solution&gt;
-candles = 6
-number of tables = 3
-candles per table = 6 / 3 = 2
-Answer: 2
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you add 165 and 165 instead?</div><pre>&lt;solution&gt;
+.bad{color:var(--bad);font-size:13px}</style></head><body><main><h1>Template pupil: pilot</h1><p class="note">Gemma 4 12B (NF4) as the teacher-tutor, replying to follow-up messages from the template bank and to a free-written set. Routes: explanation, solution (what-if), out_of_scope (the harness replies). Local file.</p><h2>Free-written messages (180 of the 360, natural wording)</h2><p class="note">Rule agreed 2026-10-07: numbers the pupil supplies make a new task. 10 &#x27;smaller numbers&#x27; / &#x27;another way&#x27; messages that bring their own numbers are scored as tasks (route: solution).</p><div class="tiles"><div class="tile"><b>180</b><span>messages</span></div><div class="tile"><b>175/180</b><span>routed as intended</span></div><div class="tile"><b>139/141</b><span>questions routed to an explanation</span></div><div class="tile"><b>0/139</b><span>explanations failing the check</span></div><div class="tile"><b>23/23</b><span>pushback: held firm</span></div><div class="tile"><b>16/16</b><span>what-if routed to a solution</span></div><div class="tile"><b>16/16</b><span>what-if answer = code</span></div><div class="tile"><b>13/13</b><span>off-topic routed out of scope</span></div><div class="tile"><b>28 / 35 / 40</b><span>explanation words (median / p90 / max)</span></div></div><div class="wrap"><table><tr><th>kind</th><th>should route to</th><th>n</th><th>routed right</th><th>check failed</th><th>what-if answer right</th></tr><tr><td>pushback</td><td>explanation</td><td>23</td><td>23/23</td><td>0</td><td></td></tr><tr><td>why</td><td>explanation</td><td>18</td><td>18/18</td><td>0</td><td></td></tr><tr><td>meaning</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>where_from</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>wrong_operation</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>what_if</td><td>solution</td><td>16</td><td>16/16</td><td>0</td><td>16/16</td></tr><tr><td>off_topic</td><td>out_of_scope</td><td>13</td><td>13/13</td><td>0</td><td></td></tr><tr><td>another_way</td><td>explanation</td><td>13</td><td>9/13</td><td>0</td><td></td></tr><tr><td>lost</td><td>explanation</td><td>12</td><td>12/12</td><td>0</td><td></td></tr><tr><td>check</td><td>explanation</td><td>11</td><td>11/11</td><td>0</td><td></td></tr><tr><td>distractor</td><td>explanation</td><td>9</td><td>9/9</td><td>0</td><td></td></tr><tr><td>smaller_numbers</td><td>explanation</td><td>8</td><td>7/8</td><td>0</td><td></td></tr><tr><td>shortcut</td><td>explanation</td><td>6</td><td>6/6</td><td>0</td><td></td></tr></table></div><details><summary>Misroutes (5)</summary><div class="ex"><span class="chip">another_way → expected solution, got explanation</span><div class="q">can i do 72 take away 20 and then add 2 back on?</div><pre>&lt;explanation&gt;
+Yes, you can do that because 18 is the same as 20 minus 2. Taking away 20 and adding 2 back gives you the same result as taking away 18.
+&lt;/explanation&gt;</pre><div class="bad">routed to explanation</div></div><div class="ex"><span class="chip">another_way → expected solution, got explanation</span><div class="q">could i take away 30 first and then 5 more</div><pre>&lt;explanation&gt;
+Yes, you can take away 30 first and then 5 more. It is the same as taking away 35 because 30 + 5 = 35.
+&lt;/explanation&gt;</pre><div class="bad">routed to explanation</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you add 165 and 165 instead?</div><pre>&lt;solution&gt;
 cones sold = 165
 first group of cones = 165
 second group of cones = 165
 total = 165 + 165 = 330
 Answer: 330
-&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you do 73 add 73 and then take away the 18?</div><pre>&lt;solution&gt;
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected solution, got explanation</span><div class="q">show me with smaller numbers please, like 5 tickets and 2 fewer</div><pre>&lt;explanation&gt;
+If the afternoon show sold 5 tickets and the evening show sold 2 fewer, we subtract 2 from 5.
+This helps us see that &quot;fewer&quot; means we are taking a smaller amount away.
+&lt;/explanation&gt;</pre><div class="bad">routed to explanation</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you do 73 add 73 and then take away the 18?</div><pre>&lt;solution&gt;
 tickets sold in the afternoon show = 73
 tickets sold in the afternoon show = 73
 sum of two afternoon shows = 73 + 73 = 146
@@ -75,10 +47,12 @@ Yes, you can count up from 32 to 50 to find the difference. It is the same as su
 &lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got explanation</span><div class="q">show me with like 3 hot dogs that cost $4 each please</div><pre>&lt;explanation&gt;
 To show you how it works with smaller numbers, we can imagine selling 3 hot dogs instead of 46.
 If each costs $4, we would multiply 3 by 4 to find the total money.
-&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got explanation</span><div class="q">show me with smaller numbers please, like 5 tickets and 2 fewer</div><pre>&lt;explanation&gt;
-If the afternoon show sold 5 tickets and the evening show sold 2 fewer, we subtract 2 from 5.
-This helps us see that &quot;fewer&quot; means we are taking a smaller amount away.
-&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">what_if → expected solution, got solution</span><div class="q">and what if 15 rolls were gone by ten o&#x27;clock instead of 13?</div><pre>&lt;solution&gt;
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">smaller_numbers → expected solution, got solution</span><div class="q">can you do it with tiny numbers like 4 roses and 2 glued back on</div><pre>&lt;solution&gt;
+roses start with = 4
+roses glued back on = 2
+roses now = 4 + 2 = 6
+Answer: 6
+&lt;/solution&gt;</pre></div><div class="ex"><span class="chip">what_if → expected solution, got solution</span><div class="q">and what if 15 rolls were gone by ten o&#x27;clock instead of 13?</div><pre>&lt;solution&gt;
 cinnamon rolls = 20
 cinnamon rolls gone = 15
 cinnamon rolls remaining = 20 - 15 = 5

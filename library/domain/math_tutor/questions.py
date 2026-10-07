@@ -58,7 +58,8 @@ KIND_NOTES = {
     "distractor": "about a number in the problem that the solution does not use",
     "pushback": "the pupil says the tutor is wrong and gives their own (wrong) answer; the tutor must hold firm",
     "follow": "a follow-up to the tutor's last explanation: still lost, why, say it simpler, an example, so does that mean...",
-    "what_if": "what the answer would be if a number were different (a new calculation: the tutor solves again)",
+    "what_if": "what the answer would be if a number were different, or the pupil gives new numbers to work with "
+               "(a new calculation: the tutor solves again)",
     "off_topic": "not about this maths at all (other subjects, personal questions, jokes, games, rude); the harness answers",
 }
 

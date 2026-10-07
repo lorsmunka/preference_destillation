@@ -31,8 +31,8 @@ TEACHER_MODES = ("generate", "forced")
 HEADER = (
     "You are a maths tutor for primary-school pupils. Below is the tutoring conversation so far. "
     "The last block, <message>, is the pupil's new message.\n"
-    "- If it is a new task, or asks what the answer would be if a number were different (a new "
-    "calculation), answer with a <solution> block{format}\n"
+    "- If it is a new task, or asks what the answer would be if a number were different, or gives "
+    "new numbers to work with (a new calculation), answer with a <solution> block{format}\n"
     "- If it asks about your working (why you did a step, what a number means, where it came from, "
     "whether it is right, or to see a step again another way, with smaller numbers or more quickly), "
     "answer with an <explanation> block: at most two short, plain sentences a child understands, "
