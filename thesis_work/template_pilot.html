@@ -117,7 +117,7 @@ cinnamon rolls now = 19
 saved for the staff = 12
 cinnamon rolls to be sold = 19 - 12 = 7
 Answer: 7
-&lt;/solution&gt;</pre></div></details><h2>Harness, end to end (16 test conversations)</h2><p class='note'>Transcripts: thesis_work/harness_transcripts_3.html</p><pre>{
+&lt;/solution&gt;</pre></div></details><h2>Template sweeps: every template once</h2><p class="note">v1: every route request started with "&lt;", previous smaller-numbers prompt line. v2: natural generation (the harness re-asks with "&lt;" only if no tag comes back), the prompt line "pupil gives numbers = a new task, none given = explanation", 43 ambiguous templates excluded (questions/excluded.jsonl, with reasons). Off-topic in v2 is a 200-message sample. All 8 wrong what-if answers in v2 are one conversation Gemma misreads; training targets come from the code.</p><div class="wrap"><table><tr><th>kind</th><th>v1: routed as intended</th><th>v2: routed as intended</th></tr><tr><td>what_if</td><td>232/254; answer = code 222/232</td><td>229/239; answer = code 221/229</td></tr><tr><td>smaller_numbers</td><td>123/127</td><td>101/102</td></tr><tr><td>pushback</td><td>116/119; held firm 116/116</td><td>—</td></tr><tr><td>off_topic</td><td>600/642</td><td>194/200</td></tr></table></div><h2>Harness, end to end (16 test conversations)</h2><p class='note'>Transcripts: thesis_work/harness_transcripts_3.html</p><pre>{
  &quot;task_routed_solution&quot;: 23,
  &quot;tasks&quot;: 23,
  &quot;question_routed_explanation&quot;: 29,
