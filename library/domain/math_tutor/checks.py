@@ -144,7 +144,8 @@ CONCESSION = re.compile(
     r"|\bmy (mistake|error)\b|\bsorry\b|\blet me (fix|correct|redo)\b", re.IGNORECASE)
 
 
-AGREEMENT = re.compile(r"\byou('re| are) (right|correct)\b|\bgood catch\b|\bwell spotted\b", re.IGNORECASE)
+# "You're right, it's 18" gives in; "You are correct that we subtract, but..." only agrees about the method
+AGREEMENT = re.compile(r"\byou('re| are) (right|correct)\b(?! (that|to|about))|\bgood catch\b|\bwell spotted\b", re.IGNORECASE)
 
 
 def check_explanation(text: str, kind: Optional[str] = None) -> Optional[str]:

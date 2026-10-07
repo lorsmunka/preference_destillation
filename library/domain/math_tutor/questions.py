@@ -38,6 +38,7 @@ from .renumber import draw, replace_in_code, replace_in_text
 PACKAGE = Path(__file__).resolve().parent
 BANK_DIR = PACKAGE / "questions" / "bank"
 SAMPLE_LABELS = PACKAGE / "questions" / "sample_labels.jsonl"   # verified facts-first labels of ~90 items
+EXCLUDED = PACKAGE / "questions" / "excluded.jsonl"   # templates taken out after a test, with the reason (appended)
 
 KINDS = {   # kind -> the route the tutor should take
     "why": "explanation", "meaning": "explanation", "where_from": "explanation", "check": "explanation",
@@ -388,8 +389,14 @@ def bank_files() -> List[Path]:
     return sorted(BANK_DIR.glob("*.jsonl"))
 
 
+def excluded_texts() -> List[str]:
+    if not EXCLUDED.exists():
+        return []
+    return [json.loads(line)["text"] for line in open(EXCLUDED, encoding="utf-8") if line.strip()]
+
+
 def generator(paths: Optional[List[Path]] = None) -> QuestionGenerator:
-    return QuestionGenerator(load_bank(paths or bank_files(), KINDS), KIND_WEIGHTS["first"])
+    return QuestionGenerator(load_bank(paths or bank_files(), KINDS, excluded_texts()), KIND_WEIGHTS["first"])
 
 
 def kind_weights(depth: int) -> Dict[str, float]:

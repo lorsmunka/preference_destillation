@@ -102,16 +102,22 @@ def template_problem(record: Dict, kinds: Dict[str, str], focus_slots: Dict[str,
     return None
 
 
-def load_bank(paths: Iterable[Path], kinds: Dict[str, str]) -> List[Template]:
-    """Every template in the bank files (bad lines are skipped: check them with template_problem)."""
+def normalised_text(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
+def load_bank(paths: Iterable[Path], kinds: Dict[str, str], excluded: Iterable[str] = ()) -> List[Template]:
+    """Every template in the bank files (bad lines are skipped: check them with template_problem),
+    except the excluded texts (a list kept beside the bank, with the reason for each)."""
     templates, seen = [], set()
+    excluded = {normalised_text(text) for text in excluded}
     for path in paths:
         for line in open(path, encoding="utf-8"):
             if not line.strip():
                 continue
             record = json.loads(line)
-            key = (record.get("kind"), record.get("focus"), " ".join(str(record.get("text", "")).lower().split()))
-            if key in seen or record.get("kind") not in kinds:
+            key = (record.get("kind"), record.get("focus"), normalised_text(str(record.get("text", ""))))
+            if key in seen or record.get("kind") not in kinds or key[2] in excluded:
                 continue
             seen.add(key)
             templates.append(Template(kind=record["kind"], route=kinds[record["kind"]], focus=record["focus"],
