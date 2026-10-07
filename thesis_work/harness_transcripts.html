@@ -1,0 +1,320 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tutor Transcripts</title><style>
+:root { --bg:#f7f7f5; --card:#fff; --fg:#1d1d1f; --muted:#6b6b70; --border:#e2e2de; --task:#e2f3e7; --task-fg:#1e6a39;
+  --q:#e3ecfb; --q-fg:#2a5bb0; --sol:#efe3fb; --sol-fg:#6527ad; --exp:#fdedcf; --exp-fg:#875800; --ok:#2e8b57; --bad:#c0392b; --warn:#b7791f; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#141416; --card:#1d1d20; --fg:#ececee; --muted:#9a9aa2;
+  --border:#2e2e33; --task:#173322; --task-fg:#7fd8a0; --q:#1d2b47; --q-fg:#8db4ff; --sol:#2e1f45; --sol-fg:#c9a3ff; --exp:#3a2c0e;
+  --exp-fg:#f0c060; --ok:#5cc28a; --bad:#ff7b6b; --warn:#e3b25a; } }
+:root[data-theme="dark"] { --bg:#141416; --card:#1d1d20; --fg:#ececee; --muted:#9a9aa2; --border:#2e2e33; --task:#173322; --task-fg:#7fd8a0;
+  --q:#1d2b47; --q-fg:#8db4ff; --sol:#2e1f45; --sol-fg:#c9a3ff; --exp:#3a2c0e; --exp-fg:#f0c060; --ok:#5cc28a; --bad:#ff7b6b; --warn:#e3b25a; }
+* { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+main { max-width:900px; margin:0 auto; padding:24px 16px 60px; } h1 { font-size:24px; margin:0 0 6px; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:14px 0; }
+.tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 10px; } .tile b { display:block; font-size:20px; }
+.tile span, .note { color:var(--muted); font-size:13px; }
+.conv { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 14px; margin:12px 0; }
+.conv > summary { cursor:pointer; } .turn { margin:12px 0; }
+.pupil { border-radius:10px; padding:8px 10px; } .pupil.task { background:var(--task); color:var(--task-fg); }
+.pupil.question { background:var(--q); color:var(--q-fg); }
+.who { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.04em; opacity:.8; }
+.meta { margin:4px 0; display:flex; gap:6px; flex-wrap:wrap; }
+.badge, .chip { font-size:12px; padding:1px 7px; border-radius:6px; border:1px solid var(--border); }
+.badge.ok { color:var(--ok); } .badge.bad { color:var(--bad); font-weight:600; } .badge.warn { color:var(--warn); } .chip { color:var(--muted); }
+pre { white-space:pre-wrap; word-break:break-word; font:12.5px/1.5 ui-monospace,Consolas,monospace; margin:4px 0 0; border-radius:8px; padding:8px 10px; }
+pre.solution { background:var(--sol); color:var(--sol-fg); } pre.explanation { background:var(--exp); color:var(--exp-fg); }
+.rejected summary { font-size:12px; color:var(--warn); cursor:pointer; } .rejected pre { background:var(--bg); border:1px dashed var(--border); }
+</style></head><body><main><h1>Tutor transcripts: google/gemma-4-12B-it NF4 (teacher as tutor)</h1><p class="note">The harness with the model below as the tutor. The pupil is scripted: the item&#x27;s problem and follow-up tasks, and follow-up questions written by Gemma playing a pupil. Earlier turns hold the model&#x27;s own answers, uncorrected.</p><div class="tiles"><div class="tile"><b>16</b><span>conversations</span></div><div class="tile"><b>47/47</b><span>tasks routed to a solution</span></div><div class="tile"><b>37/42</b><span>questions routed to an explanation</span></div><div class="tile"><b>46/47</b><span>solutions pass the check</span></div><div class="tile"><b>1</b><span>needed a second try</span></div><div class="tile"><b>46/47</b><span>answers correct</span></div><div class="tile"><b>15/16</b><span>conversations fully correct</span></div></div><p class="note">Tokens the model used that are outside the output vocabulary: Yes x9, ▁represents x4, ▁imagine x2, multiplier x2, ). x2, ▁twos x1, &quot;, x1, ▁dividing x1, &quot;. x1, ▁why x1, Think x1, ▁Dividing x1, ▁multiplying x1, additional x1, ▁equals x1, ?&quot;. x1</p><details class="conv" open><summary><b>sd-p1-h02-0007</b> / S01</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Ines emptied her backpack into the recycling bin, adding 9 bottles to the 54 already there. What is the new total?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+bottles already there = 54
+bottles Ines added = 9
+new total = 54 + 9 = 63
+Answer: 63
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The bottles are packed into bags of 7. How many bags are filled?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+new total = 63
+bottles per bag = 7
+number of bags = 63 / 7 = 9
+Answer: 9
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Wait, could you show me how you divided the bottles into bags again, but using smaller numbers so I can see how it works?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">smaller numbers / careful</span></div><pre class="reply explanation">&lt;explanation&gt;To see how it works, we can imagine having 14 bottles and putting them into bags of 2. Since 2 + 2 + 2 + 2 + 2 + 2 + 2 = 14, we would have 7 bags.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Why did you count out seven bags of 2 instead of just counting by twos?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / confident</span></div><pre class="reply explanation">&lt;explanation&gt;Counting by twos is actually the same thing as counting the bags! When you say &quot;2, 4, 6, 8, 10, 12, 14&quot;, you are counting each bag as you go.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The recycling center pays 4 dollars for each full bag. How much money is that?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+number of bags = 9
+payment per bag = 4
+total money = 9 * 4 = 36
+Answer: 36
+&lt;/solution&gt;</pre></div></details><details class="conv" open><summary><b>sd-p2-b03-0040</b> / S08</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Leo has 6 photos of the Moon. The space club album has 9 times as many. How many photos are in the album?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+photos Leo has = 6
+multiplier = 9
+photos in the album = 6 * 9 = 54
+Answer: 54
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The club adds 12 photos from a stargazing night. How many photos does the album hold now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+photos in the album = 54
+new photos = 12
+total photos = 54 + 12 = 66
+Answer: 66
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Hang on, is there a quicker way to find out how many photos are in the album after the stargazing night?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">shortcut / confident</span></div><pre class="reply explanation">&lt;explanation&gt;To find the total quickly, you can think of it as adding the new photos to the previous total of 54. There isn&#x27;t a much shorter way than adding 12 to 54, but you can practice your &quot;making tens&quot; by thinking of it as 54 + 6 + 6.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Each page holds 6 photos. How many pages are filled?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total photos = 66
+photos per page = 6
+pages filled = 66 / 6 = 11
+Answer: 11
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The album has 20 pages. How many are still empty?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total pages = 20
+pages filled = 11
+empty pages = 20 - 11 = 9
+Answer: 9
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Why did you take the numbers away to find the empty pages?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / curious</span></div><pre class="reply explanation">&lt;explanation&gt;We subtract because we want to find the difference between the total number of pages and the ones that are already full. It&#x27;s like taking away the full pages to see what is left over.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>S02-mem-b02-0092</b> / S02</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The scout troop printed 85 raffle tickets to raise money for a new canoe. At the fair, people bought tickets until only 17 were left. So, how many tickets were sold?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+tickets printed = 85
+tickets left = 17
+tickets sold = 85 - 17 = 68
+Answer: 68
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>On Monday the troop sells 12 more tickets at school. How many tickets are left?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+tickets left before = 17
+tickets sold on Monday = 12
+tickets left = 17 - 12 = 5
+Answer: 5
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>I don&#x27;t get where did the 12 come from?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">where from / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;The number 12 comes from the new part of the question, which says the troop sold 12 more tickets on Monday. I used that number to see how many were left after that day.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Could you show me how you got the answer for how many tickets were left after Monday again, but use smaller numbers so it&#x27;s easier to see?</div><div class="meta"><span class="badge bad">routed solution (expected explanation)</span><span class="chip">smaller numbers / careful</span></div><pre class="reply solution">&lt;solution&gt;
+tickets left before = 5
+tickets sold = 2
+tickets left = 5 - 2 = 3
+Answer: 3
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>How many tickets were sold in total?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge bad">answer 68 (expected 80)</span></div><pre class="reply solution">&lt;solution&gt;
+tickets printed = 85
+tickets left = 17
+tickets sold = 85 - 17 = 68
+Answer: 68
+&lt;/solution&gt;</pre></div></details><details class="conv" open><summary><b>S08-mem-b08-0031</b> / S08</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>At the bike shop a bell costs 13 dollars, and a mountain bike costs 7 times as much. How much does the mountain bike cost?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+cost of a bell = 13
+multiplier = 7
+cost of the mountain bike = 13 * 7 = 91
+Answer: 91
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>I thought the 13 was for the cost of a bell, but what is the 7 for?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / careful</span></div><pre class="reply explanation">&lt;explanation&gt;The 7 tells us how many times more expensive the mountain bike is compared to the bell. We use it to multiply the price of the bell to find the total cost.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Chen buys the mountain bike and the bell. How much does he spend?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+cost of the mountain bike = 91
+cost of the bell = 13
+total spent = 91 + 13 = 104
+Answer: 104
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Where did the 104 come from?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / curious</span></div><pre class="reply explanation">&lt;explanation&gt;To find the total spent, I added the cost of the mountain bike (91 dollars) and the cost of the bell (13 dollars). 91 + 13 = 104.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>How can I find the total cost of the bike and the bell faster than just adding them together?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">shortcut / careful</span></div><pre class="reply explanation">&lt;explanation&gt;You can find the total faster by thinking of the mountain bike as 7 bells. Since the bell is 13 dollars, you can multiply 13 by 8 to get the total for both.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>He pays with 11 ten-dollar notes. How much change should he get?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total spent = 104
+number of notes = 11
+value of notes = 10
+total money paid = 11 * 10 = 110
+change = 110 - 104 = 6
+Answer: 6
+&lt;/solution&gt;</pre></div></details><details class="conv" open><summary><b>sd-p2-h08-0022</b> / S09</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The art room has run out of glue just before the collage project. Mr. Haddad orders 8 bottles of glue, and each bottle costs 3 dollars. What does the order cost?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+number of bottles = 8
+cost per bottle = 3
+total cost = 8 * 3 = 24
+Answer: 24
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>He pays with a 50 dollar note. How much change should he get?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total cost = 24
+money paid = 50
+change = 50 - 24 = 26
+Answer: 26
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Is the 26 the amount of money he gets back?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / confused</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, that&#x27;s correct! The 26 represents the amount of change he receives after paying for the glue.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>With the change he buys paintbrushes at 2 dollars each. How many brushes can he buy?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+change = 26
+cost per brush = 2
+number of brushes = 26 / 2 = 13
+Answer: 13
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>I don&#x27;t get why we have to divide the money he has left by 2 to find out how many brushes he gets?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / confused</span></div><pre class="reply explanation">&lt;explanation&gt;When we know the total cost of something and how much one item costs, we divide to see how many items we can buy. Since each brush costs 2 dollars, we divide the total money by 2 to see how many times 2 fits into that amount.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Can you show me how to do the bit about the brushes using smaller amounts of money?</div><div class="meta"><span class="badge bad">routed solution (expected explanation)</span><span class="chip">smaller numbers / confident</span></div><details class="rejected"><summary>first try, rejected: no final Answer: &lt;number&gt; line</summary><pre>&lt;solution&gt;
+change = 26
+cost per brush = 2
+money used for 1 brush = 2
+money left = 26 - 2 = 24
+money used for 2 brushes = 2 * 2 = 4
+money left = 24 - 4 = 20
+money used for 3 brushes = 3 * 2 = 6
+money left = 20 - 6 = 14
+money used for 4 brushes = 4 * 2 = 8
+money left = 14 -</pre></details><pre class="reply solution">&lt;solution&gt;
+change = 26
+cost per brush = 2
+money left if we spent 2 = 26 - 2 = 24
+money left if we spent 4 = 24 - 2 = 22
+money left if we spent 6 = 22 - 2 = 20
+money left if we spent 8 = 20 - 2 = 18
+money left if we spent 10 = 18 - 2 = 16
+money left if we spent 12 = 1</pre></div></details><details class="conv" open><summary><b>sd-p2-h02-0044</b> / S04</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The slow bus to the beach takes 52 minutes. The express bus does the same trip in 17 minutes less. How long does the express take?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+time for slow bus = 52
+time saved = 17
+time for express bus = 52 - 17 = 35
+Answer: 35
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Is it right that the express bus takes 35 minutes because we just have to take away the time saved?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">check / curious</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, that&#x27;s correct! Since the express bus takes less time, we subtract the difference from the slow bus&#x27;s time to find the answer.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>How do you know that subtracting is the right way to find the time for the express bus?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">check / confident</span></div><pre class="reply explanation">&lt;explanation&gt;We know this because the problem says the express bus takes &quot;less&quot; time than the slow bus. When we want to find a smaller amount that is a certain amount less than a starting number, we use subtraction.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Kemal rides the express there and back. How many minutes does he spend on the bus?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+time for express bus = 35
+number of trips = 2
+total time = 35 * 2 = 70
+Answer: 70
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>How much time does he save compared with taking the slow bus both ways?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+time for slow bus = 52
+time for express bus = 35
+time for slow bus both ways = 52 * 2 = 104
+time for express bus both ways = 70
+time saved = 104 - 70 = 34
+Answer: 34
+&lt;/solution&gt;</pre></div></details><details class="conv" open><summary><b>sd-p1-h08-0037</b> / S02</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Mariam had 23 sunflowers growing behind her flower shop. She cut 9 of them for a wedding order. How many sunflowers are still growing?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+sunflowers at first = 23
+sunflowers cut = 9
+sunflowers left = 23 - 9 = 14
+Answer: 14
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Could you show me how to find how many sunflowers are left using a different way?</div><div class="meta"><span class="badge bad">routed solution (expected explanation)</span><span class="chip">another way / curious</span></div><pre class="reply solution">&lt;solution&gt;
+sunflowers at first = 23
+sunflowers cut = 9
+count up from 9 to 23 = 9 + 1 = 10
+count up from 10 to 23 = 10 + 4 = 14
+Answer: 14
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Then she plants 6 new ones. How many sunflowers are in the garden now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+sunflowers left = 14
+new sunflowers = 6
+total sunflowers = 14 + 6 = 20
+Answer: 20
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Could you show me how to do the part where she plants the new ones again, but use smaller numbers?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">smaller numbers / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;To practice, imagine she had 5 sunflowers and then planted 2 more. You would just add the 2 new ones to the 5 she already had to find the total.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Does that mean I just add the new ones together?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, because &quot;planting new ones&quot; means adding to the amount she already had. You take the starting number and add the new amount to find the total.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Next week she plans to cut half of them. How many will she cut?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+sunflowers in the garden = 20
+half of 20 = 20 / 2 = 10
+Answer: 10
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Is there a quicker way to figure out how many she will cut next week?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">shortcut / confident</span></div><pre class="reply explanation">&lt;explanation&gt;You can find half of a number by splitting it into two equal groups. Since 20 is an even number, you can think of it as two groups of 10. &lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>S10-mem-b01-0049</b> / S10</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>There are 28 students in an art class. Each one makes 3 clay pots, and 7 pots crack in the kiln. How many pots come out whole?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+number of students = 28
+pots per student = 3
+total pots made = 28 * 3 = 84
+pots that cracked = 7
+whole pots = 84 - 7 = 77
+Answer: 77
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Wait, does the 84 mean how many pots they made altogether before they went into the oven?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / curious</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, that&#x27;s right! The 84 represents the total number of pots the students made before any of them were put into the kiln. &lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The teacher puts the whole pots on 7 shelves equally. How many pots are on each shelf?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+whole pots = 77
+number of shelves = 7
+pots per shelf = 77 / 7 = 11
+Answer: 11
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Students take 4 pots home from every shelf. How many pots stay on the shelves?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+pots per shelf = 11
+pots taken home per shelf = 4
+pots staying per shelf = 11 - 4 = 7
+number of shelves = 7
+total pots staying = 7 * 7 = 49
+Answer: 49
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Why did you multiply by the number of shelves to find the pots staying?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;Since there are 7 shelves and each shelf has 7 pots left, we multiply the number of pots on one shelf by the total number of shelves. This gives us the total for all the shelves at once.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Does the number 7 that you multiplied by mean the number of shelves?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / careful</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, that is correct! We multiplied by 7 because there are 7 shelves in total, and we wanted to find the total number of pots across all of them.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>sd-p2-b14-0010</b> / S05</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Clipped end to end, 8 identical segments make up the robotics club&#x27;s snake robot. Every segment measures 12 centimetres. How long is the snake from nose to tail?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+number of segments = 8
+length of one segment = 12
+total length = 8 * 12 = 96
+Answer: 96
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Is there a quicker way to find out how long the snake is from nose to tail?</div><div class="meta"><span class="badge bad">routed solution (expected explanation)</span><span class="chip">shortcut / careful</span></div><pre class="reply solution">&lt;solution&gt;
+number of segments = 8
+length of one segment = 12
+total length = 8 * 12 = 96
+Answer: 96
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Ingrid adds 3 more segments of the same size. How long is the snake now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+original length = 96
+number of new segments = 3
+length of one segment = 12
+length of new segments = 3 * 12 = 36
+new length = 96 + 36 = 132
+Answer: 132
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Is it because you added the new segments together to get the 132, or did you do something else to find the new length?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / confident</span></div><pre class="reply explanation">&lt;explanation&gt;I added the length of the 3 new segments to the original length of the snake. This is because the snake grew longer by exactly that amount.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Each segment needs 4 batteries. How many batteries does the longer snake need?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+length of the longer snake = 132
+number of segments in the longer snake = 132 / 12 = 11
+batteries per segment = 4
+total batteries = 11 * 4 = 44
+Answer: 44
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The club had a box of 60 batteries. How many are left after the snake is filled?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+batteries in the box = 60
+batteries used = 44
+batteries left = 60 - 44 = 16
+Answer: 16
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Wait, why did you have to divide the snake&#x27;s length by 12 to find out how many segments there were?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / confused</span></div><pre class="reply explanation">&lt;explanation&gt;Since each segment is 12cm long, dividing the total length by 12 tells us how many 12cm pieces fit into the whole snake. It&#x27;s like sharing the total length into groups of 12.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>So, is there any other way to figure out the number of segments?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">another way / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, you can also count the segments by adding them up: the original 8 segments plus the 3 new ones Ingrid added. This gives you 8 + 3 = 11 segments.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>sd-p1-b07-0049</b> / S02</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>A bike shop had 13 red scooters in its window. Customers bought 8 of them during the Saturday sale. How many red scooters were still in the window after the sale?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+scooters in window = 13
+scooters bought = 8
+scooters left = 13 - 8 = 5
+Answer: 5
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Where did the 8 come from in the part about the scooters bought?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">where from / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;The number 8 comes from the part of the story that says &quot;Customers bought 8 of them&quot;.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Why does that part of the story mean the scooters were taken away from the shop?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / careful</span></div><pre class="reply explanation">&lt;explanation&gt;When customers buy something, it means they take it home with them, so there are fewer items left in the shop. This is why we subtract that number from the total.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>On Monday a delivery brings 3 boxes with 4 scooters in each. How many red scooters does the shop have now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+scooters left = 5
+boxes delivered = 3
+scooters per box = 4
+scooters in delivery = 3 * 4 = 12
+total scooters = 5 + 12 = 17
+Answer: 17
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The window has room for 20 scooters. How many more could still fit?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+scooters in window = 17
+room for scooters = 20
+more that could fit = 20 - 17 = 3
+Answer: 3
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Hmm, for the bit about how many more could fit in the window, could we do that bit in a different way?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">another way / confused</span></div><pre class="reply explanation">&lt;explanation&gt;We can also think of it as counting up from the number of scooters we have (17) until we reach the total space (20). If we count 18, 19, 20, we see that it takes 3 more to fill the space.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>S07-mem-b05-0010</b> / S07</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Last week a café bought jars of honey from a bee farm and paid $84 in all. The jars had little striped lids. If every jar cost $6, how many jars did the café buy?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge bad">check: not a fact or a calculation: &#x27;number of jars = 84 / 6&#x27;</span><span class="badge ok">answer correct</span><span class="badge warn">second try</span></div><details class="rejected"><summary>first try, rejected: not a fact or a calculation: &#x27;number of jars = 84 / 6&#x27;</summary><pre>&lt;solution&gt;
+total cost = 84
+cost per jar = 6
+number of jars = 84 / 6
+Answer: 14
+&lt;/solution&gt;</pre></details><pre class="reply solution">&lt;solution&gt;
+total cost = 84
+cost per jar = 6
+number of jars = 84 / 6
+Answer: 14
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>I don&#x27;t get what the number 6 stands for in the story?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / careful</span></div><pre class="reply explanation">&lt;explanation&gt;The number 6 represents the price of one single jar of honey. It tells us how much money the café had to pay for each jar they bought.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Hang on, could you show me how you got the number of jars using smaller numbers, like if the total cost was just $12?</div><div class="meta"><span class="badge bad">routed solution (expected explanation)</span><span class="chip">smaller numbers / confused</span></div><pre class="reply solution">&lt;solution&gt;
+total cost = 12
+cost per jar = 6
+number of jars = 12 / 6 = 2
+Answer: 2
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The café puts 2 jars on each table. How many tables get honey?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total jars = 14
+jars per table = 2
+number of tables = 14 / 2 = 7
+Answer: 7
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>So, why is 14 the total number of jars?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">where from / shy</span></div><pre class="reply explanation">&lt;explanation&gt;The total cost was $84 and each jar cost $6. When we divide 84 by 6, we find that 14 jars were bought.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>I don&#x27;t get the bit about dividing the total money by the price of one jar—why does doing that tell me how many jars they got?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / confident</span></div><pre class="reply explanation">&lt;explanation&gt;Think of it like sharing: if you have 12 sweets and put them into bags of 2, you are finding out how many bags you can fill. Dividing the total money by the price of one jar tells us how many &quot;groups&quot; of $6 are inside the $84.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Each of those tables also gets a $3 pot of jam. What does the café spend on jam?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+number of tables = 7
+cost of one jam pot = 3
+total cost of jam = 7 * 3 = 21
+Answer: 21
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Wait, is there a quicker way to find out how much they spend on the jam pots?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">shortcut / careful</span></div><pre class="reply explanation">&lt;explanation&gt;You can find the answer by multiplying the number of tables by the cost of one jam pot. Since we already knew there were 7 tables, we just do 7 times 3.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>sd-p2-h06-0099</b> / S06</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Two deckhands at the harbor share 64 dollars of tips equally. Work out each deckhand&#x27;s share.</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total tips = 64
+number of deckhands = 2
+each share = 64 / 2 = 32
+Answer: 32
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Hang on, is there another way to work out how much money each deckhand gets?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">another way / confident</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, you can also think of it as &quot;halving&quot; the total amount. Since there are two people sharing equally, you can divide the 64 dollars by 2 to find the answer.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Wait, why does &quot;halving&quot; mean the same thing as dividing the money by 2?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / confident</span></div><pre class="reply explanation">&lt;explanation&gt;When you share something between two people equally, you are splitting it into two equal parts. &quot;Halving&quot; is just the special name we use for splitting something into two equal parts.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>One deckhand spends 15 dollars on lunch. How much of his share does he have left?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+each share = 32
+cost of lunch = 15
+money left = 32 - 15 = 17
+Answer: 17
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Why did you take the money away for the lunch?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">why / curious</span></div><pre class="reply explanation">&lt;explanation&gt;The problem asks how much money is left after he spends some, so we subtract the cost of the lunch from his total share. This tells us how much he still has in his pocket.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The other deckhand saves all of her share. How much more money does she have than the first deckhand now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+first deckhand&#x27;s money left = 17
+second deckhand&#x27;s share = 32
+difference = 32 - 17 = 15
+Answer: 15
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The next day they each get another 8 dollars in tips. How much do they have together now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+first deckhand&#x27;s money left = 17
+second deckhand&#x27;s money = 32
+first deckhand&#x27;s new total = 17 + 8 = 25
+second deckhand&#x27;s new total = 32 + 8 = 40
+total together = 25 + 40 = 65
+Answer: 65
+&lt;/solution&gt;</pre></div></details><details class="conv" open><summary><b>S03-mem-b07-0037</b> / S03</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Grace&#x27;s customer asks for a bouquet with 7 lilies and 12 carnations. How many flowers will Grace put in it?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+number of lilies = 7
+number of carnations = 12
+total flowers = 7 + 12 = 19
+Answer: 19
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Does that mean I have to count both the lilies and the carnations together to find the answer?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / curious</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, that&#x27;s right! Because the customer wants both types of flowers in one bouquet, we add them together to find the total.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The customer then asks for 4 more lilies. How many flowers are in the bouquet now?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+previous total = 19
+additional lilies = 4
+new total = 19 + 4 = 23
+Answer: 23
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>So, can you explain the new total part again?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / shy</span></div><pre class="reply explanation">&lt;explanation&gt;To find the new total, we take the 19 flowers that were already in the bouquet and add the 4 new lilies. This gives us a total of 23 flowers.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>S06-mem-b04-0070</b> / S06</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The head chef simmered 16 litres of broth and divided it evenly among 4 soup pots. Her apron was covered in flour. How much broth went into each pot?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+total broth = 16
+number of pots = 4
+broth per pot = 16 / 4 = 4
+Answer: 4
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>How come you divided by 4, but does that actually mean the broth is being split up into pots?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">lost / careful</span></div><pre class="reply explanation">&lt;explanation&gt;Yes, division is exactly what we use when we want to split a total amount into equal groups. In this case, the &quot;groups&quot; are the 4 soup pots.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>Does that mean there isn&#x27;t another way to work out how much broth is in each pot?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">another way / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;You could also use multiplication to check your answer, like thinking &quot;4 pots times what amount equals 16?&quot;. You could also think of it as repeated subtraction, taking away 4 litres at a time until you reach zero.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>She adds 3 litres of water to each pot. How much liquid is in one pot?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+broth per pot = 4
+water added = 3
+total liquid = 4 + 3 = 7
+Answer: 7
+&lt;/solution&gt;</pre></div></details><details class="conv" open><summary><b>sd-p2-b07-0074</b> / S04</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>The dog park volunteers needed 45 dollars for a new water fountain. Their bake sale raised 18 dollars more than that. How much did the bake sale raise?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+money needed = 45
+extra money raised = 18
+total raised = 45 + 18 = 63
+Answer: 63
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>After paying for the fountain, they spend the extra money on rolls of dog waste bags at 3 dollars a roll. How many rolls can they buy?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+money needed = 45
+total raised = 63
+extra money = 63 - 45 = 18
+cost per roll = 3
+number of rolls = 18 / 3 = 6
+Answer: 6
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>What does the 18 in the part about the extra money they spent represent in the story?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">meaning / confident</span></div><pre class="reply explanation">&lt;explanation&gt;The 18 represents the amount of money they had left over after paying for the water fountain. It is the difference between the money they raised and the cost of the fountain.&lt;/explanation&gt;</pre></div></details><details class="conv" open><summary><b>S02-mem-b07-0013</b> / S02</summary><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>Ama brought 30 cups of bean sprouts to the science fair to show how beans grow. She had grown them for 3 weeks. &quot;I only have 21 now, because some got knocked over,&quot; she says. How many cups got knocked over?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+cups at start = 30
+cups left = 21
+cups knocked over = 30 - 21 = 9
+Answer: 9
+&lt;/solution&gt;</pre></div><div class="turn"><div class="pupil question"><span class="who">pupil / follow-up question</span>But where did the 21 come from?</div><div class="meta"><span class="badge ok">routed explanation</span><span class="chip">where from / impatient</span></div><pre class="reply explanation">&lt;explanation&gt;The number 21 is the amount of cups Ama has left after some were knocked over. She told us this number in the story.&lt;/explanation&gt;</pre></div><div class="turn"><div class="pupil task"><span class="who">pupil / follow-up task</span>A judge asks her to put 4 of the cups on the display table. How many cups are not on the display table?</div><div class="meta"><span class="badge ok">routed solution</span><span class="badge ok">check passed</span><span class="badge ok">answer correct</span></div><pre class="reply solution">&lt;solution&gt;
+cups left = 21
+cups on display table = 4
+cups not on display table = 21 - 4 = 17
+Answer: 17
+&lt;/solution&gt;</pre></div></details></main></body></html>
