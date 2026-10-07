@@ -1,4 +1,29 @@
-RUNNING   nothing. No GPU in use, no agents.
+STATUS 2026-10-08 (end of session; pick up here)
+  RUNNING   no GPU. 7 background agents (read-only / web; no code edits) whose outputs arrive overnight:
+            code review x5 -> aggregated into thesis_work/code_review.html (training review already in:
+              H1 data-plateau test set shifts with max_training_examples -> weakens the plateau finding;
+              H2 stale temp checkpoint after a hard crash; M1 warm-up misses batch 1; M3 eval rollouts
+              64-74% of wall-clock; M4 reverse KL on a clamped teacher; M5 StudentModel.generate stop rule),
+            thesis_work/literature_review.html + literature.bib, thesis_work/thesis_positioning.html
+            (adversarial: objections, why worth doing, novelty / low-hanging fruit),
+            thesis_work/how_it_works.html (interactive slideshow). Code fixes wait for the user's review.
+  SCOPE FROZEN (2026-10-07, user: "feature creep"): v1 = template bank (3,418 after 43 exclusions,
+            questions/excluded.jsonl), three routes (solution / explanation / out_of_scope answered by the
+            harness), what-if = a new task, pupil-given numbers = a new task, harness re-asks a route with "<"
+            only when no tag came back. Deferred: writers' v2 wish list, concern/wellbeing route (thesis
+            limitation), general agent module, per-turn story features.
+  DONE 2026-10-07: template pupil + bank (10 writers), pilots 3-5 + sweeps v1/v2 (template_pilot.html):
+            what-if 229/239 routed, answers = code 221/229; smaller numbers 101/102; pushback firm 116/116;
+            off-topic 194/200; harness 30/31 questions, one misroute cascaded (44 instead of 2).
+            Novelty check (novelty_check.md): holds as a combination. Thesis description finalised.
+  NEXT      1. user reviews code_review.html; fix what is agreed.
+            2. thin end-to-end slice locally (~1k problems: labels ~3h, threads ~2h, scoring, vocab incl.
+               explanations, one student, eval with gold history vs own history + SVAMP with unknown tokens).
+            3. compute decision for the full run. OPEN QUESTION: may cloud runs go unattended?
+               All final teacher data from one precision (bf16 cloud or NF4 local, not mixed).
+            4. user: ~100 human-written follow-up messages on test problems; start the lit-review chapter.
+
+RUNNING   (2026-10-05) nothing. No GPU in use, no agents.
           math_tutor CORPUS COMPLETE 2026-10-05 (a4764af): 34,002 items, 130,546 problems with
           renumbering, 306,389 teacher turns (295,458 train + 10,931 test), held-out shapes
           415 items. Rebuild is byte-identical (prune -> renumber -> build_corpus).
