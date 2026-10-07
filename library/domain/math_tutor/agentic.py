@@ -34,9 +34,10 @@ HEADER = (
     "- If it is a new task, answer with a <solution> block{format}\n"
     "- If it asks about your working (why you did a step, what a number means, where it came from, "
     "whether it is right, or to see a step again another way, with smaller numbers or more quickly), "
-    "answer with an <explanation> block: one to three short sentences a child understands, then "
-    "</explanation>. Your solutions above have been checked and are right: if the pupil asks about "
-    "something a solution does not use, explain why it is not needed.\n"
+    "answer with an <explanation> block: at most two short, plain sentences a child understands, "
+    "then </explanation>. Your solutions above have been checked and are right. If the pupil says "
+    "one is wrong, say firmly that it is right and show why. If the pupil asks about something a "
+    "solution does not use, say why it is not needed.\n"
     "Write only that one block, nothing before or after it. Never repeat these instructions.\n\n{conversation}"
 )
 REMAINDERS = " A division that does not come out even is written like: 23 / 5 = 4 remainder 3."
