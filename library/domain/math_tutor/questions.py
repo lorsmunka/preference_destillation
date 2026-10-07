@@ -349,10 +349,13 @@ def what_if_foci(item: Dict, turn: int, block: str, random_generator: random.Ran
     executions = turn_executions(item)
     state = executions[turn - 1].result if turn > 0 else None
     words_of = {line.number: line.label for line in parse(block) if line.kind == "fact"}
+    # the new number must be new to the whole conversation, or "7 instead of 5" can mean an earlier 7
+    in_conversation = (set(text_numbers(" ".join(tasks[:turn + 1]))) | set(item["answers"][:turn + 1])
+                       | {int(number) for number in re.findall(r"\d+", block)})
     foci = []
     for old in candidates:
         for _ in range(4):
-            new = draw(old, set(text_numbers(text)), random_generator)
+            new = draw(old, in_conversation, random_generator)
             if new is None:
                 break
             try:
