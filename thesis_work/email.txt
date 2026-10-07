@@ -1,0 +1,20 @@
+Sziasztok,
+
+A Szakdolgozat tárgy teljesítéséhez kell, hogy legyen egy végleges szakdolgozat téma kiírásotok. Ennek az előállítása az oktató feladata, általában én is szoktam csinálni a hallgatókkal folyamatosan egyeztetve, de olyan sokan vagytok idén, hogy kérnék ezügyben egy kis segítséget.
+
+Kérnék mindenkit, hogy írjon egy pár bekezdésből álló kiírást a saját munkájáról és küldje át. Az majd átnézem, felpimpelem és leadom. Kérdés esetén visszaküldöm és iterálunk rajta néhány kört.
+
+Itt van néhány minta, csak hogy kb. lássátok a formátumot (felszólító mondatok), illetve hogy miket szoktam írni. Mint látható, nem igényel kreativitást a dolog, csak le kell írni, hogy mi az elvárás egy szakdolgozattal kapcsolatban (irodalomkutatás, tervezés, implementáció, értékelés), ami szinte mindenkinél ugyanaz. Ezt szoktam kiegészíteni néhány mondattal az adott munkára vonatkozó speciális követelményekkel, jellemzőkkel.
+
+"Tervezzen meg és implementáljon egy olyan algoritmust, amely képes üveg objektumok repedéseinek és töréseinek valósághű szimulációjára! Vizsgálja meg a hasonló célú fejlesztéseket (játékok, egyéb szoftverek), a rendelkezésre álló eszközöket, módszereket, algoritmusokat! Az irodalomkutatás eredményei alapján készítsen részletes specifikációt, válassza ki a használni kívánt eszközöket!
+Ezt követően tervezze meg az elkészítendő rendszer modelljét, mely egy előre megadott paraméterekkel rendelkező üveg objektum és az azt érő erőhatások alapján képes meghatározni a bekövetkező deformációkat! A rendszert moduláris szemlélettel tervezze meg, hogy azt be lehessen építeni tetszőleges alkalmazásba (pl. játékokba)! Ezt követően implementálja a megtervezett alkalmazást az erre a célra kiválasztott eszközök segítségével! Végezze el a szükséges teszteket, amelyek segítségével igazolni tudja annak helyes működését! Végül értékelje az elkészült rendszert, és készítse el a kapcsolódó dokumentációt!"
+
+"Tervezzen meg és implementáljon egy olyan rendszert, amely képes egy tetszőleges formájú tetőre megadott számú napelem optimális elhelyezését megadni, majd ezeket AR segítségével vizualizálni! Elsőként vizsgálja meg az ehhez hasonló rendszereket, áttekintve az azok által használt optimalizálási algoritmusokat, illetve a technikai lehetőségeket!
+Ezt követően tervezze meg a saját alkalmazás modelljét, ami megfelel a feladat követelményeinek! Tetszőleges eszközök segítségével implementálja az így megtervezett rendszert! A rendszer képes legyen a kiterjesztett valóság alapú megjelenítésre emulátor segítségével, illetve valós környezetben HoloLens2 eszközön! Tesztek segítségével ellenőrizze az elkészült alkalmazás működését, és értékelje a fejlesztés eredményeit!"
+
+Pár perces munka, plz küldjétek át mielőbb, hogy haladjunk vele.
+
+Köszönöm,
+
+Üdv,
+Sanyo
