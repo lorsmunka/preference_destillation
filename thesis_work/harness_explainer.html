@@ -42,7 +42,8 @@ th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(-
 .box .role { display:inline-block; font-size:11px; text-transform:uppercase; letter-spacing:.05em; padding:0 6px; border-radius:5px; margin-right:6px; }
 .role.h { background:var(--q); color:var(--q-fg); } .role.m { background:var(--sol); color:var(--sol-fg); } .role.p { background:var(--task); color:var(--task-fg); }
 .arrow { text-align:center; color:var(--muted); line-height:1; }
-.branch { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.branch { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.blk.off { background:var(--msg); color:var(--muted); font-style:italic; }
 .branch > div { display:grid; gap:8px; align-content:start; border:1px dashed var(--border); border-radius:12px; padding:8px; }
 .branch .title { font-weight:600; font-size:13px; }
 .step { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin:14px 0; }
@@ -77,8 +78,8 @@ footer { margin-top:40px; font-size:12.5px; color:var(--muted); }
 
 <div class="tldr"><b>TL;DR</b>
 <ul>
-<li><b>The model has one job:</b> given a conversation, write one block. The block's first tag is the decision: <code>&lt;solution&gt;</code> (a new task) or <code>&lt;explanation&gt;</code> (a question about the working).</li>
-<li><b>The harness has the rest:</b> it keeps the conversation, decides what the model sees, reads the first tag, asks for the block, checks it, asks once more if the check fails, and stores the result.</li>
+<li><b>The model has one job:</b> given a conversation, write one block. The block's opening tag is the decision: <code>&lt;solution&gt;</code> (a new task, or a what-if: a new calculation), <code>&lt;explanation&gt;</code> (a question about the working) or <code>&lt;out_of_scope&gt;</code> (not about this maths).</li>
+<li><b>The harness has the rest:</b> it keeps the conversation, decides what the model sees, reads the first tag, asks for the block, checks it, asks once more if the check fails, and stores the result. Off-topic messages it answers itself, with a fixed sentence.</li>
 <li><b>Two kinds of history.</b> The <b>main line</b> holds tasks and solutions. The <b>side thread</b> holds questions and explanations. A new task closes the side thread, so the model solves from a clean history. The harness still keeps the full transcript.</li>
 <li><b>It does not work token by token.</b> The harness acts <i>between</i> requests. Inside a request the model runs freely until a stop string (<code>&lt;/solution&gt;</code>, <code>&lt;/explanation&gt;</code>) or its token limit.</li>
 <li><b>Training data comes from the same rules.</b> Every training example is a context the harness would build (same <code>Conversation</code> class), so what the student learns on is what it gets at run time.</li>
@@ -89,14 +90,15 @@ footer { margin-top:40px; font-size:12.5px; color:var(--muted); }
 <div class="panel"><h3>The model</h3><ul>
 <li>reads a tagged conversation that ends in <code>&lt;message&gt;</code></li>
 <li>writes one block: a facts-first <code>&lt;solution&gt;</code> or a short <code>&lt;explanation&gt;</code></li>
-<li>the first tag is the route; nothing before or after the block</li>
+<li>the opening tag is the route, decided at the <b>second</b> token (every tag starts with <code>&lt;</code>); nothing before or after the block</li>
 <li>never sees the instructions: the teacher prompt is for Gemma only, and the student learns the behaviour from the examples</li>
 </ul></div>
 <div class="panel"><h3>The harness</h3><ul>
 <li>the conversation state: main line, side thread, full transcript</li>
 <li>the context rules: what each request contains</li>
 <li>the route: reads the first tag, and treats an unclear route as a task (the safe side)</li>
-<li>the checks: every solution line is well formed and true, and an explanation must not take a checked solution back</li>
+<li>off-topic: replies itself, "This question is outside the scope of this task.", and keeps the message out of the model's context</li>
+<li>the checks: every solution line is well formed and true, and an explanation must not take a checked solution back, nor agree with a pupil's wrong answer</li>
 <li>asking again: once, at temperature 0.7, if a check fails</li>
 <li>tidying: fills in a missing "= result" before a solution enters the history</li>
 </ul></div>
@@ -107,19 +109,20 @@ footer { margin-top:40px; font-size:12.5px; color:var(--muted); }
 <span class="blk task">&lt;task&gt;</span><span class="blk solution">&lt;solution&gt;</span>
 <span class="blk question">&lt;question&gt;</span><span class="blk explanation">&lt;explanation&gt;</span>
 <span class="blk message">&lt;message&gt; (the newest pupil input, not typed yet)</span>
+<span class="blk off">&lt;out_of_scope&gt; (a reply tag only: the harness answers)</span>
 </div>
-<p>Past turns carry their type. The newest input is an untyped <code>&lt;message&gt;</code>, because deciding its type is the model's first token. Once the harness knows the type, the message enters the history as a <code>&lt;task&gt;</code> or a <code>&lt;question&gt;</code>.</p>
+<p>Past turns carry their type. The newest input is an untyped <code>&lt;message&gt;</code>, because deciding its type is the model's first decision. Once the harness knows the type, the message enters the history as a <code>&lt;task&gt;</code> or a <code>&lt;question&gt;</code>.</p>
 
 <h2>One agent turn</h2>
 <div class="flow">
 <div class="box"><span class="role p">pupil</span>sends a message</div>
 <div class="arrow">↓</div>
-<div class="box"><span class="role h">harness</span><b>route request:</b> main line + open side thread + <code>&lt;message&gt;</code>, max 24 tokens, greedy. <i>With the student this costs one token: the first token is the tag.</i></div>
+<div class="box"><span class="role h">harness</span><b>route request:</b> main line + open side thread + <code>&lt;message&gt;</code>, max 24 tokens, greedy. <i>With the student this costs two tokens: <code>&lt;</code> and the tag's first word.</i></div>
 <div class="arrow">↓</div>
-<div class="box"><span class="role m">model</span>its first tag decides the branch</div>
+<div class="box"><span class="role m">model</span>its opening tag decides the branch</div>
 <div class="arrow">↓</div>
 <div class="branch">
-<div><span class="title">&lt;solution&gt;: a follow-up task</span>
+<div><span class="title">&lt;solution&gt;: a follow-up task or a what-if</span>
 <div class="box"><span class="role h">harness</span><b>solve request:</b> main line only + <code>&lt;message&gt;</code>; the side thread is dropped. Starts the reply with <code>&lt;solution&gt;\n</code> and stops at <code>&lt;/solution&gt;</code>.</div>
 <div class="box"><span class="role m">model</span>writes the facts, the calculations and <code>Answer:</code></div>
 <div class="box"><span class="role h">harness</span><b>check_lines:</b> every line is a fact or a true calculation, and the block ends in <code>Answer: N</code>. If it fails, asks once more at T&nbsp;0.7.</div>
@@ -127,9 +130,13 @@ footer { margin-top:40px; font-size:12.5px; color:var(--muted); }
 </div>
 <div><span class="title">&lt;explanation&gt;: a follow-up question</span>
 <div class="box"><span class="role h">harness</span><b>explain request:</b> main line + side thread + <code>&lt;message&gt;</code>. Starts the reply with <code>&lt;explanation&gt;</code> and stops at <code>&lt;/explanation&gt;</code>.</div>
-<div class="box"><span class="role m">model</span>writes one to three child-level sentences</div>
-<div class="box"><span class="role h">harness</span><b>check_explanation:</b> not empty and does not take the solution back ("I missed", "should have", "sorry"…). If it fails, asks once more at T&nbsp;0.7.</div>
+<div class="box"><span class="role m">model</span>writes at most two short, child-level sentences</div>
+<div class="box"><span class="role h">harness</span><b>check_explanation:</b> not empty and does not take the solution back ("I missed", "should have", "sorry"…), and to pushback does not agree ("you're right"). If it fails, asks once more at T&nbsp;0.7.</div>
 <div class="box"><span class="role h">harness</span>stores the explanation in the side thread; the main line is unchanged</div>
+</div>
+<div><span class="title">&lt;out_of_scope&gt;: off-topic</span>
+<div class="box"><span class="role h">harness</span>replies itself: <i>"This question is outside the scope of this task."</i> The model writes nothing more.</div>
+<div class="box"><span class="role h">harness</span>the message never enters the model's context; an open thread stays as it was</div>
 </div>
 </div>
 </div>
@@ -335,7 +342,7 @@ Answer: 36
 
 <details><summary>What Gemma reads around the conversation (the teacher prompt, teacher only)</summary>
 <pre class="ctx">You are a maths tutor for primary-school pupils. Below is the tutoring conversation so far. The last block, &lt;message&gt;, is the pupil&#x27;s new message.
-- If it is a new task, answer with a &lt;solution&gt; block: first one line for each number you use, written as what it is = number (words from the problem; a number from an earlier answer counts too; numbers without units); then one line per calculation that is needed, written as what it is = calculation = result, using only + - * / (every calculation line ends with = and its result); then the line Answer: &lt;number&gt;; then &lt;/solution&gt;. A division that does not come out even is written like: 23 / 5 = 4 remainder 3. Example:
+- If it is a new task, or asks what the answer would be if a number were different (a new calculation), answer with a &lt;solution&gt; block: first one line for each number you use, written as what it is = number (words from the problem; a number from an earlier answer counts too; numbers without units); then one line per calculation that is needed, written as what it is = calculation = result, using only + - * / (every calculation line ends with = and its result); then the line Answer: &lt;number&gt;; then &lt;/solution&gt;. No numbering or bullet points. A division that does not come out even is written like: 23 / 5 = 4 remainder 3. Example:
 &lt;solution&gt;
 tetras bought later = 4
 price of a tetra = 2
@@ -344,12 +351,20 @@ cost of 4 more tetras = 4 * 2 = 8
 money left = 13 - 8 = 5
 Answer: 5
 &lt;/solution&gt;
-- If it asks about your working (why you did a step, what a number means, where it came from, whether it is right, or to see a step again another way, with smaller numbers or more quickly), answer with an &lt;explanation&gt; block: one to three short sentences a child understands, then &lt;/explanation&gt;. Your solutions above have been checked and are right: if the pupil asks about something a solution does not use, explain why it is not needed.
+- If it asks about your working (why you did a step, what a number means, where it came from, whether it is right, or to see a step again another way, with smaller numbers or more quickly), answer with an &lt;explanation&gt; block: at most two short, plain sentences a child understands, then &lt;/explanation&gt;. Your solutions above have been checked and are right. If the pupil says one is wrong, say firmly that it is right and show why. If the pupil asks about something a solution does not use, say why it is not needed.
+- If it is not about this maths at all, write only &lt;out_of_scope&gt;
 Write only that one block, nothing before or after it. Never repeat these instructions.
 
 {the conversation, exactly as in the examples above}</pre>
 <p class="tiny">The student is trained on the conversation text alone, without these instructions. Its behaviour comes from the examples.</p>
 </details>
+
+
+<h2>Where the pupil's messages come from</h2>
+<p>In pilots and in the training data the pupil is a <b>template pupil</b>. A bank of thousands of message templates (written once by writer agents) is filled in from the solution the pupil sees: a step (<code>{operation_phrase}</code> = "divide 63 by 7"), a fact, the answer, a number the story does not use, a <b>computed</b> wrong answer to push back with, or a <b>what-if</b> whose new answer comes from running the problem's code again. Many templates are niche: they apply only when a condition holds (a remainder, a money story, a number from an earlier answer). Each message after the first is about something related to the one before. Gemma only replies.</p>
+<div class="table-wrap"><table><tr><th>Kind</th><th>Route</th><th>What the pupil does</th></tr>
+<tr><td>why</td><td><code>explanation</code></td><td>why the tutor did a step (this operation, these numbers, this order)</td></tr><tr><td>meaning</td><td><code>explanation</code></td><td>what a number or a step stands for in the story; often as a guess in the story&#x27;s words, asking if it is right</td></tr><tr><td>where_from</td><td><code>explanation</code></td><td>where a number came from (the problem, an earlier answer, a word like &#x27;pair&#x27;)</td></tr><tr><td>check</td><td><code>explanation</code></td><td>whether a line or the answer is really right, or how the tutor knows</td></tr><tr><td>another_way</td><td><code>explanation</code></td><td>whether a step or the whole problem could be done another way</td></tr><tr><td>lost</td><td><code>explanation</code></td><td>the pupil does not understand a step and asks for it more simply</td></tr><tr><td>shortcut</td><td><code>explanation</code></td><td>whether there is a quicker way</td></tr><tr><td>smaller_numbers</td><td><code>explanation</code></td><td>to see a step again with smaller, easier numbers</td></tr><tr><td>wrong_operation</td><td><code>explanation</code></td><td>why the tutor did not use another operation here (why not take away, why not multiply)</td></tr><tr><td>distractor</td><td><code>explanation</code></td><td>about a number in the problem that the solution does not use</td></tr><tr><td>pushback</td><td><code>explanation</code></td><td>the pupil says the tutor is wrong and gives their own (wrong) answer; the tutor must hold firm</td></tr><tr><td>follow</td><td><code>explanation</code></td><td>a follow-up to the tutor&#x27;s last explanation: still lost, why, say it simpler, an example, so does that mean...</td></tr><tr><td>what_if</td><td><code>solution</code></td><td>what the answer would be if a number were different (a new calculation: the tutor solves again)</td></tr><tr><td>off_topic</td><td><code>out_of_scope</code></td><td>not about this maths at all (other subjects, personal questions, jokes, games, rude); the harness answers</td></tr>
+</table></div>
 
 <h2>The model is called through requests</h2>
 <p>The harness talks to the model only through requests, and the model plug is anything with <code>generate(requests) → texts</code>. Today that is <code>GemmaTutor</code> (the teacher as the tutor); the distilled student plugs in at the same place.</p>
@@ -358,7 +373,7 @@ Write only that one block, nothing before or after it. Never repeat these instru
 <tr><td>route</td><td>main line + open thread + message</td><td>—</td><td>— (reads the first tag)</td><td>24 / greedy</td></tr>
 <tr><td>solution</td><td>main line + message</td><td><code>&lt;solution&gt;\n</code></td><td><code>&lt;/solution&gt;</code></td><td>120 / greedy (re-ask: 0.7)</td></tr>
 <tr><td>explanation</td><td>main line + thread + message</td><td><code>&lt;explanation&gt;</code></td><td><code>&lt;/explanation&gt;</code></td><td>120 / greedy (re-ask: 0.7)</td></tr>
-<tr><td>pupil (pilots only)</td><td>pupil prompt + conversation</td><td>—</td><td>end of line</td><td>60 / 0.9</td></tr>
+<tr><td>(pupil)</td><td colspan="4">no model call: the message comes from the template bank, filled in from the tutor's own last solution</td></tr>
 </table></div>
 <p class="tiny">Batching: each session is a small state machine with one pending request. <code>run_sessions</code> collects the pending requests of all conversations, groups them by settings, and runs one model call per group (at most 8 on the 12&nbsp;GB card).</p>
 
@@ -396,6 +411,8 @@ Answer: 66
 <tr><td>solve</td><td>main line + message: a task</td><td>the gold facts-first <code>&lt;solution&gt;</code> block</td><td>teacher-forced: Gemma's distribution at every position of the gold block</td></tr>
 <tr><td>explain</td><td>main line + thread + message: a question</td><td>Gemma's own (checked) <code>&lt;explanation&gt;</code></td><td>teacher-forced on that text</td></tr>
 <tr><td>route</td><td>main line + <b>open thread</b> + message: the next task</td><td><code>&lt;solution&gt;</code> (the opening tag only)</td><td>teacher-forced: learns that a task closes the thread</td></tr>
+<tr><td>off-topic route</td><td>main line + open thread + message: off-topic</td><td><code>&lt;out_of_scope&gt;</code> (the tag only)</td><td>teacher-forced; the message never enters a later context</td></tr>
+<tr><td>what-if solve</td><td>main line + message: "what if it was 12 instead of 9?"</td><td>the facts-first solution with the changed number, checked against the problem's code run again</td><td>teacher-forced</td></tr>
 </table></div>
 <p class="tiny">The solution itself is learned from the clean-history solve record. The route record teaches only the decision, in the context where it is hardest: with a thread still open.</p>
 
@@ -419,7 +436,7 @@ Answer: 66
 <tr><td>building training records from the same rules</td><td>the teacher prompt and the scripted pupil</td></tr>
 </table></div>
 
-<footer>Code: <code>library/domain/math_tutor/harness.py</code> (session, requests, model plug), <code>conversation.py</code> (context rules, training records), <code>checks.py</code> (checks). Pilot data: <code>harness_runs/gemma_pilot.json</code>; transcripts: <code>thesis_work/harness_transcripts.html</code>. Generated from pilot 2 data.</footer>
+<footer>Code: <code>library/domain/math_tutor/harness.py</code> (session, requests, model plug), <code>conversation.py</code> (context rules, training records), <code>checks.py</code> (checks), <code>questions.py</code> + <code>library/agent/question_templates.py</code> (the template pupil). Pilot data: <code>harness_runs/gemma_pilot_2.json</code>; transcripts: <code>thesis_work/harness_transcripts_2.html</code>. Generated from pilot 2 data.</footer>
 </main>
 </body>
 </html>

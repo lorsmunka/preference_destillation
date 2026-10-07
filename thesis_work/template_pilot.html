@@ -1,0 +1,91 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Template Pilot</title><style>:root{--bg:#f7f7f5;--card:#fff;--fg:#1d1d1f;--muted:#66666c;--border:#e2e2de;--code:#f1f1ee;--bad:#c0392b}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141416;--card:#1d1d20;--fg:#ececee;--muted:#9a9aa2;--border:#2e2e33;--code:#26262a;--bad:#ff7b6b}}
+:root[data-theme="dark"]{--bg:#141416;--card:#1d1d20;--fg:#ececee;--muted:#9a9aa2;--border:#2e2e33;--code:#26262a;--bad:#ff7b6b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 60px}h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:34px 0 8px}
+.note{color:var(--muted);font-size:13.5px}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px}.tile b{display:block;font-size:19px}.tile span{font-size:12.5px;color:var(--muted)}
+.wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}table{border-collapse:collapse;width:100%;font-size:14px;background:var(--card)}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}th{font-size:12px;color:var(--muted);text-transform:uppercase}
+details{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin:8px 0}summary{cursor:pointer;font-weight:600}
+.ex{border-top:1px solid var(--border);padding:8px 0}.q{margin:4px 0}.chip{font-size:12px;color:var(--muted)}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--code);border-radius:8px;padding:8px 10px;font:12.5px/1.5 ui-monospace,Consolas,monospace;margin:4px 0}
+.bad{color:var(--bad);font-size:13px}</style></head><body><main><h1>Template pupil: pilot</h1><p class="note">Gemma 4 12B (NF4) as the teacher-tutor, replying to follow-up messages from the template bank and to a free-written set. Routes: explanation, solution (what-if), out_of_scope (the harness replies). Local file.</p><h2>Free-written messages (360, natural wording)</h2><div class="tiles"><div class="tile"><b>180</b><span>messages</span></div><div class="tile"><b>171/180</b><span>routed as intended</span></div><div class="tile"><b>142/151</b><span>questions routed to an explanation</span></div><div class="tile"><b>0/142</b><span>explanations failing the check</span></div><div class="tile"><b>23/23</b><span>pushback: held firm</span></div><div class="tile"><b>16/16</b><span>what-if routed to a solution</span></div><div class="tile"><b>16/16</b><span>what-if answer = code</span></div><div class="tile"><b>13/13</b><span>off-topic routed out of scope</span></div><div class="tile"><b>28 / 35 / 40</b><span>explanation words (median / p90 / max)</span></div></div><div class="wrap"><table><tr><th>kind</th><th>should route to</th><th>n</th><th>routed right</th><th>check failed</th><th>what-if answer right</th></tr><tr><td>pushback</td><td>explanation</td><td>23</td><td>23/23</td><td>0</td><td></td></tr><tr><td>why</td><td>explanation</td><td>18</td><td>18/18</td><td>0</td><td></td></tr><tr><td>meaning</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>where_from</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>wrong_operation</td><td>explanation</td><td>17</td><td>17/17</td><td>0</td><td></td></tr><tr><td>what_if</td><td>solution</td><td>16</td><td>16/16</td><td>0</td><td>16/16</td></tr><tr><td>off_topic</td><td>out_of_scope</td><td>13</td><td>13/13</td><td>0</td><td></td></tr><tr><td>another_way</td><td>explanation</td><td>13</td><td>10/13</td><td>0</td><td></td></tr><tr><td>lost</td><td>explanation</td><td>12</td><td>12/12</td><td>0</td><td></td></tr><tr><td>check</td><td>explanation</td><td>11</td><td>11/11</td><td>0</td><td></td></tr><tr><td>distractor</td><td>explanation</td><td>9</td><td>9/9</td><td>0</td><td></td></tr><tr><td>smaller_numbers</td><td>explanation</td><td>8</td><td>2/8</td><td>0</td><td></td></tr><tr><td>shortcut</td><td>explanation</td><td>6</td><td>6/6</td><td>0</td><td></td></tr></table></div><details><summary>Misroutes (9)</summary><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with tiny numbers like 4 roses and 2 glued back on</div><pre>&lt;solution&gt;
+roses start with = 4
+roses glued back on = 2
+roses now = 4 + 2 = 6
+Answer: 6
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you also do 3 nets times 8 kilos? would that work</div><pre>&lt;solution&gt;
+number of other nets = 3
+weight of each net = 8
+weight of 3 nets = 3 * 8 = 24
+Answer: 24
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with 2 water bottles and 3 juice boxes so its easier</div><pre>&lt;solution&gt;
+water bottles = 2
+juice boxes = 3
+total drinks = 2 + 3 = 5
+Answer: 5
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with 4 kids on red and 2 kids on blue</div><pre>&lt;solution&gt;
+children in the red team = 4
+children in the blue team = 2
+difference = 4 - 2 = 2
+Answer: 2
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you do it with 3 boats and ropes that are 2 metres</div><pre>&lt;solution&gt;
+number of boats = 3
+length of rope = 2
+total length of rope = 3 * 2 = 6
+Answer: 6
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">show me with tiny fish, like a 2 cm fish and one 3 cm longer</div><pre>&lt;solution&gt;
+length of the tiny fish = 2
+length difference = 3
+length of the other fish = 2 + 3 = 5
+Answer: 5
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got solution</span><div class="q">can you show sharing with 6 candles and 3 tables</div><pre>&lt;solution&gt;
+candles = 6
+number of tables = 3
+candles per table = 6 / 3 = 2
+Answer: 2
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you add 165 and 165 instead?</div><pre>&lt;solution&gt;
+cones sold = 165
+first group of cones = 165
+second group of cones = 165
+total = 165 + 165 = 330
+Answer: 330
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div><div class="ex"><span class="chip">another_way → expected explanation, got solution</span><div class="q">could you do 73 add 73 and then take away the 18?</div><pre>&lt;solution&gt;
+tickets sold in the afternoon show = 73
+tickets sold in the afternoon show = 73
+sum of two afternoon shows = 73 + 73 = 146
+fewer tickets = 18
+total = 146 - 18 = 128
+Answer: 128
+&lt;/solution&gt;</pre><div class="bad">routed to solution</div></div></details><details><summary>Replies that failed the check (0)</summary></details><details><summary>Two good replies per kind</summary><div class="ex"><span class="chip">another_way → expected explanation, got explanation</span><div class="q">could i do 30 take away 18 and then add the 6 instead?</div><pre>&lt;explanation&gt;
+If you take 18 away from 30, you are finding how many were left before they bought more. Adding 6 to that result would give you the same final answer.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">another_way → expected explanation, got explanation</span><div class="q">could you do it by adding up from 45 to 70 instead?</div><pre>&lt;explanation&gt;
+We can find the difference by starting at 45 and counting up to 70. This is the same as finding how many pieces were taken away from the original 70.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">check → expected explanation, got explanation</span><div class="q">is 56 really right? thats loads of eggs for only 8 hens</div><pre>&lt;explanation&gt;Each hen lays one egg every day, so we multiply the number of hens by the 7 days in a week. 56 is the correct total for 8 hens over a whole week.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">check → expected explanation, got explanation</span><div class="q">can you check 48 plus 30 again, i want to be sure its 78</div><pre>&lt;explanation&gt;
+To check, you can start at 48 and count up 30, or count back from 78. Since 48 + 30 = 78, the answer is correct.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">distractor → expected explanation, got explanation</span><div class="q">why didnt you use the 4 cousins? i thought you had to do something with them</div><pre>&lt;explanation&gt;The number of cousins tells us how many people brought the hens, but we only need to know how many hens were added. The change in the total number of hens tells us the answer directly.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">distractor → expected explanation, got explanation</span><div class="q">does the 3 rowboats matter?? you didnt do anything with the 3</div><pre>&lt;explanation&gt;The 3 rowboats tell us why the rope was cut, but we only need to know how much was cut off. The length of the piece cut off is the only number we need to use.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">lost → expected explanation, got explanation</span><div class="q">i got lost at the 140 bit. how did 45 and 38 and 57 turn into that</div><pre>&lt;explanation&gt;I added the starting money and the two amounts of sales together. 45 + 38 + 57 = 140.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">lost → expected explanation, got explanation</span><div class="q">i dont get it, how is 94 take away 48 the hot dogs that got sold</div><pre>&lt;explanation&gt;The snack bar started with 94 hot dogs and ended with 48 left. By subtracting, we find how many were taken away during the movies.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">meaning → expected explanation, got explanation</span><div class="q">so the 19 is how many hens were in the coop before the cousins came?</div><pre>&lt;explanation&gt;
+Yes, that is correct. The problem says there were 19 hens before the cousins arrived.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">meaning → expected explanation, got explanation</span><div class="q">is 29 the stamps she got at the shop?</div><pre>&lt;explanation&gt;
+Yes, 29 is the number of stamps she got at the shop. We found this by subtracting the stamps she started with from the total she had at the end.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">off_topic → expected out_of_scope, got out_of_scope</span><div class="q">im hungry now talking about cinnamon rolls can we stop</div><pre>&lt;out_of_scope&gt;</pre></div><div class="ex"><span class="chip">off_topic → expected out_of_scope, got out_of_scope</span><div class="q">my brother has a puzzle with a dragon on it. do you like dragons</div><pre>&lt;out_of_scope&gt;</pre></div><div class="ex"><span class="chip">pushback → expected explanation, got explanation</span><div class="q">No it&#x27;s 6!! 18 take away 12 is 6, my big sister checked it</div><pre>&lt;explanation&gt;
+The scouts drank 18 bottles and still had 12 left, so we need to add them together to find the total. If we subtract, we would only be finding the difference between the two amounts.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">pushback → expected explanation, got explanation</span><div class="q">it&#x27;s 38 because you have to take away the 5 prizes too</div><pre>&lt;explanation&gt;The 5 prizes are things people can win, but they are not tickets that were taken away from the roll. We only need to subtract the tickets that were bought.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">shortcut → expected explanation, got explanation</span><div class="q">is there a faster way than writing all the lines out, can i just count on 12 from 7</div><pre>&lt;explanation&gt;Yes, you can count on in your head to find the answer. It is a great way to check your work!&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">shortcut → expected explanation, got explanation</span><div class="q">is there a quick way? like counting from 32 up to 50</div><pre>&lt;explanation&gt;
+Yes, you can count up from 32 to 50 to find the difference. It is the same as subtracting 32 from 50.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got explanation</span><div class="q">show me with like 3 hot dogs that cost $4 each please</div><pre>&lt;explanation&gt;
+To show you how it works with smaller numbers, we can imagine selling 3 hot dogs instead of 46.
+If each costs $4, we would multiply 3 by 4 to find the total money.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">smaller_numbers → expected explanation, got explanation</span><div class="q">show me with smaller numbers please, like 5 tickets and 2 fewer</div><pre>&lt;explanation&gt;
+If the afternoon show sold 5 tickets and the evening show sold 2 fewer, we subtract 2 from 5.
+This helps us see that &quot;fewer&quot; means we are taking a smaller amount away.
+&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">what_if → expected solution, got solution</span><div class="q">and what if 15 rolls were gone by ten o&#x27;clock instead of 13?</div><pre>&lt;solution&gt;
+cinnamon rolls = 20
+cinnamon rolls gone = 15
+cinnamon rolls remaining = 20 - 15 = 5
+Answer: 5
+&lt;/solution&gt;</pre></div><div class="ex"><span class="chip">what_if → expected solution, got solution</span><div class="q">what if 30 bales got soaked, how many dry ones then</div><pre>&lt;solution&gt;
+hay bales = 96
+soaked bales = 30
+dry bales = 96 - 30 = 66
+Answer: 66
+&lt;/solution&gt;</pre></div><div class="ex"><span class="chip">where_from → expected explanation, got explanation</span><div class="q">where is the 13? i can only see 20 in the question</div><pre>&lt;explanation&gt;The number 13 is in the first sentence, which says &quot;Thirteen of the cafe&#x27;s 20 cinnamon rolls were gone&quot;.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">where_from → expected explanation, got explanation</span><div class="q">wait wheres the 12 from, i thought there were 30 bottles in the cooler</div><pre>&lt;explanation&gt;The 12 bottles are what was left in the cooler after the scouts drank some. The 30 bottles were the total amount at the very beginning.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">why → expected explanation, got explanation</span><div class="q">why do you add all three of them and not just the two sales</div><pre>&lt;explanation&gt;We add all three because the cash box started with some money, and then the sales were added to that starting amount. This gives us the total amount of money in the box.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">why → expected explanation, got explanation</span><div class="q">why do you take the 5 away? the staff still get to eat them</div><pre>&lt;explanation&gt;We subtract the 5 because those rolls are being kept for the staff and cannot be sold. This tells us how many are left for the customers.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">wrong_operation → expected explanation, got explanation</span><div class="q">they&#x27;re FALLEN roses so why aren&#x27;t you taking the 9 away?</div><pre>&lt;explanation&gt;The 9 roses were already on the ground, so they weren&#x27;t on the float yet. We add them because they are being glued onto the float now.&lt;/explanation&gt;</pre></div><div class="ex"><span class="chip">wrong_operation → expected explanation, got explanation</span><div class="q">pepper ATE the hay so why is it plus? shouldnt it be 46 take away 37</div><pre>&lt;explanation&gt;The 46 kilograms is what is left after some was taken away. To find the starting weight, we need to add back the amount that was eaten.&lt;/explanation&gt;</pre></div></details></main></body></html>
