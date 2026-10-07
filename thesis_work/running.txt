@@ -7,6 +7,9 @@ STATUS 2026-10-08 (end of session; pick up here)
             thesis_work/literature_review.html + literature.bib, thesis_work/thesis_positioning.html
             (adversarial: objections, why worth doing, novelty / low-hanging fruit),
             thesis_work/how_it_works.html (interactive slideshow). Code fixes wait for the user's review.
+            SAVE FILES: every agent appends its state to thesis_work/agent_saves/<task>.md (findings so far,
+            what remains, files touched). If an agent stopped before its final report, start a new agent
+            with the same brief plus "continue from thesis_work/agent_saves/<task>.md". Done: review_training.md.
   SCOPE FROZEN (2026-10-07, user: "feature creep"): v1 = template bank (3,418 after 43 exclusions,
             questions/excluded.jsonl), three routes (solution / explanation / out_of_scope answered by the
             harness), what-if = a new task, pupil-given numbers = a new task, harness re-asks a route with "<"
