@@ -1,23 +1,24 @@
 {
-  "built": "2026-10-05",
+  "built": "2026-10-08",
   "copies_per_item_target": 3,
   "seed": 0,
-  "items": 34002,
-  "copies": 96544,
+  "items": 33992,
+  "copies": 96431,
   "outcomes": {
-    "ok": 32557,
-    "a written number is also implied by a word": 1208,
-    "no valid draw": 237
+    "ok": 32522,
+    "a written number is also implied by a word": 1207,
+    "no valid draw": 258,
+    "no written numbers": 5
   },
   "items_by_copies_made": {
-    "0": 1445,
-    "1": 359,
-    "2": 409,
-    "3": 31789
+    "0": 1470,
+    "1": 358,
+    "2": 419,
+    "3": 31745
   },
   "copies_by_split": {
-    "train": 91964,
-    "test": 3457,
-    "heldout_shape": 1123
+    "train": 84527,
+    "test": 9898,
+    "heldout_shape": 2006
   }
 }

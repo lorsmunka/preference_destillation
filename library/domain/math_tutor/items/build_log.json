@@ -1,5 +1,5 @@
 {
-  "built": "2026-10-05",
+  "built": "2026-10-08",
   "rules": {
     "near_duplicate_sequence_ratio": 0.8,
     "too_close_to_test_trigram_jaccard": 0.5,
@@ -12,6 +12,8 @@
       "sub>div",
       "sub>add"
     ],
+    "heldout_rule": "any turn's own shape",
+    "family": "the seed id for seeded items, else the item id",
     "seed": 0
   },
   "raw_files": {
@@ -249,76 +251,76 @@
     {
       "stage": "near-dup",
       "in": 34163,
-      "out": 34002,
+      "out": 33992,
       "dropped_by_reason": {
-        "near-duplicate": 161
+        "near-duplicate": 171
       },
       "out_by_slice": {
         "S01": 3331,
         "S02": 4195,
         "S03": 4100,
-        "S04": 3488,
+        "S04": 3481,
         "S05": 3556,
         "S06": 2871,
         "S07": 3336,
-        "S08": 2536,
+        "S08": 2534,
         "S09": 3028,
-        "S10": 3561
+        "S10": 3560
       },
       "out_by_source": {
-        "reword": 21530,
+        "reword": 21521,
         "memory": 8049,
-        "seeded": 4355,
+        "seeded": 4354,
         "online": 48,
         "hand": 20
       }
     },
     {
       "stage": "test leak",
-      "in": 34002,
-      "out": 34002,
+      "in": 33992,
+      "out": 33992,
       "dropped_by_reason": {},
       "out_by_slice": {
         "S01": 3331,
         "S02": 4195,
         "S03": 4100,
-        "S04": 3488,
+        "S04": 3481,
         "S05": 3556,
         "S06": 2871,
         "S07": 3336,
-        "S08": 2536,
+        "S08": 2534,
         "S09": 3028,
-        "S10": 3561
+        "S10": 3560
       },
       "out_by_source": {
-        "reword": 21530,
+        "reword": 21521,
         "memory": 8049,
-        "seeded": 4355,
+        "seeded": 4354,
         "online": 48,
         "hand": 20
       }
     },
     {
       "stage": "shape cap",
-      "in": 34002,
-      "out": 34002,
+      "in": 33992,
+      "out": 33992,
       "dropped_by_reason": {},
       "out_by_slice": {
         "S01": 3331,
         "S02": 4195,
         "S03": 4100,
-        "S04": 3488,
+        "S04": 3481,
         "S05": 3556,
         "S06": 2871,
         "S07": 3336,
-        "S08": 2536,
+        "S08": 2534,
         "S09": 3028,
-        "S10": 3561
+        "S10": 3560
       },
       "out_by_source": {
-        "reword": 21530,
+        "reword": 21521,
         "memory": 8049,
-        "seeded": 4355,
+        "seeded": 4354,
         "online": 48,
         "hand": 20
       },
@@ -326,47 +328,47 @@
         "S01": 833,
         "S02": 1049,
         "S03": 1025,
-        "S04": 872,
+        "S04": 871,
         "S05": 889,
         "S06": 718,
         "S07": 834,
         "S08": 634,
         "S09": 757,
-        "S10": 891
+        "S10": 890
       }
     }
   ],
-  "kept": 34002,
+  "kept": 33992,
   "by_split": {
-    "train": 32377,
-    "test": 1210,
-    "heldout_shape": 415
+    "train": 29747,
+    "test": 3490,
+    "heldout_shape": 755
   },
   "by_slice": {
     "S01": 3331,
     "S02": 4195,
     "S03": 4100,
-    "S04": 3488,
+    "S04": 3481,
     "S05": 3556,
     "S06": 2871,
     "S07": 3336,
-    "S08": 2536,
+    "S08": 2534,
     "S09": 3028,
-    "S10": 3561
+    "S10": 3560
   },
   "by_source": {
-    "reword": 21530,
+    "reword": 21521,
     "memory": 8049,
-    "seeded": 4355,
+    "seeded": 4354,
     "online": 48,
     "hand": 20
   },
   "by_problem_shape": {
-    "sub": 8452,
-    "div": 6067,
-    "add": 5311,
-    "mul": 5279,
-    "mul>sub": 957,
+    "sub": 8449,
+    "div": 6066,
+    "add": 5307,
+    "mul": 5278,
+    "mul>sub": 956,
     "add>add": 938,
     "add>sub>div": 767,
     "mul>add": 694,
@@ -434,15 +436,15 @@
     "add>sub>mul": 3
   },
   "by_grade": {
-    "2": 11160,
-    "3": 14701,
-    "4": 8141
+    "2": 11155,
+    "3": 14697,
+    "4": 8140
   },
   "by_distractor": {
-    "none": 22418,
+    "none": 22409,
     "number": 5277,
     "sentence": 4509,
-    "keyword": 1798
+    "keyword": 1797
   },
   "by_context": {
     "garden": 677,
@@ -453,7 +455,7 @@
     "library": 445,
     "zoo": 444,
     "museum": 442,
-    "orchard": 438,
+    "orchard": 437,
     "kitchen": 437,
     "camping": 434,
     "cafe": 428,
@@ -463,31 +465,31 @@
     "clinic": 421,
     "harbor": 419,
     "lighthouse": 419,
-    "cinema": 418,
     "pool": 417,
-    "scouts": 417,
+    "cinema": 417,
     "carnival": 417,
     "restaurant": 416,
+    "scouts": 416,
     "airport": 415,
     "soccer": 412,
     "river": 409,
     "bookstore": 409,
-    "basketball": 404,
     "concert": 404,
     "parade": 404,
     "kites": 404,
+    "basketball": 403,
     "bus": 398,
     "playground": 395,
     "stable": 388,
     "stickers": 385,
     "stamps": 384,
     "station": 361,
-    "puzzles": 353,
+    "puzzles": 352,
     "coop": 348,
     "jungle": 341,
     "desert": 340,
     "music": 338,
-    "fishing": 326,
+    "fishing": 325,
     "art": 316,
     "party": 284,
     "cabin": 279,
@@ -499,7 +501,7 @@
     "lemonade": 251,
     "recycling": 249,
     "pumpkin_patch": 247,
-    "science": 245,
+    "science": 244,
     "grocery": 235,
     "county_fair": 232,
     "carwash": 224,
@@ -510,8 +512,8 @@
     "apiary": 198,
     "toystore": 198,
     "post_office": 196,
-    "sewing_club": 191,
-    "snowday": 190,
+    "sewing_club": 190,
+    "snowday": 189,
     "sports_day": 187,
     "robotics": 187,
     "building_blocks": 183,
@@ -608,11 +610,11 @@
     "farmers-market": 44,
     "jungle_trip": 44,
     "chicken coop": 44,
-    "space": 43,
     "rain": 43,
     "sportsday": 43,
     "construction": 43,
     "desert_trip": 42,
+    "space": 42,
     "florist": 42,
     "videogame": 42,
     "building-blocks": 41,
@@ -741,10 +743,10 @@
     "babysitting": 1
   },
   "by_follow_up_count": {
-    "0": 6787,
-    "1": 11914,
-    "2": 10165,
-    "3": 5136
+    "0": 6783,
+    "1": 11912,
+    "2": 10162,
+    "3": 5135
   },
-  "turns": 81654
+  "turns": 81633
 }

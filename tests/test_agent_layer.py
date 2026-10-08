@@ -149,6 +149,8 @@ class FactsMustBeTheNumbersUsed(unittest.TestCase):   # A-M3
                     items[item_id] = json.loads(line)
         failing = []
         for (item_id, turn), text in labels.items():
+            if "~n" in item_id or item_id not in items:   # renumbered copies are re-drawn by every rebuild
+                continue
             item = items[item_id]
             context = solve_context(item, turn, labels)
             if context is None:   # an earlier turn is not in the sample

@@ -160,7 +160,9 @@ def vocabulary_texts(items: List[Dict], thread_records: List[Dict]) -> List[str]
         texts.append(item["problem"])
         texts += [follow_up["question"] for follow_up in item["follow_ups"]]
         for annotation in RENDERERS:
-            texts += render(item, annotation, turns=labelled_turns(item, annotation))
+            turns = labelled_turns(item, annotation)
+            if turns:   # a rewording has no named / code labels: render refuses it
+                texts += render(item, annotation, turns=turns)
     by_id = {item["id"]: item for item in items}
     thread_targets = {}   # the same explanation is a target in every annotation: once is enough
     for thread_record in thread_records:

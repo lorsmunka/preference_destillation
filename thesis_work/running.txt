@@ -1,30 +1,29 @@
-STATUS 2026-10-08 (end of session; pick up here)
-  RUNNING   no GPU. 7 background agents (read-only / web; no code edits) whose outputs arrive overnight:
-            code review x5 -> aggregated into thesis_work/code_review.html (training review already in:
-              H1 data-plateau test set shifts with max_training_examples -> weakens the plateau finding;
-              H2 stale temp checkpoint after a hard crash; M1 warm-up misses batch 1; M3 eval rollouts
-              64-74% of wall-clock; M4 reverse KL on a clamped teacher; M5 StudentModel.generate stop rule),
-            thesis_work/literature_review.html + literature.bib, thesis_work/thesis_positioning.html
-            (adversarial: objections, why worth doing, novelty / low-hanging fruit),
-            thesis_work/how_it_works.html (interactive slideshow). Code fixes wait for the user's review.
-            SAVE FILES: every agent appends its state to thesis_work/agent_saves/<task>.md (findings so far,
-            what remains, files touched). If an agent stopped before its final report, start a new agent
-            with "read agents/agentN.txt and continue from NEXT" (index: agents/README.txt).
-  SCOPE FROZEN (2026-10-07, user: "feature creep"): v1 = template bank (3,418 after 43 exclusions,
-            questions/excluded.jsonl), three routes (solution / explanation / out_of_scope answered by the
-            harness), what-if = a new task, pupil-given numbers = a new task, harness re-asks a route with "<"
-            only when no tag came back. Deferred: writers' v2 wish list, concern/wellbeing route (thesis
-            limitation), general agent module, per-turn story features.
-  DONE 2026-10-07: template pupil + bank (10 writers), pilots 3-5 + sweeps v1/v2 (template_pilot.html):
-            what-if 229/239 routed, answers = code 221/229; smaller numbers 101/102; pushback firm 116/116;
-            off-topic 194/200; harness 30/31 questions, one misroute cascaded (44 instead of 2).
-            Novelty check (novelty_check.md): holds as a combination. Thesis description finalised.
-  NEXT      1. user reviews code_review.html; fix what is agreed.
-            2. thin end-to-end slice locally (~1k problems: labels ~3h, threads ~2h, scoring, vocab incl.
-               explanations, one student, eval with gold history vs own history + SVAMP with unknown tokens).
-            3. compute decision for the full run. OPEN QUESTION: may cloud runs go unattended?
-               All final teacher data from one precision (bf16 cloud or NF4 local, not mixed).
-            4. user: ~100 human-written follow-up messages on test problems; start the lit-review chapter.
+STATUS 2026-10-08 evening (pick up here)
+  RUNNING   nothing. No GPU, no agents. Working tree committed; 117 unittest tests pass
+            (python -m unittest discover -s tests).
+  DONE TODAY
+    - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
+      All code fixes applied in 5 areas (items, agent layer, data generation, training, tooling), one
+      commit per area; agent briefs and evidence in agents/agentN.txt + agents/work/.
+    - Data rebuilt with the fixes: 33,992 items (train 29,747 / test 3,490 / held-out 755), 96,431 copies,
+      SVAMP 735. 0 families split across train/test, 0 train/test turns with a held-out shape.
+      Answer-only paraphrase test (user decision): test rewordings + copies (8,598) get no labels or
+      teacher data; full test = 4,790 items. Output vocabulary rebuilt (no explanation threads yet).
+    - Literature review (literature_review.html + .bib, 73 refs), positioning (thesis_positioning.html),
+      decks (harness_deck.html short, how_it_works.html full). Findings corrected (findings.txt end).
+  CRITICAL OPEN (X-C1): the part-1 reddit/math students only learned the class prior (accuracy at the
+            majority baseline; excess <= 0 everywhere). Part 2 uses the same training code.
+  NEXT      1. X-C1 diagnosis, CPU first (me): label vs format positions on E-01 checkpoints; does the
+               predicted label depend on the input?
+            2. GPU with the user present: short reddit runs on the fixed code (same E-01 setup; longer
+               training / more data; label-token loss weight if step 1 points there; bigger student).
+               Success = clear excess over the majority baseline on the fixed test set.
+            3. Then re-run part 1 as needed, and the thin slice of part 2 with baselines.
+  DECISIONS WAITING FOR THE USER
+            - 3 unfinished old runs now refused on resume (ideaA-vocab-aux025-s1, ideaD-data02048-s4,
+              ideaG-purece-s5): delete, or drop from their experiments?
+            - Update CLAUDE.md (still Gemma 3 4B / reddit-only / ~525 tokens / old cohort grouping)?
+            - Cloud: may runs go unattended? One teacher precision for the final data (bf16 or NF4).
 
 RUNNING   (2026-10-05) nothing. No GPU in use, no agents.
           math_tutor CORPUS COMPLETE 2026-10-05 (a4764af): 34,002 items, 130,546 problems with

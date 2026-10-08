@@ -1,5 +1,5 @@
 {
-  "built": "2026-10-04",
+  "built": "2026-10-08",
   "sources": {
     "svamp": {
       "role": "test",
@@ -32,12 +32,13 @@
       "downloaded": 1000,
       "dropped_by_reason": {
         "number above 99": 220,
-        "answer above 999": 19,
+        "answer above 999": 18,
         "not whole numbers all the way": 13,
+        "number above 99 in the text": 12,
         "no operation": 1,
         "equation disagrees with the dataset's answer": 1
       },
-      "in_range": 746
+      "in_range": 735
     },
     "asdiv": {
       "downloaded": 2305,
@@ -92,17 +93,17 @@
   },
   "test": {
     "set": "svamp",
-    "count": 746,
+    "count": 735,
     "by_steps": {
-      "1": 577,
+      "1": 566,
       "2": 169
     },
     "by_shape": {
-      "sub": 322,
+      "sub": 313,
       "add": 106,
-      "div": 104,
+      "div": 103,
       "add>sub": 56,
-      "mul": 45,
+      "mul": 44,
       "sub>sub": 33,
       "add>add": 23,
       "mul>sub": 10,
@@ -120,25 +121,25 @@
   "seeds": {
     "candidates": 3526,
     "dropped_by_reason": {
-      "exact duplicate": 811,
-      "near-duplicate": 473,
+      "exact duplicate": 825,
+      "near-duplicate": 462,
       "too close to a SVAMP problem": 89
     },
-    "count": 2153,
+    "count": 2150,
     "by_set": {
-      "asdiv": 1067,
-      "mawps": 243,
+      "asdiv": 1066,
+      "mawps": 241,
       "harvest": 843
     },
     "by_steps": {
-      "1": 1531,
+      "1": 1528,
       "2": 539,
       "3": 83
     },
     "by_shape": {
-      "sub": 505,
+      "sub": 503,
       "add": 367,
-      "mul": 348,
+      "mul": 347,
       "div": 303,
       "add>add": 125,
       "sub>sub": 70,
