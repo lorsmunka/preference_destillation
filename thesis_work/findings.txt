@@ -303,3 +303,14 @@ I-L3  Held-out 2-operation shapes also occur inside longer training shapes (sub>
       train originals): "never trained on" holds for the exact shape only.
 I-L4  173/746 SVAMP test problems have a training seed at similarity >= 0.6 (SVAMP is built from
       ASDiv-A, which the seeds include): standard protocol, state it.
+FIX RESULTS 2026-10-08 (after the tooling fixes; experiments/results refreshed):
+- F-E1 reddit/math, excess over the majority baseline (mean +- sample std, 10 seeds; arms ce-to-kl /
+  kl-to-ce / flat-50 / pure-ce / pure-kl): reddit best +.003/+.001/+.003/-.005/-.003, final
+  -.006/-.015/-.015/-.028/-.014 (baseline .626); math best +.037/+.026/+.021/+.028/+.032 (baseline .209,
+  always "True"). Welch + Bonferroni: 0/10 pairs significant in any reddit/math group.
+- F-E1 post-gen overlap ordering: 8/10 pairs survive Bonferroni; ce-to-kl vs flat-50 (p_corr .081) and
+  ce-to-kl vs pure-kl (.069) do not. "Strict ordering" holds only in part.
+- Teacher entropy, one source (test-split eval logs, E-01 runs): reddit 0.0201 nats (exp 1.020), math
+  0.0034 (1.003), post-gen 0.9948 (exp 2.704). Replaces 1.059 / 0.0043 / 2.73 / 2.88 quoted above.
+- Data plateau: excess <= 0 at every size (256 -0.54/-0.94 pp, 512 -0.08/-0.62, 1024 -0.35/-0.69,
+  2048 -0.12/-0.12, best/final): no plateau signal; the students never left the class prior.

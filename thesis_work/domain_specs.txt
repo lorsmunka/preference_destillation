@@ -235,3 +235,14 @@ FOLLOW-UP MESSAGES: TEMPLATE PUPIL v1 (2026-10-07)
   Writers need their own scratch folders (a shared one let batch files overwrite each other).
   Out of scope (decided 2026-10-07): wellbeing / safety messages ("someone pushed me") get no special
   handling; a real product would flag them. Stated as a limitation in the thesis.
+
+DATA RULES UPDATED 2026-10-08 (code review fixes; corpus rebuilt the same day)
+  - Held out: an item is held out if ANY turn's own shape is a held-out shape (was: turn 0 only).
+  - Family = the human seed's id for items written from a seed (siblings share a split); otherwise
+    the item id. Rewordings and copies keep their original's family.
+  - Renumbering keeps fixed-value numbers (banknotes / coins, clock hours, ordinals, legs / wheels /
+    sides) and only the number half of compounds ("thirteen-dollar").
+  - SVAMP real test: problems with a written number above 99 are dropped (746 -> 735).
+  - Answer-only paraphrase test (user decision): test rewordings and their copies get no labels,
+    threads or teacher data; they are scored on final answers only (corpus_answer_only_test.jsonl).
+  - Held-out evaluation scores per turn shape (340 held-out items have an ordinary first turn).

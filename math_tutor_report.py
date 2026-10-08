@@ -258,10 +258,12 @@ SVAMP {templ.get('SVAMP test (human)', {}).get('median_nn', '?')}, v1 template c
     split_text = ", ".join(f"{k} {n(v)}" for k, v in (pruning or {}).get("by_split", {}).items())
     qa.append(("What are the splits?", f"""
 <ul><li>Items: {split_text}.</li>
-<li><b>test</b>: 10% of families per slice, random (seed 0). <b>heldout_shape</b>: every item whose problem is
+<li><b>test</b>: 10% of families per slice, random (seed 0); a family is the human seed for items written from
+one, so siblings share a split. <b>heldout_shape</b>: every item in which any turn's own shape is
 <code>add>mul</code>, <code>sub>div</code> or <code>sub>add</code>, never trained on, while their parts and reverse orders are
-(compositional test). <b>SVAMP</b>: the human test, single turn.</li>
-<li>Only train items are reworded; renumbered copies keep their item's split.</li></ul>"""))
+(compositional test). <b>SVAMP</b>: the human test, single turn (problems with a written number above 99 left out).</li>
+<li>Rewordings and renumbered copies keep their item's family and split. Test rewordings form an
+answer-only paraphrase test: no labels or teacher data, scored on final answers.</li></ul>"""))
 
     qa.append(("How were rewordings and renumbered copies made?", f"""
 <ul><li><b>Rewording:</b> an Opus agent writes only new text for the problem and each follow-up question; the original
