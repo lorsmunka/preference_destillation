@@ -272,3 +272,34 @@ OPEN NUMERIC INCONSISTENCIES — resolve before any of this is written up
   and is never reconciled.
 - The "label smoothing benefit ~ log V - H" formula (#55) is still
   UNVERIFIED and possibly confabulated.
+
+------------------------------------------------------------------------
+CORRECTIONS 2026-10-08 — from the adversarial code review (thesis_work/code_review.html)
+------------------------------------------------------------------------
+X-C1  REDDIT AND MATH TASK ACCURACY IS A FLOOR EFFECT (verified on the run logs).
+      Reddit students predict the most common label 93-100% of the time; E-01 arms reach
+      0.621-0.630 at their best epoch and 0.598-0.620 at the final one, against a majority
+      baseline of 0.626 (best epoch = epoch 0 in 29/50 runs). Math (e01-math-ce-to-kl-s1):
+      true/false 96/132 (always "True" gives 87), numeric 5/284. Consequences:
+      - F-E1's reddit/math "null" is not evidence that the KL/CE dial does not matter at
+        exp(H)~1: nothing was learned beyond the class prior in any arm.
+      - "safety 74 / tone 63 / toxicity 59 / sentiment 43" equal the label shares
+        (.748 / .627 / .587 / .543); F-30a's "overfit 62.7 -> 59.2" starts from the constant
+        predictor; F-49a's "reddit ~60%" and "maths 21%" are at the prior.
+      - Always report the majority baseline and the excess over it (the evaluator now logs both).
+      The post-gen token-level results (F-E1 ordering, F-34a) are a separate question.
+T-H1  DATA PLATEAU: each size was scored on a different test set (64 / 128 / 224 / 416 examples,
+      baselines .613 / .617 / .671 / .626); the 1024 "bump" (66.7%) is the test set. Superseded
+      until re-scored on one fixed test set.
+X-M1  F-E1's "no arm separates by more than one seed std" is false as stated: three pairs are
+      >1 sd apart (Welch t 2.7-2.9, p~0.01 uncorrected); none survives Bonferroni over 10 pairs.
+X-M8  Teacher-entropy numbers disagree across sources (post-gen 1.059 / 1.006 / 0.995 nats;
+      math 0.0043 / 0.0028 / 0.0034); use the test-split eval logs and state the sample.
+T-L2  Seeds vary only initialisation and dropout (no data shuffling; fixed test slice), so the
+      noise floor understates variance; "task_best" is the best of 3 test-set epochs (optimistic).
+T-L3  Top-20 overlap has 14-33% boundary ties under bf16; teacher_entropy is over the
+      renormalised reduced vocabulary at T=1.
+I-L3  Held-out 2-operation shapes also occur inside longer training shapes (sub>div inside 800
+      train originals): "never trained on" holds for the exact shape only.
+I-L4  173/746 SVAMP test problems have a training seed at similarity >= 0.6 (SVAMP is built from
+      ASDiv-A, which the seeds include): standard protocol, state it.
