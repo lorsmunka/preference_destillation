@@ -2,11 +2,11 @@
 
     from library import Analysis, RunStore
     a = Analysis("tsc-scale-128h-4L-36M")
-    print(a.summary())
+    print(a.summary())                                  # task accuracy beside its majority baseline
     a.plot_training()
-    a.evaluate(metrics=["token", "task", "topk"])      # model path
+    a.evaluate(split="test", k=20)                      # model path, on the run's fixed test set
     Analysis.compare(RunStore().completed()).table()
-    Analysis.cohorts()                                  # {tag: Experiment}
+    Analysis.cohorts()                                  # {cohort label: Experiment}, completed runs
 
 Pure-log methods (summary/training/plot/compare/experiment) never touch the model. Model
 methods (evaluate/examples/infer) lazily build a StudentModel and are the only things that
@@ -18,11 +18,10 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from . import render
-from library.shared.batch_files import batch_paths, read_batch
-from library.shared.config import batches_dir
+from library.shared.batch_files import read_batch
 from .run import Experiment, Run, RunStore, sort_runs
 
 RunRef = Union[str, Run]
@@ -39,6 +38,8 @@ class EvalResult:
     teacher_forced_accuracy: float
     student_accuracy: float
     task_accuracy: float
+    majority_baseline: Optional[float]      # always giving the most common answer (None: no answer set)
+    task_accuracy_excess: Optional[float]   # task_accuracy - majority_baseline
     validity_rate: Optional[float]
     topk_accuracy: float
     teacher_student_overlap: float
@@ -48,7 +49,7 @@ class EvalResult:
     perplexity: float
     termination_rate: Optional[float]
     mean_length_ratio: Optional[float]
-    extra: Dict[str, float] = field(default_factory=dict)
+    extra: Dict[str, float] = field(default_factory=dict)   # the task metric's extras (math: true/false vs numeric accuracy)
 
     def distribution_fields(self) -> Dict[str, float]:
         """The subset to persist on the eval log record (compute-once principle)."""
@@ -65,28 +66,27 @@ class EvalResult:
         }
 
 
-def _batch_paths(run: Run, split: str, max_batches: Optional[int]) -> List[Path]:
-    directory = batches_dir(run.domain, run.teacher_model)
-    all_batches = batch_paths(directory)
-    total = len(all_batches)
-    max_examples = run.info.get("max_training_examples")
-    batch_size = run.info.get("batch_size", 32)
-    effective = min(total, max_examples // batch_size) if max_examples else total
-    ratio = run.info.get("training_test_ratio", 0.98)
+def _batch_paths(run: Run, split: str, max_batches: Optional[int]) -> List[Tuple[Path, str]]:
+    """(batch file, role) pairs of a split — the trainer's own split (Run.split_files), so a
+    re-evaluation scores a run on its test set. Every run, old ones included, is scored on
+    the fixed test tail, which never overlaps any run's training files."""
+    from library.training.batch_handler import TEST, TRAIN
+    training_files, test_files = run.split_files()
     if split == "train":
-        start, end = 0, int(effective * ratio)
+        selected = [(path, TRAIN) for path in training_files]
     elif split == "test":
-        start, end = int(effective * ratio), effective
+        selected = [(path, TEST) for path in test_files]
     elif split == "all":
-        start, end = 0, effective
+        selected = [(path, TRAIN) for path in training_files] + [(path, TEST) for path in test_files]
     else:
         raise ValueError(f"Unknown split: {split!r}")
-    selected = all_batches[start:end]
     return selected[:max_batches] if max_batches else selected
 
 
-def _iter_examples(batch_path: Path):
-    yield from read_batch(batch_path)
+def _iter_examples(batch_path: Path, role: str):
+    """The examples of one batch file that belong to `role` (per-record split labels)."""
+    from library.training.batch_handler import select_records
+    yield from select_records(read_batch(batch_path), role)
 
 
 class Analysis:
@@ -118,6 +118,7 @@ class Analysis:
 
     @staticmethod
     def cohorts(store: Optional[RunStore] = None) -> Dict[str, Experiment]:
+        """Seed-replicate cohorts: completed runs grouped by experiment tag + configuration."""
         return (store or RunStore()).by_experiment()
 
     @staticmethod
@@ -133,6 +134,7 @@ class Analysis:
         from library.shared.metrics.distribution import step_distribution_stats
         from library.shared.metrics.generation import TerminationStats
         from library.model.student import StudentModel
+        from library.training.evaluator import majority_baseline
 
         label, path = self.store.resolve_checkpoint(self.run.name, checkpoint)
         student = StudentModel.from_run(self.run, path, domain=domain)
@@ -146,8 +148,8 @@ class Analysis:
         examples = 0
 
         with torch.no_grad():
-            for batch_path in _batch_paths(self.run, split, max_batches):
-                for example in _iter_examples(batch_path):
+            for batch_path, role in _batch_paths(self.run, split, max_batches):
+                for example in _iter_examples(batch_path, role):
                     forced = student.teacher_forced(example)
                     if forced is None:
                         continue
@@ -171,11 +173,14 @@ class Analysis:
 
         steps = max(totals["steps"], 1)
         task = task_metric.result()
+        baseline = majority_baseline(task.confusion or {})
         return EvalResult(
             run=self.run.name, checkpoint=label, split=split, examples=examples, steps=totals["steps"],
             teacher_forced_accuracy=tf_correct / steps,
             student_accuracy=student_correct / steps,
             task_accuracy=task.accuracy,
+            majority_baseline=baseline,
+            task_accuracy_excess=task.accuracy - baseline if baseline is not None else None,
             validity_rate=task.validity_rate,
             topk_accuracy=totals["topk_hits"] / steps,
             teacher_student_overlap=totals["overlap_sum"] / steps,
@@ -185,6 +190,7 @@ class Analysis:
             perplexity=float(__import__("math").exp(ce_sum / steps)),
             termination_rate=termination.termination_rate,
             mean_length_ratio=termination.mean_length_ratio,
+            extra=dict(task.extra),
         )
 
     def infer(self, sentences: List[str], checkpoint: str = "latest", temperature: float = 0.0,

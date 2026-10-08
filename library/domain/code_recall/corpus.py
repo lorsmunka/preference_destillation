@@ -118,8 +118,10 @@ class ProgramBuilder:
                 bound = self.literal()
                 line = self.emit(f"while {variable} {'>' if direction == 'decrement' else '<'} {bound}:", indent)
                 self.while_loops.append({"line": line, "variable": variable, "direction": direction, "scope": scope})
-                inner = self.block(indent + 1, scope, names, depth + 1)
-                self.emit(f"{variable} {'-=' if direction == 'decrement' else '+='} {self.rng.choice(['1', '1', '2', '3'])}", indent + 1)
+                self.block(indent + 1, scope, names, depth + 1)
+                # The loop's closing step assigns its variable too, so it counts for "last assignment".
+                step_line = self.emit(f"{variable} {'-=' if direction == 'decrement' else '+='} {self.rng.choice(['1', '1', '2', '3'])}", indent + 1)
+                self.assignments.append({"name": variable, "line": step_line, "value": None, "scope": scope})
             elif kind == "if":
                 left = self.rng.choice(names)
                 right = self.rng.choice([n for n in names if n != left] + [self.literal()])

@@ -64,5 +64,7 @@ if __name__ == "__main__":
     runs = build_runs()
     print(f"{EXPERIMENT}: {len(runs)} runs "
           f"({len(DATA_SIZES)} data sizes x {len(SEEDS)} seeds)\n")
-    seeded_run_training(runs)
-    print("\nDone. Analyse with: python experiments/report_ideas.py")
+    if seeded_run_training(runs):
+        print("\nDone. Analyse with: python experiments/report_ideas.py")
+    else:
+        print("\nStopped — re-run the same command to resume.")

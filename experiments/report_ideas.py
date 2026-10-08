@@ -1,47 +1,48 @@
 """Cross-experiment report for the five tested ideas.
 
-Reads whatever cohorts exist in runs/ and writes both CSVs (experiments/results/) and a
-markdown summary (thesis_work/results_first_pass.md). Log-only — no checkpoints reloaded,
-so it is cheap to re-run while training is still going.
+Reads whatever cohorts exist in runs/ (completed runs only) and writes both CSVs
+(experiments/results/) and a markdown summary (thesis_work/results_first_pass.md).
+Log-only — no checkpoints reloaded, so it is cheap to re-run while training is still going.
 
     python experiments/report_ideas.py
 
 Covers: E1 vocab-rank sweep, E3 validity-vs-value gap (board B1), E5 data plateau,
 and the E2 self-consistency table if its phase-2 CSV exists.
+
+Every task accuracy is shown beside its majority baseline (always giving the most common
+label on the run's test set) and the excess over it (code review X-C1). Spreads are the
+sample std across seeds. Teacher entropy is read from the test-split eval logs (X-M8).
 """
 
 import csv
-import statistics
 from collections import defaultdict
 from pathlib import Path
 
-from _common import RESULTS_DIR, best_and_final, write_rows
+from _common import RESULTS_DIR, best_and_final, mean_std, write_rows
 
 from library import RunStore
+from library.shared.metrics.task import INVALID_LABEL
+from library.tooling.run import test_split_teacher_entropy
+from library.training.evaluator import majority_baseline
 
 REPORT_PATH = Path(__file__).resolve().parents[1] / "thesis_work" / "results_first_pass.md"
 
-INVALID_LABEL = "<invalid>"
 
-
-def mean_std(values):
-    usable = [v for v in values if v is not None]
-    if not usable:
-        return None, None, 0
-    mean = statistics.mean(usable)
-    std = statistics.pstdev(usable) if len(usable) > 1 else 0.0
-    return mean, std, len(usable)
-
-
-def format_stat(mean, std, scale=100, digits=2):
+def format_stat(mean, std, scale=100, digits=2, signed=False):
     if mean is None:
         return "—"
-    return f"{mean * scale:.{digits}f}±{std * scale:.{digits}f}"
+    number = f"{mean * scale:+.{digits}f}" if signed else f"{mean * scale:.{digits}f}"
+    return f"{number}±{std * scale:.{digits}f}" if std is not None else number
+
+
+def format_value(value, scale=100, digits=2):
+    return f"{value * scale:.{digits}f}" if value is not None else "—"
 
 
 # ── B1: structural validity vs value accuracy ─────────────────────────
 def confusion_breakdown(confusion_matrices):
-    """Per-category value accuracy and invalid share from a logged confusion matrix."""
+    """Per-category value accuracy, invalid share and majority-label share from a logged
+    confusion matrix."""
     breakdown = {}
     for category, matrix in (confusion_matrices or {}).items():
         correct = total = invalid = 0
@@ -56,9 +57,16 @@ def confusion_breakdown(confusion_matrices):
             breakdown[category] = {
                 "accuracy": correct / total,
                 "invalid_share": invalid / total,
+                "majority_baseline": majority_baseline({category: matrix}),
                 "total": total,
             }
     return breakdown
+
+
+def scored_test_examples(run):
+    """How many test examples the run's logged task accuracy was scored on."""
+    first_field = next(iter(run.test_set_answer_counts().values()), {})
+    return sum(sum(row.values()) for row in first_field.values()) or None
 
 
 def cohort_rows(runs, group_key, group_name):
@@ -70,13 +78,17 @@ def cohort_rows(runs, group_key, group_name):
     rows = []
     for value in sorted(groups):
         members = groups[value]
-        best_evals, final_evals = [], []
+        best_evals, final_evals, baselines, excess_best, excess_final = [], [], [], [], []
         for run in members:
             best, final = best_and_final(run)
-            if best:
-                best_evals.append(best)
-            if final:
-                final_evals.append(final)
+            if not final:
+                continue
+            best_evals.append(best)
+            final_evals.append(final)
+            baseline = run.majority_baseline(final)
+            baselines.append(baseline)
+            excess_best.append(best.task_accuracy - baseline if baseline is not None else None)
+            excess_final.append(final.task_accuracy - baseline if baseline is not None else None)
         if not final_evals:
             continue
 
@@ -85,15 +97,18 @@ def cohort_rows(runs, group_key, group_name):
 
         task_best = stat(best_evals, "task_accuracy")
         task_final = stat(final_evals, "task_accuracy")
+        baseline = mean_std(baselines)
+        excess_best_stat = mean_std(excess_best)
+        excess_final_stat = mean_std(excess_final)
         validity = stat(final_evals, "validity_rate")
         overlap = stat(final_evals, "teacher_student_overlap")
         entropy = stat(final_evals, "student_entropy")
-        teacher_entropy = stat(final_evals, "teacher_entropy")
         perplexity = stat(final_evals, "perplexity")
         kl = stat(final_evals, "kl_loss")
         tf = stat(final_evals, "teacher_forced_accuracy")
         student = stat(final_evals, "student_accuracy")
         termination = stat(final_evals, "termination_rate")
+        teacher_entropy = test_split_teacher_entropy(members)
 
         # B1: the gap between "is it valid JSON" and "are the values right"
         gap_values = [
@@ -104,27 +119,43 @@ def cohort_rows(runs, group_key, group_name):
         gap_mean, gap_std, _ = mean_std(gap_values)
 
         per_category = defaultdict(list)
+        per_category_baseline = defaultdict(list)
         for record in final_evals:
             for category, values in confusion_breakdown(record.confusion_matrices).items():
                 per_category[category].append(values["accuracy"])
+                per_category_baseline[category].append(values["majority_baseline"])
 
         row = {
             group_name: value,
-            "runs": len(members),
+            "runs": len(final_evals),
+            "test_examples": scored_test_examples(members[0]),
             "task_best": task_best[0], "task_best_std": task_best[1],
             "task_final": task_final[0], "task_final_std": task_final[1],
+            "majority_baseline": baseline[0],
+            "task_best_excess": excess_best_stat[0], "task_best_excess_std": excess_best_stat[1],
+            "task_final_excess": excess_final_stat[0], "task_final_excess_std": excess_final_stat[1],
             "validity": validity[0], "validity_std": validity[1],
             "validity_value_gap": gap_mean, "validity_value_gap_std": gap_std,
             "teacher_student_overlap": overlap[0], "teacher_student_overlap_std": overlap[1],
-            "student_entropy": entropy[0], "teacher_entropy": teacher_entropy[0],
+            "student_entropy": entropy[0],
+            "teacher_entropy": teacher_entropy["nats"] if teacher_entropy else None,
             "perplexity": perplexity[0], "kl_loss": kl[0],
             "teacher_forced_accuracy": tf[0], "student_accuracy": student[0],
             "termination_rate": termination[0],
         }
         for category, accuracies in per_category.items():
             row[f"value_accuracy_{category}"] = mean_std(accuracies)[0]
+            row[f"majority_baseline_{category}"] = mean_std(per_category_baseline[category])[0]
         rows.append(row)
     return rows
+
+
+def all_columns(rows):
+    """Every key any row has, in first-seen order (rows differ when a log lacks matrices)."""
+    columns = []
+    for row in rows:
+        columns += [key for key in row if key not in columns]
+    return columns
 
 
 def load_probe():
@@ -162,22 +193,31 @@ def render_table(headers, rows):
     return "\n".join(lines)
 
 
+def teacher_entropy_note(runs):
+    entropy = test_split_teacher_entropy(runs)
+    if not entropy:
+        return []
+    return [f"Teacher entropy {entropy['nats']:.4f} nats (exp {entropy['exp_nats']:.3f}): {entropy['sample']}.", ""]
+
+
 def main():
     store = RunStore()
-    completed = [r for r in store.all() if r.status == "completed"]
+    completed = store.completed()
     vocab_runs = [r for r in completed if r.name.startswith("ideaA-")]
     data_runs = [r for r in completed if r.name.startswith("ideaD-")]
 
     sections = ["# First-pass results — five tested ideas",
                 "",
-                "Auto-generated by `experiments/report_ideas.py`. Mean±std across seeds, "
-                "percentages unless noted.", ""]
+                "Auto-generated by `experiments/report_ideas.py` from completed runs. Mean±std "
+                "across seeds (sample std, n-1), percentages unless noted. **baseline** = task "
+                "accuracy of always giving the most common label on the run's test set; "
+                "**excess** = task accuracy minus baseline, in percentage points. Best epoch is "
+                "chosen on the test split itself (no validation split), so it is optimistic.", ""]
 
     # ── E1 + E4 ───────────────────────────────────────────────────────
     if vocab_runs:
         rows = cohort_rows(vocab_runs, lambda r: r.output_vocab_size, "output_vocab_size")
-        columns = list(rows[0].keys())
-        write_rows("ideaA_vocab_sweep.csv", columns, rows)
+        write_rows("ideaA_vocab_sweep.csv", all_columns(rows), rows)
 
         probe = load_probe()
         sections += [
@@ -185,7 +225,7 @@ def main():
             "",
             "Matched body (48h/3L/1H), 2048 examples, KL 0.99->0.50. Only the auxiliary "
             "bank varies, so every arm can still express the task.", "",
-        ]
+        ] + teacher_entropy_note(vocab_runs)
         table_rows = []
         for row in rows:
             vocab = int(row["output_vocab_size"])
@@ -201,6 +241,9 @@ def main():
                 str(vocab), str(row["runs"]),
                 format_stat(row["task_best"], row["task_best_std"]),
                 format_stat(row["task_final"], row["task_final_std"]),
+                format_value(row["majority_baseline"]),
+                format_stat(row["task_best_excess"], row["task_best_excess_std"], signed=True),
+                format_stat(row["task_final_excess"], row["task_final_excess_std"], signed=True),
                 format_stat(row["validity"], row["validity_std"]),
                 format_stat(row["teacher_student_overlap"], row["teacher_student_overlap_std"]),
                 f"{row['student_entropy']:.3f}" if row["student_entropy"] is not None else "—",
@@ -208,15 +251,16 @@ def main():
                 probe_stat("head_gradient_fraction"),
             ])
         sections += [render_table(
-            ["V", "n", "task best %", "task final %", "validity %", "overlap %",
-             "student H", "ECE", "eff. rank", "head grad frac"], table_rows), ""]
+            ["V", "n", "task best %", "task final %", "baseline %", "excess best pp", "excess final pp",
+             "validity %", "overlap %", "student H", "ECE", "eff. rank", "head grad frac"], table_rows), ""]
 
     # ── E3 / B1 ───────────────────────────────────────────────────────
     if vocab_runs:
         rows = cohort_rows(vocab_runs, lambda r: r.output_vocab_size, "output_vocab_size")
         sections += ["## E3 — Structural validity vs value accuracy (board B1)", "",
                      "The gap is `validity_rate - task_accuracy`: output that parses as the "
-                     "right shape but carries wrong leaf values.", ""]
+                     "right shape but carries wrong leaf values. Each field's value accuracy is "
+                     "shown as accuracy / that field's majority-label share.", ""]
         categories = sorted({key.replace("value_accuracy_", "") for row in rows
                              for key in row if key.startswith("value_accuracy_")})
         table_rows = []
@@ -226,29 +270,36 @@ def main():
                      format_stat(row["task_final"], row["task_final_std"]),
                      format_stat(row["validity_value_gap"], row["validity_value_gap_std"])]
             for category in categories:
-                value = row.get(f"value_accuracy_{category}")
-                cells.append(f"{value * 100:.2f}" if value is not None else "—")
+                cells.append(f"{format_value(row.get(f'value_accuracy_{category}'))} / "
+                             f"{format_value(row.get(f'majority_baseline_{category}'))}")
             table_rows.append(cells)
-        sections += [render_table(["V", "validity %", "task %", "gap pp"] + [f"{c} %" for c in categories],
+        sections += [render_table(["V", "validity %", "task %", "gap pp"] + [f"{c} % / share %" for c in categories],
                                   table_rows), ""]
 
     # ── E5 ────────────────────────────────────────────────────────────
     if data_runs:
         rows = cohort_rows(data_runs,
                            lambda r: r.info.get("max_training_examples", 0), "examples")
-        write_rows("ideaD_data_plateau.csv", list(rows[0].keys()), rows)
+        write_rows("ideaD_data_plateau.csv", all_columns(rows), rows)
         sections += [f"## E5 — Data plateau ({len(data_runs)} runs)", "",
-                     "Body, vocabulary and schedule fixed; only teacher-example count moves.", ""]
+                     "Body, vocabulary and schedule fixed; only teacher-example count moves. These "
+                     "runs predate the fixed test set: each size was scored on its own test set "
+                     "(the tail of its own data, see `test ex.`), so compare the excess column, "
+                     "not raw task accuracy (code review X-H1).", ""] + teacher_entropy_note(data_runs)
         table_rows = [[
-            str(int(row["examples"])), str(row["runs"]),
+            str(int(row["examples"])), str(row["runs"]), str(row["test_examples"] or "—"),
             format_stat(row["task_best"], row["task_best_std"]),
             format_stat(row["task_final"], row["task_final_std"]),
+            format_value(row["majority_baseline"]),
+            format_stat(row["task_best_excess"], row["task_best_excess_std"], signed=True),
+            format_stat(row["task_final_excess"], row["task_final_excess_std"], signed=True),
             format_stat(row["validity"], row["validity_std"]),
-            f"{row['teacher_forced_accuracy'] * 100:.2f}" if row["teacher_forced_accuracy"] else "—",
-            f"{row['student_accuracy'] * 100:.2f}" if row["student_accuracy"] else "—",
+            format_value(row["teacher_forced_accuracy"]),
+            format_value(row["student_accuracy"]),
         ] for row in rows]
         sections += [render_table(
-            ["examples", "n", "task best %", "task final %", "validity %", "tf %", "student %"],
+            ["examples", "n", "test ex.", "task best %", "task final %", "baseline %", "excess best pp",
+             "excess final pp", "validity %", "tf %", "student %"],
             table_rows), ""]
 
     # ── E2 ────────────────────────────────────────────────────────────
@@ -268,7 +319,8 @@ def main():
                 return mean_std([float(row[name]) for row in rows
                                  if row.get(name) not in (None, "")])
             greedy = column("greedy_accuracy")
-            cells = [arm, str(len(rows)), format_stat(greedy[0], greedy[1])]
+            baseline = column("majority_baseline")   # rows written before the X-C1 fix lack it: "—"
+            cells = [arm, str(len(rows)), format_stat(greedy[0], greedy[1]), format_value(baseline[0])]
             for key in temperature_keys:
                 gain = column(key)
                 cells.append(format_stat(gain[0], gain[1]))
@@ -276,7 +328,7 @@ def main():
             cells.append(f"{entropy[0]:.3f}" if entropy[0] is not None else "—")
             table_rows.append(cells)
         sections += [render_table(
-            ["arm", "n", "greedy %"] + [f"gain {k.replace('vote_gain_t', 't')} pp" for k in temperature_keys]
+            ["arm", "n", "greedy %", "baseline %"] + [f"gain {k.replace('vote_gain_t', 't')} pp" for k in temperature_keys]
             + ["student H"], table_rows), ""]
 
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -4,28 +4,35 @@ measured teacher entropy, and a selectable set of real examples (input -> teache
 
     python domains_report.py        # writes thesis_work/domains.html, open it in a browser
 
-Local file only. Reads batches/ (first batch file per dataset), experiments/results/
-domain_entropy.csv, and the domain classes. Nothing is uploaded anywhere.
+Local file only. Reads batches/ (first batch file per dataset), the completed runs' eval
+logs, experiments/results/domain_entropy.csv, and the domain classes. Nothing is uploaded.
+
+Teacher entropy has one source in every report (code review X-M8): the test-split eval
+logs of the completed runs (library.tooling.run.test_split_teacher_entropy). Only a dataset
+no run has been trained on yet falls back to domain_entropy.csv (measure_entropy.py, the
+first 256 examples); the page says which sample each number is.
 """
 
 import csv
 import html
 import inspect
 import json
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from transformers import AutoTokenizer
 
+from library import RunStore
 from library.domain import get_domain, registered_domains
 from library.shared.batch_files import batch_paths, read_batch, read_batch_texts
-from library.shared.config import BATCHES_DIR, MODEL_NAME
+from library.shared.config import BATCHES_DIR, MODEL_NAME, PROJECT_ROOT
+from library.shared.metrics.task import extract_answer
 from library.shared.vocabulary import build_vocabulary
+from library.tooling.run import test_split_teacher_entropy
 
-OUTPUT = Path("thesis_work") / "domains.html"
-ENTROPY_CSV = Path("experiments") / "results" / "domain_entropy.csv"
+OUTPUT = PROJECT_ROOT / "thesis_work" / "domains.html"
+ENTROPY_CSV = PROJECT_ROOT / "experiments" / "results" / "domain_entropy.csv"
 EXAMPLES_PER_DATASET = 12
 PLACEHOLDER = "<input text>"
 
@@ -74,15 +81,27 @@ def examples_for(domain, directory):
             item["thinking"] = record["thinking"]
         if truth and record["sentence"] in truth:
             answer, attribute = truth[record["sentence"]]
-            match = re.search(r"(?:Answer:)?\s*([^;\n]+);", record["model_response"])
             item["truth"] = answer
             item["attribute"] = attribute
-            item["correct"] = bool(match) and match.group(1).strip().lower() == answer.lower()
+            item["correct"] = extract_answer(record["model_response"]) == answer.lower()
         examples.append(item)
     return examples
 
 
-def describe(domain_name, tokenizers, entropies):
+def teacher_entropy(domain_name, teacher, csv_row, completed_runs):
+    """(nats, exp(H), which sample) for one dataset: the test-split eval logs of the
+    completed runs on it, else the measure_entropy.py row."""
+    runs = [run for run in completed_runs if run.domain == domain_name and run.teacher_model == teacher]
+    measured = test_split_teacher_entropy(runs)
+    if measured:
+        return measured["nats"], measured["exp_nats"], measured["sample"]
+    if csv_row:
+        return (float(csv_row["mean_nats"]), float(csv_row["exp_H"]),
+                f"no trained run yet: first {csv_row['examples']} examples of the batches (measure_entropy.py)")
+    return None, None, "not measured"
+
+
+def describe(domain_name, tokenizers, entropies, completed_runs):
     domain = get_domain(domain_name)
     doc = inspect.getdoc(sys.modules[type(domain).__module__]) or ""
     datasets = []
@@ -94,13 +113,15 @@ def describe(domain_name, tokenizers, entropies):
             if not batches:
                 continue
             entropy = entropies.get(domain.name, {})
+            entropy_nats, exp_entropy, entropy_source = teacher_entropy(domain.name, teacher, entropy, completed_runs)
             tokenizer = tokenizers.setdefault(teacher, AutoTokenizer.from_pretrained(teacher))
             vocabulary = build_vocabulary(tokenizer, domain)
             datasets.append({
                 "teacher": teacher, "batches": batches, "examples": examples,
                 "vocab_size": vocabulary["vocab_size"],
-                "entropy_nats": float(entropy["mean_nats"]) if entropy else None,
-                "exp_H": float(entropy["exp_H"]) if entropy else None,
+                "entropy_nats": entropy_nats,
+                "exp_H": exp_entropy,
+                "entropy_source": entropy_source,
                 "one_hot": float(entropy["one_hot_share"]) if entropy else None,
                 "examples_list": examples_for(domain, teacher_dir),
             })
@@ -108,7 +129,8 @@ def describe(domain_name, tokenizers, entropies):
         tokenizer = tokenizers.setdefault(MODEL_NAME, AutoTokenizer.from_pretrained(MODEL_NAME))
         vocabulary = build_vocabulary(tokenizer, domain)
         datasets.append({"teacher": None, "batches": 0, "examples": 0, "vocab_size": vocabulary["vocab_size"],
-                         "entropy_nats": None, "exp_H": None, "one_hot": None, "examples_list": []})
+                         "entropy_nats": None, "exp_H": None, "entropy_source": "no data", "one_hot": None,
+                         "examples_list": []})
     fields = {}
     for key, row in entropies.items():
         if key.startswith(domain.name + "/"):
@@ -158,8 +180,9 @@ function render(i){const d=DOMAINS[i];document.querySelectorAll('.tab').forEach(
  let h=`<div class="card"><h2>${esc(d.name)} <span class="badge">${esc(d.class)}</span></h2><p>${esc(d.doc)}</p></div>`;
  h+=`<div class="card"><h3>Spec</h3><table><tr><th>stop token</th><th>max steps</th><th>task metric</th><th>structural check</th></tr><tr><td class="m">${esc(JSON.stringify(d.stop_token))}</td><td class="n">${d.max_steps}</td><td class="m">${esc(d.metric)}</td><td>${d.structural_validity?'yes':'no (free-form)'}</td></tr></table></div>`;
  h+=`<div class="card"><h3>Teacher prompt</h3><pre>${esc(d.prompt)}</pre></div>`;
- h+=`<div class="card"><h3>Datasets on disk</h3><table><tr><th>teacher</th><th class="n">batches</th><th class="n">examples</th><th class="n">output vocab</th><th class="n">teacher H (nats)</th><th class="n">exp(H)</th><th class="n">one-hot steps</th></tr>`+d.datasets.map(s=>`<tr><td class="m">${esc(s.teacher||'(none yet — vocab shown for the default teacher)')}</td><td class="n">${s.batches}</td><td class="n">${s.examples.toLocaleString()}</td><td class="n">${s.vocab_size}</td><td class="n">${f(s.entropy_nats,4)}</td><td class="n">${f(s.exp_H,3)}</td><td class="n">${s.one_hot==null?'—':(s.one_hot*100).toFixed(1)+'%'}</td></tr>`).join('')+`</table>`;
- const fk=Object.keys(d.fields_exp_H||{});if(fk.length){h+=`<h3 style="margin-top:16px">exp(H) per output field</h3><table><tr>${fk.map(k=>`<th>${esc(k)}</th>`).join('')}</tr><tr>${fk.map(k=>`<td class="n">${f(d.fields_exp_H[k],3)}</td>`).join('')}</tr></table>`;}
+ h+=`<div class="card"><h3>Datasets on disk</h3><table><tr><th>teacher</th><th class="n">batches</th><th class="n">examples</th><th class="n">output vocab</th><th class="n">teacher H (nats)</th><th class="n">exp(H)</th><th class="n">one-hot steps</th></tr>`+d.datasets.map(s=>`<tr><td class="m">${esc(s.teacher||'(none yet — vocab shown for the default teacher)')}</td><td class="n">${s.batches}</td><td class="n">${s.examples.toLocaleString()}</td><td class="n">${s.vocab_size}</td><td class="n">${f(s.entropy_nats,4)}</td><td class="n">${f(s.exp_H,3)}</td><td class="n">${s.one_hot==null?'—':(s.one_hot*100).toFixed(1)+'%'}</td></tr>`).join('')+`</table>`
+ +d.datasets.filter(s=>s.teacher).map(s=>`<p style="margin-top:8px">Teacher H (${esc(s.teacher)}): ${esc(s.entropy_source)}. One-hot steps: first 256 examples (measure_entropy.py).</p>`).join('');
+ const fk=Object.keys(d.fields_exp_H||{});if(fk.length){h+=`<h3 style="margin-top:16px">exp(H) per output field (first 256 examples, measure_entropy.py)</h3><table><tr>${fk.map(k=>`<th>${esc(k)}</th>`).join('')}</tr><tr>${fk.map(k=>`<td class="n">${f(d.fields_exp_H[k],3)}</td>`).join('')}</tr></table>`;}
  h+=`</div>`;
  d.datasets.forEach((s,si)=>{if(!s.examples_list.length)return;h+=`<div class="card"><h3>Examples — ${esc(s.teacher)}</h3><p>Pick one of the first ${s.examples_list.length} stored examples. Input on the left, the teacher's response on the right${s.examples_list[0].truth!==undefined?', with the generator\\'s ground truth':''}.</p><select id="sel-${i}-${si}" onchange="showEx(${i},${si},this.value)">${s.examples_list.map((e,k)=>`<option value="${k}">${k+1}. ${esc(e.input.replace(/\\s+/g,' ').slice(0,90))}${e.correct===false?'  ✗':''}</option>`).join('')}</select><div id="ex-${i}-${si}" style="margin-top:12px"></div></div>`;});
  document.getElementById('panel').innerHTML=h;d.datasets.forEach((s,si)=>{if(s.examples_list.length)showEx(i,si,0);});}
@@ -175,7 +198,8 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8")
     entropies = entropy_rows()
     tokenizers = {}
-    domains = [describe(name, tokenizers, entropies) for name in registered_domains()]
+    completed_runs = RunStore().completed()
+    domains = [describe(name, tokenizers, entropies, completed_runs) for name in registered_domains()]
     page = PAGE.replace("__DATA__", json.dumps(domains, ensure_ascii=False).replace("</", "<\\/")) \
                .replace("__DATE__", datetime.now().strftime("%Y-%m-%d %H:%M"))
     OUTPUT.write_text(page, encoding="utf-8")

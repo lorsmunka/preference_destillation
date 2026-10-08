@@ -6,7 +6,11 @@
 Reads only what training already writes: the newest in-progress run's info.json, its
 logs/state.json and the tail of logs/training.jsonl, the other runs of the same experiment
 (cached, re-read only when a run finishes), the tail of the newest console log, and one
-nvidia-smi query every 5 s. No torch, no matplotlib, no GPU. Local only.
+nvidia-smi query every 5 s. No matplotlib, no GPU; torch is imported only to size the
+epochs of a run from before the trainer recorded training_batch_count. Local only.
+Paths are anchored at this file's directory (the repo root), so it runs from any cwd.
+An in_progress run nothing has written to for STALE_AFTER_MINUTES is shown as "stopped"
+(interrupted or abandoned), never as the current run.
 """
 
 import json
@@ -18,16 +22,19 @@ import threading
 import time
 import webbrowser
 from datetime import datetime
+from functools import lru_cache
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
-STOP_PATH = Path("STOP")    # library.shared.exit_listener watches this file
-RUNS_DIR = Path("runs")
-LOG_DIRS = [Path("experiments"), Path(".")]
+REPO_ROOT = Path(__file__).resolve().parent
+DEFAULT_PORT = 8765
+STOP_PATH = REPO_ROOT / "STOP"    # library.shared.exit_listener watches STOP in the training script's cwd (the repo root)
+RUNS_DIR = REPO_ROOT / "runs"
+LOG_DIRS = [REPO_ROOT / "experiments", REPO_ROOT]
 CHART_POINTS = 400          # train_batch records kept for the chart
 CONSOLE_LINES = 40
 TAIL_BYTES = 96 * 1024
+STALE_AFTER_MINUTES = 60    # longest silence of a live run so far: ~9 min (a post-gen eval pass)
 
 
 # ── file readers (tails only) ─────────────────────────────────────────
@@ -90,11 +97,25 @@ def minutes_between(start, end):
 
 # ── run discovery ─────────────────────────────────────────────────────
 
+def last_write_time(run_dir):
+    """When anything of the run was last written (info.json, its log, its state)."""
+    times = []
+    for path in (run_dir / "info.json", run_dir / "logs" / "training.jsonl", run_dir / "logs" / "state.json"):
+        try:
+            times.append(path.stat().st_mtime)
+        except OSError:
+            pass
+    return max(times, default=0.0)
+
+
 def run_infos():
-    """{run_name: (info dict, info.json mtime)} for every run directory."""
+    """{run_name: (info dict, info.json mtime)} for every run directory. An in_progress run
+    nothing has written to for STALE_AFTER_MINUTES gets status "stopped": it was
+    interrupted or abandoned and is not running (info.json itself is never changed)."""
     result = {}
     if not RUNS_DIR.is_dir():
         return result
+    now = time.time()
     for run_dir in RUNS_DIR.iterdir():
         info_path = run_dir / "info.json"
         try:
@@ -103,6 +124,8 @@ def run_infos():
             continue
         info = read_json(info_path)
         if info:
+            if info.get("status") == "in_progress" and now - last_write_time(run_dir) > STALE_AFTER_MINUTES * 60:
+                info = {**info, "status": "stopped"}
             result[run_dir.name] = (info, mtime)
     return result
 
@@ -118,14 +141,16 @@ def current_run(infos):
 
 
 class ExperimentCache:
-    """Per-run summaries for the table; a run is re-read only when its info.json changes."""
+    """Per-run summaries for the table; a run is re-read only when its info.json (or its
+    shown status) changes."""
 
     def __init__(self):
-        self.summaries = {}   # run name -> (mtime, summary)
+        self.summaries = {}   # run name -> ((mtime, status), summary)
 
     def summary(self, name, info, mtime):
+        cache_key = (mtime, info.get("status"))
         cached = self.summaries.get(name)
-        if cached and cached[0] == mtime:
+        if cached and cached[0] == cache_key:
             return cached[1]
         evals = all_records(RUNS_DIR / name / "logs" / "training.jsonl", "eval_epoch")
         best = max((e.get("task_accuracy", 0.0) for e in evals), default=None)
@@ -138,18 +163,19 @@ class ExperimentCache:
             "minutes": minutes_between(info.get("started_at"), info.get("completed_at")),
             "task_best": best,
             "task_final": final.get("task_accuracy"),
+            "baseline_final": final.get("majority_baseline"),   # logged by runs since the X-C1 fix
             "overlap_final": final.get("teacher_student_overlap"),
             "student_entropy_final": final.get("student_entropy"),
             "epochs_done": len(evals),
         }
-        self.summaries[name] = (mtime, summary)
+        self.summaries[name] = (cache_key, summary)
         return summary
 
 
 EXPERIMENT_CACHE = ExperimentCache()
 
-EXPERIMENTS_DIR = Path("experiments")
-LEDGER_PATH = Path("thesis_work") / "experiment_ledger.txt"
+EXPERIMENTS_DIR = REPO_ROOT / "experiments"
+LEDGER_PATH = REPO_ROOT / "thesis_work" / "experiment_ledger.txt"
 DESCRIPTION_CACHE = {}   # tag -> {"script", "docstring", "ledger"}
 RUN_BOOKKEEPING_KEYS = {"run_name", "description", "status", "started_at", "completed_at", "model_info", "experiment"}
 
@@ -223,16 +249,22 @@ def sample_gpu_forever():
 
 # ── state assembly ────────────────────────────────────────────────────
 
-def planned_run_count(log_path):
-    """Experiment scripts announce '<tag>: N runs ...' on their first line."""
-    if not log_path:
+def planned_run_count(tag, queues, log_path):
+    """How many runs the latest launch of the experiment planned: the queue file its script
+    wrote at start (queue/<tag>.json), else the '<tag>: N runs ...' line a script prints
+    first — only when the newest console log is this experiment's. A launch may cover part
+    of a sweep, so the dashboard shows at least the runs already on disk."""
+    for queue in queues:
+        if queue.get("tag") == tag and queue.get("kind") == "training":
+            return queue["total"]
+    if not log_path or not tag:
         return None
     try:
         with open(log_path, "r", encoding="utf-8", errors="replace") as file:
             head = file.read(400)
     except OSError:
         return None
-    match = re.search(r"(\d+) runs", head)
+    match = re.search(re.escape(tag) + r": (\d+) runs", head)
     return int(match.group(1)) if match else None
 
 
@@ -246,16 +278,32 @@ def newest_console_log():
     return max(candidates, key=lambda p: p.stat().st_mtime)
 
 
-def batches_per_epoch(info, batch_records):
-    max_examples = info.get("max_training_examples")
-    batch_size = info.get("batch_size", 32)
-    ratio = info.get("training_test_ratio", 0.8)
-    if max_examples:
-        return int((max_examples // batch_size) * ratio)
-    return max((r.get("batch", 0) for r in batch_records), default=0)
+def batches_per_epoch(name, info, batch_records):
+    """Training batch files per epoch: recorded in info.json by the trainer; for a run from
+    before that, the trainer's own split rule (split_batch_files) on the run's settings."""
+    if info.get("training_batch_count"):
+        return info["training_batch_count"]
+    return training_file_count(name) or max((r.get("batch", 0) for r in batch_records), default=0)
 
 
-QUEUE_DIR = Path("queue")
+@lru_cache(maxsize=64)
+def training_file_count(name):
+    """split_batch_files' training-file count for a run's info.json settings (cached: only
+    runs that stopped before training_batch_count existed get here, and they do not change)."""
+    from library.shared.config import batches_dir
+    from library.specs import DEFAULT_MAX_TEST_EXAMPLES
+    from library.training.batch_handler import split_batch_files
+    info = read_json(RUNS_DIR / name / "info.json", {}) or {}
+    training_files, _ = split_batch_files(
+        batches_dir(info.get("domain", ""), info.get("teacher_model", "")),
+        info.get("training_test_ratio", 0.8),
+        max_training_examples=info.get("max_training_examples"),
+        batch_size=info.get("batch_size", 32),
+        max_test_examples=info.get("max_test_examples", DEFAULT_MAX_TEST_EXAMPLES))
+    return len(training_files)
+
+
+QUEUE_DIR = REPO_ROOT / "queue"
 
 
 def queue_states(infos):
@@ -265,7 +313,7 @@ def queue_states(infos):
     queues = []
     for path in sorted(QUEUE_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
         queue = read_json(path)
-        if not queue:
+        if not queue or "items" not in queue:   # queue/last_stop.json lives here too
             continue
         items, durations, running = [], [], None
         for item in queue.get("items", []):
@@ -315,7 +363,7 @@ def build_state():
     eval_records = tail_records(logs / "training.jsonl", "eval_epoch", limit=50)
     run_state = read_json(logs / "state.json", {}) or {}
     last = batch_records[-1] if batch_records else {}
-    per_epoch = batches_per_epoch(info, batch_records)
+    per_epoch = batches_per_epoch(name, info, batch_records)
     epoch = run_state.get("current_epoch", last.get("epoch", 0))
     batch = run_state.get("current_batch", last.get("batch", 0))
     total_epochs = info.get("epoch_count", 0)
@@ -337,6 +385,7 @@ def build_state():
         "chart": [{"x": r.get("epoch", 0) * per_epoch + r.get("batch", 0), "loss": r.get("loss"),
                    "accuracy": r.get("accuracy"), "kl_ratio": r.get("kl_ratio")} for r in batch_records],
         "evals": [{"epoch": e.get("epoch"), "task_accuracy": e.get("task_accuracy"),
+                   "majority_baseline": e.get("majority_baseline"),
                    "student_accuracy": e.get("student_accuracy"), "teacher_forced_accuracy": e.get("teacher_forced_accuracy"),
                    "overlap": e.get("teacher_student_overlap"), "student_entropy": e.get("student_entropy"),
                    "teacher_entropy": e.get("teacher_entropy")} for e in eval_records],
@@ -346,8 +395,9 @@ def build_state():
     tag = info.get("experiment")
     siblings = [(n, i, m) for n, (i, m) in infos.items() if i.get("experiment") == tag]
     rows = sorted((EXPERIMENT_CACHE.summary(n, i, m) for n, i, m in siblings), key=lambda r: r["run"])
-    completed = [r for r in rows if r["status"] == "completed" and r["minutes"]]
-    mean_minutes = sum(r["minutes"] for r in completed) / len(completed) if completed else None
+    completed = [r for r in rows if r["status"] == "completed"]
+    timed = [r["minutes"] for r in completed if r["minutes"]]
+    mean_minutes = sum(timed) / len(timed) if timed else None
     shared, varying = config_split([i for _, i, _ in siblings])
     per_group = {}
     for row in rows:
@@ -359,7 +409,7 @@ def build_state():
         "tag": tag,
         "rows": rows,
         "completed": len(completed),
-        "total": planned_run_count(log_path) or len(rows),
+        "total": max(planned_run_count(tag, state["queues"], log_path) or 0, len(rows)),
         "mean_minutes": mean_minutes,
         "shared_config": shared,
         "varying_config": varying,
@@ -393,7 +443,7 @@ pre{margin:0;font:11.5px/1.45 var(--mono);color:#b9c6d2;white-space:pre-wrap;wor
 details summary{font-size:13px}
 .queue{margin-bottom:10px}.queue:last-child{margin-bottom:0}.queue .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .queue .bar{margin:5px 0 4px}.qlist{columns:2;column-gap:24px;font:11.5px/1.5 var(--mono);margin-top:6px}
-.qlist div{break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-completed{color:var(--ok)}.st-in_progress{color:var(--acc);font-weight:600}.st-pending{color:var(--dim)}
+.qlist div{break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-completed{color:var(--ok)}.st-in_progress{color:var(--acc);font-weight:600}.st-pending{color:var(--dim)}.st-stopped{color:var(--warn)}
 button#stop{background:#2a1a1a;color:#f2a8a8;border:1px solid #6b2b2b;border-radius:4px;padding:5px 12px;font:13px inherit;cursor:pointer}
 button#stop:hover{background:#3a1f1f}button#stop[disabled]{opacity:.55;cursor:default}
 </style></head><body><div class="wrap">
@@ -436,7 +486,7 @@ function draw(chart){const c=$('chart'),ctx=c.getContext('2d');const W=c.width,H
 function render(s){lastState=s;const r=s.run;
  $('subtitle').textContent=(s.console.file?('console: '+s.console.file+' · '):'')+'updated '+s.now.replace('T',' ')+(s.stop_pending?'  ·  STOP REQUESTED — finishing the current batch, then saving':'');
  $('stop').disabled=s.stop_pending;$('stop').textContent=s.stop_pending?'Stop requested…':'Stop gracefully';
- const mark={completed:'✓',in_progress:'▶',pending:'·'};
+ const mark={completed:'✓',in_progress:'▶',pending:'·',stopped:'■'};
  $('queues').innerHTML='<p class="label">Queues</p>'+((s.queues&&s.queues.length)?s.queues.map(q=>{const p=q.total?q.done/q.total:0;
   const eta=q.eta_minutes!=null?` · ${q.mean_minutes.toFixed(1)} min each · ${(q.eta_minutes/60).toFixed(1)} h left · ETA ${new Date(Date.now()+q.eta_minutes*60000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`:'';
   return `<div class="queue"><div class="head"><b class="mono">${q.tag}</b><span class="tick">${q.kind} · ${q.done}/${q.total} done${q.running?' · running: '+q.running:''}${eta}</span></div>
@@ -448,7 +498,7 @@ function render(s){lastState=s;const r=s.run;
  $('progress').textContent=`epoch ${r.epoch+1}/${r.epochs} · batch ${r.batch}/${r.batches_per_epoch} · ${(r.progress*100).toFixed(1)}% · elapsed ${el==null?'—':el.toFixed(1)+' min'} · ${r.domain} · ${r.description||''}`;
  const m=r.last;$('metrics').innerHTML=[['loss',f(m.loss)],['KL',f(m.kl_loss)],['CE',f(m.ce_loss)],['token acc',pct(m.accuracy)],['LR',f(m.learning_rate,6)],['KL ratio',f(m.kl_ratio,3)],['temp / teacher',f(m.temperature,2)+' / '+f(m.teacher_temperature,2)],['attn noise',f(m.attention_noise,3)],['steps in batch',m.steps??'—'],['batch time',f(m.time_seconds,2)+' s']].map(([k,v])=>`<div><span>${k}</span><b class="mono">${v}</b></div>`).join('');
  draw(r.chart);
- $('evals').innerHTML='<tr><th>epoch</th><th>task</th><th>student</th><th>TF</th><th>overlap</th><th>H stu</th><th>H tea</th></tr>'+r.evals.map(e=>`<tr><td>${e.epoch+1}</td><td>${pct(e.task_accuracy)}</td><td>${pct(e.student_accuracy)}</td><td>${pct(e.teacher_forced_accuracy)}</td><td>${pct(e.overlap)}</td><td>${f(e.student_entropy,3)}</td><td>${f(e.teacher_entropy,3)}</td></tr>`).join('');
+ $('evals').innerHTML='<tr><th>epoch</th><th>task</th><th title="always giving the most common answer">baseline</th><th>student</th><th>TF</th><th>overlap</th><th>H stu</th><th>H tea</th></tr>'+r.evals.map(e=>`<tr><td>${e.epoch+1}</td><td>${pct(e.task_accuracy)}</td><td>${pct(e.majority_baseline)}</td><td>${pct(e.student_accuracy)}</td><td>${pct(e.teacher_forced_accuracy)}</td><td>${pct(e.overlap)}</td><td>${f(e.student_entropy,3)}</td><td>${f(e.teacher_entropy,3)}</td></tr>`).join('');
  const g=s.gpu;$('gpu').innerHTML=g.available?`<div class="tick">${g.utilization.toFixed(0)}% util · ${(g.memory_used/1024).toFixed(1)} / ${(g.memory_total/1024).toFixed(1)} GB · ${g.temperature.toFixed(0)}°C</div><div class="bar gpu"><i style="width:${g.utilization}%"></i></div><div class="bar"><i style="width:${g.memory_used/g.memory_total*100}%"></i></div>`:'nvidia-smi unavailable';
  const ls=s.last_stop;const recent=ls&&ls.at&&(Date.now()-Date.parse(ls.at))<6*3600*1000;
  $('banner').hidden=!recent;if(recent){$('banner').textContent=`Last stop: ${ls.reason} · ${ls.at.replace('T',' ')}`;$('banner').style.background='#1f2a3a';}
@@ -458,7 +508,7 @@ function render(s){lastState=s;const r=s.run;
   const kv=obj=>Object.entries(obj||{}).map(([k,v])=>`<tr><td>${k}</td><td>${Array.isArray(v)?v.map(x=>JSON.stringify(x)).join(' · '):JSON.stringify(v)}</td></tr>`).join('');
   $('varying').innerHTML=kv(e.varying_config)||'<tr><td>—</td></tr>';$('shared').innerHTML=kv(e.shared_config);
   $('groups').innerHTML=Object.entries(e.groups||{}).map(([g,c])=>`<tr><td>${g}</td><td class="r">${c.completed}/${c.seen} done</td></tr>`).join('');
-  $('exp').innerHTML='<tr><th>run</th><th>kl</th><th>status</th><th class="r">min</th><th class="r">task best</th><th class="r">task final</th><th class="r">overlap</th><th class="r">H stu</th></tr>'+e.rows.map(x=>`<tr class="${x.run===r.name?'now':''}"><td>${x.run}</td><td>${x.kl}</td><td>${x.status}</td><td class="r">${f(x.minutes,1)}</td><td class="r">${pct(x.task_best)}</td><td class="r">${pct(x.task_final)}</td><td class="r">${pct(x.overlap_final)}</td><td class="r">${f(x.student_entropy_final,2)}</td></tr>`).join('');}
+  $('exp').innerHTML='<tr><th>run</th><th>kl</th><th>status</th><th class="r">min</th><th class="r">task best</th><th class="r">task final</th><th class="r">baseline</th><th class="r">overlap</th><th class="r">H stu</th></tr>'+e.rows.map(x=>`<tr class="${x.run===r.name?'now':''}"><td>${x.run}</td><td>${x.kl}</td><td>${x.status}</td><td class="r">${f(x.minutes,1)}</td><td class="r">${pct(x.task_best)}</td><td class="r">${pct(x.task_final)}</td><td class="r">${pct(x.baseline_final)}</td><td class="r">${pct(x.overlap_final)}</td><td class="r">${f(x.student_entropy_final,2)}</td></tr>`).join('');}
  $('conlabel').textContent='Console — '+(s.console.file||'');$('console').textContent=s.console.lines.join('\\n');$('console').scrollTop=$('console').scrollHeight;}
 async function stopRun(){const r=lastState&&lastState.run;if(!confirm('Stop after the current batch? The run saves a resume checkpoint; re-running the same experiment command continues from it.'+(r?'\\n\\nCurrent run: '+r.name:''))) return;
  await fetch('/api/stop',{method:'POST'});poll();}
@@ -499,8 +549,9 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     threading.Thread(target=sample_gpu_forever, daemon=True).start()
-    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    url = f"http://localhost:{PORT}"
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_PORT
+    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    url = f"http://localhost:{port}"
     print(f"Training dashboard at {url}  (Ctrl+C to stop)")
     webbrowser.open(url)
     try:

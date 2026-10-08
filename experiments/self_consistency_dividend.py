@@ -15,15 +15,13 @@ Phase 1 trains 2 loss arms x 5 seeds. Phase 2 is inference only: greedy vs major
 over k samples at several temperatures, on the held-out split.
 """
 
-import json
 from collections import Counter
 
-from _common import RESULTS_DIR, seeded_run_training, write_rows
+from _common import seeded_run_training, write_rows
 
-from library import TrainingRun
+from library import RunStore, TrainingRun
 from library.domain import MATH_WORD_PROBLEM
-from library.shared import batches_dir
-from library.shared.batch_files import batch_paths, read_batch
+from library.shared.batch_files import read_batch
 
 EXPERIMENT = "ideaG-self-consistency"
 
@@ -74,17 +72,12 @@ def build_runs():
 
 # ── phase 2: sampling + voting ────────────────────────────────────────
 def test_examples(run, limit):
-    """Held-out examples for this run, using the same split the trainer used."""
-    directory = batches_dir(run.domain, run.teacher_model)
-    paths = batch_paths(directory)
-    max_examples = run.info.get("max_training_examples")
-    batch_size = run.info.get("batch_size", 32)
-    effective = min(len(paths), max_examples // batch_size) if max_examples else len(paths)
-    ratio = run.info.get("training_test_ratio", 0.8)
-
+    """Held-out examples for this run: the first `limit` of its test set by the trainer's
+    own split rule (Run.split_files), the fixed test tail no run trained on."""
+    from library.training.batch_handler import TEST, select_records
     examples = []
-    for path in paths[int(effective * ratio):effective]:
-        for example in read_batch(path):
+    for path in run.split_files()[1]:
+        for example in select_records(read_batch(path), TEST):
             examples.append(example)
             if len(examples) >= limit:
                 return examples
@@ -112,6 +105,7 @@ def measure_run(run_name, metric_factory):
 
     greedy_correct = 0
     scored = 0
+    true_answers = Counter()
     voted_correct = {temperature: 0 for temperature in TEMPERATURES}
     distinct_total = {temperature: 0 for temperature in TEMPERATURES}
 
@@ -120,6 +114,7 @@ def measure_run(run_name, metric_factory):
         if truth is None:
             continue
         scored += 1
+        true_answers[truth] += 1
 
         greedy = student.generate(example["sentence"], max_new_tokens=student.domain.max_steps,
                                   temperature=0.0)
@@ -140,12 +135,15 @@ def measure_run(run_name, metric_factory):
     if scored == 0:
         return None
 
+    majority_baseline = max(true_answers.values()) / scored   # always giving the most common answer
     row = {
         "run": run_name,
         "arm": run.info.get("description", "").split()[2].strip(",") if run.info.get("description") else "",
         "checkpoint": label,
         "scored_examples": scored,
         "greedy_accuracy": greedy_correct / scored,
+        "majority_baseline": majority_baseline,
+        "greedy_excess": greedy_correct / scored - majority_baseline,
         "student_entropy": run.final_eval.student_entropy if run.final_eval else None,
         "logged_task_accuracy": run.final_eval.task_accuracy if run.final_eval else None,
     }
@@ -161,15 +159,20 @@ def run_phase_two():
     from library.shared.metrics.task import MathMetric
 
     columns = ["run", "arm", "checkpoint", "scored_examples", "greedy_accuracy",
-               "student_entropy", "logged_task_accuracy"]
+               "majority_baseline", "greedy_excess", "student_entropy", "logged_task_accuracy"]
     for temperature in TEMPERATURES:
         key = str(temperature).replace(".", "")
         columns += [f"voted_accuracy_t{key}", f"vote_gain_t{key}", f"mean_distinct_t{key}"]
 
+    store = RunStore()
+    completed = {run.name for run in store.completed()}
     rows = []
     for arm in LOSS_ARMS:
         for seed in SEEDS:
             run_name = f"ideaG-{arm}-s{seed}"
+            if run_name not in completed:
+                print(f"Skipping {run_name}: not a completed run")
+                continue
             print(f"Sampling {run_name} ...")
             row = measure_run(run_name, MathMetric)
             if row:
@@ -180,10 +183,16 @@ def run_phase_two():
     return rows
 
 
-if __name__ == "__main__":
+def main():
     runs = build_runs()
     print(f"{EXPERIMENT}: {len(runs)} runs ({len(LOSS_ARMS)} arms x {len(SEEDS)} seeds)\n")
-    seeded_run_training(runs)
+    if not seeded_run_training(runs):
+        print("Stopped — re-run to resume; phase 2 runs once every run is trained.")
+        return
     print(f"\nPhase 2: greedy vs vote-of-{SAMPLES_PER_EXAMPLE} on {VOTE_EXAMPLES} held-out problems\n")
     run_phase_two()
     print("\nDone. Analyse with: python experiments/report_ideas.py")
+
+
+if __name__ == "__main__":
+    main()

@@ -15,7 +15,8 @@ without changing the framework:
 
     python experiments/probe_bottleneck.py
 
-Reads whatever `ideaA-*` runs exist; safe to re-run as more finish.
+Reads whatever `ideaA-*` runs have completed; safe to re-run as more finish. The probe
+examples are the first PROBE_EXAMPLES of the fixed test tail (the trainer's split rule).
 """
 
 import math
@@ -23,29 +24,25 @@ import math
 import torch
 import torch.nn.functional as F
 
-from _common import RESULTS_DIR, write_rows
+from _common import write_rows
 
-from library import Analysis, RunStore
+from library import RunStore
 from library.model.student import StudentModel
-from library.shared import batches_dir
-from library.shared.batch_files import batch_paths, read_batch
+from library.shared.batch_files import read_batch
+from library.training.batch_handler import TEST, select_records
 
 PROBE_EXAMPLES = 20        # examples for ECE + isotropy
 GRADIENT_EXAMPLES = 8      # backward passes (one per example, gradients accumulated)
+GRADIENT_SEED = 0          # dropout masks of the gradient probe
 CALIBRATION_BINS = 10
 
 
 def test_examples(run, limit):
-    directory = batches_dir(run.domain, run.teacher_model)
-    paths = batch_paths(directory)
-    max_examples = run.info.get("max_training_examples")
-    batch_size = run.info.get("batch_size", 32)
-    effective = min(len(paths), max_examples // batch_size) if max_examples else len(paths)
-    ratio = run.info.get("training_test_ratio", 0.8)
-
+    """The first `limit` examples of the run's test set, by the trainer's own split rule
+    (Run.split_files): the fixed test tail, which no run trained on."""
     examples = []
-    for path in paths[int(effective * ratio):effective]:
-        for example in read_batch(path):
+    for path in run.split_files()[1]:
+        for example in select_records(read_batch(path), TEST):
             examples.append(example)
             if len(examples) >= limit:
                 return examples
@@ -74,10 +71,12 @@ def group_norm(parameters):
 
 def gradient_fraction(student, examples):
     """Accumulate the distillation gradient over a few examples, then report the share of
-    total gradient norm sitting on the head."""
+    total gradient norm sitting on the head. Dropout is on (train mode, as in training), so
+    the dropout masks are seeded: the same checkpoint always gives the same fraction."""
     model = student.model
     model.zero_grad(set_to_none=True)
     model.train()
+    torch.manual_seed(GRADIENT_SEED)
 
     used = 0
     for example in examples[:GRADIENT_EXAMPLES]:
@@ -199,7 +198,6 @@ def main():
 
     rows = []
     for run in runs:
-        analysis = Analysis(run.name, store)
         try:
             _label, checkpoint_path = store.resolve_checkpoint(run.name, "latest")
         except FileNotFoundError:

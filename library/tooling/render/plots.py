@@ -98,12 +98,16 @@ def plot_scaling(runs: Sequence[Run], out_path: Path, metric: str = "student_acc
 
 def plot_experiment_comparison(experiments: List[Experiment], out_path: Path,
                                metric: str = "student_accuracy"):
-    """Bar chart of per-cohort mean ± std (the thesis loss-strategy figures)."""
+    """Bar chart of per-cohort mean ± sample std (the thesis loss-strategy figures).
+    Cohorts without a value for the metric are left out."""
     plt = _plt()
-    labels = [e.tag for e in experiments]
-    stats = [e.stats(metric) for e in experiments]
-    means = [s.mean * 100 for s in stats]
-    errors = [s.std * 100 for s in stats]
+    measured = [(experiment, experiment.stats(metric)) for experiment in experiments]
+    measured = [(experiment, stat) for experiment, stat in measured if stat.mean is not None]
+    if not measured:
+        raise ValueError(f"No cohort has a value for {metric!r}.")
+    labels = [experiment.tag for experiment, _ in measured]
+    means = [stat.mean * 100 for _, stat in measured]
+    errors = [(stat.std or 0.0) * 100 for _, stat in measured]
     fig, ax = plt.subplots(figsize=(max(8, len(labels) * 1.6), 6))
     ax.bar(range(len(labels)), means, yerr=errors, capsize=5, color="#4C78A8")
     ax.set_xticks(range(len(labels)))

@@ -3,8 +3,16 @@
 `Run` promotes the old `experimental_analysis/run_data.py` `RunData` (the best existing
 abstraction): info.json + lazily-loaded typed logs + derived properties.
 `RunStore` is the one place that discovers runs and resolves checkpoints (logic that was
-copy-pasted into 4 tools). `Experiment` aggregates seed-replicate cohorts (the `experiment`
-tag) into mean ± std and significance — promoted out of `thesis_work/build_grafikonok.py`.
+copy-pasted into 4 tools). `Experiment` is one seed-replicate cohort — the completed runs
+of one `experiment` tag that share a configuration — aggregated into mean ± std and
+significance (promoted out of `thesis_work/build_grafikonok.py`).
+
+Every task accuracy comes with its majority baseline (the accuracy of always giving the
+most common answer) and the excess over it: on near-deterministic domains a student can
+score the class prior without learning anything (code review X-C1).
+
+Std convention, everywhere in reports: the sample standard deviation across seeds (n - 1),
+None for a single run.
 """
 
 from __future__ import annotations
@@ -15,12 +23,23 @@ import statistics
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Tuple
 
-from library.shared.config import RUNS_DIR
+from library.shared.config import RUNS_DIR, batches_dir
 from library.shared.logging.reader import RunLogs, read_run_logs
+from library.shared.metrics.task import answer_type_accuracy
+from library.specs import DEFAULT_MAX_TEST_EXAMPLES
+from .significance import welch_t_test
 
 FULL_GEMMA_INPUT_VOCAB = 262144
+
+# info.json keys that are not configuration: identity, status, timing, what the trainer
+# measured, and the replicate seeds. Runs equal on everything else are one cohort.
+NON_CONFIGURATION_KEYS = {
+    "run_name", "description", "experiment", "status", "started_at", "completed_at",
+    "model_info", "longest_training_sequence", "split_rule", "training_batch_count",
+    "test_batch_count", "vocabulary_sha1", "seed", "shuffle_seed",
+}
 
 
 class Run:
@@ -102,6 +121,10 @@ class Run:
     def dropout(self) -> float:
         return self.info.get("dropout", 0)
 
+    def configuration(self) -> dict:
+        """Everything in info.json that defines what was trained, without the seed."""
+        return {key: value for key, value in self.info.items() if key not in NON_CONFIGURATION_KEYS}
+
     # ── model info ────────────────────────────────────────────────────
     @property
     def _model_info(self) -> dict:
@@ -126,10 +149,93 @@ class Run:
     def params_millions(self) -> float:
         return self.total_parameters / 1_000_000
 
+    # ── data: which batch files the run trained and was tested on ─────
+    def split_files(self) -> Tuple[List[Path], List[Path]]:
+        """(training_files, test_files) by the trainer's own rule (split_batch_files), from
+        this run's info.json. Read each file through select_records(records, role). Runs
+        from before the fixed test tail recorded no max_test_examples and get the default,
+        so a re-evaluation scores every run on the same fixed test set."""
+        from library.training.batch_handler import split_batch_files
+        return split_batch_files(
+            batches_dir(self.domain, self.teacher_model),
+            self.info.get("training_test_ratio", 0.8),
+            max_training_examples=self.info.get("max_training_examples"),
+            batch_size=self.info.get("batch_size", 32),
+            max_test_examples=self.info.get("max_test_examples", DEFAULT_MAX_TEST_EXAMPLES),
+        )
+
+    def logged_test_files(self) -> List[Path]:
+        """The batch files this run's logged evaluations were scored on — to describe what
+        a logged number was measured on (its baseline), never to choose evaluation data.
+        Runs recording split_rule "fixed_tail" used split_files(). Earlier runs used the
+        rule before it: the last (1 - training_test_ratio) of the first
+        max_training_examples // batch_size files, so their test set moved with
+        max_training_examples (code review X-H1)."""
+        if self.info.get("split_rule") == "fixed_tail":
+            return self.split_files()[1]
+        from library.shared.batch_files import batch_paths
+        all_files = batch_paths(batches_dir(self.domain, self.teacher_model))
+        max_examples = self.info.get("max_training_examples")
+        batch_size = self.info.get("batch_size", 32)
+        used_count = min(len(all_files), max_examples // batch_size) if max_examples else len(all_files)
+        ratio = self.info.get("training_test_ratio", 0.8)
+        return all_files[int(used_count * ratio):used_count]
+
     # ── derived metrics ───────────────────────────────────────────────
     @property
     def final_eval(self):
         return self.eval_epochs[-1] if self.eval_epochs else None
+
+    def majority_baseline(self, evaluation=None) -> Optional[float]:
+        """The task accuracy of always giving the most common answer on the test set the
+        evaluation was scored on: the floor task accuracy has to clear (code review X-C1).
+        `evaluation` is one of eval_epochs (default: the final one). Read from the log when
+        logged; for older records computed from the logged confusion matrices; for logs
+        with none (math before the fix) from the true answers of the run's logged test set.
+        None for free-form domains (post-gen: no answer set) or when the batches are absent."""
+        evaluation = evaluation or self.final_eval
+        if evaluation is None:
+            return None
+        if evaluation.majority_baseline is not None:
+            return evaluation.majority_baseline
+        from library.training.evaluator import majority_baseline
+        if evaluation.confusion_matrices:
+            return majority_baseline(evaluation.confusion_matrices)
+        if self.info.get("split_rule") == "fixed_tail":
+            return None   # the current evaluator logs a baseline whenever the task metric has one
+        return majority_baseline(self.test_set_answer_counts())
+
+    def task_accuracy_excess(self, evaluation=None) -> Optional[float]:
+        """Task accuracy minus the majority baseline (positive = learned beyond the prior)."""
+        evaluation = evaluation or self.final_eval
+        if evaluation is None:
+            return None
+        if evaluation.task_accuracy_excess is not None:
+            return evaluation.task_accuracy_excess
+        baseline = self.majority_baseline(evaluation)
+        return evaluation.task_accuracy - baseline if baseline is not None else None
+
+    def answer_type_accuracy(self, evaluation=None) -> Dict[str, Optional[float]]:
+        """Math: accuracy on the true/false and on the numeric questions — only where the
+        log holds the "solution" confusion matrix (eval records written since the fix);
+        {} otherwise. Analysis(run).evaluate() measures it for older runs."""
+        evaluation = evaluation or self.final_eval
+        return answer_type_accuracy(evaluation.confusion_matrices) if evaluation else {}
+
+    def test_set_answer_counts(self) -> dict:
+        """Confusion matrices whose rows count the true answers of the logged test set
+        (every prediction counted invalid): enough for the majority baseline and the
+        answer-type composition. Read from the batch texts (no logits), cached per test set."""
+        from library.domain import get_domain
+        files = tuple(self.logged_test_files())
+        key = (self.domain, files)
+        if key not in _TEST_SET_ANSWER_COUNTS:
+            metric = get_domain(self.domain).task_metric()
+            for path in files:
+                for record in _test_records(path):
+                    metric.update([], record["model_response"])
+            _TEST_SET_ANSWER_COUNTS[key] = metric.result().confusion or {}
+        return _TEST_SET_ANSWER_COUNTS[key]
 
     @property
     def started_at(self) -> Optional[str]:
@@ -141,6 +247,15 @@ class Run:
 
     @property
     def training_hours(self) -> Optional[float]:
+        """Wall time over every session of the run. state.json accumulates it across resumes;
+        info.json's started_at is reset by each session, so started -> completed counts only
+        the last one (the fallback for runs without a state.json)."""
+        state_path = self.run_dir / "logs" / "state.json"
+        if state_path.exists():
+            with open(state_path, "r", encoding="utf-8") as file:
+                runtime_seconds = json.load(file).get("total_runtime_seconds", 0)
+            if runtime_seconds:
+                return runtime_seconds / 3600
         if self.started_at and self.completed_at:
             start = datetime.fromisoformat(self.started_at)
             end = datetime.fromisoformat(self.completed_at)
@@ -174,6 +289,34 @@ class Run:
         return f"Run({self.name!r}, {self.domain}, {self.status})"
 
 
+_TEST_SET_ANSWER_COUNTS: Dict[tuple, dict] = {}   # (domain, test files) -> answer-count matrices
+
+
+def _test_records(path: Path) -> List[dict]:
+    """The test records of one batch file, texts only (select_records keeps the "test"
+    ones of a file carrying per-record split labels)."""
+    from library.shared.batch_files import read_batch_meta, read_batch_texts
+    from library.training.batch_handler import TEST, select_records
+    texts = read_batch_texts(path)
+    splits = read_batch_meta(path).get("split") or [None] * len(texts)
+    return select_records([{**text, "split": split} for text, split in zip(texts, splits)], TEST)
+
+
+def test_split_teacher_entropy(runs: Sequence[Run]) -> Optional[dict]:
+    """Teacher entropy as every report quotes it (code review X-M8): the mean per-token
+    entropy (nats) of the teacher's reduced-vocabulary distribution at T=1 over each run's
+    test split, read from the final eval record, averaged over `runs`. The returned
+    "sample" says which runs and how many tokens that is."""
+    records = [run.final_eval for run in runs
+               if run.final_eval is not None and run.final_eval.teacher_entropy is not None]
+    if not records:
+        return None
+    nats = statistics.mean(record.teacher_entropy for record in records)
+    tokens = statistics.mean(record.total_steps for record in records)
+    return {"nats": nats, "exp_nats": math.exp(nats), "runs": len(records), "tokens_per_run": tokens,
+            "sample": f"test split, final eval record of {len(records)} run(s), ~{tokens:,.0f} teacher tokens each"}
+
+
 # ── metric extraction (one place that maps metric names to a Run value) ──
 _EVAL_METRICS = {
     "student_accuracy", "teacher_forced_accuracy", "task_accuracy", "avg_loss",
@@ -186,6 +329,10 @@ _EVAL_METRICS = {
 def run_metric(run: Run, metric: str) -> Optional[float]:
     if metric in _EVAL_METRICS:
         return getattr(run.final_eval, metric, None) if run.final_eval else None
+    if metric == "majority_baseline":
+        return run.majority_baseline()
+    if metric == "task_accuracy_excess":
+        return run.task_accuracy_excess()
     if metric == "params_millions":
         return run.params_millions()
     if metric == "training_hours":
@@ -200,8 +347,8 @@ def run_metric(run: Run, metric: str) -> Optional[float]:
 @dataclass
 class Stat:
     metric: str
-    mean: float
-    std: float
+    mean: Optional[float]   # None for an empty cohort
+    std: Optional[float]    # sample std (n - 1); None below two values
     n: int
     values: List[float]
 
@@ -209,14 +356,16 @@ class Stat:
 @dataclass
 class Comparison:
     metric: str
-    mean_a: float
-    mean_b: float
-    cohens_d: float
+    mean_a: Optional[float]
+    mean_b: Optional[float]
+    cohens_d: Optional[float]   # None when a cohort has fewer than two values
     welch_t: Optional[float]
+    p_value: Optional[float]    # two-sided Welch, uncorrected
 
 
 class Experiment:
-    """A cohort of seed-replicate runs sharing one `experiment` tag."""
+    """One seed-replicate cohort: completed runs of one `experiment` tag that share a
+    configuration (RunStore.by_experiment). `tag` is the cohort's label."""
 
     def __init__(self, tag: str, runs: List[Run]):
         self.tag = tag
@@ -228,30 +377,24 @@ class Experiment:
     def values(self, metric: str) -> List[float]:
         return [v for v in (run_metric(run, metric) for run in self.runs) if v is not None]
 
-    def stats(self, metric: str, sample: bool = False) -> Stat:
-        # Default = population std (ddof=0): the descriptive spread of the fixed seed cohort,
-        # matching the thesis tables. `sample=True` gives the inferential (n-1) estimate.
+    def stats(self, metric: str) -> Stat:
         values = self.values(metric)
-        mean = statistics.mean(values) if values else 0.0
-        if len(values) >= 2:
-            std = statistics.stdev(values) if sample else statistics.pstdev(values)
-        else:
-            std = 0.0
+        mean = statistics.mean(values) if values else None
+        std = statistics.stdev(values) if len(values) >= 2 else None
         return Stat(metric=metric, mean=mean, std=std, n=len(values), values=values)
 
     def compare(self, other: "Experiment", metric: str) -> Comparison:
         a, b = self.values(metric), other.values(metric)
-        mean_a = statistics.mean(a) if a else 0.0
-        mean_b = statistics.mean(b) if b else 0.0
-        cohens_d = welch_t = None
+        mean_a = statistics.mean(a) if a else None
+        mean_b = statistics.mean(b) if b else None
+        cohens_d = None
         if len(a) >= 2 and len(b) >= 2:
             sa, sb = statistics.stdev(a), statistics.stdev(b)
             pooled = math.sqrt(((len(a) - 1) * sa ** 2 + (len(b) - 1) * sb ** 2) / (len(a) + len(b) - 2))
-            cohens_d = (mean_a - mean_b) / pooled if pooled else 0.0
-            denom = math.sqrt(sa ** 2 / len(a) + sb ** 2 / len(b))
-            welch_t = (mean_a - mean_b) / denom if denom else None
-        return Comparison(metric=metric, mean_a=mean_a, mean_b=mean_b,
-                          cohens_d=cohens_d if cohens_d is not None else 0.0, welch_t=welch_t)
+            cohens_d = (mean_a - mean_b) / pooled if pooled else None
+        welch = welch_t_test(a, b)
+        return Comparison(metric=metric, mean_a=mean_a, mean_b=mean_b, cohens_d=cohens_d,
+                          welch_t=welch.t if welch else None, p_value=welch.p_value if welch else None)
 
 
 class RunStore:
@@ -304,14 +447,26 @@ class RunStore:
         return runs
 
     def by_experiment(self) -> Dict[str, Experiment]:
-        cohorts: Dict[str, List[Run]] = {}
-        for run in self.all():
+        """{label: Experiment} — one cohort per experiment tag and configuration, completed
+        runs only. An experiment script tags its whole sweep (every domain and arm), so the
+        tag alone would pool different configurations; runs differing only in their seed
+        (run name, description, shuffle_seed) share a cohort. The label is the tag plus the
+        settings that tell that tag's cohorts apart."""
+        groups: Dict[Tuple[str, str], List[Run]] = {}
+        for run in self.completed():
             if run.experiment:
-                cohorts.setdefault(run.experiment, []).append(run)
-        return {tag: Experiment(tag, runs) for tag, runs in cohorts.items()}
+                key = (run.experiment, json.dumps(run.configuration(), sort_keys=True))
+                groups.setdefault(key, []).append(run)
+        cohorts = {}
+        for (tag, configuration_json), runs in groups.items():
+            label = _cohort_label(tag, json.loads(configuration_json),
+                                  [json.loads(key[1]) for key in groups if key[0] == tag])
+            cohorts[label] = Experiment(label, runs)
+        return cohorts
 
     def experiment(self, tag: str) -> Experiment:
-        return Experiment(tag, self.filter(experiment=tag))
+        """Every completed run of one experiment tag, all configurations together."""
+        return Experiment(tag, self.filter(experiment=tag, status="completed"))
 
     # ── checkpoint resolution (ported from the top-k tool, the most complete) ──
     def resolve_checkpoint(self, run_name: str, selection: str = "latest"):
@@ -347,6 +502,16 @@ class RunStore:
         if Path(selection).exists():
             return Path(selection).stem, Path(selection)
         raise FileNotFoundError(f"Checkpoint {selection!r} not found for run {run_name!r}")
+
+
+def _cohort_label(tag: str, configuration: dict, sibling_configurations: List[dict]) -> str:
+    """`tag` alone when the tag has one configuration, else `tag key=value ...` for the
+    keys whose values differ between the tag's configurations."""
+    varying = sorted({key for other in sibling_configurations for key in set(other) | set(configuration)
+                      if other.get(key) != configuration.get(key)})
+    if not varying:
+        return tag
+    return tag + " " + " ".join(f"{key}={configuration.get(key)}" for key in varying)
 
 
 def sort_runs(runs: List[Run], sort_by: str = "params") -> List[Run]:

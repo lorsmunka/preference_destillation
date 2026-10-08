@@ -1,4 +1,9 @@
-"""Text tables and summaries built from Run / Experiment objects."""
+"""Text tables and summaries built from Run / Experiment objects.
+
+Task accuracy is always shown beside its majority baseline (always giving the most common
+answer) and the excess over it, in percentage points (code review X-C1). Cohort spreads are
+the sample std across seeds (n - 1).
+"""
 
 from typing import List, Sequence
 
@@ -7,6 +12,10 @@ from ..run import Experiment, Run, run_metric
 
 def _pct(value) -> str:
     return f"{value * 100:.2f}%" if value is not None else "—"
+
+
+def _points(value) -> str:
+    return f"{value * 100:+.2f}pp" if value is not None else "—"
 
 
 def _num(value, fmt="{:.4f}") -> str:
@@ -29,8 +38,17 @@ def run_summary(run: Run) -> str:
         lines.append(
             f"  Final eval: tf={_pct(final.teacher_forced_accuracy)} "
             f"student={_pct(final.student_accuracy)} task={_pct(final.task_accuracy)} "
-            f"loss={_num(final.avg_loss)}"
+            f"(majority baseline {_pct(run.majority_baseline(final))}, "
+            f"excess {_points(run.task_accuracy_excess(final))}) loss={_num(final.avg_loss)}"
         )
+        answer_types = run.answer_type_accuracy(final)
+        if answer_types:
+            lines.append(
+                f"  Answer types: true/false {_pct(answer_types['boolean_accuracy'])} of "
+                f"{answer_types['boolean_examples']} (always the commoner value: "
+                f"{_pct(answer_types['boolean_majority_baseline'])})   numeric "
+                f"{_pct(answer_types['numeric_accuracy'])} of {answer_types['numeric_examples']}"
+            )
         if final.validity_rate is not None or final.topk_accuracy is not None:
             lines.append(
                 f"  Eval-time extras: validity={_pct(final.validity_rate)} "
@@ -46,6 +64,8 @@ _DEFAULT_COLUMNS = [
     ("h/L/H", lambda r: f"{r.hidden_dim}/{r.num_layers}/{r.num_heads}", 12),
     ("student", lambda r: _pct(run_metric(r, "student_accuracy")), 9),
     ("task", lambda r: _pct(run_metric(r, "task_accuracy")), 9),
+    ("baseline", lambda r: _pct(run_metric(r, "majority_baseline")), 9),
+    ("excess", lambda r: _points(run_metric(r, "task_accuracy_excess")), 9),
     ("tf", lambda r: _pct(run_metric(r, "teacher_forced_accuracy")), 9),
     ("eval_loss", lambda r: _num(run_metric(r, "avg_loss")), 10),
     ("hours", lambda r: _num(r.training_hours, "{:.1f}"), 7),
@@ -61,12 +81,16 @@ def comparison_table(runs: Sequence[Run]) -> str:
 
 
 def experiment_summary(experiments: List[Experiment],
-                       metrics: Sequence[str] = ("student_accuracy", "task_accuracy", "teacher_forced_accuracy")) -> str:
+                       metrics: Sequence[str] = ("task_accuracy", "majority_baseline", "task_accuracy_excess",
+                                                 "student_accuracy", "teacher_forced_accuracy")) -> str:
+    """One line per cohort: n, then mean ± sample std (in %) per metric."""
     rows = []
     for experiment in experiments:
         parts = [f"{experiment.tag:<28} n={len(experiment):<3}"]
         for metric in metrics:
             stat = experiment.stats(metric)
-            parts.append(f"{metric}={stat.mean * 100:.2f}%±{stat.std * 100:.2f}")
+            mean = f"{stat.mean * 100:.2f}%" if stat.mean is not None else "—"
+            spread = f"±{stat.std * 100:.2f}" if stat.std is not None else ""
+            parts.append(f"{metric}={mean}{spread}")
         rows.append("  ".join(parts))
     return "\n".join(rows)

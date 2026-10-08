@@ -9,6 +9,11 @@ Completed runs are skipped, so running it again only trains what is missing and 
 re-prints the tables. The top-k pass reloads each checkpoint against the distillation
 batches (gitignored, so not on every machine) and is skipped when they are missing —
 the last measured numbers stay in results/postgen_kl_anneal_topk.csv either way.
+
+Provenance (code review X-M5): none of these six runs is in runs/ any more, so that CSV
+(5 rows, measured 2026-04-22 on 768 test examples under the test-split rule of that time)
+is the only record of them; running this script now would retrain all six (~18 h of GPU)
+before reporting.
 """
 
 import csv
@@ -18,13 +23,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, so `library` imports
 
-from library import Analysis, TrainingRun
+from _common import RESULTS_DIR, write_rows
+
+from library import Analysis, RunStore, TrainingRun
 from library.domain import POST_GENERATION
 from library.shared import DEFAULT_TEACHER_MODEL, batches_dir
 from library.shared.batch_files import batch_paths
 from library.training.training_runner import run_training
 
-RESULTS_PATH = Path(__file__).resolve().parent / "results" / "postgen_kl_anneal_topk.csv"
+TOP_K_CSV = "postgen_kl_anneal_topk.csv"
+RESULTS_PATH = RESULTS_DIR / TOP_K_CSV
 TOP_K = 20
 
 # The first three runs recorded the experiment tag "postgen-3.8k-10ep-ce-vs-kl"; the later
@@ -116,15 +124,20 @@ def batches_available() -> bool:
     return bool(batch_paths(batches_dir(POST_GENERATION.name, DEFAULT_TEACHER_MODEL)))
 
 
+def completed_run_names():
+    completed = {run.name for run in RunStore().completed()}
+    return [run.run_name for run in RUNS if run.run_name in completed]
+
+
 def measure_top_k():
-    """Re-measure the distribution metrics for every run and merge them into the results
-    CSV, keeping rows for runs that are not measured this time."""
+    """Re-measure the distribution metrics for every completed run and merge them into the
+    results CSV, keeping rows for runs that are not measured this time."""
     measured_at = datetime.now().isoformat(timespec="seconds")
     measured = {}
-    for run in RUNS:
-        print(f"Evaluating {run.run_name} ...")
-        result = Analysis(run.run_name).evaluate(split="test", k=TOP_K)
-        measured[run.run_name] = {
+    for name in completed_run_names():
+        print(f"Evaluating {name} ...")
+        result = Analysis(name).evaluate(split="test", k=TOP_K)
+        measured[name] = {
             "run": result.run,
             "checkpoint": result.checkpoint,
             "split": result.split,
@@ -136,22 +149,7 @@ def measure_top_k():
             "mean_target_rank": result.mean_target_rank,
             "measured_at": measured_at,
         }
-    write_top_k(measured)
-
-
-def write_top_k(measured: dict):
-    rows = {}
-    if RESULTS_PATH.exists():
-        with open(RESULTS_PATH, "r", encoding="utf-8", newline="") as file:
-            for row in csv.DictReader(file):
-                rows[row["run"]] = row
-    rows.update(measured)
-    with open(RESULTS_PATH, "w", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=TOP_K_COLUMNS)
-        writer.writeheader()
-        for run in rows.values():
-            writer.writerow(run)
-    print(f"\nTop-k results -> {RESULTS_PATH}")
+    write_rows(TOP_K_CSV, TOP_K_COLUMNS, list(measured.values()))
 
 
 def print_recorded_top_k():
@@ -166,10 +164,12 @@ def print_recorded_top_k():
 
 
 def main():
-    run_training(RUNS)
+    if not run_training(RUNS):
+        print("\nStopped — re-run the same command to resume; the analysis runs once every run is done.")
+        return
 
     print("\nTraining logs:")
-    print(Analysis.compare([run.run_name for run in RUNS]).table())
+    print(Analysis.compare(completed_run_names()).table())
 
     if batches_available():
         measure_top_k()

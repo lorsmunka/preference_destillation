@@ -237,8 +237,7 @@ JOBS = [
 <pre><code class="language-python">class RedditSentimentDomain(Domain):
     name = "reddit_comment_sentiment"
     stop_token = "}"
-    max_steps = 50
-    max_input_tokens = 25
+    max_steps = 50                        # runaway guard: longest expected output + ~35%
 
     example_responses = [                 # seeds the hardest vocabulary section
         '```json\n{\n    "tone": "aggressive", "sentiment": "negative" ... }',
@@ -269,11 +268,11 @@ JOBS = [
     <tr><td class="m">teacher_prompt()</td><td>yes</td><td>The prompt sent to the teacher</td></tr>
     <tr><td class="m">task_metric()</td><td>yes</td><td>Fresh accumulator for end-task accuracy</td></tr>
     <tr><td class="m">stop_token</td><td>yes</td><td>Where generation ends</td></tr>
+    <tr><td class="m">max_steps</td><td>yes</td><td>Runaway guard for generation: the longest expected output plus ~35%. There is no input-length limit: rotary positions grow on demand, and each run records its <code>longest_training_sequence</code> in info.json</td></tr>
     <tr><td class="m">example_responses</td><td>yes</td><td>Tokens the student must be able to emit exactly</td></tr>
     <tr><td class="m">structural_validity()</td><td>no</td><td>Well-formedness check; <code>None</code> for free-form tasks</td></tr>
     <tr><td class="m">build_corpus()</td><td>no</td><td>Produces the input JSONL</td></tr>
     <tr><td class="m">extra_auxiliary_tokens</td><td>no</td><td>Domain tokens prepended to the shared auxiliary bank</td></tr>
-    <tr><td class="m">max_seq_length</td><td>no</td><td>Defaults to input tokens + generation steps</td></tr>
   </table>
   </div>
 
@@ -449,43 +448,47 @@ runs = [
     for seed in SEEDS
 ]
 
-seeded_run_training(runs)                 # trains what is missing, seeds each replicate</code></pre>
+if not seeded_run_training(runs):         # trains what is missing; False when stopped (Stop / Ctrl+C)
+    raise SystemExit("Stopped: re-run to resume")</code></pre>
   </div>
 
   <h3>Reading the cohort back</h3>
-  <p>Runs sharing an <code>experiment</code> tag form a cohort, reported as mean ± std.</p>
+  <p>Completed runs sharing an <code>experiment</code> tag and a configuration (everything but the seed) form a cohort (<code>Analysis.cohorts()</code>), reported as mean ± sample std. Task accuracy is always read beside its majority baseline (always giving the most common answer) and the excess over it.</p>
 
   <div class="block">
     <div class="block__bar">same file, below the runs</div>
-<pre><code class="language-python">cohort = Analysis.experiment(EXPERIMENT)
-
-rows = []
+<pre><code class="language-python">rows = []
 for level, expected_v in AUXILIARY_LEVELS:
     for seed in SEEDS:
         run = Analysis(f"vocab-{int(level * 100)}pct-s{seed}").run
+        if run.status != "completed":
+            continue
         best, final = best_and_final(run)
+        baseline = run.majority_baseline(final)
         rows.append({
             "run": run.name,
             "auxiliary": level,
-            "vocab_size": run.total_parameters,
+            "vocab_size": run.output_vocab_size,
             "task_accuracy_best": best.task_accuracy,
             "task_accuracy_final": final.task_accuracy,
+            "majority_baseline": baseline,
+            "task_accuracy_excess_final": final.task_accuracy - baseline,
             "teacher_entropy": final.teacher_entropy,
         })
 
 write_rows("ideaA_vocab_sweep.csv",
-           ["run", "auxiliary", "vocab_size",
-            "task_accuracy_best", "task_accuracy_final", "teacher_entropy"],
+           ["run", "auxiliary", "vocab_size", "task_accuracy_best", "task_accuracy_final",
+            "majority_baseline", "task_accuracy_excess_final", "teacher_entropy"],
            rows)</code></pre>
   </div>
 
   <div class="tbl">
   <table>
     <tr><th>Helper</th><th>From</th><th>Does</th></tr>
-    <tr><td class="m">seeded_run_training()</td><td class="m">experiments/_common.py</td><td>Trains <code>(seed, TrainingRun)</code> pairs, seeding torch before each; skips completed</td></tr>
-    <tr><td class="m">write_rows()</td><td class="m">experiments/_common.py</td><td>Writes to <code>results/</code>, replacing rows by key rather than discarding the file</td></tr>
+    <tr><td class="m">seeded_run_training()</td><td class="m">experiments/_common.py</td><td>Trains <code>(seed, TrainingRun)</code> pairs, seeding torch before each; skips completed; False when stopped</td></tr>
+    <tr><td class="m">write_rows()</td><td class="m">experiments/_common.py</td><td>Merges rows into <code>results/</code> by key (the first column), keeping every other row and column; swaps the file in whole</td></tr>
     <tr><td class="m">best_and_final()</td><td class="m">experiments/_common.py</td><td>Best-epoch and final-epoch eval records</td></tr>
-    <tr><td class="m">Analysis.experiment(tag)</td><td class="m">library</td><td>The cohort for a tag, as mean ± std</td></tr>
+    <tr><td class="m">Analysis.cohorts()</td><td class="m">library</td><td>Seed cohorts (tag + configuration, completed runs), as mean ± sample std</td></tr>
   </table>
   </div>
 
@@ -521,7 +524,6 @@ TrainingRun(domain=REDDIT_SENTIMENT, run_name="qwen-teacher",
     hidden_dim=48,
     num_layers=3,
     num_heads=1,
-    max_seq_length=None,              # defaults to domain.max_seq_length
     dropout=0.08,
     auxiliary_token_percentage=1.0,
     input_vocabulary=None,            # compact input-id mapping
@@ -559,7 +561,6 @@ class MyTaskDomain(Domain):
     name = "my_task"
     stop_token = "</s>"
     max_steps = 40
-    max_input_tokens = 30
     example_responses = ["..."]
     def teacher_prompt(self, text): return f"..."
     def task_metric(self): return MyMetric()

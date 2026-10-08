@@ -97,6 +97,10 @@ class EvalEpoch:
     validity_rate: Optional[float] = None
     termination_rate: Optional[float] = None
     mean_length_ratio: Optional[float] = None
+    # Accuracy of always giving the most common answer, and task accuracy minus it (logged
+    # since the code-review fix X-C1; None in older logs, see Run.majority_baseline).
+    majority_baseline: Optional[float] = None
+    task_accuracy_excess: Optional[float] = None
 
     @classmethod
     def from_dict(cls, record: dict) -> "EvalEpoch":
@@ -119,6 +123,8 @@ class EvalEpoch:
             validity_rate=record.get("validity_rate"),
             termination_rate=record.get("termination_rate"),
             mean_length_ratio=record.get("mean_length_ratio"),
+            majority_baseline=record.get("majority_baseline"),
+            task_accuracy_excess=record.get("task_accuracy_excess"),
         )
 
 

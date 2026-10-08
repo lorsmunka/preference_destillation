@@ -19,9 +19,10 @@ from library.domain.math_tutor.items import SLICES, validate
 from library.domain.math_tutor.similarity import collect_name_words, normalise, sequence_ratio, word_trigrams, jaccard
 from library.domain.math_tutor.validator_cases import CASES
 
-PACKAGE = Path("library") / "domain" / "math_tutor"
-OUTPUT = Path("thesis_work") / "math_tutor_report.html"
-TEMPLATE = Path("library") / "tooling" / "templates" / "math_tutor_report.html"
+REPO_ROOT = Path(__file__).resolve().parent   # so the report builds from any working directory
+PACKAGE = REPO_ROOT / "library" / "domain" / "math_tutor"
+OUTPUT = REPO_ROOT / "thesis_work" / "math_tutor_report.html"
+TEMPLATE = REPO_ROOT / "library" / "tooling" / "templates" / "math_tutor_report.html"
 
 
 def read_json(path):
@@ -146,7 +147,7 @@ def storage():
 
 
 def templateness():
-    path = Path("experiments") / "results" / "math_templateness.csv"
+    path = REPO_ROOT / "experiments" / "results" / "math_templateness.csv"
     if not path.exists():
         return []
     import csv
@@ -209,13 +210,18 @@ do not converge.</li>
 operations in the same order.</li>
 <li>Every writer ran the validator on its own file and fixed failures before finishing.</li></ul>"""))
 
-    qa.append(("How is each answer guaranteed to be right?", """
+    broken_cases = [(item, expected) for _, item, expected in CASES if expected is not None]
+    control_cases = [item for _, item, expected in CASES if expected is None]
+    rejected = sum(1 for item, expected in broken_cases if expected in (validate(item)[1] or ""))
+    passed = sum(1 for item in control_cases if validate(item)[0] is not None)
+    qa.append(("How is each answer guaranteed to be right?", f"""
 <ul><li><code>solve()</code> is never executed by Python. A ~60-line interpreter walks its syntax tree and allows only
 assignments, + − × // %, whole-number literals, <code>state['name']</code> and one returned dict.</li>
 <li>Every intermediate value must be a whole number 0-999; division must be exact except in the remainder slice (S07).</li>
 <li>Every number in the code must appear in that turn's text; unused digit numbers must match the distractor label;
 follow-ups must read the previous state.</li>
-<li>26 deliberately broken items, one per rule, are all rejected (<code>validator_cases.py</code>).</li>
+<li>{len(broken_cases)} deliberately broken items, one per rule: {rejected} of them are rejected for the expected reason;
+{len(control_cases)} valid controls: {passed} pass (<code>validator_cases.py</code>).</li>
 <li>The validator cannot check that the story means what the code computes. That was spot-checked by hand (10 random
 items, all correct) and is checked at scale by the teacher: items where Gemma's answer disagrees are flagged
 (<code>answer_correct</code>), and every disagreement checked so far was Gemma's error.</li></ul>"""))

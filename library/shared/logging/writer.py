@@ -2,8 +2,8 @@
 
 Ported from `shared/logger.py`, with two changes: it takes the run's `logs_dir` explicitly
 (no global `LOGS_DIR`), and it writes the canonical `task_accuracy` field plus optional
-eval-time distribution metrics. Drop-in for the training-side rewire (a later phase); it is
-not wired into the live trainer in this change.
+eval-time distribution metrics (and the majority baseline). TrainingRunner creates one per
+run; log records are appended, state.json is replaced atomically.
 """
 
 import json
@@ -52,10 +52,13 @@ class RunLogger:
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     def save(self) -> None:
+        """Write state.json whole or not at all: to a temporary file first, then swapped in,
+        so a crash mid-write never leaves a truncated state that a resume would misread."""
         if self.session_start_time is not None:
             self.total_runtime_seconds += time() - self.session_start_time
             self.session_start_time = time()
-        with open(self.state_file, "w", encoding="utf-8") as file:
+        temporary_file = self.state_file + ".tmp"
+        with open(temporary_file, "w", encoding="utf-8") as file:
             json.dump(
                 {
                     "processed_sentence_count": self.processed_sentence_count,
@@ -69,6 +72,7 @@ class RunLogger:
                 file,
                 indent=4,
             )
+        os.replace(temporary_file, self.state_file)
 
     def should_resume(self) -> bool:
         return self.current_epoch > 0 or self.current_batch > 0
