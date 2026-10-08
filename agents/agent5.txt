@@ -1,71 +1,86 @@
 AGENT 5: Adversarial code review: tooling & experiments (library/tooling, domains config, experiments/*.py, reports, progress.py, shared/metrics, shared/logging)
-STATUS: running (snapshot 2026-10-08, after step 1 of ~5)
+STATUS: DONE (2026-10-08; final report delivered to the coordinator via SubagentHandback)
 
 BRIEF (complete):
   ADVERSARIAL CODE REVIEWER for the BSc thesis codebase D:\preference_destillation (Windows; Git Bash). Read CLAUDE.md first.
-  A previous reviewer stopped early (API error) and left check scripts in
-  C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\review_tooling\ -- reuse / re-run them.
-  SAVE FILE: append state to thesis_work/agent_saves/review_tooling.md (append, never overwrite) after each major step and when done.
-  HARD RULES: edit no other repository file (except this agents/agent5.txt, allowed by the coordinator). No git. NO GPU (CUDA_VISIBLE_DEVICES=-1);
-  never run training / experiments / data generation. Reading runs/ logs read-only and small CPU-only Python checks are fine.
-  New scratch scripts go in ...\scratchpad\review_tooling2\.
-  AREA: library/tooling/ (analysis.py, run.py, render/, templates/), library/domain/ base + registry + non-math domains
-  (reddit_comment_sentiment, post_generation, code_recall, long_context_recall, math_word_problem) for config consistency,
-  analyze.py, experiments/*.py (_common.py and each script), math_tutor_report.py, domains_report.py, progress.py,
-  library/shared/metrics/, library/shared/logging/.
-  LOOK FOR: analytics that compute something other than claimed (averaging, mean of means, std ddof, cohort grouping,
-  wrong log field/epoch), experiment RUNS vs experiments/results/*.csv mismatches, stale refs to max_input_tokens /
-  max_seq_length (removed 2026-10-07), registry/domain inconsistencies, metric mis-scoring of edge cases (exact-answer
-  extraction, structural validity), report generators crashing on missing data, anything misleading the thesis tables.
-  METHOD: try to disprove each candidate first; report only survivors; say which number in thesis_work/findings.txt or
-  experiments/results/*.csv could have changed.
-  FINAL MESSAGE: findings ranked critical/high/medium/low, each file:line, what is wrong, failure scenario/evidence, 1-2
-  sentence fix; then a short 'checked and fine' list.
+  HARD RULES (current, from coordinator): edit no repository file except this agents/agent5.txt. No git. NO GPU
+  (CUDA_VISIBLE_DEVICES=-1); never run training / experiments / data generation. Reading runs/ logs read-only and small
+  CPU-only Python checks are fine. Earlier scripts: agents\work\review_tooling\ and ...\review_tooling2\ (reuse, do not edit).
+  New scratch scripts: C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\3912635c-d350-4c95-bf6b-8f4f191df0b1\scratchpad\agent5\
+  AREA: library/tooling/ (analysis.py, run.py, render/, templates/), library/domain/ base + registry + non-math domains,
+  analyze.py, experiments/*.py, math_tutor_report.py, domains_report.py, progress.py, library/shared/metrics/, library/shared/logging/.
+  LOOK FOR: analytics computing something other than claimed, RUNS vs results CSV mismatches, stale max_input_tokens /
+  max_seq_length refs, registry/domain inconsistencies, metric mis-scoring, report generators crashing, misleading thesis tables.
+  METHOD: try to disprove each candidate; report survivors; name the findings.txt / results CSV number that could change.
+  FINAL MESSAGE: findings ranked critical/high/medium/low (file:line, what, evidence, 1-2 sentence fix), then 'checked and fine'.
 
-OUTPUTS: final report to the coordinator (SubagentHandback); state log thesis_work/agent_saves/review_tooling.md; this file.
+DONE:
+  1. Read all files in AREA; re-ran earlier scripts (e01_verify, ideas_verify, majority, math_majority, metric_edges,
+     confusion, lcr_check, code_recall_truth/file, cohorts, progress_check, mtr_check, write_rows_test).
+  2. New scratch (agent5\): best_epoch.py (majority baseline from logged confusion matrices, best-epoch index,
+     prediction concentration), e01_sep.py (F-E1 one-std test + Welch t), overlap_now.py, dupes.py (log duplicates),
+     matrix_totals.py / matrix_drop.py, mtr_cases.py.
 
-DONE SO FAR:
-  1. Read tooling/run.py, analysis.py, render/*, shared/logging/*, shared/metrics/*, domain base/registry/5 domains,
-     training/evaluator.py + batch_handler.py (callers), experiments/_common.py, anneal_direction.py, report_ideas.py,
-     findings.txt (own-numbers section, F-E1).
-  2. Re-ran previous scripts: e01_verify, ideas_verify, majority, math_majority, metric_edges, confusion, lcr_check,
-     code_recall_truth, code_recall_file. math_breakdown (CPU) running in background -> review_tooling2/math_breakdown_s1.txt
+FINDINGS (all verified unless marked):
+  CRITICAL
+  C1 No majority-class baseline anywhere; every reddit cohort scores AT OR BELOW the class prior of its own test split.
+     From logged confusion matrices (best_epoch.py): e01 reddit arms best .621-.630 / final .598-.620 vs baseline .626;
+     ideaA V64 .629/.598, V113 .620/.615 vs .626; ideaD 256 .608 vs .613, 512 .616 vs .617, 1024 .667 vs .671,
+     2048 .625 vs .626. 93-100% of predictions are the modal label (epoch 0 ~0.98-1.0). Best epoch is epoch 0 in
+     29/50 e01 reddit runs (the constant predictor). Math: e01-math-ce-to-kl-s1 = 101/416: bool questions 96/132
+     (always-True = 87), numeric 5/284 (1.8%); task accuracy ~= T/F guessing. Affects findings.txt "Data plateau
+     256->60.8%, 1024->66.7%", "safety 74/tone 63/toxicity 59/sentiment 43", F-30a "overfit 62.7->59.2", F-E1 reddit/math null,
+     F-49a "maths 21%", "reddit ~60%".
+  HIGH
+  H1 data_plateau: the test split moves with max_training_examples (batch_handler.py:36-42, analysis.py:68-85) -> each
+     size is scored on a different, tiny test set (64/128/224/416 examples) with priors .613/.617/.671/.626; the
+     1024 bump is the test set. Fix: fixed held-out test slice independent of max_training_examples.
+  H2 code_recall last_assignment ground truth wrong in 159/971 corpus records (16.4%): while-loop `+=`/`-=` lines
+     (corpus.py:122) are emitted but never appended to program.assignments, so make_question (201-206) answers an
+     earlier line. Feeds answer_correct flag (data_gen/generator.py:97) and domains_report "teacher wrong" badges.
+  MEDIUM
+  M1 F-E1 "no arm separates by more than one seed std" false: reddit final ce-to-kl .620 vs pure-ce .598 (2.17pp > sd 1.81,
+     Welch t 2.78); reddit best flat-50 vs pure-ce (0.86 > 0.72, t 2.71); math final ce-to-kl vs flat-50 (1.76 > 1.66, t 2.94).
+     Uncorrected p~0.01; not significant after Bonferroni over 10 pairs. Restate with a corrected test.
+  M2 Stop/Ctrl+C does not stop experiment scripts: run_training/seeded_run_training just break; anneal_direction.py then
+     writes CSV rows incl. the interrupted run (collect_rows has no status filter, :89-112); postgen_kl_anneal.py:169-178
+     runs compare + full top-k re-eval of 6 post-gen runs (GPU hours) or crashes on missing runs; self_consistency_dividend
+     :186-188 starts phase-2 sampling (crashes on never-trained ideaG-purekl-*).
+  M3 Experiment/cohort layer pools whole sweeps: by_experiment groups by tag, every script tags the whole sweep, so
+     analyze.py "reproduces the thesis tables" prints e01 n=115 (3 domains x 5 arms) task 49.41+-26.35; in-progress runs
+     included (ideaA/ideaD/ideaG each 1). run.py:306-314, tables.py:63-72, analyze.py:19-20.
+  M4 write_rows (_common.py:43-65) opens "w" before writing; a column-set change raises ValueError mid-write and leaves a
+     header-only CSV (reproduced). report_ideas columns = rows[0].keys() (value_accuracy_* depend on confusion presence).
+  M5 Stale result CSVs vs runs/: ideaA_vocab_sweep V113 n=3 (5 now; task_final .6198 -> .6151), ideaD 2048 n=1
+     (.6028 -> .625 with n=3), ideaA_bottleneck_probe 4/10 runs (V113 none), results_first_pass.md same; postgen_kl_anneal
+     RUNS has 6 runs, CSV 5 rows, and NONE of the 6 runs exist in runs/ (F-34a not re-derivable; script would retrain 18h).
+     findings "excess-over-chance 0.169 at V=113" survives with n=5 (0.1691).
+  M6 ClassificationMetric._parse (task.py:86-96) TypeError on valid non-object JSON ('"tone"', '5', 'null') -> eval crash.
+  M7 ExactAnswerMetric._extract_answer (task.py:212-215) returns 'answer: 15' when whitespace/newline precedes "Answer:"
+     (' Answer: 15;', '...\nAnswer: 15;'); 'foo;\nAnswer: 15;' -> 'foo'. Latent (no LCR/code_recall run yet).
+  M8 Post-gen/math teacher entropy disagrees across sources: findings OWN NUMBERS post-gen 1.059 nats / exp 2.88,
+     maths 0.0043; domain_entropy.csv 1.006 / 2.73, 0.0028; E-01 eval logs (test split) 0.995 / 2.70, 0.0034; F-E1 uses 2.73.
+  LOW
+  L1 analyze.py:14 Analysis("exp-purece-t1-1") -> FileNotFoundError; `python analyze.py` crashes (run not on disk).
+  L2 "task best" = max over epochs on the test split (no validation split): optimistic selection (_common.py:68-75).
+  L3 Run.training_hours (run.py:143-150) counts only the last session for resumed runs (started_at reset, training_runner.py:56).
+  L4 Std conventions differ: report_ideas pstdev, anneal_direction print_summary stdev, Experiment.stats pstdev.
+  L5 Experiment.stats mean 0.0 for empty cohorts; compare() cohens_d 0.0 when n<2 (run.py:235, 253-254).
+  L6 Confusion matrices drop out-of-set predicted labels (task.py:98-108) -> per-field accuracy denominators short by up
+     to 2.2% (14/239 eval records); negligible on reported numbers.
+  L7 Domain.structural_validity is never used by eval (validity_rate comes from metric parse); reddit version accepts any JSON.
+  L8 progress.py: experiment "total" from the newest console log even if it belongs to another experiment (shows ideaA
+     10/15; script plans 25); abandoned in_progress runs shown as "Now"; relative STOP/runs paths require repo-root cwd.
+  L9 math_tutor_report.py:218 "26 deliberately broken items" - CASES has 24 broken + 2 must-pass controls.
+  L10 Analysis._batch_paths ratio fallback 0.98 vs 0.8 everywhere else (analysis.py:75) - dead today (all infos carry it).
+  L11 thesis_work/codebase.html still documents max_input_tokens / max_seq_length (lines 241, 276, 524, 562).
+  L12 Replicate seeds vary only init/dropout (no data shuffling anywhere) -> seed std understates variance; test split fixed.
 
-FINDINGS SO FAR:
-  C1 VERIFIED (critical; misleading tables) -- no majority-class baseline anywhere; reddit task accuracy == test-set class prior.
-     Majority baseline on the BatchHandler test split: 256 ex 0.6133, 512 0.6172, 1024 0.6708, 2048 0.6262, 4096 0.6202.
-     Students: ideaD best 0.6078 / 0.6164 / 0.6672 (256/512/1024); E-01 reddit arms best 0.621-0.630, final 0.598-0.620.
-     Prediction share of the majority label ~1.0 for tone/safety/toxicity; ideaD-data01024-s2 epoch0 = 0.6708 and
-     ideaD-data02048-s3 epoch0 = 0.6262 exactly (constant output). Affects findings.txt "Data plateau 256->60.8%,
-     1024->66.7%" (= prior 0.613->0.671), "safety 74 / tone 63 / toxicity 59 / sentiment 43" (= label shares
-     .748/.627/.587/.543), and the E-01 reddit null. Math: 'True' is 20.9% of the 2048 test set; students 0.22-0.25.
-     Fix: compute and print the per-field majority baseline of the exact test split next to task accuracy (report_ideas,
-     anneal_direction, Analysis); report excess over baseline.
-  CANDIDATE: F-E1 "no arm separates by more than one seed std on task accuracy" is false on task_accuracy_final:
-     reddit ce-to-kl .6199 vs pure-ce .5982 (2.2pp vs sd 1.7-1.8); math ce-to-kl .2356 vs flat .2180.
-  VERIFIED stale CSVs (write_rows only rewrites when report_ideas is re-run): ideaA_vocab_sweep.csv V=113 runs=3
-     (5 completed now); ideaD_data_plateau.csv 2048 runs=1 (3 completed now: best .625 vs CSV .6028). findings.txt
-     "excess-over-chance 0.169 at V=113" came from the n=3 row.
-  VERIFIED ClassificationMetric._parse (shared/metrics/task.py:147-157) raises TypeError when the output is valid JSON
-     but not an object ('"tone"', '5', 'null') -> would crash an eval. Fix: return None unless isinstance(data, dict).
-  VERIFIED ExactAnswerMetric._extract_answer (task.py:273-276) returns 'answer: 15' when "Answer:" follows a newline
-     (the search starts at the \n); answer-only output vs a working-format reference scores 0. No LCR/code_recall
-     training run exists yet; LCR teacher responses are all clean (4968/4968).
-  CANDIDATE (verify next): code_recall corpus ground truth for last_assignment wrong in 159/971 records (16%):
-     a later `+=` / `-=` / `for` rebinding exists after the recorded line (library/domain/code_recall/corpus.py).
-  Checked fine: e01_anneal_direction.csv == fresh collect_rows (115 rows, 0 diffs), RUNS configs == info.json;
-     F-E1 post-gen numbers match the CSV; Experiment.stats ddof documented (pstdev); compare() uses sample sd;
-     EvalEpoch legacy field mapping; all info.json carry training_test_ratio.
+CHECKED AND FINE: e01 CSV == fresh collect_rows (115/115 completed); RUNS configs == info.json; F-E1 post-gen numbers;
+  F-34a numbers vs CSV (rank range is 419-489 not 419-486); batch files contiguous so Analysis split == BatchHandler split;
+  no duplicate eval_epoch records in any log (2 replayed train_batch keys in e01-reddit-flat-50-s2), no bad JSON lines;
+  teacher reddit labels in-set (1/12800 out); LCR teacher responses clean; math_tutor_report builds with all sections;
+  validator cases 24/24 rejected for the expected reason; probe_bottleneck split matches trainer; registry consistent
+  (post_generation_judged is an empty leftover dir); no Python refs to max_input_tokens/max_seq_length.
 
-NEXT (pick up here):
-  a. Verify code_recall last_assignment ground truth by reading corpus.py (ProgramBuilder / make_question).
-  b. Read math_breakdown_s1.txt (bool vs number accuracy of a math student).
-  c. Read experiments: data_plateau.py, vocab_rank_sweep.py, probe_bottleneck.py, self_consistency_dividend.py,
-     postgen_kl_anneal.py; check RUNS vs CSVs, completed-status filtering, ddof consistency.
-  d. Read analyze.py, progress.py (re-run progress_check.py), math_tutor_report.py (mtr_check.py), domains_report.py,
-     templates/math_tutor_report.html; crash-on-missing-data checks.
-  e. grep for max_input_tokens / max_seq_length; check Analysis._batch_paths default ratio 0.98 vs spec 0.8;
-     cohort stats include non-completed runs; duplicate eval_epoch records per epoch in logs.
-  f. Final report via SubagentHandback; update this file and the save file.
-
-SCRATCH: previous: ...\scratchpad\review_tooling\*.py ; mine: ...\scratchpad\review_tooling2\ (e01_table.py)
+NEXT: nothing; task complete. (Per current rules the thesis_work/agent_saves save file was not touched.)

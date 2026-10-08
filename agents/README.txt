@@ -5,8 +5,8 @@ To pick up a stopped agent: start a new agent with "read agents/agentN.txt and c
  2  code review: agent layer (labels, checks, conversation, threads, questions, harness)   DONE
  3  code review: teacher data generation (data_gen, batch files, vocabulary)              DONE
  4  code review: training & model (training, model, specs, train.py)                      DONE
- 5  code review: tooling & experiments (tooling, domains, experiments, metrics) relaunch  STOPPED (saved)
- 6  literature review -> thesis_work/literature_review.html + literature.bib               STOPPED (saved)
+ 5  code review: tooling & experiments (tooling, domains, experiments, metrics) relaunch  DONE
+ 6  literature review -> thesis_work/literature_review.html + literature.bib               DONE
  7  thesis positioning (adversarial) -> thesis_work/thesis_positioning.html               DONE
  8  interactive slideshow -> thesis_work/how_it_works.html                                STOPPED (saved)
 

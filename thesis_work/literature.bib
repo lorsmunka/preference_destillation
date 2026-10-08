@@ -1,0 +1,783 @@
+% literature.bib -- references for the literature review (thesis_work/literature_review.html).
+% Every entry was opened and checked on 2026-10-07/08: arXiv records via the arXiv API;
+% venues via arXiv comments, Semantic Scholar, ACL Anthology, PMLR, icml.cc; software via GitHub/docs.
+% Pure ASCII (accents as LaTeX commands), so it works with BibTeX and biber. Grouped by theme as in the HTML page.
+
+% ---------------- A. Knowledge distillation: foundations ----------------
+@misc{hinton2015distilling,
+  author = {Geoffrey Hinton and Oriol Vinyals and Jeff Dean},
+  title = {{Distilling the Knowledge in a Neural Network}},
+  year = {2015},
+  eprint = {1503.02531},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:1503.02531},
+  url = {https://arxiv.org/abs/1503.02531},
+  note = {NIPS 2014 Deep Learning Workshop}
+}
+
+@article{gou2021survey,
+  author = {Jianping Gou and Baosheng Yu and Stephen John Maybank and Dacheng Tao},
+  title = {{Knowledge Distillation: A Survey}},
+  journal = {International Journal of Computer Vision},
+  volume = {129},
+  pages = {1789--1819},
+  year = {2021},
+  doi = {10.1007/s11263-021-01453-z},
+  eprint = {2006.05525},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2006.05525}
+}
+
+@inproceedings{stanton2021does,
+  author = {Samuel Stanton and Pavel Izmailov and Polina Kirichenko and Alexander A. Alemi and Andrew Gordon Wilson},
+  title = {{Does Knowledge Distillation Really Work?}},
+  booktitle = {Advances in Neural Information Processing Systems 34 (NeurIPS 2021)},
+  year = {2021},
+  eprint = {2106.05945},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2106.05945}
+}
+
+@inproceedings{menon2021statistical,
+  author = {Aditya Krishna Menon and Ankit Singh Rawat and Sashank J. Reddi and Seungyeon Kim and Sanjiv Kumar},
+  title = {{A statistical perspective on distillation}},
+  booktitle = {Proceedings of the 38th International Conference on Machine Learning (ICML 2021)},
+  series = {Proceedings of Machine Learning Research},
+  volume = {139},
+  pages = {7632--7642},
+  year = {2021},
+  eprint = {2005.10419},
+  archivePrefix = {arXiv},
+  url = {https://proceedings.mlr.press/v139/menon21a.html}
+}
+
+@inproceedings{zhang2025capacity,
+  author = {Chen Zhang and Qiuchi Li and Dawei Song and Zheyu Ye and Yan Gao and Yan Hu},
+  title = {{Towards the Law of Capacity Gap in Distilling Language Models}},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (ACL 2025)},
+  year = {2025},
+  eprint = {2311.07052},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2311.07052}
+}
+
+% ---------------- B. Distilling autoregressive language models ----------------
+@inproceedings{kim2016sequence,
+  author = {Yoon Kim and Alexander M. Rush},
+  title = {{Sequence-Level Knowledge Distillation}},
+  booktitle = {Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing},
+  year = {2016},
+  doi = {10.18653/v1/D16-1139},
+  eprint = {1606.07947},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/1606.07947}
+}
+
+@misc{xu2024survey,
+  author = {Xiaohan Xu and Ming Li and Chongyang Tao and Tao Shen and Reynold Cheng and Jinyang Li and Can Xu and Dacheng Tao and Tianyi Zhou},
+  title = {{A Survey on Knowledge Distillation of Large Language Models}},
+  year = {2024},
+  eprint = {2402.13116},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2402.13116},
+  url = {https://arxiv.org/abs/2402.13116}
+}
+
+@inproceedings{gu2024minillm,
+  author = {Yuxian Gu and Li Dong and Furu Wei and Minlie Huang},
+  title = {{MiniLLM: On-Policy Distillation of Large Language Models}},
+  booktitle = {International Conference on Learning Representations (ICLR 2024)},
+  year = {2024},
+  eprint = {2306.08543},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2306.08543}
+}
+
+@inproceedings{agarwal2024onpolicy,
+  author = {Rishabh Agarwal and Nino Vieillard and Yongchao Zhou and Piotr Stanczyk and Sabela Ramos and Matthieu Geist and Olivier Bachem},
+  title = {{On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes}},
+  booktitle = {International Conference on Learning Representations (ICLR 2024)},
+  year = {2024},
+  eprint = {2306.13649},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2306.13649}
+}
+
+@inproceedings{ko2024distillm,
+  author = {Jongwoo Ko and Sungnyun Kim and Tianyi Chen and Se-Young Yun},
+  title = {{DistiLLM: Towards Streamlined Distillation for Large Language Models}},
+  booktitle = {Proceedings of the 41st International Conference on Machine Learning (ICML 2024)},
+  year = {2024},
+  eprint = {2402.03898},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2402.03898}
+}
+
+@inproceedings{wu2025rethinking,
+  author = {Taiqiang Wu and Chaofan Tao and Jiahao Wang and Runming Yang and Zhe Zhao and Ngai Wong},
+  title = {{Rethinking Kullback-Leibler Divergence in Knowledge Distillation for Large Language Models}},
+  booktitle = {Proceedings of the 31st International Conference on Computational Linguistics (COLING 2025)},
+  year = {2025},
+  eprint = {2404.02657},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2404.02657}
+}
+
+@inproceedings{li2023curriculum,
+  author = {Zheng Li and Xiang Li and Lingfeng Yang and Borui Zhao and Renjie Song and Lei Luo and Jun Li and Jian Yang},
+  title = {{Curriculum Temperature for Knowledge Distillation}},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2023)},
+  year = {2023},
+  eprint = {2211.16231},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2211.16231}
+}
+
+@inproceedings{clark2019bam,
+  author = {Kevin Clark and Minh-Thang Luong and Urvashi Khandelwal and Christopher D. Manning and Quoc V. Le},
+  title = {{BAM! Born-Again Multi-Task Networks for Natural Language Understanding}},
+  booktitle = {Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics},
+  pages = {5931--5937},
+  year = {2019},
+  doi = {10.18653/v1/P19-1595},
+  eprint = {1907.04829},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/1907.04829}
+}
+
+@inproceedings{anshumann2025sparse,
+  author = {Anshumann and Mohd Abbas Zaidi and Akhil Kedia and Jinwoo Ahn and Taehwak Kwon and Kangwook Lee and Haejun Lee and Joohyung Lee},
+  title = {{Sparse Logit Sampling: Accelerating Knowledge Distillation in LLMs}},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (ACL 2025)},
+  year = {2025},
+  eprint = {2503.16870},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2503.16870}
+}
+
+@inproceedings{wang2026bridge,
+  author = {Guanghui Wang and Kaiwen Lv Kacuila and Zhiyong Yang and Zitai Wang and Jin-Wen Wu and Longtao Huang and Qianqian Xu and Qingming Huang},
+  title = {{The Bridge-Garden Dilemma in LLM Distillation: Why Mixing Hard and Soft Labels Works}},
+  booktitle = {International Conference on Machine Learning (ICML 2026)},
+  year = {2026},
+  eprint = {2605.26246},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2605.26246},
+  note = {Accepted at ICML 2026 according to the arXiv record}
+}
+
+@misc{zhang2026egad,
+  author = {Hao Zhang and Zhibin Zhang and Guangxin Wu and Wanyi Ning and Jiafeng Guo and Xueqi Cheng},
+  title = {{EGAD: Entropy-Guided Adaptive Distillation for Token-Level Knowledge Transfer}},
+  year = {2026},
+  eprint = {2605.01732},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2605.01732},
+  url = {https://arxiv.org/abs/2605.01732}
+}
+
+% ---------------- C. Pre-training distillation and from-scratch students ----------------
+@misc{gemma2024gemma2,
+  author = {{Gemma Team} and others},
+  title = {{Gemma 2: Improving Open Language Models at a Practical Size}},
+  year = {2024},
+  eprint = {2408.00118},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2408.00118},
+  url = {https://arxiv.org/abs/2408.00118}
+}
+
+@misc{gemma2025gemma3,
+  author = {{Gemma Team} and others},
+  title = {{Gemma 3 Technical Report}},
+  year = {2025},
+  eprint = {2503.19786},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2503.19786},
+  url = {https://arxiv.org/abs/2503.19786}
+}
+
+@misc{gemma2026gemma4,
+  author = {{Gemma Team} and others},
+  title = {{Gemma 4 Technical Report}},
+  year = {2026},
+  eprint = {2607.02770},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2607.02770},
+  url = {https://arxiv.org/abs/2607.02770}
+}
+
+@inproceedings{peng2025pretraining,
+  author = {Hao Peng and Xin Lv and Yushi Bai and Zijun Yao and Jiajie Zhang and Lei Hou and Juanzi Li},
+  title = {{Pre-training Distillation for Large Language Models: A Design Space Exploration}},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages = {3603--3618},
+  year = {2025},
+  doi = {10.18653/v1/2025.acl-long.181},
+  eprint = {2410.16215},
+  archivePrefix = {arXiv},
+  url = {https://aclanthology.org/2025.acl-long.181/}
+}
+
+@inproceedings{busbridge2025scaling,
+  author = {Dan Busbridge and Amitis Shidani and Floris Weers and Jason Ramapuram and Etai Littwin and Russ Webb},
+  title = {{Distillation Scaling Laws}},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning (ICML 2025)},
+  year = {2025},
+  eprint = {2502.08606},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2502.08606}
+}
+
+% ---------------- D. Small models on teacher-written data; vocabulary reduction ----------------
+@misc{eldan2023tinystories,
+  author = {Ronen Eldan and Yuanzhi Li},
+  title = {{TinyStories: How Small Can Language Models Be and Still Speak Coherent English?}},
+  year = {2023},
+  eprint = {2305.07759},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2305.07759},
+  url = {https://arxiv.org/abs/2305.07759}
+}
+
+@misc{gunasekar2023textbooks,
+  author = {Suriya Gunasekar and Yi Zhang and Jyoti Aneja and Caio C{\'e}sar Teodoro Mendes and Allie {Del Giorno} and Sivakanth Gopi and Mojan Javaheripi and Piero Kauffmann and Gustavo de Rosa and Olli Saarikivi and Adil Salim and Shital Shah and Harkirat Singh Behl and Xin Wang and S{\'e}bastien Bubeck and Ronen Eldan and Adam Tauman Kalai and Yin Tat Lee and Yuanzhi Li},
+  title = {{Textbooks Are All You Need}},
+  year = {2023},
+  eprint = {2306.11644},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2306.11644},
+  url = {https://arxiv.org/abs/2306.11644}
+}
+
+@misc{liu2023tinygsm,
+  author = {Bingbin Liu and Sebastien Bubeck and Ronen Eldan and Janardhan Kulkarni and Yuanzhi Li and Anh Nguyen and Rachel Ward and Yi Zhang},
+  title = {{TinyGSM: achieving $>$80\% on GSM8k with small language models}},
+  year = {2023},
+  eprint = {2312.09241},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2312.09241},
+  url = {https://arxiv.org/abs/2312.09241}
+}
+
+@inproceedings{liu2024mobilellm,
+  author = {Zechun Liu and Changsheng Zhao and Forrest Iandola and Chen Lai and Yuandong Tian and Igor Fedorov and Yunyang Xiong and Ernie Chang and Yangyang Shi and Raghuraman Krishnamoorthi and Liangzhen Lai and Vikas Chandra},
+  title = {{MobileLLM: Optimizing Sub-billion Parameter Language Models for On-Device Use Cases}},
+  booktitle = {Proceedings of the 41st International Conference on Machine Learning (ICML 2024)},
+  year = {2024},
+  eprint = {2402.14905},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2402.14905}
+}
+
+@inproceedings{tao2024scaling,
+  author = {Chaofan Tao and Qian Liu and Longxu Dou and Niklas Muennighoff and Zhongwei Wan and Ping Luo and Min Lin and Ngai Wong},
+  title = {{Scaling Laws with Vocabulary: Larger Models Deserve Larger Vocabularies}},
+  booktitle = {Advances in Neural Information Processing Systems 37 (NeurIPS 2024)},
+  year = {2024},
+  eprint = {2407.13623},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2407.13623}
+}
+
+@misc{goel2025vocabtrim,
+  author = {Raghavv Goel and Sudhanshu Agrawal and Mukul Gagrani and Junyoung Park and Yifan Zao and He Zhang and Tian Liu and Yiping Yang and Xin Yuan and Jiuyan Lu and Chris Lott and Mingu Lee},
+  title = {{VOCABTRIM: Vocabulary Pruning for Efficient Speculative Decoding in LLMs}},
+  year = {2025},
+  eprint = {2506.22694},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2506.22694},
+  url = {https://arxiv.org/abs/2506.22694},
+  note = {ICML 2025 Workshop on Efficient Systems for Foundation Models}
+}
+
+@inproceedings{kolesnikova2022knowledge,
+  author = {Alina Kolesnikova and Yuri Kuratov and Vasily Konovalov and Mikhail Burtsev},
+  title = {{Knowledge Distillation of Russian Language Models with Reduction of Vocabulary}},
+  booktitle = {Computational Linguistics and Intellectual Technologies (Dialogue)},
+  year = {2022},
+  eprint = {2205.02340},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2205.02340}
+}
+
+% ---------------- E. Distilling reasoning: steps, programs and verifiers ----------------
+@inproceedings{wei2022chain,
+  author = {Jason Wei and Xuezhi Wang and Dale Schuurmans and Maarten Bosma and Brian Ichter and Fei Xia and Ed Chi and Quoc Le and Denny Zhou},
+  title = {{Chain-of-Thought Prompting Elicits Reasoning in Large Language Models}},
+  booktitle = {Advances in Neural Information Processing Systems 35 (NeurIPS 2022)},
+  year = {2022},
+  eprint = {2201.11903},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2201.11903}
+}
+
+@inproceedings{hsieh2023distilling,
+  author = {Cheng-Yu Hsieh and Chun-Liang Li and Chih-Kuan Yeh and Hootan Nakhost and Yasuhisa Fujii and Alexander Ratner and Ranjay Krishna and Chen-Yu Lee and Tomas Pfister},
+  title = {{Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes}},
+  booktitle = {Findings of the Association for Computational Linguistics: ACL 2023},
+  year = {2023},
+  eprint = {2305.02301},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2305.02301}
+}
+
+@inproceedings{gao2023pal,
+  author = {Luyu Gao and Aman Madaan and Shuyan Zhou and Uri Alon and Pengfei Liu and Yiming Yang and Jamie Callan and Graham Neubig},
+  title = {{PAL: Program-aided Language Models}},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning (ICML 2023)},
+  year = {2023},
+  eprint = {2211.10435},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2211.10435}
+}
+
+@inproceedings{zhu2024pad,
+  author = {Xuekai Zhu and Biqing Qi and Kaiyan Zhang and Xinwei Long and Zhouhan Lin and Bowen Zhou},
+  title = {{PaD: Program-aided Distillation Can Teach Small Models Reasoning Better than Chain-of-thought Fine-tuning}},
+  booktitle = {Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers)},
+  pages = {2571--2597},
+  year = {2024},
+  doi = {10.18653/v1/2024.naacl-long.142},
+  eprint = {2305.13888},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2305.13888}
+}
+
+@misc{cobbe2021training,
+  author = {Karl Cobbe and Vineet Kosaraju and Mohammad Bavarian and Mark Chen and Heewoo Jun and Lukasz Kaiser and Matthias Plappert and Jerry Tworek and Jacob Hilton and Reiichiro Nakano and Christopher Hesse and John Schulman},
+  title = {{Training Verifiers to Solve Math Word Problems}},
+  year = {2021},
+  eprint = {2110.14168},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2110.14168},
+  url = {https://arxiv.org/abs/2110.14168}
+}
+
+@inproceedings{lightman2024verify,
+  author = {Hunter Lightman and Vineet Kosaraju and Yura Burda and Harri Edwards and Bowen Baker and Teddy Lee and Jan Leike and John Schulman and Ilya Sutskever and Karl Cobbe},
+  title = {{Let's Verify Step by Step}},
+  booktitle = {International Conference on Learning Representations (ICLR 2024)},
+  year = {2024},
+  eprint = {2305.20050},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2305.20050}
+}
+
+@article{deepseek2025r1,
+  author = {Daya Guo and Dejian Yang and Haowei Zhang and others},
+  title = {{DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning}},
+  journal = {Nature},
+  volume = {645},
+  pages = {633--638},
+  year = {2025},
+  doi = {10.1038/s41586-025-09422-z},
+  eprint = {2501.12948},
+  archivePrefix = {arXiv},
+  url = {https://doi.org/10.1038/s41586-025-09422-z}
+}
+
+% ---------------- F. Agents, harnesses and agent distillation ----------------
+@inproceedings{yao2023react,
+  author = {Shunyu Yao and Jeffrey Zhao and Dian Yu and Nan Du and Izhak Shafran and Karthik Narasimhan and Yuan Cao},
+  title = {{ReAct: Synergizing Reasoning and Acting in Language Models}},
+  booktitle = {International Conference on Learning Representations (ICLR 2023)},
+  year = {2023},
+  eprint = {2210.03629},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2210.03629}
+}
+
+@article{sumers2024cognitive,
+  author = {Theodore R. Sumers and Shunyu Yao and Karthik Narasimhan and Thomas L. Griffiths},
+  title = {{Cognitive Architectures for Language Agents}},
+  journal = {Transactions on Machine Learning Research},
+  year = {2024},
+  eprint = {2309.02427},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2309.02427}
+}
+
+@misc{belcak2025small,
+  author = {Peter Belcak and Greg Heinrich and Shizhe Diao and Yonggan Fu and Xin Dong and Saurav Muralidharan and Yingyan Celine Lin and Pavlo Molchanov},
+  title = {{Small Language Models are the Future of Agentic AI}},
+  year = {2025},
+  eprint = {2506.02153},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2506.02153},
+  url = {https://arxiv.org/abs/2506.02153}
+}
+
+@inproceedings{kang2025distilling,
+  author = {Minki Kang and Jongwon Jeong and Seanie Lee and Jaewoong Cho and Sung Ju Hwang},
+  title = {{Distilling LLM Agent into Small Models with Retrieval and Code Tools}},
+  booktitle = {Advances in Neural Information Processing Systems 38 (NeurIPS 2025)},
+  year = {2025},
+  eprint = {2505.17612},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2505.17612}
+}
+
+@inproceedings{liu2026structured,
+  author = {Jun Liu and Zhenglun Kong and Peiyan Dong and Changdi Yang and Tianqi Li and Hao Tang and Geng Yuan and Wei Niu and Wenbin Zhang and Pu Zhao and Xue Lin and Dong Huang and Yanzhi Wang},
+  title = {{Structured Agent Distillation for Large Language Model}},
+  booktitle = {Proceedings of the 25th International Conference on Autonomous Agents and Multiagent Systems (AAMAS 2026)},
+  year = {2026},
+  eprint = {2505.13820},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2505.13820}
+}
+
+@inproceedings{ni2026star,
+  author = {Jiliang Ni and Jiachen Pu and Zhongyi Yang and Jingfeng Luo and Conggang Hu},
+  title = {{STAR: Similarity-guided Teacher-Assisted Refinement for Super-Tiny Function Calling Models}},
+  booktitle = {International Conference on Learning Representations (ICLR 2026)},
+  year = {2026},
+  eprint = {2602.03022},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2602.03022}
+}
+
+@inproceedings{erdogan2024tinyagent,
+  author = {Lutfi Eren Erdogan and Nicholas Lee and Siddharth Jha and Sehoon Kim and Ryan Tabrizi and Suhong Moon and Coleman Hooper and Gopala Anumanchipalli and Kurt Keutzer and Amir Gholami},
+  title = {{TinyAgent: Function Calling at the Edge}},
+  booktitle = {Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing: System Demonstrations},
+  year = {2024},
+  eprint = {2409.00608},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2409.00608}
+}
+
+@misc{chen2024octopus,
+  author = {Wei Chen and Zhiyuan Li},
+  title = {{Octopus v2: On-device language model for super agent}},
+  year = {2024},
+  eprint = {2404.01744},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2404.01744},
+  url = {https://arxiv.org/abs/2404.01744}
+}
+
+@inproceedings{zhou2024llm4teach,
+  author = {Zihao Zhou and Bin Hu and Chenyang Zhao and Pu Zhang and Bin Liu},
+  title = {{Large Language Model as a Policy Teacher for Training Reinforcement Learning Agents}},
+  booktitle = {Proceedings of the Thirty-Third International Joint Conference on Artificial Intelligence (IJCAI 2024)},
+  pages = {5671--5679},
+  year = {2024},
+  doi = {10.24963/ijcai.2024/627},
+  eprint = {2311.13373},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2311.13373}
+}
+
+@misc{luo2026distilling,
+  author = {Ziluowen Luo and Senzhang Wang and Chaozhuo Li and Jun Yin and Hao Yan and Ming Cheng and Chenxu Wang and Songyang Liu and Litian Zhang and Qiwei Ye and Zheng Liu and Philip S. Yu},
+  title = {{Distilling Agentic Systems: A Roadmap across Models, Artifacts, and Harnesses}},
+  year = {2026},
+  eprint = {2609.36630},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2609.36630},
+  url = {https://arxiv.org/abs/2609.36630}
+}
+
+@misc{ye2026harnesszero,
+  author = {Haoran Ye and Yuxing Lu and Haonan Dong and Zhaochen Su and Guojie Song},
+  title = {{Harness-Zero: Harness Distillation via Agent-as-Harness}},
+  year = {2026},
+  eprint = {2609.24974},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2609.24974},
+  url = {https://arxiv.org/abs/2609.24974}
+}
+
+% ---------------- G. Structured output, routing and function calling ----------------
+@misc{willard2023efficient,
+  author = {Brandon T. Willard and R{\'e}mi Louf},
+  title = {{Efficient Guided Generation for Large Language Models}},
+  year = {2023},
+  eprint = {2307.09702},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2307.09702},
+  url = {https://arxiv.org/abs/2307.09702}
+}
+
+@inproceedings{tam2024speak,
+  author = {Zhi Rui Tam and Cheng-Kuang Wu and Yi-Lin Tsai and Chieh-Yen Lin and Hung-yi Lee and Yun-Nung Chen},
+  title = {{Let Me Speak Freely? A Study on the Impact of Format Restrictions on Performance of Large Language Models}},
+  booktitle = {Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing: Industry Track},
+  pages = {1218--1236},
+  year = {2024},
+  eprint = {2408.02442},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2408.02442}
+}
+
+@misc{chaganti2026different,
+  author = {Vinay Kumar Chaganti},
+  title = {{Different Teachers, Different Capabilities: Sub-1B On-Device Distillation for Structured Text Enrichment}},
+  year = {2026},
+  eprint = {2607.08268},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2607.08268},
+  url = {https://arxiv.org/abs/2607.08268}
+}
+
+% ---------------- H. Math word problem datasets and evaluation ----------------
+@inproceedings{koncel2016mawps,
+  author = {Rik Koncel-Kedziorski and Subhro Roy and Aida Amini and Nate Kushman and Hannaneh Hajishirzi},
+  title = {{MAWPS: A Math Word Problem Repository}},
+  booktitle = {Proceedings of the 2016 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies},
+  pages = {1152--1157},
+  year = {2016},
+  doi = {10.18653/v1/N16-1136},
+  url = {https://aclanthology.org/N16-1136/}
+}
+
+@inproceedings{miao2020diverse,
+  author = {Shen-Yun Miao and Chao-Chun Liang and Keh-Yih Su},
+  title = {{A Diverse Corpus for Evaluating and Developing English Math Word Problem Solvers}},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
+  pages = {975--984},
+  year = {2020},
+  doi = {10.18653/v1/2020.acl-main.92},
+  eprint = {2106.15772},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2106.15772}
+}
+
+@inproceedings{patel2021svamp,
+  author = {Arkil Patel and Satwik Bhattamishra and Navin Goyal},
+  title = {{Are NLP Models really able to Solve Simple Math Word Problems?}},
+  booktitle = {Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies},
+  pages = {2080--2094},
+  year = {2021},
+  doi = {10.18653/v1/2021.naacl-main.168},
+  eprint = {2103.07191},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2103.07191}
+}
+
+@inproceedings{mirzadeh2025gsmsymbolic,
+  author = {Iman Mirzadeh and Keivan Alizadeh and Hooman Shahrokhi and Oncel Tuzel and Samy Bengio and Mehrdad Farajtabar},
+  title = {{GSM-Symbolic: Understanding the Limitations of Mathematical Reasoning in Large Language Models}},
+  booktitle = {International Conference on Learning Representations (ICLR 2025)},
+  year = {2025},
+  eprint = {2410.05229},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2410.05229}
+}
+
+@inproceedings{shi2023distracted,
+  author = {Freda Shi and Xinyun Chen and Kanishka Misra and Nathan Scales and David Dohan and Ed Chi and Nathanael Sch{\"a}rli and Denny Zhou},
+  title = {{Large Language Models Can Be Easily Distracted by Irrelevant Context}},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning (ICML 2023)},
+  pages = {31210--31227},
+  year = {2023},
+  eprint = {2302.00093},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2302.00093}
+}
+
+@inproceedings{zhang2024careful,
+  author = {Hugh Zhang and Jeff Da and Dean Lee and Vaughn Robinson and Catherine Wu and Will Song and Tiffany Zhao and Pranav Raja and Charlotte Zhuang and Dylan Slack and Qin Lyu and Sean Hendryx and Russell Kaplan and Michele Lunati and Summer Yue},
+  title = {{A Careful Examination of Large Language Model Performance on Grade School Arithmetic}},
+  booktitle = {Advances in Neural Information Processing Systems 37 (NeurIPS 2024), Datasets and Benchmarks Track},
+  year = {2024},
+  eprint = {2405.00332},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2405.00332}
+}
+
+% ---------------- I. Tutoring dialogues, explanation quality and sycophancy ----------------
+@inproceedings{macina2023mathdial,
+  author = {Jakub Macina and Nico Daheim and Sankalan {Pal Chowdhury} and Tanmay Sinha and Manu Kapur and Iryna Gurevych and Mrinmaya Sachan},
+  title = {{MathDial: A Dialogue Tutoring Dataset with Rich Pedagogical Properties Grounded in Math Reasoning Problems}},
+  booktitle = {Findings of the Association for Computational Linguistics: EMNLP 2023},
+  year = {2023},
+  eprint = {2305.14536},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2305.14536}
+}
+
+@inproceedings{macina2025mathtutorbench,
+  author = {Jakub Macina and Nico Daheim and Ido Hakimi and Manu Kapur and Iryna Gurevych and Mrinmaya Sachan},
+  title = {{MathTutorBench: A Benchmark for Measuring Open-ended Pedagogical Capabilities of LLM Tutors}},
+  booktitle = {Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing},
+  year = {2025},
+  eprint = {2502.18940},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2502.18940}
+}
+
+@inproceedings{daheim2024stepwise,
+  author = {Nico Daheim and Jakub Macina and Manu Kapur and Iryna Gurevych and Mrinmaya Sachan},
+  title = {{Stepwise Verification and Remediation of Student Reasoning Errors with Large Language Model Tutors}},
+  booktitle = {Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing},
+  pages = {8386--8411},
+  year = {2024},
+  eprint = {2407.09136},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2407.09136}
+}
+
+@inproceedings{sharma2024sycophancy,
+  author = {Mrinank Sharma and Meg Tong and Tomasz Korbak and David Duvenaud and Amanda Askell and Samuel R. Bowman and Newton Cheng and Esin Durmus and Zac Hatfield-Dodds and Scott R. Johnston and Shauna Kravec and Timothy Maxwell and Sam McCandlish and Kamal Ndousse and Oliver Rausch and Nicholas Schiefer and Da Yan and Miranda Zhang and Ethan Perez},
+  title = {{Towards Understanding Sycophancy in Language Models}},
+  booktitle = {International Conference on Learning Representations (ICLR 2024)},
+  year = {2024},
+  eprint = {2310.13548},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2310.13548}
+}
+
+@misc{wei2023simple,
+  author = {Jerry Wei and Da Huang and Yifeng Lu and Denny Zhou and Quoc V. Le},
+  title = {{Simple synthetic data reduces sycophancy in large language models}},
+  year = {2023},
+  eprint = {2308.03958},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2308.03958},
+  url = {https://arxiv.org/abs/2308.03958}
+}
+
+@inproceedings{kasneci2026sycophancy,
+  author = {Enkelejda Kasneci and Gjergji Kasneci},
+  title = {{Sycophancy is an Educational Safety Risk: Why LLM Tutors Need Sycophancy Benchmarks}},
+  booktitle = {International Conference on Machine Learning (ICML 2026), Position Paper Track},
+  year = {2026},
+  eprint = {2605.14604},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2605.14604}
+}
+
+% ---------------- J. Error compounding and multi-turn evaluation ----------------
+@inproceedings{bengio2015scheduled,
+  author = {Samy Bengio and Oriol Vinyals and Navdeep Jaitly and Noam Shazeer},
+  title = {{Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks}},
+  booktitle = {Advances in Neural Information Processing Systems 28 (NIPS 2015)},
+  year = {2015},
+  eprint = {1506.03099},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/1506.03099}
+}
+
+@inproceedings{ross2011dagger,
+  author = {Stephane Ross and Geoffrey J. Gordon and J. Andrew Bagnell},
+  title = {{A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning}},
+  booktitle = {Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics (AISTATS 2011)},
+  series = {Proceedings of Machine Learning Research},
+  volume = {15},
+  pages = {627--635},
+  year = {2011},
+  eprint = {1011.0686},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/1011.0686}
+}
+
+@inproceedings{arora2022exposure,
+  author = {Kushal Arora and Layla {El Asri} and Hareesh Bahuleyan and Jackie Chi Kit Cheung},
+  title = {{Why Exposure Bias Matters: An Imitation Learning Perspective of Error Accumulation in Language Generation}},
+  booktitle = {Findings of the Association for Computational Linguistics: ACL 2022},
+  pages = {700--710},
+  year = {2022},
+  doi = {10.18653/v1/2022.findings-acl.58},
+  eprint = {2204.01171},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2204.01171}
+}
+
+@inproceedings{kwan2024mteval,
+  author = {Wai-Chung Kwan and Xingshan Zeng and Yuxin Jiang and Yufei Wang and Liangyou Li and Lifeng Shang and Xin Jiang and Qun Liu and Kam-Fai Wong},
+  title = {{MT-Eval: A Multi-Turn Capabilities Evaluation Benchmark for Large Language Models}},
+  booktitle = {Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing},
+  year = {2024},
+  eprint = {2401.16745},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2401.16745}
+}
+
+@misc{laban2025lost,
+  author = {Philippe Laban and Hiroaki Hayashi and Yingbo Zhou and Jennifer Neville},
+  title = {{LLMs Get Lost In Multi-Turn Conversation}},
+  year = {2025},
+  eprint = {2505.06120},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2505.06120},
+  url = {https://arxiv.org/abs/2505.06120}
+}
+
+@misc{zheng2026maigo,
+  author = {Haoyu Zheng and Yun Zhu and Shu Yuan and Shangming Chen and Qing Wang and Wenqiao Zhang and Jun Xiao and Yueting Zhuang},
+  title = {{MAIGO: Mitigating Lost-in-Conversation with History-Cleaned On-Policy Self-Distillation}},
+  year = {2026},
+  eprint = {2605.27186},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2605.27186},
+  url = {https://arxiv.org/abs/2605.27186}
+}
+
+% ---------------- K. Distillation frameworks and toolkits ----------------
+@inproceedings{yang2020textbrewer,
+  author = {Ziqing Yang and Yiming Cui and Zhipeng Chen and Wanxiang Che and Ting Liu and Shijin Wang and Guoping Hu},
+  title = {{TextBrewer: An Open-Source Knowledge Distillation Toolkit for Natural Language Processing}},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics: System Demonstrations},
+  year = {2020},
+  doi = {10.18653/v1/2020.acl-demos.2},
+  eprint = {2002.12620},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2002.12620}
+}
+
+@inproceedings{matsubara2021torchdistill,
+  author = {Yoshitomo Matsubara},
+  title = {{torchdistill: A Modular, Configuration-Driven Framework for Knowledge Distillation}},
+  booktitle = {Reproducible Research in Pattern Recognition (RRPR 2021)},
+  series = {Lecture Notes in Computer Science},
+  volume = {12636},
+  pages = {24--44},
+  publisher = {Springer},
+  year = {2021},
+  doi = {10.1007/978-3-030-76423-4_3},
+  eprint = {2011.12913},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2011.12913}
+}
+
+@misc{vonwerra2020trl,
+  author = {Leandro von Werra and Younes Belkada and Lewis Tunstall and Edward Beeching and Tristan Thrush and Nathan Lambert and Shengyi Huang and Kashif Rasul and Quentin Gallou{\'e}dec},
+  title = {{TRL: Transformers Reinforcement Learning}},
+  year = {2020},
+  howpublished = {\url{https://github.com/huggingface/trl}},
+  url = {https://github.com/huggingface/trl},
+  note = {Software; GKDTrainer documented at \url{https://huggingface.co/docs/trl/gkd_trainer}}
+}
+
+@misc{goddard2024distillkit,
+  author = {Charles Goddard and Lucas Atkins},
+  title = {{DistillKit: Flexible Knowledge Distillation for Large Language Models}},
+  year = {2024},
+  howpublished = {\url{https://github.com/arcee-ai/DistillKit}},
+  url = {https://github.com/arcee-ai/DistillKit},
+  note = {Software, Arcee AI}
+}
+
+@inproceedings{wang2025easydistill,
+  author = {Chengyu Wang and Junbing Yan and Wenrui Cai and Yuanhao Yue and Jun Huang},
+  title = {{EasyDistill: A Comprehensive Toolkit for Effective Knowledge Distillation of Large Language Models}},
+  booktitle = {Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations},
+  pages = {787--795},
+  year = {2025},
+  eprint = {2505.20888},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2505.20888}
+}
+
+@misc{zhang2026kdflow,
+  author = {Songming Zhang and Xue Zhang and Tong Zhang and Bojie Hu and Yufeng Chen and Jinan Xu},
+  title = {{KDFlow: A User-Friendly and Efficient Knowledge Distillation Framework for Large Language Models}},
+  year = {2026},
+  eprint = {2603.01875},
+  archivePrefix = {arXiv},
+  howpublished = {arXiv preprint arXiv:2603.01875},
+  url = {https://arxiv.org/abs/2603.01875}
+}
