@@ -5,72 +5,65 @@ AGENT 8 — the slideshow
 Build thesis_work/how_it_works.html: a local, self-contained, animated, step-by-step slideshow explaining the BSc thesis to its author (how everything works so far and how training will work). Never upload/publish; no git, no GPU, no data generation, no training.
 
 2) STATUS
-RUNNING — snapshot 2026-10-08 ~00:35. All 19 slides drafted; build passes the headless self-test (no JS errors); screenshots look right on desktop. Final file not yet written to thesis_work (still testing). Remaining: phone-width check, light-mode check, small polish, then write the final file and report.
+DONE — 2026-10-08. Final file written to thesis_work/how_it_works.html (134,141 bytes; it did not exist before the write). 20 slides. Self-test data-selftest="pass" with no JavaScript errors and no sideways overflow on the final file at desktop (plain --dump-dom), at 390x844 light and at 390x844 dark (DevTools emulation). Keyboard, button, overview and theme checks pass.
 
-3) BRIEF (original task, complete)
-Build an interactive, animated, step-by-step slideshow that explains a BSc thesis project to its author: how everything works so far and how training will work. Repo: D:\preference_destillation (Windows). Your ONLY output file: thesis_work/how_it_works.html (check it does not exist first; if it does, stop and report). It must be a LOCAL self-contained HTML file: inline CSS and JavaScript, no external scripts, fonts or images, no network. Never upload or publish it anywhere. No git, no GPU, do not run data generation or training. Scratch files only in C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\slideshow\ (create it).
-ACCURACY FIRST: every fact, number and example must come from the repo. Read: CLAUDE.md; thesis_work/running.txt (PLAN v2 at top); thesis_work/findings.txt (part-1 results); thesis_work/domain_specs.txt (math tutor sections, BUILD RESULT, AGENTIC MATH TUTOR, TEMPLATE PUPIL); thesis_work/harness_explainer.html (real step-by-step conversation with exact contexts; reuse it); thesis_work/template_pilot.html (pilot numbers); thesis_work/novelty_check.md; and the code where needed: library/training/losses.py, schedules.py, trainer.py, example_encoder.py, evaluator.py, library/shared/vocabulary.py, library/data_gen/model_handler.py (generation vs teacher-forced scoring), library/domain/math_tutor/{conversation.py, harness.py, questions.py, checks.py, labels.py, agentic.py}, library/agent/question_templates.py. If something is planned but not built yet, label it "planned". Do not invent results.
-SLIDES (about 16-22):
- 1 Title + the thesis in one sentence (distil a big LLM's domain knowledge into a tiny from-scratch student; framework + an agent showcase).
- 2 Teacher vs student: Gemma (teacher), tiny transformer from scratch, reduced output vocabulary (why: ~262k -> task tokens).
- 3 What distillation means here: animated bar chart of a teacher's next-token distribution vs a one-hot gold token; KL vs CE explained visually.
- 4 The framework pipeline (animated): Domain -> teacher data generation (generate vs teacher-forced scoring) -> batches with stored logits -> training (TrainingRun dials) -> evaluation and analytics -> Analysis.
- 5 Part 1 results in brief (from findings.txt), incl. the entropy dependence.
- 6 Part 2: agent = model + harness (who does what).
- 7 The items: problem + executable solve() + follow-ups; validator; corpus growth numbers; splits, held-out shapes, SVAMP human test.
- 8 Facts-first solutions and the label pass (Gemma writes the words, the code checks the numbers).
- 9 The conversation format: blocks, main line vs side thread, the three routes; animated example where the thread is dropped when a new task arrives.
- 10 One agent turn, animated step by step (route -> solve / explain / out_of_scope; checks; re-ask; route fallback).
- 11 The template pupil: foci and slots from the executed solution; niche templates; computed pushback; what-if with re-run code; off-topic.
- 12 Training records: solve / explain / route / off-topic / what-if records; teacher-forced scoring gives soft labels at every position.
- 13 How training works (interactive): slider over training steps showing the KL/CE ratio annealing 0.9 -> 0.1 and the temperature schedule (real schedule code); per-token loss on a short example sequence.
- 14 What the student sees vs what Gemma sees (no instructions for the student).
- 15 Evaluation plan: per-turn gold history vs own history (error compounding; mirrors teacher-forced vs autoregressive), SVAMP, routing on free-written and (planned) human-written follow-ups, explanation checks; distribution analytics logged during eval.
- 16 Pilot results so far (template pilot, sweeps, harness runs) as tiles.
- 17 The cascade example (misrouted question's made-up solution polluted the next task: 44 instead of 2) and why both evaluations are reported.
- 18 Status, open decisions (compute/scale, unattended cloud, teacher precision), next steps (thin end-to-end slice, then the full run).
-INTERACTION AND DESIGN: arrow keys / space / click to advance; fragments reveal one by one; progress bar and slide counter; overview grid (press O); smooth CSS transitions and small animations (data flowing through the pipeline, the thread fading out of the context, bars morphing). Clean typography, colour tokens on :root with a prefers-color-scheme dark variant, explicit body background, works at phone width (swipe or buttons), no horizontal scroll. Consistent colours: task green, question blue, solution purple, explanation orange, harness grey (as in harness_explainer.html). Test it with headless Microsoft Edge (C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe --headless=new --screenshot ... and --dump-dom): no JavaScript errors, slides render; look at a couple of screenshots.
-FINAL MESSAGE: the path, the slide list (one line each), and anything that could not be verified from the repo.
-Later coordinator additions: append progress to thesis_work/agent_saves/slideshow.md (append only) and keep this file (agents/agent8.txt) as a current snapshot.
+3) BRIEF (original task, condensed; full text was in the previous snapshot)
+Interactive animated slideshow for the thesis author. Only output thesis_work/how_it_works.html (stop if it exists). Local and self-contained (inline CSS/JS, no external scripts, fonts, images or network), never published. Every fact from the repo; label unbuilt things "planned". About 16-22 slides (list in 5). Arrow keys / space / click, fragments, progress bar, counter, overview (O), theme (T), swipe and buttons on a phone, no horizontal scroll, colour tokens on :root with a dark variant, explicit body background, block colours as in harness_explainer.html. Test with headless Edge.
+Resume instructions (2026-10-08): work in a new scratch folder, fix the paths in build.py, finish NEXT, check phone width and light mode, add a slide or note for running.txt STATUS 2026-10-08 (numbers only from running.txt and template_pilot.html), write the final file, re-run the self-test. Only repo files written: thesis_work/how_it_works.html and this file.
 
 4) OUTPUTS
-- thesis_work/how_it_works.html — NOT yet written (verified absent before starting). It is written by build.py from the template once testing is done.
-- Draft template: SCRATCH/template.html (contains placeholder /*PERTOKEN_DATA*/null)
-- Built test copy: SCRATCH/build.html  (python SCRATCH/build.py <target> fills the placeholder from SCRATCH/pertoken_js.txt and writes <target>)
-- Final step: python SCRATCH/build.py "D:/preference_destillation/thesis_work/how_it_works.html"
-- Append-only progress log: thesis_work/agent_saves/slideshow.md
+- thesis_work/how_it_works.html (final; identical to the tested scratch build).
+- Scratch (not in the repo): C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\3912635c-d350-4c95-bf6b-8f4f191df0b1\scratchpad\agent8\
+  template.html (source), build.py (template + pertoken_js.txt -> target), cdp.py (headless Edge over DevTools: phone viewport, forced colour scheme, self-test, interaction test, screenshots), selftest.sh (plain --dump-dom self-test), shots/*.png.
+- agents/work/slideshow/ (the earlier drafts) was copied, not edited.
+- thesis_work/agent_saves/slideshow.md was NOT appended this time (the resume brief allowed only the two files above).
 
-5) DONE SO FAR (19 slides, all built; self-test passes for every step of every slide)
- 1 title · 2 teacher vs student + vocab bars · 3 KL vs CE (real stored distribution, toy students, temperature) · 4 pipeline (flowing dots) · 5 part-1 results · 6 agent = model + harness · 7 items + corpus growth + splits + templateness · 8 formats + label pass check animation · 9 conversation thread-drop animation · 10 one agent turn flow · 11 template pupil (slot fill animation, kinds chart) · 12 training records + token soft-label marks · 13 training interactive (schedules ported from schedules.py, real per-token KL/CE from checkpoints) · 14 student vs Gemma inputs (101 vs 558 tokens) · 15 eval plan · 16 pilot tiles · 17 cascade · 18 planned studies (+ scope frozen) · 19 status/open decisions/next (from running.txt STATUS 2026-10-08).
- Screenshots checked (desktop 1366x900, dark): slides 3.3, 4.6, 9.4, 13.2, 17.6 look correct.
+5) SLIDES (final, 20)
+ 1 Title: the thesis in one sentence, part 1 / part 2 / official brief, novelty check
+ 2 Teacher vs student: Gemma 3 4B / Gemma 4 12B, student defaults, output-vocabulary bars, input side + UNK plan
+ 3 KL vs CE: a real stored teacher distribution, one-hot gold, toy students, temperature, one-hot shares
+ 4 The framework pipeline (flowing dots): Domain -> teacher data (generate / forced) -> batches -> training -> evaluation -> Analysis
+ 5 Part 1 results: entropy per domain, E-01 post-gen overlap order, reddit/math null table, other facts
+ 6 Agent = model + harness: who does what, the model plug, what "agentic" means
+ 7 The items: a real item with solve() code, validator, splits, SVAMP, corpus growth, templateness
+ 8 Facts-first solutions and the label pass (animated check), sample-pass tiles
+ 9 The conversation format: blocks, main line vs side thread, thread dropped when a new task arrives (animated)
+10 One agent turn: route -> solution / explanation / out_of_scope, checks, re-ask, fallback
+11 The template pupil: foci and slots (fill animation), pushback, what-if re-run, off-topic, bank kinds chart (3,461 written, 43 excluded, 3,418 in v1)
+12 Training records: solve / explain / route / off-topic / what-if, token marks for teacher-forced soft labels
+13 How training works (interactive): schedules ported from schedules.py, real per-token KL/CE from E-01 checkpoints
+14 What the student sees vs what Gemma sees (101 vs 558 tokens)
+15 Evaluation plan: gold history vs own history, what is scored, what is logged
+16 Pilot results: harness pilots 1-2, template pilot, sweeps v1 -> v2, harness pilots 3-5 table
+17 The cascade: misrouted question, 44 instead of 2, why both evaluations are reported
+18 Planned training studies (PLAN v2, ~70 runs x 3 seeds)
+19 NEW: Where v1 stands (STATUS 2026-10-08): scope frozen, three routes, template bank 3,418 after 43 exclusions, "<" re-ask only when no tag came back, deferred items, sweep v2 / pilot 5 measurements as stacked bars
+20 Status, open decisions, next steps (running.txt STATUS 2026-10-08)
 
-6) FACTS EXTRACTED (with sources)
-- Teacher part 1 Gemma 3 4B (experiments/results/domain_entropy.csv); part 2 Gemma 4 12B: 48 layers, hidden 3840, vocab 262,144 (models/gemma-4-12B-it/config.json); pilots NF4 on 12 GB card (harness.py, features_ledger).
-- Student defaults hidden 48, 3 layers, 1 head, lr 0.0015, warmup 0.1, kl 0.99->0.5, T 1->1 (library/specs.py); 3,416,397 params, 96.0% input embedding (findings F-68a).
-- Output vocab: reddit 525 (27+498), math v1 528, post-gen 26,659 (thesis.md); tutor 18,357 (math_tutor/output_tokens.json). Input: reddit 68,328, math 1,282 (thesis.md); tutor 11,286; SVAMP 4.1% tokens unseen, 72.5% problems (running.txt step 8).
-- Real teacher distribution, post-gen batch_1 example 7 token 65 (H 1.60 nats, exp 4.95): "," .4781, "▁about" .1993, "." .1993, "▁<" .0238, "▁and" .0210, ".<" .0112, "▁on" .0112, "▁–" .0099, rest .0461; T=0.5 expH 2.19, T=2 expH 159.4.
-- One-hot share (<0.1 nats, measure_entropy.py): reddit 96.4%, math 99.7%, post-gen 20.0%; exp(H) 1.02 / 1.003 / 2.73 (domain_entropy.csv).
-- E-01 (experiments/results/e01_anneal_direction.csv; findings F-E1): post-gen overlap .305/.298/.291/.284/.264, rank 694/743/769/806/1071 (pure KL, CE->KL, flat, KL->CE, pure CE). Reddit best task % 62.9±0.9 (ce-to-kl), 62.7±1.6 (kl-to-ce), 63.0±0.7 (flat), 62.1±0.7 (pure CE), 62.3±2.1 (pure KL); math 24.6±1.7, 23.5±1.8, 23.1±1.6, 23.8±1.7, 24.1±1.7. Noise floor ±1.8 pp. Run lengths: post-gen 960 steps (10 × 96), reddit/math 153 (3 × 51) (experiments/anneal_direction.py + batch_handler).
-- Per-token KL/CE: CPU inference on runs/e01-postgen-pure-kl-s1 (checkpoint_epoch_0, _9) and e01-postgen-pure-ce-s1 (_9), batch_97 example 0, first 14 tokens -> SCRATCH/pertoken.json.
-- Corpus (domain_specs BUILD RESULT): seeds 2,153; written 12,476; reworded 21,694; 34,170 -> 34,002 (7 exact, 161 near-dup); train 32,377 / test 1,210 / held-out 415; renumber 96,544 -> 130,546; turns 295,458 + 10,931; held-out turns 3,648; templateness 0.40 / .54 / .91 / 1.00; SVAMP 746 (577/169); ~38M agent tokens.
-- Label pass sample (commit 7981150): 40 items, 84/91 turns (92%), 37/40, 192 copy turns; sample_labels.jsonl 409. Full pass planned.
-- Bank (commit ba050d5): 3,461 templates, 1,842 niche, per-kind counts; 43 excluded (questions/excluded.jsonl).
-- Pilots: harness_runs/gemma_pilot_{1..5}.json; template_pilot.html; harness_explainer.html (165/165, 1/165, 9->1 rejects).
-- Cascade: gemma_pilot_5.json item S08-mem-b05-0022.
-- Token counts (Gemma 4 tokenizer): Ines turn-2 student context 101 tokens; teacher prompt + chat template 558.
-- Real foci from questions.py on sd-p1-h02-0007: "divide 63 by 7"; pushback "take 9 away from 54" = 45; what-if 4 -> 11 = 99.
-- trainer.py: optimizer starts at the peak LR, schedule applied after each batch -> batch 1 at 0.0015 (code review M1).
-- running.txt STATUS 2026-10-08: thin slice ~1k problems (labels ~3h, threads ~2h, ...); open: unattended cloud; one precision; user writes ~100 human follow-ups; scope frozen.
-DESIGN: single HTML, inline CSS/JS; tokens on :root + dark (harness.py palette); teacher #2a78d6 / student #eb6834 (dataviz reference pair); fragments data-f, highlights data-hl, step classes data-cls="name@a-b"; hooks for slide 3 and 13; keys arrows/space/enter, O, T; click/swipe; hash #N.K; #selftest runs every step and writes <pre id=selftest> + html[data-selftest].
+6) CHANGES IN THIS SESSION
+- build.py / pertoken.py / temps.py: scratch paths updated to the new folder.
+- NEXT a (lr readout "0" at step 0): was already in place; confirmed in a screenshot.
+- Phone-width fix: the training slide's run-length select pushed the page to 407 px at 390 px; labels in .controls now shrink (min-width 0, max-width 100%) and the option texts are shorter.
+- Pilot table (slide 16): the note column made row 3 very tall at phone width; the notes moved to a sentence under the table.
+- On-slide kicker numbers now match the counter (2..20); cross-references fixed (slide 13 = training, slide 11 = pupil).
+- New slide 19 (sources: running.txt STATUS 2026-10-08, template_pilot.html only). The scope-frozen sentence moved off slide 18 to it; slide 11, 16 and 20 now mention 3,418.
+- Title kicker: "code at commit 44c6ff3 (2026-10-07) · status as of 2026-10-08".
+- Self-test now also prints the viewport, theme, page scrollWidth and any slide that scrolls sideways.
 
-7) NEXT (pick up here)
- a. lr readout: show "0" instead of 0.00e+0 at step 0 (template.html, renderTraining).
- b. Screenshot at phone width (390x844) and in light mode (?): check no horizontal scroll (document.scrollingElement / slide scrollWidth), bars and tables fit.
- c. Rebuild + selftest again (must print data-selftest="pass").
- d. Write final: python SCRATCH/build.py "D:/preference_destillation/thesis_work/how_it_works.html"; re-run selftest on the final path.
- e. Append final section to thesis_work/agent_saves/slideshow.md; update this file to DONE; final report.
+7) FACTS EXTRACTED (with sources) — unchanged from the previous snapshot, plus:
+- running.txt STATUS 2026-10-08: scope frozen 2026-10-07; v1 = template bank (3,418 after 43 exclusions), three routes (solution / explanation / out_of_scope answered by the harness), what-if = new task, pupil-given numbers = new task, "<" re-ask only when no tag came back; deferred: writers' v2 wish list, concern/wellbeing route (limitation), general agent module, per-turn story features; what-if 229/239, answers = code 221/229, smaller numbers 101/102, pushback firm 116/116, off-topic 194/200, harness 30/31 questions, one misroute cascaded (44 instead of 2).
+- template_pilot.html sweeps: v1 -> v2 what_if 232/254 (code 222/232) -> 229/239 (221/229); smaller_numbers 123/127 -> 101/102; pushback 116/119, held firm 116/116 (v1 only); off_topic 600/642 -> 194/200 (v2 sample of 200); all 8 v2 what-if misses from one conversation; "numbers the pupil supplies make a new task".
+- harness_runs/gemma_pilot_5.json: questions routed to an explanation 30/31, answers 22/23, tokens outside the vocabulary "Yes" x5, "multiplier" x4 (re-checked).
+- library/shared/vocabulary.py: whitespace and auxiliary banks are shared across domains (hence "18,357 + shared sections" on slide 2).
 
-8) SCRATCH
- SCRATCH = C:\Users\Ors\AppData\Local\Temp\claude\D--preference-destillation\ffe199e2-eaba-41f3-879f-8ba3f4ec1e4f\scratchpad\slideshow\
- template.html, build.py, build.html, pertoken.json, pertoken_js.txt, temps.json, dist.py, temps.py, pertoken.py, h2t.py, shots/*.png, edge-profile/ (headless Edge profile).
- Edge test: "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --disable-gpu --user-data-dir=SCRATCH/edge-profile --virtual-time-budget=4000 --dump-dom "file:///SCRATCH/build.html#selftest"
+8) TESTING
+- Headless Edge's window cannot go below ~500 px, so phone width is emulated with DevTools (cdp.py: Emulation.setDeviceMetricsOverride 390x844 mobile, Emulation.setEmulatedMedia prefers-color-scheme). Profile folders: scratch/edge-profile, scratch/edge-profile-cdp.
+- Final file results: plain --dump-dom pass (viewport 1336x805); 390x844 light pass (body #f7f7f5); 390x844 dark pass (body #141416); forced data-theme light/dark against the opposite system scheme pass; keys (arrows, space, O, Esc, T, End) and the prev button behave.
+- Screenshots looked at: phone light 2.5, 3.6, 4.6, 13.3, 16.4, 19.4; phone dark 5.4, 11.7, 16.4, 20.3; desktop light 13.2, 19.4.
+
+9) NOT VERIFIABLE FROM THE REPO (carried in the report)
+- That 44c6ff3 is still the latest code commit: not checked with git (no git allowed); the later commits listed in the session context are agent/status commits.
+- Numbers taken from commit messages in the previous session (label-pass sample 84/91, 37/40, 192; bank 3,461 / 1,842 niche; pilot 1-2 rejects) were not re-read this session.
+- "Seed std 0.001-0.002 ... about 7 std apart" (slide 5) and the per-token KL/CE values (slide 13) come from the previous session's reading of the CSV and CPU inference; not recomputed.
+
+STATUS: DONE
