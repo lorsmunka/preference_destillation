@@ -139,8 +139,11 @@ def label_wave(handler, items: List[Dict], turn: int, labels: Dict[tuple, str], 
 
 
 def run_label_pass(handler) -> Dict:
-    """Every kept item (originals and rewordings), wave by wave."""
+    """Every kept item (originals and rewordings), wave by wave; test rewordings are
+    answer-only and get no label (items.answer_only_test)."""
+    from .items import answer_only_test
     items = [json.loads(line) for line in open(ITEMS_DIR / "items.jsonl", encoding="utf-8")]
+    items = [item for item in items if not answer_only_test(item)]
     labels = read_labels()
     log = {"blocked_by_earlier_turn": 0, "verified_by_attempt": {}, "failed": {}}
     for turn in range(4):

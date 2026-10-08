@@ -89,6 +89,13 @@ def family_of(item: Dict) -> str:
     return item["id"]
 
 
+def answer_only_test(item: Dict) -> bool:
+    """A test rewording (or a renumbered copy of one): scored only on its final answers, as a
+    paraphrase robustness test. It gets no facts-first labels, no explanation threads and no
+    teacher data; the test originals and their copies carry those (decided 2026-10-08)."""
+    return item.get("split") == "test" and "~w" in item["id"]
+
+
 def check_turn(text: str, execution, turn: int, distractor: str) -> Optional[str]:
     """The rules that tie one turn's code to its text."""
     if not execution.operations:

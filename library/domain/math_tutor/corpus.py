@@ -17,7 +17,10 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional
 
-ITEMS_DIR = Path(__file__).resolve().parent / "items"
+from .items import answer_only_test
+
+PACKAGE = Path(__file__).resolve().parent
+ITEMS_DIR = PACKAGE / "items"
 
 
 def turn_text(item: Dict, turn: int) -> str:
@@ -26,6 +29,20 @@ def turn_text(item: Dict, turn: int) -> str:
         lines.append(f"Answer: {item['answers'][index]}")
         lines.append(f"Follow-up: {item['follow_ups'][index]['question']}")
     return "\n".join(lines)
+
+
+ANSWER_ONLY_TEST_PATH = PACKAGE / "corpus_answer_only_test.jsonl"
+
+
+def write_answer_only_test(items: List[Dict]) -> None:
+    """The paraphrase test: test rewordings (and their copies) with their tasks and gold
+    answers only; the student is scored on its final answers, with no teacher data."""
+    with open(ANSWER_ONLY_TEST_PATH, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
+        for item in items:
+            record = {"item_id": item["id"], "family": item["family"], "split": item["split"], "slice": item["slice"],
+                      "tasks": [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]],
+                      "answers": item["answers"], "shape": item["shape"]}
+            file.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 def kept_items() -> List[Dict]:
@@ -81,7 +98,10 @@ def build_agentic_corpus(path: str, annotation: str = "named", count: Optional[i
     from .threads import THREADS_PATH
 
     random_generator = random.Random(seed)
-    items = kept_items()
+    all_items = kept_items()
+    answer_only = [item for item in all_items if answer_only_test(item)]
+    write_answer_only_test(answer_only)
+    items = [item for item in all_items if not answer_only_test(item)]
     skipped = sum(1 for item in items if not usable(item, annotation))
     partly_labelled = sum(1 for item in items if 0 < labelled_turns(item, annotation) < 1 + len(item["follow_ups"]))
     records = [record for item in items if usable(item, annotation) for record in solve_turns(item, annotation)]
@@ -104,6 +124,7 @@ def build_agentic_corpus(path: str, annotation: str = "named", count: Optional[i
     summary = {"annotation": annotation, "train_turns": len(train), "test_turns": len(test),
                "items_skipped_until_relabel": skipped,
                "items_cut_at_first_unlabelled_turn": partly_labelled,
+               "answer_only_test_items": len(answer_only),
                "by_turn_type": dict(Counter(record.get("turn_type", "solve") for record in train + test))}
     print(f"math_tutor agentic corpus ({annotation}): {len(train)} train turns, then {len(test)} test turns -> {path}"
           f" ({skipped} reworded items skipped until relabelled)")

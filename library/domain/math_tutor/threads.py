@@ -123,8 +123,10 @@ def run_threads(handler, domain, items: Optional[List[Dict]] = None, generator=N
     """Run every planned thread message by message (all threads' first messages in batches, then
     their second...). A thread is appended as soon as it stops or has no message left, so an
     interrupted pass keeps every finished thread and the next run skips those items."""
+    from .items import answer_only_test
     if items is None:
         items = [json.loads(line) for line in open(ITEMS_DIR / "items.jsonl", encoding="utf-8")]
+    items = [item for item in items if not answer_only_test(item)]   # answer-only test rewordings get no threads
     generator = generator or question_generator()
     labels = read_labels() if labels is None else labels
     done = set()
