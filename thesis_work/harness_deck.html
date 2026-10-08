@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness Deck</title>
+<!-- Local file, never published. Facts from: thesis_work/harness_explainer.html, running.txt (STATUS 2026-10-08),
+     template_pilot.html (sweeps v2), library/domain/math_tutor/harness.py and conversation.py, code_review.html (X-C1).
+     Keys: arrow keys / space / click to build each slide step by step; swipe or the buttons on a phone; T toggles the theme.
+     #selftest runs every step of every slide and reports errors, overflow and visible words per slide. -->
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f0efec; --ink: #1d1d1f; --ink-2: #52514e; --muted: #6b6b70;
+  --border: #e2e2de; --grid: #e9e8e3;
+  --task: #e2f3e7; --task-fg: #1e6a39; --q: #e3ecfb; --q-fg: #2a5bb0; --sol: #efe3fb; --sol-fg: #6527ad;
+  --exp: #fdedcf; --exp-fg: #875800; --off: #ececea; --off-fg: #55555a;
+  --ok: #2e8b57; --bad: #c0392b; --warn: #b7791f; --teacher: #2a78d6;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 6px 18px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #141416; --surface: #1d1d20; --surface-2: #26262a; --ink: #ececee; --ink-2: #c3c2b7; --muted: #9a9aa2;
+    --border: #2e2e33; --grid: #2a2a2e;
+    --task: #173322; --task-fg: #7fd8a0; --q: #1d2b47; --q-fg: #8db4ff; --sol: #2e1f45; --sol-fg: #c9a3ff;
+    --exp: #3a2c0e; --exp-fg: #f0c060; --off: #2a2a2e; --off-fg: #c4c4ca;
+    --ok: #5cc28a; --bad: #ff7b6b; --warn: #e3b25a; --teacher: #3987e5;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #141416; --surface: #1d1d20; --surface-2: #26262a; --ink: #ececee; --ink-2: #c3c2b7; --muted: #9a9aa2;
+  --border: #2e2e33; --grid: #2a2a2e;
+  --task: #173322; --task-fg: #7fd8a0; --q: #1d2b47; --q-fg: #8db4ff; --sol: #2e1f45; --sol-fg: #c9a3ff;
+  --exp: #3a2c0e; --exp-fg: #f0c060; --off: #2a2a2e; --off-fg: #c4c4ca;
+  --ok: #5cc28a; --bad: #ff7b6b; --warn: #e3b25a; --teacher: #3987e5;
+  --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overscroll-behavior: none; }
+body { background: var(--bg); color: var(--ink); font: 17px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; -webkit-text-size-adjust: 100%; }
+h1, h2, h3 { margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 5.2vw, 60px); letter-spacing: -.02em; text-align: center; }
+h2 { font-size: clamp(26px, 3.6vw, 42px); letter-spacing: -.01em; text-align: center; margin-bottom: clamp(18px, 3.5vh, 34px); }
+.mono { font-family: ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace; }
+
+/* deck engine (copied from how_it_works.html, trimmed) */
+#deck { position: fixed; inset: 0; overflow: hidden; touch-action: pan-y; }
+.slide { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 40px 28px 84px; display: flex; flex-direction: column;
+  opacity: 0; visibility: hidden; transform: translateX(44px); transition: opacity .45s ease, transform .45s ease, visibility 0s linear .45s; }
+.slide.past { transform: translateX(-44px); }
+.slide.active { opacity: 1; visibility: visible; transform: none; transition: opacity .45s ease, transform .45s ease, visibility 0s; }
+.wrap { width: 100%; max-width: 1080px; margin: auto; }
+.frag { opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .5s ease; }
+.frag.on { opacity: 1; transform: none; }
+#progress { position: fixed; top: 0; left: 0; height: 4px; width: 0; background: var(--ink-2); transition: width .35s ease; z-index: 20; }
+#bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 12px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(6px); border-top: 1px solid var(--border); }
+#bar button { font: inherit; font-size: 18px; line-height: 1; color: var(--ink); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 16px; cursor: pointer; min-height: 42px; min-width: 52px; }
+#bar button:hover { border-color: var(--ink-2); }
+#b-theme { position: absolute; right: 12px; min-width: 42px !important; padding: 8px 10px !important; }
+#counter { font-variant-numeric: tabular-nums; font-size: 15px; color: var(--ink-2); min-width: 54px; text-align: center; }
+#hint { position: absolute; left: 14px; font-size: 13px; color: var(--muted); }
+
+/* shared pieces */
+.dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-2); opacity: 0; }
+.on .dot, .dot.on { opacity: 1; }
+.hconn { position: relative; flex: 0 0 64px; align-self: center; height: 2px; background: var(--border); }
+.hconn .dot { top: -3.5px; left: 0; animation: flowX 1.6s linear infinite; }
+.hconn .dot + .dot { animation-delay: .8s; }
+.hconn .dot.back { animation-name: flowXBack; }
+@keyframes flowX { from { left: -4px; } to { left: calc(100% - 5px); } }
+@keyframes flowXBack { from { left: calc(100% - 5px); } to { left: -4px; } }
+@keyframes flowY { from { top: -4px; } to { top: calc(100% - 5px); } }
+@keyframes flowYBack { from { top: calc(100% - 5px); } to { top: -4px; } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ink-2) 40%, transparent); } 50% { box-shadow: 0 0 0 9px transparent; } }
+
+/* svg diagrams */
+svg text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.ln { fill: none; stroke: var(--muted); stroke-width: 1.8; }
+.ln.warnln { stroke: var(--warn); stroke-width: 2; }
+.draw { stroke-dasharray: 1 1; stroke-dashoffset: 1; transition: stroke-dashoffset .75s ease .05s; }
+.on .draw, .draw.on { stroke-dashoffset: 0; }
+.ah path { fill: var(--muted); }
+.ahw path { fill: var(--warn); }
+.nd { stroke-width: 1.5; }
+.nd.msg { fill: var(--surface); stroke: var(--ink-2); stroke-dasharray: 5 4; }
+.nd.hn { fill: var(--off); stroke: color-mix(in srgb, var(--off-fg) 35%, transparent); }
+.nd.sol { fill: var(--sol); stroke: color-mix(in srgb, var(--sol-fg) 35%, transparent); }
+.nd.exp { fill: var(--exp); stroke: color-mix(in srgb, var(--exp-fg) 35%, transparent); }
+.nd.oos { fill: var(--off); stroke: color-mix(in srgb, var(--off-fg) 35%, transparent); }
+.nd.none { fill: none; stroke: var(--muted); stroke-dasharray: 4 4; }
+.nd.pulse { animation: strokePulse 1.5s ease-in-out infinite; }
+@keyframes strokePulse { 0%, 100% { stroke: var(--ink-2); stroke-width: 1.5; } 50% { stroke: var(--ink); stroke-width: 3; } }
+.lb { font-size: 16.5px; font-weight: 600; fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+.lb.small { font-size: 13.5px; font-weight: 700; fill: var(--warn); }
+.lb.muted { fill: var(--muted); font-weight: 500; }
+.tg { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 14px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.tg.sol { fill: var(--sol-fg); } .tg.exp { fill: var(--exp-fg); } .tg.oos { fill: var(--off-fg); }
+.stripe.sol { fill: var(--sol-fg); } .stripe.exp { fill: var(--exp-fg); }
+.runner { stroke: var(--surface); stroke-width: 2.5; }
+.runner.sol { fill: var(--sol-fg); } .runner.exp { fill: var(--exp-fg); } .runner.oos { fill: var(--off-fg); }
+
+/* 1 · agent picture */
+.agent-pic { display: flex; align-items: center; justify-content: center; margin-top: clamp(26px, 6vh, 60px); }
+.bubble { display: inline-block; padding: 12px 20px; border-radius: 20px; font-weight: 700; font-size: 19px; white-space: nowrap; }
+.bubble.task { background: var(--task); color: var(--task-fg); border-bottom-left-radius: 5px; }
+.bubble.sol { background: var(--sol); color: var(--sol-fg); border-bottom-right-radius: 5px; }
+.ap-harness { position: relative; padding: 52px 46px 50px; }
+.ap-harness::before { content: ""; position: absolute; inset: 0; border-radius: 30px; background: var(--off);
+  border: 2px dashed color-mix(in srgb, var(--off-fg) 45%, transparent); opacity: 0; transform: scale(.72);
+  transition: opacity .6s ease, transform .7s cubic-bezier(.2,.8,.25,1.15); }
+.ap-harness.shown::before { opacity: 1; transform: none; }
+.ap-label { position: absolute; left: 0; right: 0; text-align: center; color: var(--off-fg); opacity: 0; transition: opacity .5s ease .35s; }
+.ap-label.top { top: 14px; font-weight: 800; font-size: 20px; letter-spacing: .02em; }
+.ap-label.bottom { bottom: 15px; font-size: 15px; }
+.ap-harness.shown .ap-label { opacity: 1; }
+.ap-model { position: relative; background: var(--sol); color: var(--sol-fg); border-radius: 18px; padding: 22px 34px; text-align: center; box-shadow: var(--shadow);
+  border: 2px solid color-mix(in srgb, var(--sol-fg) 30%, transparent); }
+.ap-model b { display: block; font-size: 24px; }
+.ap-model span { display: block; font-size: 15px; margin-top: 2px; }
+.ap-model.busy { animation: modelPulse 1.6s ease-in-out infinite; }
+@keyframes modelPulse { 0%, 100% { transform: none; } 50% { transform: scale(1.04); } }
+.title-hl-sol { color: var(--sol-fg); }
+.title-hl-off { color: var(--off-fg); text-decoration: underline dashed color-mix(in srgb, var(--off-fg) 50%, transparent); text-underline-offset: 7px; }
+
+/* 2 · who does what */
+.who-row { display: flex; align-items: stretch; justify-content: center; }
+.wn { flex: 1 1 0; min-width: 0; max-width: 250px; background: var(--surface); border: 2px solid var(--border); border-radius: 18px; padding: 16px 14px 14px; box-shadow: var(--shadow); text-align: center; }
+.wn h3 { font-size: 20px; margin-bottom: 10px; }
+.wn.pupil { border-color: color-mix(in srgb, var(--task-fg) 55%, transparent); } .wn.pupil h3 { color: var(--task-fg); }
+.wn.harness { border-color: color-mix(in srgb, var(--off-fg) 55%, transparent); } .wn.harness h3 { color: var(--off-fg); }
+.wn.model { border-color: color-mix(in srgb, var(--sol-fg) 55%, transparent); } .wn.model h3 { color: var(--sol-fg); }
+.wn.gemma { border-color: var(--teacher); border-style: dashed; } .wn.gemma h3 { color: var(--teacher); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.chips span { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 15px; font-weight: 600; opacity: 0; transform: scale(.7);
+  transition: opacity .35s ease, transform .35s cubic-bezier(.2,.8,.25,1.3); transition-delay: calc(var(--i, 0) * 140ms + 250ms); }
+.wn.on .chips span { opacity: 1; transform: none; }
+.wn.pupil .chips span { background: var(--task); color: var(--task-fg); }
+.wn.harness .chips span { background: var(--off); color: var(--off-fg); }
+.wn.model .chips span { background: var(--sol); color: var(--sol-fg); }
+.wn.gemma .chips span { background: color-mix(in srgb, var(--teacher) 15%, var(--surface)); color: var(--teacher); }
+.hconn.dash { background: none; border-top: 2px dashed var(--teacher); height: 0; }
+.hconn.dash em { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); font-size: 13px; color: var(--teacher); font-style: italic; white-space: nowrap; }
+
+/* 3 · one turn */
+.turn-svg { display: block; width: 100%; max-width: 640px; max-height: calc(100vh - 190px); margin: 0 auto; overflow: visible; }
+
+/* 4 · context rules */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; justify-content: center; font-size: 15px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 15px; height: 15px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; border: 1.5px solid; }
+.ctx-stage { max-width: 760px; margin: 16px auto 0; }
+.oos-row { display: flex; align-items: center; justify-content: center; gap: 16px; min-height: 64px; margin-bottom: 12px; }
+.blk { position: relative; border-radius: 10px; padding: 9px 11px; margin: 7px 0; display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow: hidden;
+  transition: opacity .5s ease, transform .5s ease, filter .5s ease, max-height .6s ease, padding .6s ease, margin .6s ease; }
+.blk i { display: block; height: 6px; border-radius: 3px; background: currentColor; opacity: .38; }
+.blk.task { background: var(--task); color: var(--task-fg); }
+.blk.q { background: var(--q); color: var(--q-fg); }
+.blk.sol { background: var(--sol); color: var(--sol-fg); }
+.blk.exp { background: var(--exp); color: var(--exp-fg); }
+.blk.off { background: var(--off); color: var(--off-fg); }
+.blk.frag { transform: translateY(-22px); }
+.blk.frag.on { transform: none; }
+.blk.dropped { opacity: .2 !important; transform: scale(.92) !important; filter: saturate(.15); }
+.blk.gone { max-height: 0; padding-top: 0; padding-bottom: 0; margin: 0; opacity: 0 !important; }
+.oos-blk { width: 170px; flex: none; margin: 0; padding-right: 38px; }
+.oos-blk.on { animation: bounceOff 1.1s ease-out both; }
+@keyframes bounceOff { 0% { transform: translateY(-26px); opacity: 0; } 40% { transform: translateY(30px); opacity: 1; } 62% { transform: translateY(-5px); } 100% { transform: none; opacity: .75; } }
+.oos-blk .x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%) scale(.4); font-size: 22px; font-weight: 800; color: var(--bad); opacity: 0; transition: opacity .3s ease .7s, transform .3s ease .7s; }
+.oos-blk.on .x { opacity: 1; transform: translateY(-50%); }
+.oos-cap { font-size: 17px; font-weight: 600; color: var(--ink-2); max-width: 260px; }
+.ctx-frame { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; border: 2px solid var(--border); border-radius: 18px; padding: 12px 14px; background: var(--surface); box-shadow: var(--shadow); }
+.ctx-frame.hit { animation: hit 1s ease-out .35s; }
+@keyframes hit { 0% { box-shadow: 0 0 0 0 transparent; } 25% { box-shadow: 0 -2px 0 5px color-mix(in srgb, var(--bad) 45%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.lane-label { font-size: 16px; font-weight: 700; color: var(--ink-2); text-align: center; margin-bottom: 4px; }
+.lane.thread { border-left: 2px dashed var(--border); padding-left: 14px; }
+.drop-cap { text-align: center; font-size: 17px; font-weight: 600; color: var(--ink-2); margin-top: 14px; }
+
+/* 5 · pilot numbers */
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.stat { text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px 10px 18px; box-shadow: var(--shadow); min-width: 0; }
+.ring { display: block; width: 104px; height: 104px; margin: 0 auto 10px; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 5; }
+.ring .trk { stroke: var(--grid); }
+.ring .val { stroke: var(--ink-2); stroke-linecap: butt; stroke-dasharray: 0 100; transition: stroke-dasharray 1.1s cubic-bezier(.2,.7,.2,1); }
+.stat .num { font-size: clamp(28px, 3.2vw, 40px); font-weight: 700; line-height: 1.05; }
+.stat .num small { font-size: .5em; color: var(--muted); font-weight: 600; }
+.stat .lab { font-size: 15.5px; color: var(--ink-2); margin-top: 6px; }
+.stat .lab .mono { font-size: .92em; }
+.stat { grid-row: 2; }
+.grp { grid-row: 1; text-align: center; font-size: 14.5px; font-weight: 700; color: var(--muted); letter-spacing: .03em; border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+.grp.g1 { grid-column: 1 / 5; } .grp.g2 { grid-column: 5; }
+
+/* 6 · next steps */
+.road { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; --p: 0; }
+.road .track, .road .fill { position: absolute; top: 25px; height: 4px; border-radius: 2px; left: calc(100% / 12); }
+.road .track { right: calc(100% / 12); background: var(--border); }
+.road .fill { width: calc((100% - 100% / 6) * var(--p)); background: var(--ink-2); transition: width .7s ease; }
+.stop { position: relative; text-align: center; min-width: 0; }
+.stop .n { position: relative; z-index: 1; width: 54px; height: 54px; margin: 0 auto 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 3px solid var(--ink-2); font-weight: 800; font-size: 21px; color: var(--ink); transition: background .4s, color .4s; }
+.stop.cur .n { background: var(--ink); color: var(--bg); animation: pulse 1.8s ease-in-out infinite; }
+.stop .t { font-size: 17px; font-weight: 650; line-height: 1.3; }
+.stop .t .tag { display: inline-block; font-size: 13px; font-weight: 700; color: var(--bad); border: 1.5px solid currentColor; border-radius: 6px; padding: 0 5px; margin-top: 4px; }
+.stop .sub { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 6px; }
+.stop .sub span { font-size: 13.5px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); border-radius: 999px; padding: 2px 8px; }
+
+/* 7 · open decisions */
+.forks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; max-width: 920px; margin: 0 auto; }
+.fork { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px 18px 20px; box-shadow: var(--shadow); text-align: center; min-width: 0; }
+.fq { font-size: clamp(19px, 2.2vw, 24px); font-weight: 700; }
+.forkwrap { position: relative; margin: 8px 0 4px; }
+.forkwrap svg { display: block; width: 100%; height: auto; }
+.forkwrap .ln { stroke-width: 2.2; }
+.qdot { position: absolute; left: 50%; top: -2px; transform: translateX(-50%); width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--bg);
+  font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 17px; animation: pulse 1.8s ease-in-out infinite; }
+.fopts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opt { justify-self: center; align-self: start; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 14px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface-2); font-weight: 700; font-size: 17px; opacity: 0; transform: scale(.8); transition: opacity .35s ease .6s, transform .35s cubic-bezier(.2,.8,.25,1.3) .6s; }
+.fork.on .opt { opacity: 1; transform: none; }
+.opt em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--ink-2); border: 1.5px solid var(--ink-2); border-radius: 6px; padding: 0 6px; }
+.fnote { margin-top: 14px; font-size: 15px; color: var(--ink-2); font-weight: 600; }
+
+/* phone and narrow */
+@media (max-width: 760px) {
+  .agent-pic, .who-row { flex-direction: column; align-items: center; }
+  .hconn { flex: 0 0 34px; width: 2px; height: auto; align-self: center; }
+  .hconn .dot { left: -3.5px; top: 0; animation-name: flowY; }
+  .hconn .dot.back { animation-name: flowYBack; }
+  .hconn.dash { border-top: 0; border-left: 2px dashed var(--teacher); width: 0; }
+  .hconn.dash em { left: 12px; bottom: auto; top: 50%; transform: translateY(-50%); }
+  .wn { max-width: 420px; width: 100%; padding: 12px 12px 12px; }
+  .wn h3 { font-size: 18px; margin-bottom: 8px; }
+  .stats { grid-template-columns: minmax(0, 1fr); gap: 8px; max-width: 420px; margin: 0 auto; }
+  .stat { grid-row: auto; display: grid; grid-template-columns: 64px minmax(0, 1fr); column-gap: 14px; text-align: left; align-items: center; padding: 10px 14px; }
+  .grp, .grp.g1, .grp.g2 { grid-row: auto; grid-column: auto; text-align: left; margin-top: 4px; }
+  .ring { width: 60px; height: 60px; margin: 0; grid-row: span 2; }
+  .ring circle { stroke-width: 6; }
+  .stat .lab { margin-top: 0; }
+  .road { grid-template-columns: minmax(0, 1fr); gap: 12px; max-width: 440px; margin: 0 auto; }
+  .road .track, .road .fill { left: 25px; top: 27px; width: 4px; }
+  .road .track { right: auto; bottom: 27px; height: auto; }
+  .road .fill { height: calc((100% - 54px) * var(--p)); transition: height .7s ease; }
+  .stop { display: flex; align-items: center; gap: 14px; text-align: left; }
+  .stop .n { margin: 0; flex: none; }
+  .stop .sub { justify-content: flex-start; }
+  .forks { grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: 440px; }
+}
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .slide { padding: 30px 16px 80px; }
+  #hint { display: none; }
+  #b-theme { right: 8px; }
+  .ap-harness { padding: 48px 26px 46px; }
+  .ap-model { padding: 16px 22px; }
+  .ap-model b { font-size: 21px; }
+  .bubble { font-size: 17px; padding: 10px 16px; }
+  .oos-row { gap: 10px; }
+  .oos-blk { width: 120px; }
+  .oos-cap, .drop-cap { font-size: 15px; }
+  .ctx-frame { gap: 10px; padding: 10px; }
+  .lane.thread { padding-left: 10px; }
+  .lane-label { font-size: 14.5px; }
+  .opt { font-size: 15.5px; padding: 8px 10px; }
+}
+.no-anim *, .no-anim *::before, .no-anim *::after { transition: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .slide, .frag, .blk, .chips span, .opt, .draw, .ring .val, .road .fill, .ap-harness::before, .ap-label { transition: none !important; }
+  .dot, .ap-model.busy, .oos-blk.on, .ctx-frame.hit, .stop.cur .n, .qdot, .nd.pulse { animation: none !important; }
+  .hconn .dot { left: 45%; }
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<main id="deck">
+
+<!-- 1 · agent = small model + harness ───────────────────────── -->
+<section class="slide" id="s-agent" data-title="Agent = small model + harness">
+<div class="wrap">
+  <h1>Agent = <span class="title-hl-sol">small model</span> + <span class="title-hl-off">harness</span></h1>
+  <div class="agent-pic" role="img" aria-label="A pupil message enters the harness, the small model inside writes one block, a reply goes back">
+    <div class="frag" data-f="2"><span class="bubble task">pupil</span></div>
+    <div class="hconn frag" data-f="2"><i class="dot"></i><i class="dot"></i></div>
+    <div class="ap-harness" data-cls="shown@1">
+      <span class="ap-label top">harness</span>
+      <div class="ap-model" data-cls="busy@2"><b>small model</b><span>one block</span></div>
+      <span class="ap-label bottom">everything else</span>
+    </div>
+    <div class="hconn frag" data-f="2"><i class="dot"></i><i class="dot"></i></div>
+    <div class="frag" data-f="2"><span class="bubble sol">reply</span></div>
+  </div>
+</div>
+</section>
+
+<!-- 2 · who does what ───────────────────────────────────────── -->
+<section class="slide" id="s-who" data-title="Who does what">
+<div class="wrap">
+  <h2>Who does what</h2>
+  <div class="who-row">
+    <div class="wn pupil frag" data-f="1">
+      <h3>template pupil</h3>
+      <div class="chips"><span style="--i:0">writes follow-ups</span></div>
+    </div>
+    <div class="hconn frag" data-f="2"><i class="dot"></i><i class="dot"></i></div>
+    <div class="wn harness frag" data-f="2">
+      <h3>harness</h3>
+      <div class="chips"><span style="--i:0">context</span><span style="--i:1">checks</span><span style="--i:2">re-ask</span><span style="--i:3">off-topic reply</span><span style="--i:4">memory</span></div>
+    </div>
+    <div class="hconn frag" data-f="3"><i class="dot"></i><i class="dot back"></i></div>
+    <div class="wn model frag" data-f="3">
+      <h3>small model</h3>
+      <div class="chips"><span style="--i:0">one block</span><span style="--i:1">first tag = route</span></div>
+    </div>
+    <div class="hconn dash frag" data-f="4"><em>training</em></div>
+    <div class="wn gemma frag" data-f="4">
+      <h3>Gemma · teacher</h3>
+      <div class="chips"><span style="--i:0">labels</span><span style="--i:1">explanations</span><span style="--i:2">soft labels</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 3 · one turn ─────────────────────────────────────────────── -->
+<section class="slide" id="s-turn" data-title="One agent turn">
+<div class="wrap">
+  <h2>One agent turn</h2>
+  <svg class="turn-svg" viewBox="0 0 440 372" role="img" aria-label="message, route by the first tag, three branches, check, re-ask once, store">
+    <defs>
+      <marker id="ah" class="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker>
+      <marker id="ahw" class="ahw" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker>
+      <path id="run-sol" d="M220,24 V102 C220,140 70,140 70,187 V342"/>
+      <path id="run-exp" d="M220,24 V342"/>
+      <path id="run-oos" d="M220,24 V102 C220,140 370,140 370,187 V342"/>
+    </defs>
+    <g>
+      <rect class="nd msg" x="160" y="6" width="120" height="36" rx="18"/>
+      <text class="lb" x="220" y="24">message</text>
+    </g>
+    <g class="frag" data-f="1">
+      <path class="ln draw" pathLength="1" d="M220,42 V79" marker-end="url(#ah)"/>
+      <rect class="nd hn" data-cls="pulse@1-1" x="120" y="82" width="200" height="40" rx="11"/>
+      <text class="lb" x="220" y="102">route: first tag</text>
+    </g>
+    <g class="frag" data-f="2">
+      <path class="ln draw" pathLength="1" d="M220,122 C220,146 70,140 70,167" marker-end="url(#ah)"/>
+      <path class="ln draw" pathLength="1" d="M220,122 V167" marker-end="url(#ah)"/>
+      <path class="ln draw" pathLength="1" d="M220,122 C220,146 370,140 370,167" marker-end="url(#ah)"/>
+      <rect class="nd sol" x="7" y="170" width="126" height="34" rx="9"/><text class="tg sol" x="70" y="187">&lt;solution&gt;</text>
+      <rect class="nd exp" x="157" y="170" width="126" height="34" rx="9"/><text class="tg exp" x="220" y="187">&lt;explanation&gt;</text>
+      <rect class="nd oos" x="307" y="170" width="126" height="34" rx="9"/><text class="tg oos" x="370" y="187">&lt;out_of_scope&gt;</text>
+    </g>
+    <g class="frag" data-f="3">
+      <path class="ln draw" pathLength="1" d="M70,204 V245" marker-end="url(#ah)"/>
+      <path class="ln draw" pathLength="1" d="M220,204 V245" marker-end="url(#ah)"/>
+      <path class="ln draw" pathLength="1" d="M370,204 V245" marker-end="url(#ah)"/>
+      <rect class="nd hn" x="30" y="248" width="80" height="36" rx="10"/><text class="lb" x="70" y="266">check</text>
+      <rect class="nd hn" x="180" y="248" width="80" height="36" rx="10"/><text class="lb" x="220" y="266">check</text>
+      <rect class="nd hn" x="317" y="248" width="106" height="36" rx="10"/><text class="lb" x="370" y="266">fixed reply</text>
+    </g>
+    <g class="frag" data-f="4">
+      <path class="ln warnln draw" pathLength="1" d="M100,248 V208" marker-end="url(#ahw)"/>
+      <path class="ln warnln draw" pathLength="1" d="M190,248 V208" marker-end="url(#ahw)"/>
+      <text class="lb small" x="145" y="218">re-ask</text>
+      <text class="lb small" x="145" y="235">once</text>
+    </g>
+    <g class="frag" data-f="5">
+      <path class="ln draw" pathLength="1" d="M70,284 V321" marker-end="url(#ah)"/>
+      <path class="ln draw" pathLength="1" d="M220,284 V321" marker-end="url(#ah)"/>
+      <path class="ln draw" pathLength="1" d="M370,284 V321" marker-end="url(#ah)"/>
+      <rect class="nd hn" x="15" y="324" width="110" height="36" rx="10"/><rect class="stripe sol" x="15" y="330" width="5" height="24" rx="2"/>
+      <text class="lb" x="72" y="342">main line</text>
+      <rect class="nd hn" x="165" y="324" width="110" height="36" rx="10"/><rect class="stripe exp" x="165" y="330" width="5" height="24" rx="2"/>
+      <text class="lb" x="222" y="342">side thread</text>
+      <rect class="nd none" x="320" y="324" width="100" height="36" rx="10"/>
+      <text class="lb muted" x="370" y="342">not stored</text>
+    </g>
+    <g class="frag" data-f="6">
+      <circle class="runner sol" r="6"><animateMotion dur="3.6s" repeatCount="indefinite" begin="0s"><mpath href="#run-sol"/></animateMotion></circle>
+      <circle class="runner exp" r="6"><animateMotion dur="3.6s" repeatCount="indefinite" begin="1.2s"><mpath href="#run-exp"/></animateMotion></circle>
+      <circle class="runner oos" r="6"><animateMotion dur="3.6s" repeatCount="indefinite" begin="2.4s"><mpath href="#run-oos"/></animateMotion></circle>
+    </g>
+  </svg>
+</div>
+</section>
+
+<!-- 4 · context rules ────────────────────────────────────────── -->
+<section class="slide" id="s-context" data-title="Context rules">
+<div class="wrap">
+  <h2>Context rules</h2>
+  <div class="legend">
+    <span><i style="background:var(--task);border-color:var(--task-fg)"></i>task</span>
+    <span><i style="background:var(--sol);border-color:var(--sol-fg)"></i>solution</span>
+    <span><i style="background:var(--q);border-color:var(--q-fg)"></i>question</span>
+    <span><i style="background:var(--exp);border-color:var(--exp-fg)"></i>explanation</span>
+    <span><i style="background:var(--off);border-color:var(--off-fg)"></i>off-topic</span>
+  </div>
+  <div class="ctx-stage">
+    <div class="oos-row">
+      <div class="blk off oos-blk frag" data-f="3"><i></i><i style="width:58%"></i><span class="x">✕</span></div>
+      <div class="oos-cap frag" data-f="3">never enters the context</div>
+    </div>
+    <div class="ctx-frame" data-cls="hit@3-3">
+      <div class="lane main">
+        <div class="lane-label">main line</div>
+        <div class="blk task"><i></i><i style="width:66%"></i></div>
+        <div class="blk sol"><i style="width:72%"></i><i style="width:80%"></i><i style="width:50%"></i></div>
+        <div class="blk task frag" data-f="4"><i></i><i style="width:48%"></i></div>
+        <div class="blk sol frag" data-f="5"><i style="width:68%"></i><i style="width:84%"></i><i style="width:42%"></i></div>
+      </div>
+      <div class="lane thread">
+        <div class="lane-label">side thread</div>
+        <div class="blk q frag" data-f="1" data-cls="dropped@4 gone@5"><i style="width:84%"></i></div>
+        <div class="blk exp frag" data-f="1" data-cls="dropped@4 gone@5"><i></i><i style="width:60%"></i></div>
+        <div class="blk q frag" data-f="2" data-cls="dropped@4 gone@5"><i style="width:70%"></i></div>
+        <div class="blk exp frag" data-f="2" data-cls="dropped@4 gone@5"><i></i><i style="width:46%"></i></div>
+      </div>
+    </div>
+    <div class="drop-cap frag" data-f="4">new task drops the thread</div>
+  </div>
+</div>
+</section>
+
+<!-- 5 · pilot numbers ────────────────────────────────────────── -->
+<section class="slide" id="s-pilot" data-title="Pilot numbers">
+<div class="wrap">
+  <h2>Pilots, Gemma as tutor</h2>
+  <div class="stats">
+    <div class="grp g1 frag" data-f="1">template sweep v2</div>
+    <div class="stat frag" data-f="1" data-num="229" data-den="239" title="Template sweep v2: what-if messages routed to a solution">
+      <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="16" pathLength="100"/><circle class="val" cx="20" cy="20" r="16" pathLength="100"/></svg>
+      <div class="num"><span class="n">229</span><small>/239</small></div><div class="lab">what-ifs routed</div>
+    </div>
+    <div class="stat frag" data-f="2" data-num="221" data-den="229" title="Template sweep v2: the what-if answer equals the problem's code run again">
+      <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="16" pathLength="100"/><circle class="val" cx="20" cy="20" r="16" pathLength="100"/></svg>
+      <div class="num"><span class="n">221</span><small>/229</small></div><div class="lab">what-if answer = code</div>
+    </div>
+    <div class="stat frag" data-f="3" data-num="101" data-den="102" title="Template sweep v2: smaller-numbers messages routed as intended">
+      <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="16" pathLength="100"/><circle class="val" cx="20" cy="20" r="16" pathLength="100"/></svg>
+      <div class="num"><span class="n">101</span><small>/102</small></div><div class="lab">smaller numbers routed</div>
+    </div>
+    <div class="stat frag" data-f="4" data-num="194" data-den="200" title="Template sweep v2: off-topic sample routed out of scope">
+      <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="16" pathLength="100"/><circle class="val" cx="20" cy="20" r="16" pathLength="100"/></svg>
+      <div class="num"><span class="n">194</span><small>/200</small></div><div class="lab">off-topic caught</div>
+    </div>
+    <div class="grp g2 frag" data-f="5">full harness run</div>
+    <div class="stat frag" data-f="5" data-num="30" data-den="31" title="End-to-end harness run: questions routed to an explanation (the one misroute cascaded: 44 instead of 2)">
+      <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="trk" cx="20" cy="20" r="16" pathLength="100"/><circle class="val" cx="20" cy="20" r="16" pathLength="100"/></svg>
+      <div class="num"><span class="n">30</span><small>/31</small></div><div class="lab">questions routed</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- 6 · next steps ───────────────────────────────────────────── -->
+<section class="slide" id="s-next" data-title="Next steps">
+<div class="wrap">
+  <h2>Next steps</h2>
+  <div class="road" id="road">
+    <span class="track"></span><span class="fill"></span>
+    <div class="stop frag" data-f="1"><span class="n">1</span><div class="t">Part-1 class-prior collapse<br><span class="tag">X-C1</span></div></div>
+    <div class="stop frag" data-f="2"><span class="n">2</span><div class="t">Fix pre-slice issues</div></div>
+    <div class="stop frag" data-f="3"><span class="n">3</span><div class="t">Thin slice + baselines</div></div>
+    <div class="stop frag" data-f="4"><span class="n">4</span><div class="t">Compute decision, full run</div></div>
+    <div class="stop frag" data-f="5"><span class="n">5</span><div class="t">Evaluate<div class="sub"><span>gold / own history</span><span>SVAMP</span><span>human follow-ups</span></div></div></div>
+    <div class="stop frag" data-f="6"><span class="n">6</span><div class="t">Write</div></div>
+  </div>
+</div>
+</section>
+
+<!-- 7 · open decisions ───────────────────────────────────────── -->
+<section class="slide" id="s-open" data-title="Open decisions">
+<div class="wrap">
+  <h2>Your decisions</h2>
+  <div class="forks">
+    <div class="fork frag" data-f="1">
+      <div class="fq">May cloud runs go unattended?</div>
+      <div class="forkwrap">
+        <svg viewBox="0 0 300 56" aria-hidden="true"><path class="ln draw" pathLength="1" d="M150,4 C150,34 75,26 75,54"/><path class="ln draw" pathLength="1" d="M150,4 C150,34 225,26 225,54"/></svg>
+        <span class="qdot">?</span>
+      </div>
+      <div class="fopts"><span class="opt">yes</span><span class="opt">only while present<em>current rule</em></span></div>
+    </div>
+    <div class="fork frag" data-f="2">
+      <div class="fq">One teacher precision</div>
+      <div class="forkwrap">
+        <svg viewBox="0 0 300 56" aria-hidden="true"><path class="ln draw" pathLength="1" d="M150,4 C150,34 75,26 75,54"/><path class="ln draw" pathLength="1" d="M150,4 C150,34 225,26 225,54"/></svg>
+        <span class="qdot">?</span>
+      </div>
+      <div class="fopts"><span class="opt">bf16 · cloud</span><span class="opt">NF4 · local<em>used in pilots</em></span></div>
+      <div class="fnote">never mixed</div>
+    </div>
+  </div>
+</div>
+</section>
+
+</main>
+
+<nav id="bar" aria-label="Slide navigation">
+  <span id="hint">← → space</span>
+  <button id="b-prev" aria-label="Previous">←</button>
+  <span id="counter">1 / 7</span>
+  <button id="b-next" aria-label="Next">→</button>
+  <button id="b-theme" aria-label="Toggle theme">◐</button>
+</nav>
+<pre id="selftest" hidden></pre>
+
+<script>
+(function () {
+  "use strict";
+  var errors = [];
+  function noteError(message) { errors.push(String(message)); document.documentElement.setAttribute("data-errors", errors.join(" | ")); }
+  window.addEventListener("error", function (event) { noteError(event.message); });
+
+  var themeParameter = (location.search.match(/theme=(light|dark)/) || [])[1];
+  try { var savedTheme = localStorage.getItem("harness-deck-theme"); if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme; } catch (error) { /* storage unavailable */ }
+  if (themeParameter) document.documentElement.dataset.theme = themeParameter;
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var hooks = {};
+  var current = 0, step = 0;
+  var instant = false;
+
+  function fragsOf(slide) { return Array.prototype.slice.call(slide.querySelectorAll(".frag")); }
+  function maxStep(slide) {
+    var maximum = 0;
+    fragsOf(slide).forEach(function (frag) { maximum = Math.max(maximum, parseInt(frag.dataset.f || "0", 10)); });
+    slide.querySelectorAll("[data-cls]").forEach(function (element) {
+      element.dataset.cls.split(/\s+/).forEach(function (rule) {
+        var from = parseInt((rule.split("@")[1] || "0").split("-")[0], 10);
+        if (!isNaN(from)) maximum = Math.max(maximum, from);
+      });
+    });
+    return maximum;
+  }
+  function applyStep(slide, k) {
+    fragsOf(slide).forEach(function (frag) { frag.classList.toggle("on", parseInt(frag.dataset.f || "0", 10) <= k); });
+    slide.querySelectorAll("[data-cls]").forEach(function (element) {
+      element.dataset.cls.split(/\s+/).forEach(function (rule) {
+        var parts = rule.split("@"), name = parts[0], range = (parts[1] || "0").split("-");
+        var from = parseInt(range[0], 10), until = range.length > 1 ? parseInt(range[1], 10) : Infinity;
+        element.classList.toggle(name, k >= from && k <= until);
+      });
+    });
+    var hook = hooks[slide.id];
+    if (hook) { try { hook(k, slide); } catch (error) { noteError(slide.id + ": " + error.message); } }
+  }
+  function updateChrome() {
+    var slide = slides[current], maximum = maxStep(slide);
+    document.getElementById("counter").textContent = (current + 1) + " / " + slides.length;
+    var fraction = (current + (maximum ? (step + 1) / (maximum + 1) : 1)) / slides.length;
+    document.getElementById("progress").style.width = (Math.min(1, fraction) * 100).toFixed(2) + "%";
+    try { history.replaceState(null, "", location.search + "#" + (current + 1) + (step ? "." + step : "")); } catch (error) { /* file:// may refuse */ }
+  }
+  function show(index, k) {
+    index = Math.max(0, Math.min(slides.length - 1, index));
+    var changed = index !== current;
+    slides.forEach(function (slide, position) {
+      slide.classList.toggle("active", position === index);
+      slide.classList.toggle("past", position < index);
+      slide.setAttribute("aria-hidden", position === index ? "false" : "true");
+    });
+    current = index;
+    var maximum = maxStep(slides[index]);
+    step = k === "end" ? maximum : Math.max(0, Math.min(maximum, k || 0));
+    applyStep(slides[index], step);
+    if (changed && k !== "end") slides[index].scrollTop = 0;
+    updateChrome();
+  }
+  function revealIntoView() {
+    var slide = slides[current];
+    var newest = fragsOf(slide).filter(function (frag) { return parseInt(frag.dataset.f || "0", 10) === step; });
+    var last = newest[newest.length - 1];
+    if (!last) return;
+    var box = last.getBoundingClientRect();
+    if (box.bottom > window.innerHeight - 70 || box.top < 0) last.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+  function next() {
+    var maximum = maxStep(slides[current]);
+    if (step < maximum) { step++; applyStep(slides[current], step); updateChrome(); setTimeout(revealIntoView, 60); }
+    else if (current < slides.length - 1) show(current + 1, 0);
+  }
+  function previous() {
+    if (step > 0) { step--; applyStep(slides[current], step); updateChrome(); }
+    else if (current > 0) show(current - 1, "end");
+  }
+
+  function toggleTheme() {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("harness-deck-theme", root.dataset.theme); } catch (error) { /* storage unavailable */ }
+  }
+
+  // ── input: keys, click, swipe, buttons ────────────────────
+  document.addEventListener("keydown", function (event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    var onButton = event.target && event.target.tagName === "BUTTON";
+    if (event.key === "ArrowRight" || event.key === "ArrowDown" || event.key === "PageDown" || ((event.key === " " || event.key === "Enter") && !onButton)) { event.preventDefault(); next(); }
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp" || event.key === "PageUp" || event.key === "Backspace") { event.preventDefault(); previous(); }
+    else if (event.key === "Home") { event.preventDefault(); show(0, 0); }
+    else if (event.key === "End") { event.preventDefault(); show(slides.length - 1, "end"); }
+    else if (event.key === "t" || event.key === "T") { event.preventDefault(); toggleTheme(); }
+  });
+  document.getElementById("deck").addEventListener("click", function (event) {
+    var selection = window.getSelection ? String(window.getSelection()) : "";
+    if (selection.length > 0) return;
+    next();
+  });
+  var touchStart = null;
+  document.getElementById("deck").addEventListener("touchstart", function (event) {
+    touchStart = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
+  }, { passive: true });
+  document.getElementById("deck").addEventListener("touchend", function (event) {
+    if (!touchStart) return;
+    var dx = event.changedTouches[0].clientX - touchStart.x, dy = event.changedTouches[0].clientY - touchStart.y;
+    touchStart = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) next(); else previous(); }
+  }, { passive: true });
+  document.getElementById("b-next").addEventListener("click", function (event) { event.stopPropagation(); next(); });
+  document.getElementById("b-prev").addEventListener("click", function (event) { event.stopPropagation(); previous(); });
+  document.getElementById("b-theme").addEventListener("click", function (event) { event.stopPropagation(); toggleTheme(); });
+
+  // ── slide 5: rings fill and numbers count up ─────────────
+  function countUp(element, target) {
+    if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) { element.textContent = target; return; }
+    var started = Date.now(), duration = 1000;
+    element.dataset.running = "1";
+    function tick() {
+      if (element.dataset.running !== "1") return;
+      var progress = Math.min(1, (Date.now() - started) / duration), eased = 1 - Math.pow(1 - progress, 3);
+      element.textContent = Math.round(target * eased);
+      if (progress < 1) setTimeout(tick, 30); else element.dataset.running = "";
+    }
+    tick();
+  }
+  hooks["s-pilot"] = function (k, slide) {
+    slide.querySelectorAll(".stat").forEach(function (stat) {
+      var visible = parseInt(stat.dataset.f, 10) <= k;
+      var number = stat.querySelector(".n"), ring = stat.querySelector(".ring .val");
+      var numerator = parseInt(stat.dataset.num, 10), denominator = parseInt(stat.dataset.den, 10);
+      ring.style.strokeDasharray = visible ? (numerator / denominator * 100).toFixed(2) + " 100" : "0 100";
+      if (visible && stat.dataset.shown !== "1") { stat.dataset.shown = "1"; countUp(number, numerator); }
+      if (!visible) { stat.dataset.shown = ""; number.dataset.running = ""; number.textContent = "0"; }
+    });
+  };
+
+  // ── slide 6: progress along the road ─────────────────────
+  hooks["s-next"] = function (k, slide) {
+    var road = slide.querySelector("#road");
+    road.style.setProperty("--p", (Math.max(0, k - 1) / 5).toFixed(3));
+    slide.querySelectorAll(".stop").forEach(function (stop) { stop.classList.toggle("cur", parseInt(stop.dataset.f, 10) === k); });
+  };
+
+  // ── self-test: every step, overflow, visible words ───────
+  function visibleTextNodes(slide) {
+    var found = [], walker = document.createTreeWalker(slide, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      var node = walker.currentNode, element = node.parentElement;
+      if (!element || !/[A-Za-z0-9]/.test(node.nodeValue)) continue;
+      if (element.closest("title, desc, script, style, defs")) continue;
+      if (!element.getClientRects().length) continue;
+      var box = element.getBoundingClientRect();
+      if (box.width < 1 || box.height < 1) continue;
+      var opacity = 1, hidden = false;
+      for (var ancestor = element; ancestor && ancestor !== slide.parentElement; ancestor = ancestor.parentElement) {
+        var style = getComputedStyle(ancestor);
+        if (style.display === "none" || style.visibility === "hidden") { hidden = true; break; }
+        opacity *= parseFloat(style.opacity);
+      }
+      if (hidden || opacity < 0.1) continue;
+      found.push(node);
+    }
+    return found;
+  }
+  // a word is a whitespace-separated token with a letter or digit; "/239" right after "229" belongs to that fraction
+  function wordsOf(text) { return text.split(/\s+/).filter(function (word) { return /[A-Za-z0-9]/.test(word) && !/^\/\d/.test(word); }); }
+
+  var hash = (location.hash || "").replace("#", "");
+  if (hash === "selftest") {
+    instant = true;
+    var report = [];
+    document.documentElement.classList.add("no-anim");
+    slides.forEach(function (slide, position) {
+      var maximum = maxStep(slide), seen = [], mostAtOnce = 0, wide = [];
+      for (var k = 0; k <= maximum; k++) {
+        try { show(position, k); } catch (error) { report.push(slide.id + "@" + k + ": " + error.message); }
+        var nodes = visibleTextNodes(slide), count = 0;
+        nodes.forEach(function (node) { count += wordsOf(node.nodeValue).length; if (seen.indexOf(node) < 0) seen.push(node); });
+        mostAtOnce = Math.max(mostAtOnce, count);
+        slide.querySelectorAll("*").forEach(function (element) {
+          var box = element.getBoundingClientRect();
+          if (box.width > 0 && box.right > window.innerWidth + 1) wide.push(element.tagName.toLowerCase() + "." + (element.getAttribute("class") || "") + "@" + k + " right=" + Math.round(box.right));
+        });
+      }
+      var allWords = [];
+      seen.forEach(function (node) { allWords = allWords.concat(wordsOf(node.nodeValue)); });
+      var sideways = slide.scrollWidth > slide.clientWidth + 1 ? " · SCROLLS SIDEWAYS " + slide.scrollWidth + ">" + slide.clientWidth : "";
+      var tall = slide.scrollHeight > slide.clientHeight + 1 ? " · scrolls down " + slide.scrollHeight + ">" + slide.clientHeight : "";
+      report.push((position + 1) + " " + slide.id + ": steps 0-" + maximum + " · words all steps " + allWords.length + " (most at once " + mostAtOnce + ")" +
+        (wide.length ? " · OVERFLOW " + wide.slice(0, 4).join(", ") : "") + sideways + tall + "\n    " + allWords.join(" "));
+    });
+    show(0, 0);
+    var page = document.scrollingElement || document.documentElement;
+    var out = document.getElementById("selftest");
+    out.textContent = "SELFTEST viewport " + window.innerWidth + "x" + window.innerHeight + " · theme " + (document.documentElement.dataset.theme || "system") +
+      " · page scrollWidth " + page.scrollWidth + "\n" + report.join("\n") + "\nERRORS: " + (errors.join(" | ") || "none");
+    document.documentElement.setAttribute("data-selftest", errors.length ? "fail" : "pass");
+  } else {
+    var parts = hash.split(".");
+    var slideNumber = parseInt(parts[0], 10), stepNumber = parseInt(parts[1] || "0", 10);
+    current = -1;
+    show(isNaN(slideNumber) ? 0 : slideNumber - 1, isNaN(stepNumber) ? 0 : stepNumber);
+  }
+})();
+</script>
+</body>
+</html>
