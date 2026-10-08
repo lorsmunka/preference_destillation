@@ -1,6 +1,6 @@
 1) AGENT 1: adversarial code review of the math word-problem items and their checking (functions, items, renumber, prune, similarity, reword, harvest, benchmarks, validator_cases + item data).
 
-2) STATUS: running — snapshot 2026-10-08 00:30
+2) STATUS: DONE (findings final; filed by the main session 2026-10-08; optional step 7a skipped)
 
 3) BRIEF (original, complete):
 You are an ADVERSARIAL CODE REVIEWER for a BSc thesis codebase (LLM distillation). Repo: D:\preference_destillation (Windows; Git Bash available). Read CLAUDE.md first, then thesis_work/domain_specs.txt (math tutor sections) for the intended rules.

@@ -64,3 +64,10 @@ acts on. A reviewer may otherwise call it "structured intent routing".
 - phi-1 random init (implied, not quoted).
 - Whether TinyGSM App. B numbers include the verifier.
 - AlphaGeometry (paywalled).
+
+## Correction (2026-10-08, from the adversarial positioning review)
+- "Not found: a task-derived output vocabulary" no longer holds: VocabTailor (arXiv 2508.15229) builds task-derived
+  static output heads (training-free). What survives: a from-scratch student whose output head is the task vocabulary,
+  trained with KL to the teacher's distribution renormalised over that subset.
+- BabyLM 2025's ban on using a teacher's output distribution applies to the Interaction track only (2502.10645).
+- Recommended framing and full red-team analysis: thesis_work/thesis_positioning.html.
