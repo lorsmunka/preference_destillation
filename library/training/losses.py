@@ -1,6 +1,13 @@
 """The distillation loss: a per-token distribution-matching term (one of several
 divergences — the idea #38 zoo) mixed with per-token cross-entropy on the teacher's
 chosen token. With every dial at its default this is exactly forward-KL + CE.
+
+Temperatures apply to the divergence only (scaled by T^2, as in Hinton et al. 2015, so its
+gradients keep their size as T changes). The cross-entropy term is the plain T=1
+cross-entropy on the hard target, also as in Hinton. Changed 2026-10-08 (code review T-L1):
+runs trained before that used CE(logits / T) * T^2. The two are identical at T=1, so every
+run with distillation_temperature 1.0 (all of E-01) is unaffected; only temperature-annealed
+runs (the early post-gen T 5->3 arms) had a tempered CE term.
 """
 
 import math
@@ -20,10 +27,13 @@ class DistillationLoss:
         """Returns (divergence term, cross-entropy term, combined loss)."""
         student_log_probs = F.log_softmax(student_logits / student_temperature, dim=-1)
         teacher_probs = F.softmax(teacher_logits / teacher_temperature, dim=-1)
+        # Exact log-probabilities: a sharp teacher's tail underflows to 0 in teacher_probs,
+        # and log(clamped probabilities) would cut it off at log(1e-12) = -27.6.
+        teacher_log_probs = F.log_softmax(teacher_logits / teacher_temperature, dim=-1)
 
-        divergence_per_token = self.divergence_per_token(student_log_probs, teacher_probs) * (student_temperature ** 2)
-        ce_per_token = F.cross_entropy(
-            student_logits / student_temperature, target_indices, reduction='none') * (student_temperature ** 2)
+        divergence_per_token = self.divergence_per_token(
+            student_log_probs, teacher_probs, teacher_log_probs) * (student_temperature ** 2)
+        ce_per_token = F.cross_entropy(student_logits, target_indices, reduction='none')
 
         kl_ratio_per_token = self.kl_ratio_per_token(teacher_probs, kl_ratio)
         combined_per_token = kl_ratio_per_token * divergence_per_token + (1 - kl_ratio_per_token) * ce_per_token
@@ -32,16 +42,16 @@ class DistillationLoss:
             return divergence_per_token.mean(), ce_per_token.mean(), combined_per_token.mean()
         return divergence_per_token.sum(), ce_per_token.sum(), combined_per_token.sum()
 
-    def divergence_per_token(self, student_log_probs: torch.Tensor, teacher_probs: torch.Tensor) -> torch.Tensor:
+    def divergence_per_token(self, student_log_probs: torch.Tensor, teacher_probs: torch.Tensor,
+                             teacher_log_probs: torch.Tensor) -> torch.Tensor:
         """One number per token for the chosen divergence, summed over the vocabulary."""
         if self.divergence == 'forward_kl':  # KL(teacher || student) — the classic Hinton direction
             return F.kl_div(student_log_probs, teacher_probs, reduction='none').sum(dim=-1)
-        teacher_log_probs = torch.log(teacher_probs.clamp_min(1e-12))
         student_probs = student_log_probs.exp()
         if self.divergence == 'reverse_kl':  # KL(student || teacher) — mode-seeking
             return (student_probs * (student_log_probs - teacher_log_probs)).sum(dim=-1)
         if self.divergence == 'js':  # Jensen-Shannon: symmetric, bounded
-            mixture_log_probs = torch.log((0.5 * (student_probs + teacher_probs)).clamp_min(1e-12))
+            mixture_log_probs = torch.logaddexp(student_log_probs, teacher_log_probs) - math.log(2)
             teacher_side = (teacher_probs * (teacher_log_probs - mixture_log_probs)).sum(dim=-1)
             student_side = (student_probs * (student_log_probs - mixture_log_probs)).sum(dim=-1)
             return 0.5 * teacher_side + 0.5 * student_side

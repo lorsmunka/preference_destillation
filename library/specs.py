@@ -20,6 +20,10 @@ from typing import Optional, Union
 from library.domain import Domain, as_domain
 from library.shared import DEFAULT_TEACHER_MODEL
 
+# Size of the held-out test set: the last 1024 examples' batch files of the directory, the
+# same set whatever max_training_examples is (see library/training/batch_handler.py).
+DEFAULT_MAX_TEST_EXAMPLES = 1024
+
 
 @dataclass
 class TrainingRun:
@@ -37,8 +41,10 @@ class TrainingRun:
     batch_size: int = 32
     learning_rate: float = 0.0015
     lr_warmup_ratio: float = 0.1
-    max_training_examples: Optional[int] = 8000
-    training_test_ratio: float = 0.8
+    max_training_examples: Optional[int] = 8000          # caps training only; the test set does not move with it
+    training_test_ratio: float = 0.8                     # the last (1 - ratio) of the batch files are the test region
+    max_test_examples: Optional[int] = DEFAULT_MAX_TEST_EXAMPLES   # test set = the region's last N examples' files; None = the whole region
+    shuffle_seed: Optional[int] = None                   # None = batches in file order (every past run); an int shuffles file and example order per epoch
     auxiliary_token_percentage: float = 1.0
     kl_ratio_start: float = 0.99
     kl_ratio_end: float = 0.5

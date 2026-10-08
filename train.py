@@ -38,8 +38,10 @@ RUNS = [
 
 
 def main():
-    run_training(RUNS)
-    print("Done.")
+    if run_training(RUNS):
+        print("Done.")
+    else:
+        print("Stopped. Run it again to resume.")
 
 
 if __name__ == "__main__":

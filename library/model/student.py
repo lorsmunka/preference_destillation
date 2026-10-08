@@ -1,8 +1,9 @@
 """StudentModel — the one place that builds the student, loads a checkpoint, and generates.
 
 Replaces the 4 copies of model construction and the 3 copies of the rollout loop
-(evaluate_model.py, inference.py, top-k tool, trainer). Centralizes the checkpoint load so
-the rotary-buffer pop (which evaluate_model.py / inference.py were missing) happens everywhere.
+(evaluate_model.py, inference.py, top-k tool, trainer). Checkpoints load through
+Transformer.load_weights (strict, the same loader the trainer uses), and generation uses the
+domain's own stop rule (domain.is_stop), as the trainer's evaluation does.
 
 Model path only — reloading the model is allowed here because this is the interactive
 demo/eval/test path, not post-run log analysis. Not exercised in the analytics test pass
@@ -11,10 +12,12 @@ demo/eval/test path, not post-run log analysis. Not exercised in the analytics t
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 
@@ -68,7 +71,6 @@ class StudentModel:
                     f"Run {run.name!r} uses custom domain {info['domain']!r} — pass "
                     f"domain=YourDomain() to analyse it (it isn't one of the built-ins)."
                 )
-        input_vocabulary = load_input_vocabulary(info["domain"], info["teacher_model"])
         model = Transformer(
             domain=domain,
             teacher_model=info["teacher_model"],
@@ -77,21 +79,42 @@ class StudentModel:
             num_heads=info["num_heads"],
             dropout=info.get("dropout", 0.15),
             auxiliary_token_percentage=info.get("auxiliary_token_percentage", 1.0),
-            input_vocabulary=input_vocabulary,
+            input_vocabulary=cls._input_vocabulary(run),
         ).to(device)
+        cls._check_output_vocabulary(run, model, domain)
         cls._load_checkpoint(model, Path(checkpoint_path), device)
         model.eval()
         return cls(model, domain, device)
 
     @staticmethod
+    def _input_vocabulary(run) -> Optional[dict]:
+        """The run's own snapshot (runs trained since 2026-10-08 have one), else the batches'."""
+        run_dir = getattr(run, "run_dir", None)
+        snapshot_path = Path(run_dir) / "input_vocabulary.json" if run_dir is not None else None
+        if snapshot_path is not None and snapshot_path.exists():
+            with open(snapshot_path, encoding="utf-8") as file:
+                return json.load(file)
+        return load_input_vocabulary(run.info["domain"], run.info["teacher_model"])
+
+    @staticmethod
+    def _check_output_vocabulary(run, model, domain: Domain) -> None:
+        """The rebuilt output vocabulary must be the one the run trained with (recorded in
+        info.json since 2026-10-08), or every logit would name the wrong token."""
+        from library.shared.batch_files import vocabulary_fingerprint
+        from library.shared.vocabulary import build_vocabulary
+        recorded = run.info.get("vocabulary_sha1")
+        if recorded is None:
+            return
+        rebuilt = vocabulary_fingerprint(build_vocabulary(model.tokenizer, domain)["token_list"])
+        if rebuilt != recorded:
+            raise ValueError(
+                f"Run {run.name!r} trained with reduced vocabulary {recorded}, but the domain now "
+                f"builds {rebuilt}: its tokens changed since, so this checkpoint cannot be read with it.")
+
+    @staticmethod
     def _load_checkpoint(model, checkpoint_path: Path, device: str) -> None:
         checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
-        state = dict(checkpoint["model_state_dict"])
-        # The fix: these non-persistent rotary buffers must be dropped before load_state_dict.
-        # evaluate_model.py / inference.py omitted this; trainer + top-k did it.
-        state.pop("rotary_embedding.cos_cached", None)
-        state.pop("rotary_embedding.sin_cached", None)
-        model.load_state_dict(state, strict=False)
+        model.load_weights(checkpoint["model_state_dict"])   # strict; drops stored rotary tables
 
     # ── forward primitives ────────────────────────────────────────────
     def _forward(self, remapped_ids: List[int]) -> torch.Tensor:
@@ -125,24 +148,28 @@ class StudentModel:
         prediction_logits = logits[start: start + len(steps), :]
         return {
             "prediction_logits": prediction_logits,
-            "teacher_logits": torch.tensor(teacher_logits, dtype=torch.float32, device=self.device),
+            # rows may be float32 numpy views (.npz batches) or lists (.jsonl): one cast covers both
+            "teacher_logits": torch.from_numpy(np.asarray(teacher_logits, dtype=np.float32)).to(self.device),
             "target_indices": torch.tensor(target_indices, dtype=torch.long, device=self.device),
         }
 
     @torch.no_grad()
     def generate(self, text: str, max_new_tokens: int, temperature: float = 0.0) -> GenerationResult:
-        """Free-generation rollout: stop on the domain stop token or after max_new_tokens.
-        `terminated` records whether the stop token appeared (the natural-termination signal)."""
+        """Free-generation rollout: stop on the domain's stop rule (domain.is_stop, the same
+        rule as the trainer's evaluation) or after max_new_tokens. `terminated` records whether
+        it stopped on the rule (the natural-termination signal)."""
+        from library.model.transformer import IncrementalDecoder  # lazy, like Transformer in from_run
+
         sentence_ids = self.tokenizer.encode(self.domain.student_prompt(text), add_special_tokens=False)
-        remapped_context = self.model.remap_input_tokens(sentence_ids)
+        decoder = IncrementalDecoder(self.model, [self.model.remap_input_tokens(sentence_ids)])
         generated_ids: List[int] = []
-        remapped_generated: List[int] = []
         token_strings: List[str] = []
         predicted_indices: List[int] = []
+        generated_text = ""
         terminated = False
 
         for _ in range(max_new_tokens):
-            logits = self._forward(remapped_context + remapped_generated)[-1]
+            logits = decoder.next_logits()[0]
             if temperature:
                 probabilities = F.softmax(logits / temperature, dim=-1)
                 predicted_index = torch.multinomial(probabilities, num_samples=1).item()
@@ -152,14 +179,14 @@ class StudentModel:
             predicted_indices.append(predicted_index)
             token_id = self.output_token_ids[predicted_index]
             generated_ids.append(token_id)
-            remapped_generated.append(self.model.remap_input_tokens([token_id])[0])
             decoded = self.tokenizer.decode([token_id])
             token_strings.append(decoded)
+            generated_text += decoded
 
-            text_so_far = self.tokenizer.decode(generated_ids, skip_special_tokens=False)
-            if decoded == self.domain.stop_token or self.domain.stop_token in text_so_far:
+            if self.domain.is_stop(decoded, generated_text):
                 terminated = True
                 break
+            decoder.append(self.model.remap_input_tokens([token_id]))
 
         return GenerationResult(
             text=self.tokenizer.decode(generated_ids, skip_special_tokens=True),

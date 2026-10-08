@@ -1,6 +1,14 @@
 """The training loop. Everything that is not the loop itself lives beside it:
 schedules.py (annealed dials), losses.py (the distillation loss), example_encoder.py
-(example -> tensors), evaluator.py (eval passes), checkpoints.py (save / load)."""
+(example -> tensors), evaluator.py (eval passes), checkpoints.py (save / load).
+
+Resuming: a run's progress is the pair state.json (epoch, batch) + the resume checkpoint
+checkpoints/temp_checkpoint.pt (weights, optimizer, step), always written together — on a
+graceful stop and at the end of every epoch. A restart resumes only when the two agree on
+the step; anything else (a session that crashed after its last save, a resume checkpoint
+left over from an earlier stop) is refused with an error instead of training on from the
+wrong weights. The resume checkpoint is deleted once loaded and when the run completes.
+"""
 
 import os
 from time import time
@@ -15,7 +23,7 @@ from library.model.transformer import Transformer
 from library.shared.logging import RunLogger
 from library.tooling.render.plots import plot_training_logs
 from library.training.batch_handler import BatchHandler
-from library.training.checkpoints import load_checkpoint, save_checkpoint
+from library.training.checkpoints import read_checkpoint, save_checkpoint
 from library.training.evaluator import Evaluator
 from library.training.example_encoder import ExampleEncoder
 from library.training.losses import DistillationLoss
@@ -40,17 +48,17 @@ class Trainer:
         self.optimizer = AdamW(model.parameters(), lr=config['learning_rate'])
 
         self.batch_handler = batch_handler
-        batch_count = batch_handler.get_training_batches_radius()[1]
-        self.total_training_steps = self.epoch_count_value * batch_count
+        self.steps_per_epoch = batch_handler.training_batch_count()
+        self.total_training_steps = self.epoch_count_value * self.steps_per_epoch
         self.current_step = 0
 
-        self.schedules = Schedules(config, steps_per_epoch=batch_count,
+        self.schedules = Schedules(config, steps_per_epoch=self.steps_per_epoch,
                                    total_training_steps=self.total_training_steps)
         self.loss = DistillationLoss(
             divergence=config.get('divergence', 'forward_kl'),
             entropy_kl_weighting=config.get('entropy_kl_weighting', 0.0))
         self.encoder = ExampleEncoder(self.model, self.device)
-        self.longest_sequence = 0   # input + target positions, recorded in info.json
+        self.longest_sequence = 0   # longest training input (prompt + teacher steps - 1); eval rollouts not counted
         self.evaluator = Evaluator(
             self.model, self.domain, self.encoder, batch_handler, self.device,
             loss_function=self._compute_loss,
@@ -67,60 +75,112 @@ class Trainer:
         elapsed_time = time() - start_time
         print(
             f"Trainer initialized on {self.device} -> took {elapsed_time:.2f} seconds (T_max={self.total_training_steps})")
+        print(f"Training batches: {self.steps_per_epoch}, test batches: {batch_handler.test_batch_count()}")
         print(f"LR Warmup Steps: {self.schedules.warmup_steps}\n")
 
         if self.logger.should_resume():
-            if os.path.exists(self.temp_checkpoint_path):
-                self.load_checkpoint(self.temp_checkpoint_path)
-                print("Loaded temp checkpoint\n")
-            else:
-                print("Warning: No temp checkpoint found, starting from scratch\n")
+            self._resume()
+        self._apply_learning_rate()   # the first batch already runs at its scheduled (warm-up) rate
 
     def epoch_count(self):
         return self.epoch_count_value
 
+    # ── resuming ──────────────────────────────────────────────────────
+
+    def _resume(self) -> None:
+        epoch, batch = self.logger.current_epoch, self.logger.current_batch
+        expected_step = epoch * self.steps_per_epoch + batch
+        refusal = (f"Cannot resume: state.json says epoch {epoch}, batch {batch} (step {expected_step}), but ")
+        advice = (" The previous session most likely ended without a graceful stop after its last save, so "
+                  "the weights for that point were never written. Delete the run directory "
+                  f"({os.path.dirname(self.checkpoints_dir)}) to train this run from the start.")
+        if not os.path.exists(self.temp_checkpoint_path):
+            raise RuntimeError(refusal + f"there is no resume checkpoint ({self.temp_checkpoint_path})." + advice)
+
+        checkpoint = read_checkpoint(self.temp_checkpoint_path, self.device)
+        saved_step = checkpoint.get('current_step')
+        saved_steps_per_epoch = checkpoint.get('steps_per_epoch', self.steps_per_epoch)
+        if saved_step != expected_step or saved_steps_per_epoch != self.steps_per_epoch:
+            raise RuntimeError(
+                refusal + f"the resume checkpoint is from step {saved_step} with {saved_steps_per_epoch} "
+                f"batches per epoch (this run now has {self.steps_per_epoch})." + advice)
+
+        self._restore(checkpoint)
+        os.remove(self.temp_checkpoint_path)   # used once: it can never be mistaken for a later point
+        print(f"Resumed from the resume checkpoint (epoch {epoch}, batch {batch}, step {self.current_step})\n")
+
+    def _restore(self, checkpoint: dict) -> None:
+        self.model.load_weights(checkpoint['model_state_dict'])
+        self.optimizer = AdamW(self.model.parameters(), lr=self.schedules.learning_rate_peak)
+        if 'optimizer_state_dict' in checkpoint:
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.current_step = checkpoint['current_step']
+        self._apply_learning_rate()
+
+    def _save_resume_point(self, epoch: int, batch: int, train_loss: Optional[float]) -> None:
+        """Writes the resume checkpoint, then state.json, both for (epoch, batch)."""
+        self.save_checkpoint(epoch, train_loss, filepath=self.temp_checkpoint_path, include_optimizer=True)
+        self.logger.current_epoch = epoch
+        self.logger.current_batch = batch
+        self.logger.save()
+
+    def save_epoch_end(self, epoch: int) -> None:
+        """After an epoch's training and eval: the next resume starts at the next epoch."""
+        self._save_resume_point(epoch + 1, 0, train_loss=None)
+
+    def delete_resume_checkpoint(self) -> None:
+        if os.path.exists(self.temp_checkpoint_path):
+            os.remove(self.temp_checkpoint_path)
+
     # ── training ──────────────────────────────────────────────────────
 
-    def train_epoch(self, batch_start: int, batch_end: int, epoch: int, resume_from_batch: int = 0) -> Optional[bool]:
+    def train_epoch(self, epoch: int, resume_from_batch: int = 0) -> bool:
+        """Trains one epoch. Returns False when a stop was requested (progress is saved)."""
         self.model.train()
         total_loss = 0.0
         total_kl_loss = 0.0
         total_ce_loss = 0.0
         total_steps = 0
-        start_batch = max(batch_start, resume_from_batch)
+        last_batch = self.steps_per_epoch - 1
 
         print(
             f"Training Epoch {epoch} with starting learning rate: {self._get_current_learning_rate():.6f}, current KL ratio: {self._get_current_kl_ratio():.6f}, current temperature: {self._get_current_temperature():.6f}\n ")
 
-        for batch_idx in range(start_batch, batch_end):
-            batch_result = self._process_batch(batch_idx, epoch)
-
-            if batch_result is None:
-                return None
-
-            batch_loss, batch_kl_loss, batch_ce_loss, batch_steps = batch_result
+        for position in range(resume_from_batch, self.steps_per_epoch):
+            batch_loss, batch_kl_loss, batch_ce_loss, batch_steps = self._process_batch(position, epoch)
             total_loss += batch_loss
             total_kl_loss += batch_kl_loss
             total_ce_loss += batch_ce_loss
             total_steps += batch_steps
 
-        if total_steps > 0:
-            avg_epoch_loss = total_loss / total_steps
-            avg_epoch_kl_loss = total_kl_loss / total_steps
-            avg_epoch_ce_loss = total_ce_loss / total_steps
-            self.logger.log_train_epoch(
-                epoch, avg_epoch_loss, total_steps, avg_epoch_kl_loss, avg_epoch_ce_loss)
-            self.save_checkpoint(epoch, avg_epoch_loss)
-        else:
-            print(
-                f"No training steps completed in epoch {epoch} (exit requested)")
-            self.logger.current_batch = 0
+            if self.exit_listener.check_exit():
+                print("Exit requested. Saving progress...")
+                if position == last_batch:   # the epoch is fully trained: write its checkpoint before stopping
+                    self._finish_training_epoch(epoch, total_loss, total_kl_loss, total_ce_loss, total_steps)
+                average_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
+                self._save_resume_point(epoch, position + 1, average_batch_loss)
+                return False
 
+        self._finish_training_epoch(epoch, total_loss, total_kl_loss, total_ce_loss, total_steps)
         return True
 
-    def _process_batch(self, batch_idx: int, epoch: int):
+    def _finish_training_epoch(self, epoch: int, total_loss: float, total_kl_loss: float,
+                               total_ce_loss: float, total_steps: int) -> None:
+        epoch_checkpoint_path = os.path.join(self.checkpoints_dir, f'checkpoint_epoch_{epoch}.pt')
+        if total_steps > 0:
+            avg_epoch_loss = total_loss / total_steps
+            self.logger.log_train_epoch(
+                epoch, avg_epoch_loss, total_steps, total_kl_loss / total_steps, total_ce_loss / total_steps)
+            self.save_checkpoint(epoch, avg_epoch_loss)
+        elif not os.path.exists(epoch_checkpoint_path):
+            # Resumed exactly at this epoch's end after a stop on its last batch by older code,
+            # which stopped before writing it: the loaded weights are this epoch's.
+            self.save_checkpoint(epoch, None)
+
+    def _process_batch(self, position: int, epoch: int):
         batch_start_time = time()
-        batch_data = self.batch_handler.get_batch(batch_idx)
+        batch_data = self.batch_handler.get_training_batch(epoch, position)
+        dials_used = self._current_dials()
 
         batch_loss = 0.0
         batch_kl_loss = 0.0
@@ -137,18 +197,24 @@ class Trainer:
             batch_correct += example_correct
 
         self.current_step += 1
-        self._apply_learning_rate()
+        self._apply_learning_rate()   # for the next batch
         print(
-            f"Batch {batch_idx + 1} -> LR: {self._get_current_learning_rate():.8f}, KL ratio: {self._get_current_kl_ratio():.3f}, Temp: {self._get_current_temperature():.3f}")
+            f"Batch {position + 1} -> LR: {dials_used['learning_rate']:.8f}, KL ratio: {dials_used['kl_ratio']:.3f}, Temp: {dials_used['temperature']:.3f}")
 
         self._log_batch_completion(
-            batch_idx, batch_steps, batch_loss, batch_kl_loss, batch_ce_loss, batch_correct, batch_start_time, epoch)
-
-        if self.exit_listener.check_exit():
-            avg = batch_loss / batch_steps if batch_steps > 0 else 0.0
-            return self._handle_exit_request(epoch, avg)
+            position, batch_steps, batch_loss, batch_kl_loss, batch_ce_loss, batch_correct, batch_start_time, epoch, dials_used)
 
         return batch_loss, batch_kl_loss, batch_ce_loss, batch_steps
+
+    def _current_dials(self) -> Dict[str, float]:
+        """The dials this batch trains with (the step counter moves only after the batch)."""
+        return {
+            'learning_rate': self.optimizer.param_groups[0]['lr'],
+            'kl_ratio': self._get_current_kl_ratio(),
+            'temperature': self._get_current_temperature(),
+            'teacher_temperature': self._get_current_teacher_temperature(),
+            'attention_noise': self._get_current_attention_noise(),
+        }
 
     def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
         if len(example['steps']) == 0:
@@ -175,80 +241,77 @@ class Trainer:
 
         return total_loss.item(), kl_loss.item(), ce_loss.item(), num_steps, correct_predictions
 
-    def _log_batch_completion(self, batch_idx: int, batch_steps: int, batch_loss: float, batch_kl_loss: float, batch_ce_loss: float, batch_correct: int, batch_start_time: float, epoch: int):
+    def _log_batch_completion(self, position: int, batch_steps: int, batch_loss: float, batch_kl_loss: float,
+                              batch_ce_loss: float, batch_correct: int, batch_start_time: float, epoch: int,
+                              dials_used: Dict[str, float]):
+        batch_number = position + 1
         batch_elapsed = time() - batch_start_time
         avg_batch_loss = batch_loss / batch_steps if batch_steps > 0 else 0.0
         avg_batch_kl_loss = batch_kl_loss / batch_steps if batch_steps > 0 else 0.0
         avg_batch_ce_loss = batch_ce_loss / batch_steps if batch_steps > 0 else 0.0
         batch_accuracy = batch_correct / batch_steps if batch_steps > 0 else 0.0
 
-        print(f"Batch {batch_idx + 1} (of Epoch {epoch}) processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
+        print(f"Batch {batch_number} (of Epoch {epoch}) processed: {batch_steps} total steps, loss={avg_batch_loss:.4f}, kl={avg_batch_kl_loss:.4f}, ce={avg_batch_ce_loss:.4f}, accuracy={batch_accuracy:.4f} -> took {batch_elapsed:.2f}s\n")
 
         self.logger.log_training_batch(
             epoch=epoch,
-            batch=batch_idx + 1,
+            batch=batch_number,
             steps=batch_steps,
             loss=avg_batch_loss,
             kl_loss=avg_batch_kl_loss,
             ce_loss=avg_batch_ce_loss,
             accuracy=batch_accuracy,
-            learning_rate=self._get_current_learning_rate(),
-            kl_ratio=self._get_current_kl_ratio(),
-            temperature=self._get_current_temperature(),
+            learning_rate=dials_used['learning_rate'],
+            kl_ratio=dials_used['kl_ratio'],
+            temperature=dials_used['temperature'],
             time_seconds=batch_elapsed,
-            teacher_temperature=self._get_current_teacher_temperature(),
-            attention_noise=self._get_current_attention_noise(),
+            teacher_temperature=dials_used['teacher_temperature'],
+            attention_noise=dials_used['attention_noise'],
         )
 
-        if (batch_idx + 1) % 100 == 0:
+        if batch_number % 100 == 0:
             plot_training_logs(self.logs_dir)
         else:
-            until_update = 100 - ((batch_idx + 1) % 100)
+            until_update = 100 - (batch_number % 100)
             mini_eval_part = ""
             if self.mini_eval_frequency > 0:
-                until_mini_eval = self.mini_eval_frequency - ((batch_idx + 1) % self.mini_eval_frequency)
+                until_mini_eval = self.mini_eval_frequency - (batch_number % self.mini_eval_frequency)
                 mini_eval_part = f", {until_mini_eval} until mini-eval"
             print(f"{until_update} until next update{mini_eval_part}\n")
 
-        if self.mini_eval_frequency > 0 and (batch_idx + 1) % self.mini_eval_frequency == 0:
-            test_start, test_end = self.batch_handler.get_test_batches_radius()
-            total_test_batches = test_end - test_start
-            mini_eval_count = min(self.mini_eval_batch_count, total_test_batches)
-            self._run_mini_eval(test_start, test_start + mini_eval_count, epoch, batch_idx + 1)
+        if self.mini_eval_frequency > 0 and batch_number % self.mini_eval_frequency == 0:
+            mini_eval_count = min(self.mini_eval_batch_count, self.batch_handler.test_batch_count())
+            self._run_mini_eval(mini_eval_count, epoch, batch_number)
             plot_training_logs(self.logs_dir)
 
-        self.logger.update_progress(epoch, batch_idx + 1)
-
-    def _handle_exit_request(self, epoch: int, avg_batch_loss: float):
-        print("Exit requested. Saving progress...")
-        self.save_checkpoint(epoch, avg_batch_loss, filepath=self.temp_checkpoint_path, include_optimizer=True)
-        self.logger.save()
-        return None
+        self.logger.update_progress(epoch, batch_number)
 
     # ── evaluation ────────────────────────────────────────────────────
 
-    def eval_epoch(self, batch_start: int, batch_end: int, epoch: int) -> Tuple[float, float, float, float]:
+    def eval_epoch(self, epoch: int) -> Tuple[float, float, float, float]:
         self.model.eval()
-        results = self.evaluator.evaluate_batches(batch_start, batch_end, verbose=True)
+        results = self.evaluator.evaluate_batches(verbose=True)
 
         self.logger.log_eval_epoch(
             epoch, results['avg_loss'], results['teacher_forced_accuracy'],
             results['student_accuracy'], results['task_accuracy'],
             results['confusion_matrices'], results['total_steps'],
             results['avg_kl_loss'], results['avg_ce_loss'],
-            distribution=results['distribution'])
+            distribution={**results['distribution'], **results['baseline']})
 
         dist = results['distribution']
         print(
             f"Eval Loss: {results['avg_loss']:.4f} | KL Loss: {results['avg_kl_loss']:.4f} | CE Loss: {results['avg_ce_loss']:.4f} | TF Accuracy: {results['teacher_forced_accuracy']:.4f} | Student Accuracy: {results['student_accuracy']:.4f} | Task Accuracy: {results['task_accuracy']:.4f}")
+        if results['baseline']:
+            print(f"  majority-class baseline={results['baseline']['majority_baseline']:.4f} task accuracy above it={results['baseline']['task_accuracy_excess']:+.4f}")
         print(
             f"  top{self.eval_top_k}={dist['topk_accuracy']:.4f} overlap={dist['teacher_student_overlap']:.4f} mean_rank={dist['mean_target_rank']:.1f} teacher_H={dist['teacher_entropy']:.3f} student_H={dist['student_entropy']:.3f} ppl={dist['perplexity']:.3f} termination={dist['termination_rate']:.4f}")
         return results['avg_loss'], results['teacher_forced_accuracy'], results['student_accuracy'], results['task_accuracy']
 
-    def _run_mini_eval(self, batch_start: int, batch_end: int, epoch: int, current_batch: int):
-        print(f"\n--- Mini-eval on test batches {batch_start + 1}-{batch_end} ---")
+    def _run_mini_eval(self, batch_count: int, epoch: int, current_batch: int):
+        print(f"\n--- Mini-eval on test batches 1-{batch_count} ---")
         self.model.eval()
-        results = self.evaluator.evaluate_batches(batch_start, batch_end)
+        results = self.evaluator.evaluate_batches(batch_count)
 
         self.logger.log_mini_eval(
             epoch, current_batch, results['teacher_forced_accuracy'],
@@ -293,28 +356,10 @@ class Trainer:
 
     # ── checkpoints ───────────────────────────────────────────────────
 
-    def save_checkpoint(self, epoch: int, train_loss: float, filepath: str = None,
+    def save_checkpoint(self, epoch: int, train_loss: Optional[float], filepath: str = None,
                         include_optimizer: bool = False):
         if filepath is None:
             filepath = os.path.join(self.checkpoints_dir, f'checkpoint_epoch_{epoch}.pt')
         save_checkpoint(filepath, self.model, self.optimizer, epoch, self.current_step,
-                        train_loss, include_optimizer=include_optimizer)
-
-    def load_checkpoint(self, filepath: str) -> int:
-        start_time = time()
-        checkpoint = load_checkpoint(filepath, self.model, self.device)
-
-        self.optimizer = AdamW(self.model.parameters(), lr=self.schedules.learning_rate_peak)
-        if 'optimizer_state_dict' in checkpoint:
-            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-
-        epoch = checkpoint['epoch']
-        if 'current_step' in checkpoint:
-            self.current_step = checkpoint['current_step']
-        else:
-            self.current_step = epoch * self.schedules.steps_per_epoch
-
-        self._apply_learning_rate()
-        print(
-            f"Checkpoint loaded: {filepath} (epoch {epoch}, step {self.current_step}) -> took {time() - start_time:.2f}s\n")
-        return epoch
+                        train_loss, include_optimizer=include_optimizer,
+                        steps_per_epoch=self.steps_per_epoch)

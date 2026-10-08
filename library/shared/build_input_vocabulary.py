@@ -6,7 +6,11 @@ Collects every unique Gemma token ID that appears during training:
   - Step tokens (tokenized individually, same as trainer)
   - Prompt delimiter tokens
 
-Outputs a JSON mapping file: { gemma_token_id -> compact_id }
+Outputs a JSON mapping file: { gemma_token_id -> compact_id }, plus one extra row,
+`unknown_compact_id` (the last id), that every token not seen here maps to at inference
+(e.g. a benchmark problem's unusual word) instead of raising.
+
+    python -m library.shared.build_input_vocabulary
 """
 
 import json
@@ -17,7 +21,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from transformers import AutoTokenizer
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))   # the repo root
 from library.shared.batch_files import batch_paths, read_batch_texts
 from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
 from library.shared.vocabulary import build_vocabulary
@@ -119,6 +123,7 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
 
     sorted_token_ids = sorted(unique_token_ids)
     gemma_id_to_compact_id = {gemma_id: compact_id for compact_id, gemma_id in enumerate(sorted_token_ids)}
+    unknown_compact_id = len(sorted_token_ids)   # appended last, so every seen token keeps its id
 
     output_directory = batches_directory
     output_path = os.path.join(output_directory, "input_vocabulary.json")
@@ -127,7 +132,8 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
         "domain": domain_name,
         "teacher_model": teacher_model,
         "full_vocab_size": full_vocab_size,
-        "compact_vocab_size": len(sorted_token_ids),
+        "compact_vocab_size": len(sorted_token_ids) + 1,
+        "unknown_compact_id": unknown_compact_id,
         "gemma_id_to_compact_id": gemma_id_to_compact_id,
     }
 
@@ -140,7 +146,7 @@ def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
     print(f"  Domain: {domain_name}")
     print(f"  Teacher: {teacher_model}")
     print(f"  Full vocab: {full_vocab_size:,} tokens")
-    print(f"  Input vocab: {len(sorted_token_ids):,} tokens")
+    print(f"  Input vocab: {len(sorted_token_ids):,} tokens + 1 unknown-token row")
     print(f"  Reduction: {reduction_percentage:.1f}%")
     print(f"  Saved to: {output_path}")
 

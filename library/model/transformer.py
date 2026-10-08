@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-from typing import Optional
+from typing import List, Optional
 
 from transformers import AutoTokenizer
 from library.shared import (
@@ -46,14 +46,20 @@ class RotaryEmbedding(nn.Module):
         positions = torch.arange(seq_length, dtype=self.inv_freq.dtype, device=self.inv_freq.device)
         freqs = torch.outer(positions, self.inv_freq)
         emb = torch.cat((freqs, freqs), dim=-1)
-        self.register_buffer('cos_cached', emb.cos())
-        self.register_buffer('sin_cached', emb.sin())
+        # Not saved in checkpoints: the tables are rebuilt from inv_freq at any length.
+        self.register_buffer('cos_cached', emb.cos(), persistent=False)
+        self.register_buffer('sin_cached', emb.sin(), persistent=False)
 
     def forward(self, seq_length: int):
         if seq_length > self.max_seq_length:
             self._build_cache(seq_length)
             self.max_seq_length = seq_length
         return self.cos_cached[:seq_length], self.sin_cached[:seq_length]
+
+    def at_positions(self, position_ids: torch.Tensor):
+        """cos / sin for an explicit position per token ([batch, seq] -> [batch, seq, head_dim])."""
+        self.forward(int(position_ids.max()) + 1)  # grows the tables when needed
+        return self.cos_cached[position_ids], self.sin_cached[position_ids]
 
 
 def apply_rotary_pos_emb(q: torch.Tensor, k: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor):
@@ -66,6 +72,10 @@ def rotate_half(x: torch.Tensor) -> torch.Tensor:
     x1 = x[..., : x.shape[-1] // 2]
     x2 = x[..., x.shape[-1] // 2:]
     return torch.cat((-x2, x1), dim=-1)
+
+
+# Older checkpoints stored the rotary tables; they are rebuilt on demand, so loading drops them.
+ROTARY_CACHE_KEYS = ('rotary_embedding.cos_cached', 'rotary_embedding.sin_cached')
 
 
 class Transformer(nn.Module):
@@ -95,9 +105,13 @@ class Transformer(nn.Module):
                 int(gemma_id): compact_id
                 for gemma_id, compact_id in input_vocabulary['gemma_id_to_compact_id'].items()
             }
+            # The row every token never seen in the batches maps to (vocabularies built
+            # before it existed have none, and an unseen token then raises).
+            self.unknown_input_id = input_vocabulary.get('unknown_compact_id')
         else:
             self.input_vocab_size = self.full_input_vocab_size
             self.input_token_mapping = None
+            self.unknown_input_id = None
 
         self.vocabulary = build_vocabulary(
             self.tokenizer, self.domain, auxiliary_token_percentage)
@@ -142,18 +156,31 @@ class Transformer(nn.Module):
                 torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
             elif isinstance(module, RMSNorm):
                 nn.init.ones_(module.weight)
+        if self.unknown_input_id is not None:
+            with torch.no_grad():   # never trained: an unknown token adds nothing but its position
+                self.input_embedding.weight[self.unknown_input_id].zero_()
 
     def forward(
         self,
         input_ids: torch.Tensor,
-        attention_mask: Optional[torch.Tensor] = None
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.Tensor] = None,
+        layer_caches: Optional[List["LayerCache"]] = None
     ) -> torch.Tensor:
+        """Logits for every position. Training passes only `input_ids`; `position_ids`
+        ([batch, seq]) and `layer_caches` (one LayerCache per layer) are for incremental
+        decoding (IncrementalDecoder), where earlier positions are not recomputed."""
         batch_size, seq_length = input_ids.shape
 
         x = self.input_embedding(input_ids)
         x = self.dropout(x)
 
-        cos, sin = self.rotary_embedding(seq_length)
+        if position_ids is None:
+            cos, sin = self.rotary_embedding(seq_length)
+            cos, sin = cos[None, None], sin[None, None]   # [1, 1, seq, head_dim]: the same positions for every sequence
+        else:
+            cos, sin = self.rotary_embedding.at_positions(position_ids)
+            cos, sin = cos[:, None], sin[:, None]          # [batch, 1, seq, head_dim]
         cos = cos.to(x.device)
         sin = sin.to(x.device)
 
@@ -162,8 +189,9 @@ class Transformer(nn.Module):
         elif attention_mask.dim() == 2:
             attention_mask = attention_mask.unsqueeze(0).unsqueeze(0)
 
-        for layer in self.transformer_layers:
-            x = layer(x, attention_mask, cos, sin)
+        for layer_index, layer in enumerate(self.transformer_layers):
+            layer_cache = layer_caches[layer_index] if layer_caches is not None else None
+            x = layer(x, attention_mask, cos, sin, layer_cache)
 
         x = self.layer_norm(x)
 
@@ -192,12 +220,34 @@ class Transformer(nn.Module):
         for token_id in token_ids:
             if token_id in self.input_token_mapping:
                 remapped.append(self.input_token_mapping[token_id])
+            elif self.unknown_input_id is not None:
+                remapped.append(self.unknown_input_id)
             else:
                 raise ValueError(
-                    f"Token ID {token_id} not found in input vocabulary mapping. "
-                    f"Rebuild input vocabulary with: python shared/build_input_vocabulary.py"
+                    f"Token ID {token_id} not found in input vocabulary mapping, and this vocabulary "
+                    f"has no unknown-token row. Rebuild it with: python -m library.shared.build_input_vocabulary"
                 )
         return remapped
+
+    def load_weights(self, model_state_dict: dict) -> None:
+        """Strictly load a checkpoint's model_state_dict: every parameter must match by name
+        and shape, so a renamed or missing module fails loudly instead of staying random.
+
+        Two older checkpoint shapes are accepted: stored rotary tables are dropped (they are
+        rebuilt on demand), and a checkpoint saved before its input vocabulary gained the
+        unknown-token row gets that row as zeros. The second assumes the vocabulary was rebuilt
+        from the same batches, which keeps every other row's id (ids are the sorted token ids
+        and the unknown row is appended last); runs trained since keep their own
+        input_vocabulary.json snapshot, so they never rely on it."""
+        state = dict(model_state_dict)
+        for key in ROTARY_CACHE_KEYS:
+            state.pop(key, None)
+        saved_embedding = state.get('input_embedding.weight')
+        if (self.unknown_input_id is not None and saved_embedding is not None
+                and saved_embedding.shape[0] == self.input_vocab_size - 1):
+            state['input_embedding.weight'] = torch.cat(
+                [saved_embedding, torch.zeros_like(saved_embedding[:1])])
+        self.load_state_dict(state, strict=True)
 
     def get_vocabulary(self) -> dict:
         return self.vocabulary
@@ -260,11 +310,6 @@ class Transformer(nn.Module):
             "input_vocab_size": self.input_vocab_size,
             "output_vocab_size": self.output_vocab_size,
         }
-        print(f"\nOutput vocabulary sections:")
-        print(f"  Example tokens: {positions['example'][0]}-{positions['example'][1]}")
-        print(f"  Whitespace tokens: {positions['whitespace'][0]}-{positions['whitespace'][1]}")
-        print(f"  Prompt tokens: {positions['prompt'][0]}-{positions['prompt'][1]}")
-        print(f"  Auxiliary tokens: {positions['auxiliary'][0]}-{positions['auxiliary'][1]}")
 
 
 class TransformerBlock(nn.Module):
@@ -285,9 +330,10 @@ class TransformerBlock(nn.Module):
         x: torch.Tensor,
         attention_mask: Optional[torch.Tensor],
         cos: torch.Tensor,
-        sin: torch.Tensor
+        sin: torch.Tensor,
+        layer_cache: Optional["LayerCache"] = None
     ) -> torch.Tensor:
-        attn_output = self.attention(self.norm1(x), attention_mask, cos, sin)
+        attn_output = self.attention(self.norm1(x), attention_mask, cos, sin, layer_cache)
         x = x + self.dropout1(attn_output)
 
         ff_output = self.feed_forward(self.norm2(x))
@@ -326,7 +372,8 @@ class MultiHeadAttention(nn.Module):
         x: torch.Tensor,
         attention_mask: Optional[torch.Tensor],
         cos: torch.Tensor,
-        sin: torch.Tensor
+        sin: torch.Tensor,
+        layer_cache: Optional["LayerCache"] = None
     ) -> torch.Tensor:
         batch_size, seq_length, _ = x.shape
 
@@ -338,9 +385,9 @@ class MultiHeadAttention(nn.Module):
         K = K.view(batch_size, seq_length, self.num_heads, self.head_dim).transpose(1, 2)
         V = V.view(batch_size, seq_length, self.num_heads, self.head_dim).transpose(1, 2)
 
-        cos = cos[:seq_length].unsqueeze(0).unsqueeze(0)
-        sin = sin[:seq_length].unsqueeze(0).unsqueeze(0)
-        Q, K = apply_rotary_pos_emb(Q, K, cos, sin)
+        Q, K = apply_rotary_pos_emb(Q, K, cos, sin)   # cos / sin arrive as [1 or batch, 1, seq, head_dim]
+        if layer_cache is not None:
+            K, V = layer_cache.extend(K, V)   # earlier positions' keys and values come from the cache
 
         attention_scores = torch.matmul(Q, K.transpose(-2, -1)) / self.scale
 
@@ -391,3 +438,83 @@ class FeedForward(nn.Module):
         for linear in (self.gate_proj, self.up_proj, self.down_proj):
             total += linear.weight.numel()
         return total
+
+
+class LayerCache:
+    """The keys and values one attention layer has computed so far, so a new token can
+    attend to the earlier positions without recomputing them (incremental decoding)."""
+
+    def __init__(self):
+        self.keys: Optional[torch.Tensor] = None     # [batch, heads, positions so far, head_dim]
+        self.values: Optional[torch.Tensor] = None
+
+    def extend(self, keys: torch.Tensor, values: torch.Tensor):
+        if self.keys is not None:
+            keys = torch.cat([self.keys, keys], dim=2)
+            values = torch.cat([self.values, values], dim=2)
+        self.keys, self.values = keys, values
+        return keys, values
+
+
+class IncrementalDecoder:
+    """Autoregressive decoding of several prompts side by side with a key/value cache.
+
+        decoder = IncrementalDecoder(model, [prompt_a, prompt_b])   # remapped input ids
+        logits = decoder.next_logits()       # [2, output vocab]: the next token of each prompt
+        decoder.append([token_a, token_b])   # one remapped input id per sequence
+        decoder.keep_rows([1])               # drop finished sequences (row 0 here)
+
+    Each prompt is first run on its own (so no prompt ever sees another's padding), then the
+    cached keys/values are left-padded to the longest prompt, and every later token costs one
+    forward pass over one position for the whole batch. Padding is masked out of attention
+    and every sequence keeps its own rotary positions, so the logits equal running each
+    sequence alone over its whole prefix, up to float rounding. Call it under torch.no_grad().
+    """
+
+    def __init__(self, model: Transformer, prompts: List[List[int]]):
+        self.model = model
+        device = model.output_projection.weight.device
+        longest = max(len(prompt) for prompt in prompts)
+
+        prompt_caches, last_logits = [], []
+        for prompt in prompts:
+            caches = [LayerCache() for _ in model.transformer_layers]
+            logits = model(torch.tensor([prompt], dtype=torch.long, device=device), layer_caches=caches)
+            last_logits.append(logits[0, -1])
+            prompt_caches.append(caches)
+
+        self.layer_caches = [LayerCache() for _ in model.transformer_layers]
+        for layer_index, layer_cache in enumerate(self.layer_caches):
+            layer_cache.keys = torch.cat([self._left_pad(caches[layer_index].keys, longest) for caches in prompt_caches])
+            layer_cache.values = torch.cat([self._left_pad(caches[layer_index].values, longest) for caches in prompt_caches])
+
+        self.is_padding = torch.tensor(
+            [[True] * (longest - len(prompt)) + [False] * len(prompt) for prompt in prompts], device=device)
+        self.next_positions = torch.tensor([len(prompt) for prompt in prompts], dtype=torch.long, device=device)
+        self.last_logits = torch.stack(last_logits)
+
+    @staticmethod
+    def _left_pad(tensor: torch.Tensor, length: int) -> torch.Tensor:
+        return F.pad(tensor, (0, 0, length - tensor.shape[2], 0))   # zeros before the prompt's own positions
+
+    def next_logits(self) -> torch.Tensor:
+        return self.last_logits
+
+    def append(self, input_ids: List[int]) -> None:
+        device = self.is_padding.device
+        tokens = torch.tensor(input_ids, dtype=torch.long, device=device).unsqueeze(1)
+        self.is_padding = torch.cat([self.is_padding, torch.zeros_like(self.is_padding[:, :1])], dim=1)
+        attention_mask = torch.zeros(self.is_padding.shape, device=device).masked_fill(self.is_padding, float('-inf'))
+        logits = self.model(tokens, attention_mask=attention_mask[:, None, None, :],
+                            position_ids=self.next_positions.unsqueeze(1), layer_caches=self.layer_caches)
+        self.last_logits = logits[:, -1]
+        self.next_positions = self.next_positions + 1
+
+    def keep_rows(self, rows: List[int]) -> None:
+        index = torch.tensor(rows, dtype=torch.long, device=self.is_padding.device)
+        for layer_cache in self.layer_caches:
+            layer_cache.keys = layer_cache.keys.index_select(0, index)
+            layer_cache.values = layer_cache.values.index_select(0, index)
+        self.is_padding = self.is_padding.index_select(0, index)
+        self.next_positions = self.next_positions.index_select(0, index)
+        self.last_logits = self.last_logits.index_select(0, index)
