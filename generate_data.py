@@ -44,13 +44,11 @@ JOBS = [
 ]
 
 
-def main():
-    exit_listener = ExitListener()
-    write_queue("generation", [
-        {"name": f"{job.domain.name} / {job.teacher_model}", "description": job.description,
-         "info_path": os.path.join(get_output_dir(job.domain.name, job.teacher_model), "info.json")}
-        for job in JOBS], kind="generation")
-    for job in JOBS:
+def run_jobs(jobs, exit_listener):
+    for job in jobs:
+        if exit_listener.check_exit():   # a Stop / Ctrl+C ends the queue, not just the running job
+            print("Stop requested: the remaining jobs are not started.")
+            break
         info_path = os.path.join(get_output_dir(job.domain.name, job.teacher_model), "info.json")
         if os.path.exists(info_path):
             with open(info_path, "r", encoding="utf-8") as file:
@@ -60,6 +58,15 @@ def main():
         DistillationDataGenerator(job, exit_listener).run()
         gc.collect()                     # free this job's teacher before the next one loads
         torch.cuda.empty_cache()
+
+
+def main():
+    exit_listener = ExitListener()
+    write_queue("generation", [
+        {"name": f"{job.domain.name} / {job.teacher_model}", "description": job.description,
+         "info_path": os.path.join(get_output_dir(job.domain.name, job.teacher_model), "info.json")}
+        for job in JOBS], kind="generation")
+    run_jobs(JOBS, exit_listener)
     exit_listener.stop()
     print("Done.")
 

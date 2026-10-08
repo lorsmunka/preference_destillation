@@ -4,27 +4,44 @@ logit distribution at every generated token.
 Two on-disk formats, one in-memory shape. Every reader returns a list of records
 
     {"sentence": str, "model_response": str,
-     "steps": [{"token": str, "logits": row, "predicted_token_index": int}, ...]}
+     "steps": [{"token": str, "logits": row, "predicted_token_index": int}, ...],
+     "split": ..., "item_id": ..., "turn_type": ..., "teacher_mode": ...}
 
 where `row` is a float32 numpy row for `.npz` files and a list of floats for legacy
-`.jsonl` files — both index and convert the same way downstream.
+`.jsonl` files — both index and convert the same way downstream. The four metadata keys
+come from the corpus record the example was made from (`teacher_mode` is "generate" or
+"forced"); they are always present and None when the batch predates them or the corpus
+record had no such field.
 
 `.npz` is the compact format: logits stored as bfloat16 bit patterns (the teacher runs in
 bfloat16, so every stored value is exactly representable — the round-trip is bit-exact,
 verified on every value of every domain), plus the strings as one JSON blob. Roughly 5x
 smaller than the JSON text and far faster to load. When both formats exist for the same
-batch index the `.npz` is used.
+batch index the `.npz` is used. The JSON blob also carries `vocabulary_sha1`, the
+fingerprint of the reduced vocabulary whose tokens the logit columns are (see
+`vocabulary_fingerprint`), so a reader can check the columns still mean the same tokens.
 """
 
+import hashlib
 import json
+import os
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import torch
 
 BATCH_FILE = re.compile(r"^batch_(\d+)\.(npz|jsonl)$")
+
+# Per-example fields carried from the corpus record into the batch (None when absent).
+RECORD_METADATA_KEYS = ("split", "item_id", "turn_type", "teacher_mode")
+
+
+def vocabulary_fingerprint(token_list: List[str]) -> str:
+    """sha1 of the reduced vocabulary's ordered token list: the identity of the logit columns.
+    Any reordering, addition or removal of a token changes it."""
+    return hashlib.sha1("\n".join(token_list).encode("utf-8")).hexdigest()
 
 
 def float32_to_bfloat16_bits(values: np.ndarray) -> np.ndarray:
@@ -72,7 +89,21 @@ def read_batch(path) -> List[dict]:
     if path.suffix == ".npz":
         return _read_npz(path)
     with open(path, "r", encoding="utf-8") as file:
-        return [json.loads(line) for line in file if line.strip()]
+        records = [json.loads(line) for line in file if line.strip()]
+    for record in records:
+        for key in RECORD_METADATA_KEYS:
+            record.setdefault(key, None)
+    return records
+
+
+def read_batch_meta(path) -> dict:
+    """The JSON blob of an `.npz` batch (e.g. its "vocabulary_sha1"), without decoding the
+    logits. A legacy `.jsonl` batch has none: {}."""
+    path = Path(path)
+    if path.suffix != ".npz":
+        return {}
+    with np.load(path, allow_pickle=False) as data:
+        return json.loads(data["meta"].item())
 
 
 def read_batch_texts(path) -> List[dict]:
@@ -88,8 +119,10 @@ def read_batch_texts(path) -> List[dict]:
             for record in read_batch(path)]
 
 
-def write_batch(path, records: List[dict]) -> Path:
-    """Write `records` as a compact `.npz` at `path`."""
+def write_batch(path, records: List[dict], vocabulary_sha1: Optional[str] = None) -> Path:
+    """Write `records` as a compact `.npz` at `path`. `vocabulary_sha1` names the reduced
+    vocabulary the logit columns belong to. The file appears complete or not at all: it is
+    written under a temporary name and then renamed, so a crash never leaves half a batch."""
     path = Path(path)
     step_counts = [len(record["steps"]) for record in records]
     step_offsets = np.zeros(len(records) + 1, dtype=np.int64)
@@ -111,11 +144,19 @@ def write_batch(path, records: List[dict]) -> Path:
     if any(record.get("ground_truth") is not None for record in records):
         meta["ground_truths"] = [record.get("ground_truth") for record in records]   # e.g. the executed answer
         meta["answer_correct"] = [record.get("answer_correct") for record in records]   # teacher right? None = not checkable
+    for key in RECORD_METADATA_KEYS:
+        if any(record.get(key) is not None for record in records):
+            meta[key] = [record.get(key) for record in records]
+    if vocabulary_sha1 is not None:
+        meta["vocabulary_sha1"] = vocabulary_sha1
     predicted = np.asarray([step["predicted_token_index"] for record in records for step in record["steps"]],
                            dtype=np.int32)
 
-    np.savez(path, logits_bf16=float32_to_bfloat16_bits(logits), step_offsets=step_offsets,
-             predicted_token_index=predicted, meta=np.array(json.dumps(meta)))
+    temporary_path = path.with_name(path.name + ".partial")   # does not match BATCH_FILE, so never read as a batch
+    with open(temporary_path, "wb") as file:
+        np.savez(file, logits_bf16=float32_to_bfloat16_bits(logits), step_offsets=step_offsets,
+                 predicted_token_index=predicted, meta=np.array(json.dumps(meta)))
+    os.replace(temporary_path, path)
     return path
 
 
@@ -144,5 +185,7 @@ def _read_npz(path: Path) -> List[dict]:
         if meta.get("ground_truths") and meta["ground_truths"][example_index] is not None:
             record["ground_truth"] = meta["ground_truths"][example_index]
             record["answer_correct"] = meta["answer_correct"][example_index]
+        for key in RECORD_METADATA_KEYS:
+            record[key] = meta[key][example_index] if key in meta else None
         records.append(record)
     return records

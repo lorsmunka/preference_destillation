@@ -22,7 +22,7 @@ import torch
 import library.data_gen.generator as generator_module
 from generate_data import JOBS
 from library.shared import ExitListener
-from library.shared.batch_files import read_batch
+from library.shared.batch_files import batch_paths, read_batch, read_batch_meta
 
 CHECK_INPUTS = 64
 
@@ -54,12 +54,20 @@ def check(job, workdir: Path) -> None:
     listener.stop()
     seconds = time() - started
 
-    records = [record for path in sorted(output.glob("batch_*.npz")) for record in read_batch(path)]
-    info = json.load(open(output / "info.json", encoding="utf-8")) if (output / "info.json").exists() else {}
+    paths = batch_paths(output)
+    records = [record for path in paths for record in read_batch(path)]
+    info = {}
+    if (output / "info.json").exists():
+        with open(output / "info.json", encoding="utf-8") as file:
+            info = json.load(file)
     correct = Counter(record.get("answer_correct") for record in records)
     peak = torch.cuda.max_memory_allocated() / 2 ** 30 if torch.cuda.is_available() else 0.0
     print(f"\n== {domain.name}: {len(records)}/{CHECK_INPUTS} kept, answer_correct {dict(correct)}, "
           f"{seconds / CHECK_INPUTS:.2f} s per input incl. loading, peak GPU {peak:.1f} GB, info {info.get('status')}")
+    print(f"   kept per turn type {info.get('kept_by_turn_type')}, skipped per turn type {info.get('skipped_by_turn_type')}")
+    print(f"   splits {dict(Counter(record['split'] for record in records))}, "
+          f"vocabulary {info.get('vocabulary_sha1')} in every batch: "
+          f"{all(read_batch_meta(path).get('vocabulary_sha1') == info.get('vocabulary_sha1') for path in paths)}")
     if records:
         print("   example response:", repr(records[0]["model_response"][:120]))
 

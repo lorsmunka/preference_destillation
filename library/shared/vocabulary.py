@@ -211,6 +211,8 @@ def get_response_tokens(tokenizer, domain: "Domain") -> List[str]:
 
 
 def extract_logits_as_vector(logits, vocabulary: dict) -> List[float]:
-    """Project a full teacher logit row down to the reduced vocabulary, in order."""
+    """Project a full teacher logit row down to the reduced vocabulary, in order. One
+    indexed copy to the CPU (one GPU sync), not one .item() per vocabulary entry."""
     token_to_id = vocabulary["token_to_id"]
-    return [logits[token_to_id[token]].item() for token in vocabulary["token_list"]]
+    token_ids = [token_to_id[token] for token in vocabulary["token_list"]]
+    return logits[token_ids].float().cpu().tolist()

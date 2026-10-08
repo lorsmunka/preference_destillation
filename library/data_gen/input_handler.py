@@ -40,3 +40,9 @@ class InputHandler:
     def get_ground_truth(self, index):
         """The corpus record's "answer", when the domain has one (else None)."""
         return self.records[index].get("answer")
+
+    def get_metadata(self, index):
+        """The record's split, item id and turn type (None where the record has none), carried
+        into the batches so training can split on them instead of on file order."""
+        record = self.records[index]
+        return {"split": record.get("split"), "item_id": record.get("item_id"), "turn_type": record.get("turn_type")}

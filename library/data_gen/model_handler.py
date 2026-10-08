@@ -2,7 +2,8 @@ from time import time
 from typing import Dict, List, Tuple, Optional
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, DynamicCache, LogitsProcessor
+from transformers import (AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, DynamicCache, LogitsProcessor,
+                          StoppingCriteriaList, StopStringCriteria)
 
 from library.shared.vocabulary import (
     build_vocabulary,
@@ -49,9 +50,10 @@ class ModelHandler:
         self.tokenizer = None
         self.model = None
         self.vocabulary: Optional[dict] = None
-        self.response_tokens: Optional[List[str]] = None
+        self.response_tokens: Optional[set] = None
         self.thought_end_token_id: Optional[int] = None
         self.last_generated_text = ""   # kept even when the example is rejected, for diagnostics
+        self.stop_criteria: Dict[tuple, StopStringCriteria] = {}   # built once per set of stop strings
 
         self.load_tokenizer_and_model()
 
@@ -103,8 +105,8 @@ class ModelHandler:
         print("Creating vocabulary...")
 
         self.vocabulary = build_vocabulary(self.tokenizer, self.domain_handler)
-        self.response_tokens = get_response_tokens(
-            self.tokenizer, self.domain_handler)
+        self.response_tokens = set(get_response_tokens(
+            self.tokenizer, self.domain_handler))
 
         elapsed_time = time() - start_time
         print(f"Created vocabulary -> took {elapsed_time:.2f} seconds.\n")
@@ -116,6 +118,42 @@ class ModelHandler:
         return self.tokenizer.apply_chat_template(
             [{"role": "user", "content": prompt}], tokenize=False,
             add_generation_prompt=True, enable_thinking=self.thinking)
+
+    def prompt_token_ids(self, prompt: str) -> List[int]:
+        """The prompt's token ids with exactly one BOS in front. A chat template writes its own
+        <bos> into the text, and some tokenizers add one by themselves (Gemma 3 does, Gemma 4
+        does not), so the text is tokenised without special tokens and a BOS put in front only
+        when the text has none."""
+        token_ids = self.tokenizer(prompt, add_special_tokens=False)["input_ids"]
+        bos_token_id = self.tokenizer.bos_token_id
+        if bos_token_id is not None and token_ids[:1] != [bos_token_id]:
+            token_ids = [bos_token_id] + token_ids
+        return token_ids
+
+    def encode_prompts(self, prompts: List[str]) -> Dict[str, torch.Tensor]:
+        """Input ids and attention mask for one or more prompts, left-padded to one length,
+        on the model's device."""
+        rows = [self.prompt_token_ids(prompt) for prompt in prompts]
+        length = max(len(row) for row in rows)
+        pad = self.tokenizer.pad_token_id if self.tokenizer.pad_token_id is not None else self.tokenizer.eos_token_id
+        device = get_device()
+        return {
+            "input_ids": torch.tensor([[pad] * (length - len(row)) + row for row in rows], device=device),
+            "attention_mask": torch.tensor([[0] * (length - len(row)) + [1] * len(row) for row in rows], device=device),
+        }
+
+    def stopping_criteria(self, stop_strings: Optional[List[str]]) -> Optional[StoppingCriteriaList]:
+        """Ends generation once any of `stop_strings` has been generated. The criterion is built
+        the first time a set of stop strings is used and reused afterwards: passing stop_strings
+        to generate() rebuilds it on every call, which takes 0.8-1.8 s on Gemma 4 (transformers'
+        own cache never hits). It also fires on tokens that merely contain a stop string, such
+        as "');" for ";", exactly as the domain's is_stop reads the decoded text."""
+        if not stop_strings:
+            return None
+        key = tuple(stop_strings)
+        if key not in self.stop_criteria:
+            self.stop_criteria[key] = StopStringCriteria(self.tokenizer, list(key))
+        return StoppingCriteriaList([self.stop_criteria[key]])
 
     def generate_thinking(self, input_ids: torch.Tensor):
         """Let the teacher think (greedy, plain generate — no logits kept), stopping when the
@@ -136,7 +174,7 @@ class ModelHandler:
         start_time = time()
 
         prompt = self.build_prompt(text)
-        inputs = self.prepare_inputs_for_device(prompt)
+        inputs = self.encode_prompts([prompt])
 
         steps = []
         generated_text = ""
@@ -192,20 +230,15 @@ class ModelHandler:
         if self.thinking:
             raise ValueError("batched generation does not support thinking mode")
         start_time = time()
-        self.tokenizer.padding_side = "left"
-        prompts = [self.build_prompt(text) for text in texts]
-        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True)
-        device = get_device()
-        if device != "cpu":
-            inputs = {key: value.to(device) for key, value in inputs.items()}
+        inputs = self.encode_prompts([self.build_prompt(text) for text in texts])
         token_list = self.vocabulary["token_list"]
         recorder = ReducedLogitsRecorder([self.vocabulary["token_to_id"][token] for token in token_list])
         stop_strings = getattr(self.domain_handler, "stop_strings", None) or [self.domain_handler.stop_token]
         with torch.no_grad():
             output = self.model.generate(
                 **inputs, do_sample=False, max_new_tokens=self.max_generation_steps + 8,
-                logits_processor=[recorder], stop_strings=stop_strings,
-                tokenizer=self.tokenizer, eos_token_id=sorted(self.end_token_ids),
+                logits_processor=[recorder], stopping_criteria=self.stopping_criteria(stop_strings),
+                eos_token_id=sorted(self.end_token_ids),
                 pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id)
         new_tokens = output[:, inputs["input_ids"].shape[1]:].tolist()
 
@@ -251,23 +284,19 @@ class ModelHandler:
         solutions or writing pupil questions, and for running Gemma inside the tutor harness.
         temperature 0 = greedy; above 0 = sampled. A prefix starts the model's own turn (the
         harness writes "<solution>" once the route is decided); it is not part of the result."""
-        self.tokenizer.padding_side = "left"
         texts = [self.tokenizer.apply_chat_template([{"role": "user", "content": prompt}], tokenize=False,
                                                     add_generation_prompt=True, enable_thinking=False)
                  if self.chat_template else prompt for prompt in prompts]
         if prefixes:
             texts = [text + prefix for text, prefix in zip(texts, prefixes)]
-        inputs = self.tokenizer(texts, return_tensors="pt", padding=True)
-        device = get_device()
-        if device != "cpu":
-            inputs = {key: value.to(device) for key, value in inputs.items()}
+        inputs = self.encode_prompts(texts)
         sampling = dict(do_sample=True, temperature=temperature, top_p=0.95) if temperature > 0 else dict(do_sample=False)
         if temperature > 0:
             torch.manual_seed(seed)
         with torch.no_grad():
             output = self.model.generate(
                 **inputs, max_new_tokens=max_new_tokens, **sampling,
-                stop_strings=stop_strings, tokenizer=self.tokenizer if stop_strings else None,
+                stopping_criteria=self.stopping_criteria(stop_strings),
                 eos_token_id=sorted(self.end_token_ids),
                 pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id)
         results = []
@@ -289,7 +318,7 @@ class ModelHandler:
         logits are computed (logits_to_keep), so the full vocabulary is never materialised for
         the prompt."""
         start_time = time()
-        prompt_ids = [self.tokenizer(self.build_prompt(text))["input_ids"] for text in texts]
+        prompt_ids = [self.prompt_token_ids(self.build_prompt(text)) for text in texts]
         target_ids = [self.tokenizer(target, add_special_tokens=False)["input_ids"] for target in targets]
         sequences = [prompt + target for prompt, target in zip(prompt_ids, target_ids)]
         length = max(len(sequence) for sequence in sequences)
@@ -325,15 +354,17 @@ class ModelHandler:
         return results
 
     def finish_example(self, text: str, generated_text: str, steps: List[Dict], thinking: str) -> Tuple[Optional[Dict], Optional[str]]:
-        """The checks every generated example passes before it is kept."""
+        """The checks every generated example passes before it is kept. They read the stored step
+        tokens (what training learns from), not a re-tokenisation of the text: the teacher can
+        generate a token split the tokenizer would not produce, whose pieces lie outside the
+        reduced vocabulary while the re-tokenised text looks fine."""
         self.last_generated_text = generated_text
-        response_tokens = self.tokenizer.tokenize(generated_text)
-        if not all(token in self.response_tokens for token in response_tokens):
-            unexpected_tokens = [token for token in response_tokens if token not in self.response_tokens]
+        unexpected_tokens = [step["token"] for step in steps if step["token"] not in self.response_tokens]
+        if unexpected_tokens:
             print(f"\tSkipped: Generated response contains unexpected tokens: {unexpected_tokens}")
             return None, "unexpected_tokens"
-        if len(response_tokens) > self.max_generation_steps:
-            print(f"\tSkipped: Generated response is too long ({len(response_tokens)} tokens).")
+        if len(steps) > self.max_generation_steps:
+            print(f"\tSkipped: Generated response is too long ({len(steps)} tokens).")
             return None, "too_long"
         example = {"sentence": text, "model_response": generated_text, "steps": steps}
         if self.thinking:
@@ -358,15 +389,6 @@ class ModelHandler:
         token_decoded = self.tokenizer.decode([next_token_id])
 
         return token_repr, token_decoded, logit_vector, predicted_token_index, next_token_id
-
-    def prepare_inputs_for_device(self, text: str) -> Dict[str, torch.Tensor]:
-        inputs = self.tokenizer(text, return_tensors="pt")
-        device = get_device()
-
-        if device != "cpu":
-            inputs = {k: v.to(device) for k, v in inputs.items()}
-
-        return inputs
 
     def get_vocabulary(self) -> dict:
         return self.vocabulary
