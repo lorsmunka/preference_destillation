@@ -98,13 +98,17 @@ class TemplatePupil:
                     self.events.append({"type": "message", "turn": turn, "depth": depth})
         self.previous_focus = None
 
-    def message(self, event: Dict, block: str) -> Optional[Message]:
+    def message(self, event: Dict, block: str, depth: Optional[int] = None) -> Optional[Message]:
+        """The next message, drawn at `depth`: the explanations in the open thread (the session
+        passes it, so after an off-topic message or a misrouted question the pupil does not
+        follow up an explanation that is not there); the planned position if not given."""
         turn = event["turn"]
+        depth = event["depth"] if depth is None else depth
         foci = solution_foci(self.item, turn, block, self.random_generator)
         if turn == len(self.item["follow_ups"]):
             foci += what_if_foci(self.item, turn, block, self.random_generator)
-        candidates = related(foci, self.previous_focus) if event["depth"] > 0 else foci
-        message = self.generator.draw(candidates, event["depth"], self.random_generator, kind_weights=kind_weights(event["depth"]))
+        candidates = related(foci, self.previous_focus) if depth > 0 else foci
+        message = self.generator.draw(candidates, depth, self.random_generator, kind_weights=kind_weights(depth))
         if message is not None and message.kind != "off_topic":
             self.previous_focus = message.focus
         return message
@@ -141,7 +145,7 @@ class TutorSession:
                 return
             if event["turn"] in self.closed_turns:
                 continue
-            message = self.pupil.message(event, self.last_block)
+            message = self.pupil.message(event, self.last_block, depth=len(self.conversation.thread))
             if message is None:
                 continue
             self.turn = {"event": message.kind if message.kind in ("off_topic", "what_if") else "question",
@@ -195,7 +199,10 @@ class TutorSession:
         elif request.kind == "explanation":
             turn["attempts"] += 1
             explanation = text.replace("</explanation>", "").strip()
-            problem = self.explanation_checker(explanation, turn.get("kind"))
+            if "</explanation>" not in text:   # cut off at the token limit
+                problem = "cut off: no </explanation>"
+            else:
+                problem = self.explanation_checker(explanation, turn.get("kind"))
             if problem and turn["attempts"] <= self.retries:
                 turn.setdefault("rejected", []).append({"output": EXPLANATION_PREFIX + text, "problem": problem})
                 self.pending = Request("explanation", request.context, prefix=EXPLANATION_PREFIX,

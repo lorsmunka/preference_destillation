@@ -8,17 +8,20 @@ each with its own name (and so its own batches folder):
                         the teacher's distribution
 
 All variants share one output vocabulary (output_tokens.json): the answer and format tokens,
-every token of the corpus texts (labels are written in the problem's words) and the gold
-targets of every format. Build it with:
+every token of the corpus texts (labels are written in the problem's words), the gold
+targets of every format and the explanation threads' targets. Build it after the thread pass,
+and see what a corpus would lose to it, per turn type:
 
     python -m library.domain.math_tutor.agentic
+    python -m library.domain.math_tutor.agentic report facts
 """
 
 import json
 import re
+import sys
 from collections import Counter
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from library.shared.metrics.task import ExactAnswerMetric
 from ..base import Domain
@@ -144,24 +147,51 @@ FORMAT_TEXTS = [
 ]
 
 
-def build_output_tokens() -> None:
-    """Every token a tutor block may contain, most frequent first: the format texts, the gold
-    targets of every annotation format, and every token of the corpus texts (plus the
-    line-start form of each word, since a label starts a line)."""
-    from transformers import AutoTokenizer
-    from library.shared.config import teacher_weights_path
+def vocabulary_texts(items: List[Dict], thread_records: List[Dict]) -> List[str]:
+    """Every text the output vocabulary is built from: the format texts, the items' problems and
+    follow-ups (labels use their words), the gold solutions of every annotation format, and the
+    targets of the explanation threads (Gemma's explanations exactly as the explain records hold
+    them, "<explanation>Yes, ..." included, and the what-if solutions)."""
     from .annotations import RENDERERS, render
-    from .conversation import usable
+    from .conversation import labelled_turns, thread_turns
 
-    tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path("google/gemma-4-12B-it"))
-    items = [json.loads(line) for line in open(PACKAGE / "items" / "items.jsonl", encoding="utf-8")]
     texts = list(FORMAT_TEXTS)
     for item in items:
         texts.append(item["problem"])
         texts += [follow_up["question"] for follow_up in item["follow_ups"]]
         for annotation in RENDERERS:
-            if usable(item, annotation):
-                texts += render(item, annotation)
+            texts += render(item, annotation, turns=labelled_turns(item, annotation))
+    by_id = {item["id"]: item for item in items}
+    thread_targets = {}   # the same explanation is a target in every annotation: once is enough
+    for thread_record in thread_records:
+        item = by_id.get(thread_record["item_id"])
+        if item is None:
+            continue
+        for annotation in RENDERERS:
+            for record in thread_turns(item, annotation, thread_record):
+                thread_targets[record["target"]] = True
+    return texts + list(thread_targets)
+
+
+def build_output_tokens() -> None:
+    """Every token a tutor block may contain, most frequent first: the tokens of vocabulary_texts
+    (plus the line-start form of each word, since a label starts a line). Build it after the
+    thread pass and before any data generation: data generation drops every target with a token
+    outside it, and rebuilding it later reorders the logit columns of existing batches."""
+    from transformers import AutoTokenizer
+    from library.shared.config import teacher_weights_path
+    from .threads import THREADS_PATH
+
+    tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path("google/gemma-4-12B-it"))
+    items = [json.loads(line) for line in open(PACKAGE / "items" / "items.jsonl", encoding="utf-8")]
+    thread_records = []
+    if THREADS_PATH.exists():
+        thread_records = [json.loads(line) for line in open(THREADS_PATH, encoding="utf-8")]
+    else:
+        print(f"WARNING: no explanation threads yet ({THREADS_PATH}). This vocabulary has NO explanation "
+              f"targets, so data generation would drop about half of the explain records ('unexpected_tokens'). "
+              f"Run the thread pass first (python -m library.domain.math_tutor.threads), then build again.")
+    texts = vocabulary_texts(items, thread_records)
     counts = Counter()
     for start in range(0, len(texts), 5000):
         for ids in tokenizer(texts[start:start + 5000], add_special_tokens=False)["input_ids"]:
@@ -172,10 +202,52 @@ def build_output_tokens() -> None:
         if len(other) > 1 and other in vocabulary and other not in counts:
             counts[other] = 1
     tokens = [token for token, _ in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))]
-    json.dump({"tokens": tokens, "texts": len(texts), "built_from": "items.jsonl problems, follow-ups, gold targets"},
+    json.dump({"tokens": tokens, "texts": len(texts), "explanation_threads": len(thread_records),
+               "built_from": "items.jsonl problems, follow-ups, gold targets" + (", thread targets" if thread_records else "")},
               open(OUTPUT_TOKENS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    print(f"{len(tokens):,} output tokens from {len(texts):,} texts -> {OUTPUT_TOKENS}")
+    print(f"{len(tokens):,} output tokens from {len(texts):,} texts ({len(thread_records):,} explanation threads) -> {OUTPUT_TOKENS}")
+    print("Check a corpus against it: python -m library.domain.math_tutor.agentic report <annotation>")
+
+
+def outside_vocabulary_report(records: Iterable[Dict], tokenizer, allowed_tokens: set) -> Dict[str, Dict]:
+    """Per turn type (solve / explain / route): how many targets there are and how many have a
+    token outside the output vocabulary. Data generation drops those ("unexpected_tokens", in
+    forced scoring too), so this is what would be lost, with the commonest such tokens."""
+    targets, dropped, outside = Counter(), Counter(), {}
+    for record in records:
+        turn_type = record.get("turn_type", "solve")
+        missing = [token for token in tokenizer.tokenize(record["target"]) if token not in allowed_tokens]
+        targets[turn_type] += 1
+        dropped[turn_type] += bool(missing)
+        outside.setdefault(turn_type, Counter()).update(missing)
+    return {turn_type: {"targets": targets[turn_type], "dropped": dropped[turn_type],
+                        "commonest_outside_tokens": dict(outside[turn_type].most_common(10))}
+            for turn_type in sorted(targets)}
+
+
+def print_vocabulary_report(annotation: str) -> None:
+    """python -m library.domain.math_tutor.agentic report facts: the report above for one
+    annotation's corpus file (the records data generation will read)."""
+    from transformers import AutoTokenizer
+    from library.shared.config import teacher_weights_path
+    from library.shared.vocabulary import WHITESPACE_TOKENS
+
+    domain = MathTutorAgenticDomain(annotation)
+    if not Path(domain.corpus_path).exists():
+        print(f"no corpus at {domain.corpus_path}: build it first (MathTutorAgenticDomain('{annotation}').build_corpus())")
+        return
+    tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path("google/gemma-4-12B-it"))
+    records = [json.loads(line) for line in open(domain.corpus_path, encoding="utf-8")]
+    report = outside_vocabulary_report(records, tokenizer, set(domain.example_tokens) | set(WHITESPACE_TOKENS))
+    for turn_type, counts in report.items():
+        share = 100 * counts["dropped"] / max(1, counts["targets"])
+        print(f"{turn_type:8} {counts['targets']:>8,} targets, {counts['dropped']:>7,} ({share:.1f}%) would be dropped"
+              f"  {counts['commonest_outside_tokens']}")
 
 
 if __name__ == "__main__":
-    build_output_tokens()
+    sys.stdout.reconfigure(encoding="utf-8")   # tokens such as "▁represents" (the Windows console is cp1252)
+    if len(sys.argv) >= 2 and sys.argv[1] == "report":
+        print_vocabulary_report(sys.argv[2] if len(sys.argv) >= 3 else "facts")
+    else:
+        build_output_tokens()

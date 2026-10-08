@@ -123,13 +123,18 @@ def render_code(item: Dict, turn: int, executions: List[Execution]) -> str:
 _FACTS_LABELS: Dict = {}
 
 
-def render_facts(item: Dict, turn: int, executions: List[Execution]) -> str:
-    """Facts first, in Gemma's words, verified against this item's trace (labels.py). There is
-    no code-only version: 45% of numbers are written inline in solve() and have no name."""
+def facts_label(item: Dict, turn: int) -> Optional[str]:
+    """The verified facts-first block of one turn (labels.py), or None."""
     if not _FACTS_LABELS:
         from .labels import read_labels
         _FACTS_LABELS.update(read_labels())
-    block = _FACTS_LABELS.get((item["id"], turn))
+    return _FACTS_LABELS.get((item["id"], turn))
+
+
+def render_facts(item: Dict, turn: int, executions: List[Execution]) -> str:
+    """Facts first, in Gemma's words, verified against this item's trace (labels.py). There is
+    no code-only version: 45% of numbers are written inline in solve() and have no name."""
+    block = facts_label(item, turn)
     if block is None:
         raise KeyError(f"{item['id']} turn {turn}: no verified facts-first label (python -m library.domain.math_tutor.labels)")
     return block.replace("<solution>", "").replace("</solution>", "").strip()

@@ -203,6 +203,11 @@ def sentence_with(text: str, number: int) -> str:
     return ""
 
 
+def add_words(words_of: Dict[int, List[str]], number: int, words: str) -> None:
+    if words not in words_of.setdefault(number, []):
+        words_of[number].append(words)
+
+
 def solution_foci(item: Dict, turn: int, block: str, random_generator: random.Random) -> List[Focus]:
     """Every focus of one shown solution (a gold label or the tutor's own block)."""
     shared = conversation_features(item, turn)
@@ -211,7 +216,7 @@ def solution_foci(item: Dict, turn: int, block: str, random_generator: random.Ra
     written = set(text_numbers(" ".join(tasks[:turn + 1])))
     implied = constants_allowed(" ".join(tasks[:turn + 1]))
     earlier_answers = set(item["answers"][:turn])
-    words_of: Dict[int, str] = {}
+    words_of: Dict[int, List[str]] = {}   # number -> the solution's words for it, in order
     foci = [Focus("none", key="none", features=set(shared))]
 
     facts = [line for line in lines if line.kind == "fact"]
@@ -223,7 +228,7 @@ def solution_foci(item: Dict, turn: int, block: str, random_generator: random.Ra
             features.add("from_problem")
         elif line.number in implied:
             features.add("implied_by_word")
-        words_of.setdefault(line.number, line.label)
+        add_words(words_of, line.number, line.label)
         foci.append(Focus("fact", {"number": line.number, "words": line.label}, features, key=f"fact{index}"))
 
     calculations = [line for line in lines if line.kind == "calculation"]
@@ -261,9 +266,13 @@ def solution_foci(item: Dict, turn: int, block: str, random_generator: random.Ra
             slots["calculation"] = expression
             features.add("multi_operation")
             operands = [int(number) for number in re.findall(r"\d+", expression)]
-        if "a" in slots and slots["a"] in words_of and slots["b"] in words_of:
-            slots.update(a_words=words_of[slots["a"]], b_words=words_of[slots["b"]])
-            features.add("has_words")
+        if "a" in slots:
+            a_options, b_options = words_of.get(slots["a"], []), words_of.get(slots["b"], [])
+            if slots["a"] == slots["b"]:   # "5 + 5": two quantities, so two different labels or none
+                a_options, b_options = a_options[:1], a_options[1:2]
+            if a_options and b_options:
+                slots.update(a_words=a_options[0], b_words=b_options[0])
+                features.add("has_words")
         links = []
         for number in operands:
             if number in result_keys:
@@ -282,7 +291,7 @@ def solution_foci(item: Dict, turn: int, block: str, random_generator: random.Ra
         foci.append(Focus("step", {k: v for k, v in slots.items() if v is not None and v != ""}, features, key=key, links=links))
         if line.number is not None:
             result_keys.setdefault(line.number, key)
-            words_of.setdefault(line.number, line.label)
+            add_words(words_of, line.number, line.label)
     for focus in foci:   # a step also links forward, to the steps that use its result
         for key in focus.links:
             target = next((other for other in foci if other.key == key), None)
@@ -339,16 +348,22 @@ def mistake_foci(calculations, answer: int, distractors: List[int], shared: set,
 
 def what_if_foci(item: Dict, turn: int, block: str, random_generator: random.Random, limit: int = 2) -> List[Focus]:
     """Change one number of this turn's task, run the code again: the new answer, and the shown
-    solution carried over to the new number (kept only if it passes the label check)."""
+    solution carried over to the new number (kept only if it passes the label check). A number
+    that two facts show, or that an earlier turn already used, is not offered: "what if 9
+    instead of 5" would be unclear there, and the carried-over solution would change both."""
     tasks, sources = tasks_of(item), sources_of(item)
     text, source = tasks[turn], sources[turn]
     implied = constants_allowed(text)
-    candidates = sorted({value for value in text_numbers(text) if value > 1 and value in code_literals(source)
-                         and value not in implied})
-    random_generator.shuffle(candidates)
     executions = turn_executions(item)
+    facts = [line for line in parse(block) if line.kind == "fact"]
+    earlier_numbers = (set(text_numbers(" ".join(tasks[:turn]))) | set(item["answers"][:turn])
+                       | {value for earlier in range(turn) for value in executions[earlier].operation_values})
+    candidates = sorted({value for value in text_numbers(text) if value > 1 and value in code_literals(source)
+                         and value not in implied and value not in earlier_numbers
+                         and sum(fact.number == value for fact in facts) <= 1})
+    random_generator.shuffle(candidates)
     state = executions[turn - 1].result if turn > 0 else None
-    words_of = {line.number: line.label for line in parse(block) if line.kind == "fact"}
+    words_of = {fact.number: fact.label for fact in facts}
     # the new number must be new to the whole conversation, or "7 instead of 5" can mean an earlier 7
     in_conversation = (set(text_numbers(" ".join(tasks[:turn + 1]))) | set(item["answers"][:turn + 1])
                        | {int(number) for number in re.findall(r"\d+", block)})
@@ -373,7 +388,8 @@ def what_if_foci(item: Dict, turn: int, block: str, random_generator: random.Ran
                 changed["follow_ups"][turn - 1] = {"question": replace_in_text(text, {old: new}),
                                                    "solve": replace_in_code(source, {old: new})}
             changed_executions = executions[:turn] + [execution]
-            gold = transfer(block, {old: new}, gold_calculations(changed, turn, changed_executions), answer)
+            gold = transfer(block, gold_calculations(changed, turn, changed_executions), answer,
+                            fact_numbers=[{old: new}], label_numbers=[{old: new}])[0]
             context = " ".join(tasks[:turn + 1] + [str(n) for n in item["answers"][:turn]] + [str(new)])
             if gold and check_against_trace(gold, computed_values(changed_executions, turn), answer, context):
                 gold = ""

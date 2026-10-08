@@ -28,7 +28,7 @@ the main line only. Turn types:
 
 from typing import Dict, Iterator, List, Optional, Tuple
 
-from .annotations import NEEDS_STORY_NAMES, render
+from .annotations import NEEDS_STORY_NAMES, facts_label, render
 
 SOLUTION, EXPLANATION, OUT_OF_SCOPE = "<solution>", "<explanation>", "<out_of_scope>"
 CLOSING = {SOLUTION: "</solution>", EXPLANATION: "</explanation>"}
@@ -97,10 +97,27 @@ def explanation_target(text: str) -> str:
     return block("explanation", text)
 
 
+def labelled_turns(item: Dict, annotation: str) -> int:
+    """How many turns of the item, from the first, have a gold solution in this annotation.
+    Facts-first labels exist only for turns the label pass verified: the count stops at the
+    first turn without one (a later turn's context shows the earlier solutions). Named and code
+    labels come from the writer's variable names, which rewordings inherit from their original
+    story: none for rewordings until a relabel pass."""
+    if annotation in NEEDS_STORY_NAMES and str(item.get("source", "")).startswith("reword:"):
+        return 0
+    turns = 1 + len(item["follow_ups"])
+    if annotation != "facts":
+        return turns
+    for turn in range(turns):
+        if facts_label(item, turn) is None:
+            return turn
+    return turns
+
+
 def solve_turns(item: Dict, annotation: str) -> Iterator[Dict]:
-    """One solve record per turn of an item: the context the model reads and the gold
-    solution block in the given annotation format."""
-    solutions = render(item, annotation)
+    """One solve record per labelled turn of an item (labelled_turns): the context the model
+    reads and the gold solution block in the given annotation format."""
+    solutions = render(item, annotation, turns=labelled_turns(item, annotation))
     tasks = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
     conversation = Conversation()
     for turn, (task, solution) in enumerate(zip(tasks, solutions)):
@@ -122,16 +139,8 @@ def solve_turns(item: Dict, annotation: str) -> Iterator[Dict]:
 
 
 def usable(item: Dict, annotation: str) -> bool:
-    """Named and code labels come from the writer's variable names, which rewordings
-    inherit from their original story: skip rewordings for those. Facts-first labels exist
-    only for turns the label pass verified."""
-    if annotation == "facts":
-        try:
-            render(item, "facts")
-            return True
-        except KeyError:
-            return False
-    return not (annotation in NEEDS_STORY_NAMES and str(item.get("source", "")).startswith("reword:"))
+    """Whether the item gives any record in this annotation (at least its first turn is labelled)."""
+    return labelled_turns(item, annotation) > 0
 
 
 def thread_turns(item: Dict, annotation: str, thread_record: Dict) -> Iterator[Dict]:
@@ -143,8 +152,17 @@ def thread_turns(item: Dict, annotation: str, thread_record: Dict) -> Iterator[D
     message gives a route record with the target <out_of_scope> and leaves the context as it
     was; a what-if gives a route record (if a thread is open) and a solve record whose target
     is the facts-first label carried over to the new number (facts annotation only), and ends
-    the thread."""
+    the thread. No records if the thread's turn has no gold solution in this annotation.
+
+    Thesis note: the thread pass ran on the facts-first main line, so Gemma wrote every
+    explanation reading facts-first solutions. In another annotation the same explanation is
+    scored in that annotation's history (forced mode, so the soft labels fit the context the
+    student reads), but its words may point at a line that format does not show ("the 7
+    bottles per bag"). Explanation results across annotations carry that mismatch; facts is
+    the annotation where the targets and their history agree."""
     turn = thread_record["turn"]
+    if turn >= labelled_turns(item, annotation):
+        return
     solutions = render(item, annotation, turns=turn + 1)
     tasks = [item["problem"]] + [follow_up["question"] for follow_up in item["follow_ups"]]
     conversation = Conversation()

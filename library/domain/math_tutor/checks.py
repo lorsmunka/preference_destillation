@@ -31,6 +31,7 @@ FACT = re.compile(r"^(?P<label>[^=]+?)\s*=\s*(?P<number>\d+)\s*$")
 CALCULATION = re.compile(r"^(?P<label>[^=]+?)\s*=\s*(?P<expression>[^=]+?)\s*=\s*(?P<result>.+?)\s*$")
 LIST_MARKER = re.compile(r"^\s*(\d+[.)]|[-*•])\s")   # "1. ", "- ": not part of the format
 REMAINDER = re.compile(r"^(?P<a>\d+) / (?P<b>\d+) = (?P<q>\d+) remainder (?P<r>\d+)(, rounded up = (?P<up>\d+))?$")
+LEFT_OVER = re.compile(r"^remainder of (?P<division>.+)$")   # "remainder of 23 / 5 = 3" (annotations.calculation)
 
 
 class Line(NamedTuple):
@@ -68,43 +69,78 @@ def parse(block: str) -> List[Line]:
     return lines
 
 
+def tree_value(node) -> Optional[int]:
+    """Whole-number value of a parsed expression of + - * / (// in the tree) on whole numbers,
+    every division exact; None for anything else (floats, **, ^, %, names...)."""
+    if isinstance(node, ast.Constant) and type(node.value) is int:
+        return node.value
+    if not (isinstance(node, ast.BinOp) and type(node.op) in (ast.Add, ast.Sub, ast.Mult, ast.FloorDiv)):
+        return None
+    left, right = tree_value(node.left), tree_value(node.right)
+    if left is None or right is None:
+        return None
+    if isinstance(node.op, ast.Add):
+        return left + right
+    if isinstance(node.op, ast.Sub):
+        return left - right
+    if isinstance(node.op, ast.Mult):
+        return left * right
+    return left // right if right and left % right == 0 else None
+
+
+def parsed_expression(expression: str):
+    """The tree of '6 * 9' or '84 / 6' ('/' read as division), or None if it does not parse."""
+    try:
+        return ast.parse(expression.strip().replace("/", "//"), mode="eval").body
+    except (SyntaxError, ValueError, RecursionError):
+        return None
+
+
+def whole_number_value(expression: str) -> Optional[int]:
+    tree = parsed_expression(expression)
+    try:
+        return None if tree is None else tree_value(tree)
+    except RecursionError:
+        return None
+
+
+def left_over_true(division: str, result: Optional[int]) -> bool:
+    """'remainder of 23 / 5 = 3': the result is what is left over after the last division."""
+    tree = parsed_expression(division)
+    if not (isinstance(tree, ast.BinOp) and isinstance(tree.op, ast.FloorDiv)):
+        return False
+    dividend, divisor = tree_value(tree.left), tree_value(tree.right)
+    return dividend is not None and bool(divisor) and result == dividend % divisor
+
+
 def arithmetic_true(line: Line) -> bool:
-    """Whether a calculation line's own arithmetic holds."""
-    expression, result = line.text.split("=", 1)[1].rsplit("=", 1) if line.text.count("=") >= 2 else ("", "")
-    remainder = REMAINDER.match(f"{expression.strip()} = {result.strip()}")
+    """Whether a calculation line's own arithmetic holds: + - * / on whole numbers (every
+    division exact), or one of the remainder forms annotations.calculation writes."""
+    if line.text.count("=") < 2:
+        return False
+    expression, result = (part.strip() for part in line.text.split("=", 1)[1].rsplit("=", 1))
+    remainder = REMAINDER.match(f"{expression} = {result}")
     if remainder:
         a, b, q, r = (int(remainder.group(name)) for name in ("a", "b", "q", "r"))
         up = remainder.group("up")
         return b > 0 and a == b * q + r and r < b and (up is None or int(up) == q + (1 if r else 0))
-    try:
-        tree = ast.parse(expression.strip().replace("/", "//"), mode="eval")
-        if not all(isinstance(node, (ast.Expression, ast.BinOp, ast.Constant, ast.operator)) for node in ast.walk(tree)):
-            return False
-        value = eval(compile(tree, "<line>", "eval"), {"__builtins__": {}})
-        divisions_exact = all(eval(compile(ast.Expression(node.left), "<l>", "eval"), {"__builtins__": {}})
-                              % eval(compile(ast.Expression(node.right), "<r>", "eval"), {"__builtins__": {}}) == 0
-                              for node in ast.walk(tree) if isinstance(node, ast.BinOp) and isinstance(node.op, ast.FloorDiv))
-        return divisions_exact and line.number is not None and value == line.number
-    except Exception:
-        return False
+    left_over = LEFT_OVER.match(expression)
+    if left_over:
+        return left_over_true(left_over.group("division"), line.number)
+    value = whole_number_value(expression)
+    return value is not None and value == line.number
 
 
 def evaluate_expression(expression: str) -> Optional[int]:
     """Whole-number value of '6 * 9' or '84 / 6' (division must be exact), else None."""
-    try:
-        tree = ast.parse(expression.strip().replace("//", "/").replace("/", "//"), mode="eval")
-        if not all(isinstance(node, (ast.Expression, ast.BinOp, ast.Constant, ast.operator)) for node in ast.walk(tree)):
-            return None
-        for node in ast.walk(tree):
-            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.FloorDiv):
-                left = eval(compile(ast.Expression(node.left), "<l>", "eval"), {"__builtins__": {}})
-                right = eval(compile(ast.Expression(node.right), "<r>", "eval"), {"__builtins__": {}})
-                if right == 0 or left % right:
-                    return None
-        value = eval(compile(tree, "<e>", "eval"), {"__builtins__": {}})
-        return value if isinstance(value, int) else None
-    except Exception:
-        return None
+    return whole_number_value(expression.replace("//", "/"))
+
+
+def operands(line: Line) -> List[int]:
+    """The numbers a calculation line works with: 'money left = 13 - 8 = 5' -> [13, 8];
+    '16 / 3 = 5 remainder 1, rounded up = 6' and 'remainder of 23 / 5 = 3' -> [16, 3], [23, 5]."""
+    worked_out = line.text.split("=")[1]
+    return [int(number) for number in re.findall(r"\d+", worked_out)]
 
 
 def complete_results(block: str) -> str:
@@ -139,8 +175,10 @@ def check_lines(block: str) -> Optional[str]:
     return None
 
 
+# "We should have added" takes the solution back; "we should have 9 groups" only states the result
 CONCESSION = re.compile(
-    r"\b(I|we) (missed|forgot|made a mistake|made an error|got it wrong|was wrong|were wrong|should have)\b"
+    r"\b(I|we) (missed|forgot|made a mistake|made an error|got it wrong|was wrong|were wrong)\b"
+    r"|\b(I|we) should have (\w{2,}ed|done|taken|been|got|gotten|written|put|made|kept|thought|given|found|seen|shown)\b"
     r"|\bmy (mistake|error)\b|\bsorry\b|\blet me (fix|correct|redo)\b", re.IGNORECASE)
 
 
@@ -166,10 +204,12 @@ def check_explanation(text: str, kind: Optional[str] = None) -> Optional[str]:
 
 def check_against_trace(block: str, computed: List[int], answer: int, context: str) -> Optional[str]:
     """The label-pass check: well formed and true (check_lines); the answer is the function's;
-    every calculation's result is a value some operation of the function produced (so a long
-    step may be split into child-sized ones, or two joined); every fact is a number in the
-    conversation or one a word implies ("a pair" = 2, "a week" = 7); every number a calculation
-    uses is a fact, an earlier result, or in the conversation (nothing invented)."""
+    at least one calculation; every calculation's result is a value some operation of the
+    function produced (so a long step may be split into child-sized ones, or two joined); every
+    fact is a number in the conversation or one a word implies ("a pair" = 2, "a week" = 7);
+    every number a calculation uses is a listed fact, the result of an earlier line, a number a
+    word implies, or 0 / 1. So the facts are the numbers the calculations work with: a fact that
+    says one number while the calculation uses another is caught."""
     problem = check_lines(block)
     if problem:
         return problem
@@ -178,19 +218,19 @@ def check_against_trace(block: str, computed: List[int], answer: int, context: s
         return f"answer {lines[-1].number}, the function gives {answer}"
     if not any(line.kind == "fact" for line in lines):
         return "no facts listed"
-    available = set(text_numbers(context)) | set(digit_numbers(context)) | constants_allowed(context) | {0, 1}
+    if not any(line.kind == "calculation" for line in lines):
+        return "no calculation"
+    implied = constants_allowed(context) | {0, 1}
+    in_conversation = set(text_numbers(context)) | set(digit_numbers(context)) | implied
     function_values = set(computed)
-    known = set(available)
+    known = implied | {line.number for line in lines if line.kind == "fact"}
     for line in lines:
-        if line.kind == "fact":
-            if line.number not in available:
-                return f"fact {line.number} is not in the conversation"
-            known.add(line.number)
-        elif line.kind == "calculation":
-            expression = line.text.split("=", 1)[1].rsplit("=", 1)[0]
-            for number in re.findall(r"\d+", expression.split("remainder")[0]):
-                if int(number) not in known:
-                    return f"calculation uses {number}, which is not a fact, an earlier result or in the conversation"
+        if line.kind == "fact" and line.number not in in_conversation:
+            return f"fact {line.number} is not in the conversation"
+        if line.kind == "calculation":
+            for number in operands(line):
+                if number not in known:
+                    return f"calculation uses {number}, which is not a listed fact, an earlier result or a number a word implies"
             if line.number not in function_values:
                 return f"result {line.number} is not a value the function computes {sorted(function_values)}"
             known.add(line.number)

@@ -46,14 +46,16 @@ def solution_body(block: str) -> str:
 
 
 def plan_messages(item: Dict, turn: int, block: str, depth: int, generator, random_generator: random.Random) -> List[Dict]:
-    """The thread's messages, drawn before any reply exists (the templates only need the solution)."""
+    """The thread's messages, drawn before any reply exists (the templates only need the solution).
+    Each is drawn at the depth of the explanations before it: an off-topic message adds none to
+    the context, so the message after it cannot follow up an explanation that is not there."""
     foci = solution_foci(item, turn, block, random_generator)
     if turn == len(item["follow_ups"]):
         foci += [focus for focus in what_if_foci(item, turn, block, random_generator) if focus.data.get("gold")]
-    messages, previous = [], None
-    for position in range(depth):
-        candidates = related(foci, previous) if position > 0 else foci
-        message = generator.draw(candidates, position, random_generator, kind_weights=kind_weights(position))
+    messages, previous, explanations = [], None, 0
+    for _ in range(depth):
+        candidates = related(foci, previous) if explanations > 0 else foci
+        message = generator.draw(candidates, explanations, random_generator, kind_weights=kind_weights(explanations))
         if message is None:
             break
         entry = {"question": message.text, "kind": message.kind, "route": message.route,
@@ -65,6 +67,7 @@ def plan_messages(item: Dict, turn: int, block: str, depth: int, generator, rand
             break   # a new solution closes the thread
         if message.kind != "off_topic":
             previous = message.focus
+            explanations += 1
     return messages
 
 
@@ -95,13 +98,19 @@ def main_line(item: Dict, turn: int, labels: Dict[tuple, str]) -> Conversation:
 
 
 def reply_entry(message: Dict, reply: str) -> Dict:
-    """The message with Gemma's reply, its route and the check."""
+    """The message with Gemma's reply, its route and the check (an explanation cut off at the
+    token limit, without </explanation>, fails it)."""
     routed = parse_route(reply)
     entry = dict(message, routed=routed, reply=reply)
     if message["route"] == "explanation":
         explanation = reply[reply.find("<explanation>") + len("<explanation>"):] if routed == "explanation" else ""
         entry["explanation"] = explanation.split("</explanation>")[0].strip()
-        entry["check"] = check_explanation(entry["explanation"], message["kind"]) if routed == "explanation" else f"routed to {routed}"
+        if routed != "explanation":
+            entry["check"] = f"routed to {routed}"
+        elif "</explanation>" not in explanation:
+            entry["check"] = "cut off: no </explanation>"
+        else:
+            entry["check"] = check_explanation(entry["explanation"], message["kind"])
     else:
         entry["check"] = None if routed == message["route"] else f"routed to {routed}"
         if message["route"] == "solution":
@@ -109,42 +118,46 @@ def reply_entry(message: Dict, reply: str) -> Dict:
     return entry
 
 
-def run_threads(handler, domain, items: Optional[List[Dict]] = None, generator=None) -> int:
-    """Run every planned thread message by message, appending finished threads."""
+def run_threads(handler, domain, items: Optional[List[Dict]] = None, generator=None,
+                labels: Optional[Dict[tuple, str]] = None, threads_path: Path = THREADS_PATH) -> int:
+    """Run every planned thread message by message (all threads' first messages in batches, then
+    their second...). A thread is appended as soon as it stops or has no message left, so an
+    interrupted pass keeps every finished thread and the next run skips those items."""
     if items is None:
         items = [json.loads(line) for line in open(ITEMS_DIR / "items.jsonl", encoding="utf-8")]
     generator = generator or question_generator()
-    labels = read_labels()
+    labels = read_labels() if labels is None else labels
     done = set()
-    if THREADS_PATH.exists():
-        done = {json.loads(line)["item_id"] for line in open(THREADS_PATH, encoding="utf-8")}
+    if threads_path.exists():
+        done = {json.loads(line)["item_id"] for line in open(threads_path, encoding="utf-8")}
     plans = [plan for plan in plan_threads(items, labels, generator) if plan["item"]["id"] not in done]
     for plan in plans:
         plan["conversation"] = main_line(plan["item"], plan["turn"], labels)
         plan["thread"] = []
-    THREADS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    for position in range(max((len(plan["messages"]) for plan in plans), default=0)):
-        active = [plan for plan in plans if len(plan["messages"]) > position and not plan.get("stopped")]
-        for start in range(0, len(active), BATCH):
-            batch = active[start:start + BATCH]
-            messages = [plan["messages"][position] for plan in batch]
-            prompts = [domain.teacher_prompt(plan["conversation"].route_context(message["question"]))
-                       for plan, message in zip(batch, messages)]
-            replies = handler.generate_texts(prompts, max_new_tokens=domain.max_steps, stop_strings=domain.stop_strings)
-            for plan, message, reply in zip(batch, messages, replies):
-                entry = reply_entry(message, reply)
-                plan["thread"].append(entry)
-                if message["route"] == "explanation":
-                    if entry["check"]:   # kept for analysis, but no turn builds on it
+    threads_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(threads_path, "a", encoding="utf-8") as out:
+        for position in range(max((len(plan["messages"]) for plan in plans), default=0)):
+            active = [plan for plan in plans if len(plan["messages"]) > position and not plan.get("stopped")]
+            for start in range(0, len(active), BATCH):
+                batch = active[start:start + BATCH]
+                messages = [plan["messages"][position] for plan in batch]
+                prompts = [domain.teacher_prompt(plan["conversation"].route_context(message["question"]))
+                           for plan, message in zip(batch, messages)]
+                replies = handler.generate_texts(prompts, max_new_tokens=domain.max_steps, stop_strings=domain.stop_strings)
+                for plan, message, reply in zip(batch, messages, replies):
+                    entry = reply_entry(message, reply)
+                    plan["thread"].append(entry)
+                    if message["route"] == "explanation":
+                        if entry["check"]:   # kept for analysis, but no turn builds on it
+                            plan["stopped"] = True
+                        else:
+                            plan["conversation"].add_explanation(message["question"], entry["explanation"])
+                    elif message["route"] == "solution":
                         plan["stopped"] = True
-                    else:
-                        plan["conversation"].add_explanation(message["question"], entry["explanation"])
-                elif message["route"] == "solution":
-                    plan["stopped"] = True
-    with open(THREADS_PATH, "a", encoding="utf-8") as out:
-        for plan in plans:
-            out.write(json.dumps({"item_id": plan["item"]["id"], "turn": plan["turn"], "thread": plan["thread"]},
-                                 ensure_ascii=False) + "\n")
+                    if plan.get("stopped") or len(plan["messages"]) == position + 1:
+                        out.write(json.dumps({"item_id": plan["item"]["id"], "turn": plan["turn"], "thread": plan["thread"]},
+                                             ensure_ascii=False) + "\n")
+                        out.flush()
     return len(plans)
 
 
