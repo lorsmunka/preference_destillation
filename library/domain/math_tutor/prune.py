@@ -11,7 +11,8 @@ in, how many went out, and why each dropped item was dropped:
   6 shape cap  inside a slice, no full shape (follow-ups included) above 25% of the
                slice; the most redundant go first
 
-Then each kept item gets its split: held-out shape, test (10% per slice) or train.
+Then each kept item gets its split: held-out shape (any turn's own shape is one of
+HELDOUT_SHAPES), test (10% of the families per slice) or train.
 
     python -m library.domain.math_tutor.prune
 
@@ -70,6 +71,13 @@ def svamp_problems() -> List[Dict]:
     problems += [json.loads(line) for line in open(BENCHMARKS_DIR / "dropped.jsonl", encoding="utf-8")
                  if json.loads(line)["set"] == "svamp"]
     return problems
+
+
+def is_heldout(item: Dict) -> bool:
+    """A held-out shape is never trained on as one turn's composition, so the whole item is
+    held out when any of its turns, the problem or a follow-up, has that shape. Chaining the
+    same operations across two turns ("add" then "mul") is still trained on."""
+    return any(turn_shape in HELDOUT_SHAPES for turn_shape in item["shape"].split("|"))
 
 
 def source_kind(item: Dict) -> str:
@@ -209,10 +217,11 @@ def prune() -> None:
     capped = [item for item in clean if item["id"] not in over_cap_ids]
     pipeline.record("shape cap", clean, capped, drops, {"cap_by_slice": dict(sorted(caps.items()))})
 
-    # splits, by family, so later rewordings and renumberings follow their original
+    # splits, by family (items.family_of), so the siblings written from one human seed share
+    # a split, and later rewordings and renumberings follow their original
     families_by_slice = defaultdict(list)
     for item in capped:
-        if item["problem_shape"] in HELDOUT_SHAPES:
+        if is_heldout(item):
             item["split"] = "heldout_shape"
         else:
             families_by_slice[item["slice"]].append(item["family"])
@@ -237,7 +246,9 @@ def prune() -> None:
         "rules": {"near_duplicate_sequence_ratio": NEAR_DUPLICATE, "too_close_to_test_trigram_jaccard": TOO_CLOSE_TO_TEST,
                   "redundancy_floor": REDUNDANCY_FLOOR,
                   "shape_cap_share": SHAPE_CAP_SHARE, "shape_cap_floor": SHAPE_CAP_FLOOR,
-                  "test_share": TEST_SHARE, "heldout_shapes": HELDOUT_SHAPES, "seed": SEED},
+                  "test_share": TEST_SHARE, "heldout_shapes": HELDOUT_SHAPES,
+                  "heldout_rule": "any turn's own shape", "family": "the seed id for seeded items, else the item id",
+                  "seed": SEED},
         "raw_files": dict(Counter(f"{path.name}" for path in sorted(RAW_DIR.glob("*.jsonl"))
                                   for line in open(path, encoding="utf-8") if line.strip())),
         "stages": pipeline.stages,

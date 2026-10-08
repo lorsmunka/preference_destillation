@@ -58,6 +58,8 @@ def normalise(text: str, name_words: Set[str]) -> List[str]:
                 normalised.append("N")
         elif word in name_words:
             normalised.append("NAME")
+        elif word.endswith("'s") and word[:-2] in name_words:
+            normalised.append("NAME's")   # "Mia's" and "Tom's" are the same word
         else:
             normalised.append(word.lower())
     return normalised

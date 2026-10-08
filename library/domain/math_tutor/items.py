@@ -79,6 +79,16 @@ def constants_allowed(text: str) -> set:
     return {value for word in words for value in CONSTANT_WORDS.get(word, ())}
 
 
+def family_of(item: Dict) -> str:
+    """The items that must land in the same split. Items written from one human seed
+    ("source": "seeded:asdiv-nluds-0001") are siblings, so they share the seed's id; any other
+    item is its own family. Rewordings and renumbered copies keep their original's family."""
+    source = str(item.get("source", ""))
+    if source.startswith("seeded:"):
+        return source[len("seeded:"):]
+    return item["id"]
+
+
 def check_turn(text: str, execution, turn: int, distractor: str) -> Optional[str]:
     """The rules that tie one turn's code to its text."""
     if not execution.operations:
@@ -142,7 +152,7 @@ def validate(item: Dict) -> Tuple[Optional[Dict], Optional[str]]:
     validated["answers"] = answers
     validated["shape"] = "|".join(shapes)
     validated["problem_shape"] = shapes[0]
-    validated["family"] = item.get("family", item["id"])
+    validated["family"] = item.get("family", family_of(item))
     return validated, None
 
 

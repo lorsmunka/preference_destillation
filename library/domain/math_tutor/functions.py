@@ -133,22 +133,28 @@ class Interpreter:
         return self.variables[name]
 
     def returned_dict(self, node) -> Dict[str, int]:
+        """Every turn writes its own 'answer': one inherited through **state (or overwritten
+        by a **state after it) would be the previous turn's answer, not this turn's."""
         if not isinstance(node, ast.Dict):
             raise NotAllowed("solve must return a dict")
         result = {}
+        answer_written = False
         for key, value in zip(node.keys, node.values):
             if key is None:  # {**state, ...}: carry the previous turn's values forward
                 if not (isinstance(value, ast.Name) and value.id == "state" and self.state is not None):
                     raise NotAllowed("only **state may be unpacked")
+                if answer_written:
+                    raise NotAllowed("**state must come before 'answer'")
                 result.update(self.state)
             elif isinstance(key, ast.Constant) and isinstance(key.value, str):
                 filled = self.filled(value) if self.trace else ""
                 result[key.value] = self.evaluate(value)
+                answer_written = answer_written or key.value == "answer"
                 if self.trace and any(isinstance(node, ast.BinOp) for node in ast.walk(value)):  # computed in the return itself
                     self.steps.append(Step(key.value, self.as_code(value), filled, result[key.value], True))
             else:
                 raise NotAllowed("dict keys must be plain strings")
-        if "answer" not in result:
+        if not answer_written:
             raise NotAllowed("returned dict has no 'answer'")
         return result
 
@@ -200,7 +206,10 @@ def execute(source: str, state: Optional[Dict[str, int]] = None, allow_remainder
             trace: bool = False) -> Execution:
     """Run one solve() (state=None for the first turn, the previous result for a follow-up)."""
     interpreter = Interpreter(state, allow_remainders, trace)
-    result = interpreter.run(parse_solve(source, takes_state=state is not None))
+    try:
+        result = interpreter.run(parse_solve(source, takes_state=state is not None))
+    except RecursionError:  # Python's own parser and the tree walk both give up on a 20,000-term chain
+        raise NotAllowed("expression too long or too deeply nested")
     return Execution(result, interpreter.operations, interpreter.literals, interpreter.reads_state, interpreter.steps,
                      interpreter.operation_values)
 

@@ -23,6 +23,7 @@ from typing import Dict, List, Optional
 from library.shared.config import PROJECT_ROOT
 from .functions import NotAllowed, equation_to_solve, execute, trace_equation
 from .harvest import HARVEST_DIR, check_harvested
+from .items import digit_numbers
 from .prune import reason_category
 from .similarity import NEAR_DUPLICATE, TrigramIndex, WordSequenceIndex, collect_name_words, normalise, word_trigrams
 
@@ -155,6 +156,8 @@ def check(record: Dict) -> Optional[str]:
         return "not whole numbers all the way"
     if max(numbers) > MAX_NUMBER:
         return "number above 99"
+    if any(number > MAX_NUMBER for number in digit_numbers(record["problem"])):
+        return "number above 99 in the text"   # one the equation does not use ("Baker made 170 cakes")
     if operations[-1][1] > MAX_ANSWER:
         return "answer above 999"
     if record["dataset_answer"] is None or operations[-1][1] != record["dataset_answer"]:

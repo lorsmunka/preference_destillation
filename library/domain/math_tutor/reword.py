@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from .items import validate
+from .items import family_of, validate
 from .similarity import NEAR_DUPLICATE, collect_name_words, normalise, sequence_ratio
 
 ITEMS_DIR = Path(__file__).resolve().parent / "items"
@@ -53,7 +53,7 @@ def expand(record: Dict, originals: Dict[str, Dict]) -> Tuple[Optional[Dict], Op
     item["problem"] = record.get("problem", "")
     item["follow_ups"] = [{"question": question, "solve": follow_up["solve"]} for question, follow_up in zip(questions, follow_ups)]
     item["source"] = f"reword:{original['id']}"
-    item["family"] = original.get("family", original["id"])
+    item["family"] = original.get("family", family_of(original))
     return item, None
 
 
