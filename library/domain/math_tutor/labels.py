@@ -115,6 +115,7 @@ def label_wave(handler, items: List[Dict], turn: int, labels: Dict[tuple, str], 
                                          answer=item["answers"][turn]) for item, context, executions in batch]
                 texts = handler.generate_texts(prompts, max_new_tokens=220, temperature=0.0 if attempt == 0 else 0.7,
                                                stop_strings=["</solution>"], seed=attempt)
+                print(f"  turn {turn}, try {attempt + 1}: {min(start + BATCH, len(pending))}/{len(pending)}", flush=True)
                 for (item, context, executions), text in zip(batch, texts):
                     block = text[text.find("<solution>"):] if "<solution>" in text else "<solution>\n" + text.strip()
                     problem = check_against_trace(block, computed_values(executions, turn), item["answers"][turn], context)
