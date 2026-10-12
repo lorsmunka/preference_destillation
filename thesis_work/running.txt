@@ -19,11 +19,12 @@ STATUS 2026-10-08 evening (pick up here)
                training / more data; label-token loss weight if step 1 points there; bigger student).
                Success = clear excess over the majority baseline on the fixed test set.
             3. Then re-run part 1 as needed, and the thin slice of part 2 with baselines.
-  DECISIONS WAITING FOR THE USER
-            - 3 unfinished old runs now refused on resume (ideaA-vocab-aux025-s1, ideaD-data02048-s4,
-              ideaG-purece-s5): delete, or drop from their experiments?
-            - Update CLAUDE.md (still Gemma 3 4B / reddit-only / ~525 tokens / old cohort grouping)?
-            - Cloud: may runs go unattended? One teacher precision for the final data (bf16 or NF4).
+  DECIDED 2026-10-12
+            - Local only: no cloud runs; all teacher data NF4 on the 4070 (one precision). The full math-tutor
+              data run must be sized to fit attended local sessions.
+            - The 3 unfinished August runs (ideaA-vocab-aux025-s1, ideaD-data02048-s4, ideaG-purece-s5) stay
+              on disk; reports skip non-completed runs.
+            - CLAUDE.md updated to the two-part thesis.
 
 RUNNING   (2026-10-05) nothing. No GPU in use, no agents.
           math_tutor CORPUS COMPLETE 2026-10-05 (a4764af): 34,002 items, 130,546 problems with

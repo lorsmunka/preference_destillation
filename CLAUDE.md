@@ -1,90 +1,115 @@
 # Preference Distillation
 
-University thesis proof of concept: distill domain-specific knowledge from Gemma 3 4B into a small transformer using reduced vocabulary. Autoregressive generation is intentional—simpler architectures (BERT, classifiers) could classify, but this proves the technique works for generation.
+BSc thesis (Óbuda University, due November 2026): a modular **framework** that distils a large LLM's
+domain knowledge into **small transformers trained from scratch** with a task-derived **reduced output
+vocabulary**, with fine control over architecture and training schedule and analytics of how the
+distillation went. Autoregressive generation is intentional (classifiers could classify; this shows the
+technique works for generation).
 
-## Task
-
-Reddit comment classification (tone, sentiment, safety, toxicity) → deterministic JSON output.
+- **Part 1 — the method across domains** (done, partly being redone): reddit comment → JSON labels, math
+  word problems (v1), post-generation, long-context recall (Virág). E-01 compared KL/CE anneal arms.
+  **Caution (code review X-C1, 2026-10-08):** the reddit and math students only learned the class prior
+  (accuracy at the majority baseline), so their task-accuracy results are floor effects. Diagnosis is the
+  current next step.
+- **Part 2 — distilling an agent** (in progress): the **agentic math tutor** = distilled student + harness.
+  Status, decisions and next steps: the STATUS block at the top of `thesis_work/running.txt`.
 
 ## Architecture
 
-- **Teacher**: Gemma 3 4B generates training data with logits
-- **Student**: Small transformer with reduced output vocabulary (~525 tokens)
-- **Loss**: KL divergence (match teacher distribution) + Cross-entropy (match predicted token), ratio anneals from 0.9→0.1
+- **Teacher**: Gemma 3 4B (part 1: reddit, math v1, post-gen); Gemma 4 12B (Virág, math tutor). Runs
+  **locally only** (RTX 4070, 12 GB, NF4); no cloud runs. GPU runs only while the user is present.
+- **Student**: small transformer from scratch (defaults in `library/shared/config.py`), reduced output
+  vocabulary (reddit ~525 tokens; math tutor 18,357 from `math_tutor/output_tokens.json`), compact input
+  vocabulary with an unknown-token row.
+- **Loss**: forward KL to the teacher's distribution + cross-entropy (at T=1), KL ratio annealed
+  (e.g. 0.9 → 0.1), temperature annealed. Other divergences (reverse KL, JS, TVD) available.
+- **Teacher data**: generated (teacher writes) or teacher-forced (teacher scores a gold target in one
+  pass); bf16 logits over the reduced vocabulary, with the vocabulary's fingerprint and per-record
+  metadata (split, item_id, turn_type, teacher mode) stored in each batch.
 
-## Project Structure
+## The math tutor (part 2) in one paragraph
 
-Everything is one importable package, `library/`. Researcher entry scripts live at the repo root and import from it (no queue JSON; configs are Python).
+Items = word problem + executable `solve()` (custom AST interpreter, never exec) + up to 3 follow-ups.
+Conversation blocks `<task> <solution> <question> <explanation>`, newest input `<message>`; the model writes
+one block and its opening tag is the route: `<solution>` (new task or what-if; pupil-given numbers = a new
+task), `<explanation>` (question about the working), `<out_of_scope>` (the **harness** replies with a fixed
+sentence). A new task drops the question side thread. The harness checks every solution line / explanation
+and re-asks once. Facts-first solutions are worded by Gemma and checked against the code's trace. Follow-up
+messages come from a **template bank** (`questions/bank/*.jsonl`, 3,418 templates after the exclusions in
+`questions/excluded.jsonl`) filled from the shown solution. **v1 scope is frozen** (deferred ideas: the v2
+wish list in `thesis_work/domain_specs.txt`). Splits: test = 10% of families (family = human seed);
+held out = any turn with shape add>mul / sub>div / sub>add; test rewordings are an **answer-only
+paraphrase test** (no labels or teacher data); SVAMP (735) is the human test.
+
+## Project structure
 
 ```
 library/
-  shared/      paths/constants (config), vocabulary (reduced-vocab builder), device, metrics/, logging/
-  domain/      One self-contained package per domain (reddit / math / post-gen) + registry.
-               Each holds its Domain class (teacher prompt, stop token, task metric, vocab
-               slice) in __init__.py and a corpus.py producing its {"text": ...} input jsonl.
-  model/       Transformer architecture + StudentModel (checkpoint load + generate)
-  data_gen/    DistillationDataGenerator (teacher data generation)
-  training/    Trainer (the loop) + TrainingRunner + BatchHandler, with the loop's parts beside it:
-               schedules (annealed dials), losses (divergence zoo + CE mix), example_encoder
-               (example -> tensors), evaluator (eval passes), checkpoints (save / load)
-  tooling/     Analysis facade + Run / RunStore / Experiment + render (plots, tables)
-train.py           training entry — edit the RUNS list
-generate_data.py   data-generation entry — edit the JOBS list
-analyze.py         analytics/eval entry — Analysis / RunStore
-experiments/ one script per named experiment: its RUNS plus the analysis that reads
-             them back (e.g. postgen_kl_anneal.py), with measured tables in results/
-runs/        per-run artifacts: info.json, logs/ (JSONL), checkpoints/ — on disk only (gitignored);
-             what git keeps is experiments/results/*.csv
-batches/     distillation data — batch_N.npz (bf16 logits, bit-exact vs the teacher; legacy .jsonl still readable)
+  shared/      config (paths/constants, torch-free), vocabulary, batch_files, metrics/, logging/
+  domain/      one package per domain + registry; math_tutor/ = items, renumber, prune, annotations,
+               labels (facts-first label pass), conversation (context rules + training records),
+               checks, questions (+ questions/bank), threads (explanation pass), harness, agentic (domain)
+  agent/       domain-free parts of an agent: question_templates (template engine)
+  model/       Transformer (KV-cached decoding) + StudentModel (checkpoint load + generate)
+  data_gen/    DistillationDataGenerator + ModelHandler (generate / teacher-forced scoring)
+  training/    Trainer, TrainingRunner, BatchHandler (split_batch_files), schedules, losses,
+               example_encoder, evaluator, checkpoints
+  tooling/     Analysis facade + Run / RunStore / Experiment + render + significance
+tests/        unittest suite (stdlib; pytest is not installed)
+experiments/  one script per experiment (RUNS + analysis), results in experiments/results/*.csv
+agents/       briefs and evidence of past agent runs (agents/README.txt); agents/work/ = their scripts
+runs/, batches/  on disk only (gitignored)
+thesis_work/  thesis docs: running.txt (STATUS), findings.txt, domain_specs.txt, code_review.html,
+              literature_review.html (+ literature.bib), thesis_positioning.html, harness_deck.html,
+              thesis.md (the draft: never overwrite), thesis_description.txt (official topic text)
 ```
 
 ## Running
 
 ```
-python train.py          # run configs are a Python RUNS list (not a JSON queue)
-python generate_data.py  # JOBS list
-python analyze.py         # or: from library import Analysis, RunStore
-python experiments/postgen_kl_anneal.py   # one experiment: trains what is missing, then reports
+python -m unittest discover -s tests      # all tests (CPU, ~20 s)
+python train.py                           # RUNS list; returns early if interrupted
+python generate_data.py                   # JOBS list
+python analyze.py                         # zero args: summary of the first completed run
+python experiments/<name>.py              # trains what is missing (completed runs are skipped), then reports
+# math tutor data, in this order (labels and threads need the GPU):
+python -m library.domain.math_tutor.benchmarks
+python -m library.domain.math_tutor.prune
+python -m library.domain.math_tutor.renumber
+python -m library.domain.math_tutor.labels
+python -m library.domain.math_tutor.threads
+python -m library.domain.math_tutor.agentic      # output vocabulary (after the threads)
+python -m library.domain.math_tutor.harness      # Gemma as tutor on test conversations (GPU)
 ```
 
-An experiment is a script, not a config file. Copy an existing one in `experiments/`,
-edit its `RUNS` (a different architecture is just different `hidden_dim` / `num_layers` /
-`num_heads`), and run it — `run_training` skips runs that already completed, so the script
-stays re-runnable and doubles as the record of what the experiment was. Scripts there start
-with the repo-root `sys.path` line so they run without installing the package.
-
-Graceful exit: the dashboard's Stop button (`python progress.py`, creates a `STOP` file) or Ctrl+C in the run's window — the run saves a resume checkpoint and the script exits; re-running resumes. The reason lands in `queue/last_stop.json` and on the dashboard.
+Graceful exit: the dashboard's Stop button (`python progress.py`, creates `STOP`) or Ctrl+C: the run saves a
+resume checkpoint and exits; re-running resumes (a mismatched or stale resume point is refused).
 
 ## Configuration
 
-Run configs are typed objects — `TrainingRun(...)` / `GenerationJob(...)` (`library/specs.py`),
-one per entry in the `RUNS` / `JOBS` lists. `domain=` takes a **Domain object** (a singleton
-like `MATH_WORD_PROBLEM`, a fresh `RedditSentimentDomain()`, or your own subclass — no magic
-strings), everything else has a default. Required: `run_name` (training) + `domain`. Key params:
-`epoch_count`, `batch_size`, `learning_rate`, `kl_ratio_start/end`,
-`distillation_temperature_start/end`, `eval_top_k`, `eval_cap_multiple`. **You pass the Domain
-object everywhere** — to specs, and (for a custom domain) to analysis: `Analysis(run).evaluate(domain=MyDomain())`
-/ `infer(domain=...)`, `StudentModel.from_run(run, domain=...)`, `build_input_vocabulary(MyDomain())`.
-The object is used directly; `info.json` records `domain.name` (string) for paths. Built-in runs
-auto-resolve their name (zero ceremony); the name→object registry is an internal detail for that,
-not part of the front-door API (`register_domain` exists in `library.domain` as an optional escape
-hatch, never required). A plain dict config still works (its `domain` name resolves to a built-in).
-Each Domain owns `max_steps` (a runaway guard: longest expected output + ~35%) — no name-keyed
-config dicts. There is no input-length limit: rotary positions grow on demand, and each run
-records `longest_training_sequence` in its info.json.
-Paths/constants live in `library/shared/config.py` (torch-free).
+Run configs are typed objects — `TrainingRun(...)` / `GenerationJob(...)` (`library/specs.py`), one per
+entry in `RUNS` / `JOBS`. `domain=` takes a **Domain object** (no magic strings); required: `run_name`
+(training) + `domain`. Key params: `epoch_count`, `batch_size`, `learning_rate`, `kl_ratio_start/end`,
+`distillation_temperature_start/end`, `max_training_examples`, `max_test_examples` (fixed test tail,
+default 1024), `shuffle_seed` (default None = file order), `eval_top_k`, `eval_cap_multiple`. Each Domain
+owns `max_steps` (a runaway guard: longest expected output + ~35%); there is no input-length limit
+(rotary positions grow on demand; each run records `longest_training_sequence`). Test set: a fixed tail
+of the batch directory, independent of `max_training_examples`; per-record `split` labels win when present.
 
 ## Evaluation
 
-Single facade: `from library import Analysis`. Accuracy types: **teacher-forced** (ground truth
-as context, optimistic), **student** (own predictions, autoregressive), **task accuracy** (was
-"classification accuracy") + structural validity rate. Distribution metrics (top-k, teacher /
-student entropy, perplexity, mean target rank) and natural-termination / length ratio are
-computed **during eval and logged** — post-run analysis only reads logs, never reloads the
-model. The `experiment` tag groups seed-replicate runs into cohorts (`Experiment`: mean ± std).
+Single facade: `from library import Analysis`. Accuracy types: **teacher-forced** (ground truth as
+context, optimistic), **student** (own predictions, autoregressive), **task accuracy** + structural
+validity. **Always read task accuracy next to the majority baseline and the excess over it** (logged per
+eval epoch). Distribution metrics (top-k, teacher/student entropy, perplexity, mean target rank) are
+computed during eval and logged; analysis only reads logs. Cohorts = experiment tag + configuration minus
+seed, completed runs only, mean ± sample std; pairwise tests with Welch + Bonferroni
+(`library/tooling/significance.py`). For the agent: report own-history (autoregressive) accuracy next to
+gold-history accuracy; their gap is the cost of compounding errors.
 
 ## Code Style
 
 - Full variable names (`index` not `idx`)
 - Self-documenting over comments
 - Simple, beginner-friendly, no over-engineering
+- Never open accumulated data files with "w"; results CSVs go through `experiments/_common.write_rows`
