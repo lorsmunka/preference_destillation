@@ -146,6 +146,7 @@ def run_threads(handler, domain, items: Optional[List[Dict]] = None, generator=N
                 prompts = [domain.teacher_prompt(plan["conversation"].route_context(message["question"]))
                            for plan, message in zip(batch, messages)]
                 replies = handler.generate_texts(prompts, max_new_tokens=domain.max_steps, stop_strings=domain.stop_strings)
+                print(f"  message {position + 1}: {min(start + BATCH, len(active))}/{len(active)}", flush=True)
                 for plan, message, reply in zip(batch, messages, replies):
                     entry = reply_entry(message, reply)
                     plan["thread"].append(entry)

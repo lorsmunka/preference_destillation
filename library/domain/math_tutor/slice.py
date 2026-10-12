@@ -68,8 +68,10 @@ def main() -> None:
         log["copies"] = dict(labels.transfer_to_copies(labels.read_labels()))
         print(json.dumps(log, indent=2), flush=True)
     elif command == "threads":
-        from .threads import run_threads
-        print(f"{run_threads(handler, domain, items=items)} threads written", flush=True)
+        from . import threads
+        if len(sys.argv) > 2:
+            threads.BATCH = int(sys.argv[2])
+        print(f"{threads.run_threads(handler, domain, items=items)} threads written", flush=True)
 
 
 if __name__ == "__main__":
