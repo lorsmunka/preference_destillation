@@ -11,6 +11,12 @@ STATUS 2026-10-08 evening (pick up here)
       teacher data; full test = 4,790 items. Output vocabulary rebuilt (no explanation threads yet).
     - Literature review (literature_review.html + .bib, 73 refs), positioning (thesis_positioning.html),
       decks (harness_deck.html short, how_it_works.html full). Findings corrected (findings.txt end).
+  TRIAL SLICE (2026-10-12, 1,000 problems: library/domain/math_tutor/slice.py, items/slice_v1.txt)
+    - Step 1 done: Gemma labels 2,270/2,455 turns verified (+5,982 copy turns by transfer).
+    - Step 2 PAUSED (user left): explanation threads 730/942 saved. Resume:
+      python -m library.domain.math_tutor.slice threads 8   (skips saved threads, ~15 min left)
+    - Then: output vocabulary (agentic), corpus for the slice, teacher scoring, train one student,
+      compare with baselines (most common answer, CE only).
   CRITICAL OPEN (X-C1): the part-1 reddit/math students only learned the class prior (accuracy at the
             majority baseline; excess <= 0 everywhere). Part 2 uses the same training code.
   NEXT      1. X-C1 diagnosis, CPU first (me): label vs format positions on E-01 checkpoints; does the
