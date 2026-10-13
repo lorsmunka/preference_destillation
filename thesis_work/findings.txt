@@ -314,3 +314,9 @@ FIX RESULTS 2026-10-08 (after the tooling fixes; experiments/results refreshed):
   0.0034 (1.003), post-gen 0.9948 (exp 2.704). Replaces 1.059 / 0.0043 / 2.73 / 2.88 quoted above.
 - Data plateau: excess <= 0 at every size (256 -0.54/-0.94 pp, 512 -0.08/-0.62, 1024 -0.35/-0.69,
   2048 -0.12/-0.12, best/final): no plateau signal; the students never left the class prior.
+X-C1b PER-EXAMPLE UPDATES STOP THE STUDENT FROM READING ITS INPUT (2026-10-14, CPU, one seed, toy)
+      Trial slice students (Gemma's own replies, 1,345 train records): 0/54 answers; digits on test
+      31% with the right conversation vs 24% with another (experiments/input_use_check.py).
+      Toy copy task, same student and lr, 1,345 examples x10 (experiments/copy_check.py): batches of
+      32 copy 99.9% of the message's digits; one optimizer step per example (Trainer today) 45%.
+      Likely cause of the trial failure, possibly of X-C1 (same Trainer). Unconfirmed on real data.

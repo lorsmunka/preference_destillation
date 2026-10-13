@@ -1,5 +1,5 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing (2026-10-14 00:20). GPU idle. 117 unittest tests pass
+  RUNNING   nothing (2026-10-14 01:15). GPU idle. 117 unittest tests pass
             (python -m unittest discover -s tests).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
@@ -37,8 +37,19 @@ STATUS 2026-10-13 (pick up here)
       student must link from scratch.
       Crash to know: the input word list build (8 worker processes) ran out of Windows memory while Gemma
       was still loaded in the same run; a rerun (skips the saved teacher data) worked.
+    - CPU DIAGNOSIS 2026-10-14 (user: "Do the cpu"):
+      a. What the student sees is right: 0 unknown input tokens, fed-back tokens identical in training
+         and generation. Numbers are single digits in Gemma's tokenizer (so the "two unrelated 26 rows"
+         guess above is unlikely).
+      b. experiments/input_use_check.py: digit accuracy on Gemma's replies with the right conversation
+         vs another one: test 31% vs 24%, train 38% vs 25%. The input is barely used, even on train.
+      c. experiments/copy_check.py (toy: real histories + a new two-number message, same student size,
+         lr 0.0015, 1,345 examples x10, cross-entropy): batches of 32 copy 99.9% of the digits; one
+         update per example (what the Trainer does) 45%. LIKELY CAUSE: Trainer.train_single_example
+         steps the optimizer per example (batch_size=32 is only a file chunk; known since 2026-08-31
+         as a speed issue, findings.txt). One seed, toy task. Possibly X-C1 too (same trainer).
     NEXT
-      1. Decide with the user: diagnose the copying failure (CPU) before more data, or more data first.
+      1. Proposed (waiting for the user's go): real batches in the Trainer, then rerun the trial.
       2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
          conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
          Rebuilding the word list reorders its columns: delete the slice's teacher data
