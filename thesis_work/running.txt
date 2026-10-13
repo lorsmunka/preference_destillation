@@ -1,5 +1,5 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing (2026-10-14 01:15). GPU idle. 117 unittest tests pass
+  RUNNING   nothing (2026-10-14, session ended). GPU idle. 117 unittest tests pass
             (python -m unittest discover -s tests).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
@@ -49,7 +49,10 @@ STATUS 2026-10-13 (pick up here)
          steps the optimizer per example (batch_size=32 is only a file chunk; known since 2026-08-31
          as a speed issue, findings.txt). One seed, toy task. Possibly X-C1 too (same trainer).
     NEXT
-      1. Proposed (waiting for the user's go): real batches in the Trainer, then rerun the trial.
+      1. Proposed (waiting for the user's go): one optimizer step per file of 32 in the Trainer.
+         A (recommended first) = accumulate: zero_grad before the 32, step after, loss averaged;
+         ~5 lines, same speed. B = one padded forward pass per 32; faster, bigger change (later,
+         if the full run needs the speed). Then rerun the trial training (~15 min GPU).
       2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
          conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
          Rebuilding the word list reorders its columns: delete the slice's teacher data
