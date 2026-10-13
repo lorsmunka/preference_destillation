@@ -1,5 +1,5 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing. No GPU, no agents. 117 unittest tests pass
+  RUNNING   2026-10-13 23:40: experiments/slice_trial.py (GPU, user present). 117 unittest tests pass
             (python -m unittest discover -s tests).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
@@ -17,19 +17,23 @@ STATUS 2026-10-13 (pick up here)
       writes every reply; its probabilities are saved by reading its own replies back. Mistakes stay in
       (each record flags route / check / answer correctness); a conversation stops only at a reply the
       harness cannot parse. No CE on gold. The earlier labels + threads (942/942 done) stay on disk, unused.
-    - Conversation pass STOPPED (user left): 64 of 950 originals saved in
-      items/conversations/slice_v1.jsonl (answers correct 139/143, explanations pass 187/189).
-      SLOW: 43 min for the first 64. GPU memory spilled ~4 GB into system RAM (8 long conversations at once).
-    NEXT (proposed, waiting for the user's go):
-      1. Hook the conversation pass into the existing graceful stop (library/shared/exit_listener.py:
-         Stop button / Ctrl+C -> save every conversation as far as it got); generate 4 at once instead of
-         8 (GemmaTutor batch); save every 32; one progress line per round.
-      2. Resume: python -m library.domain.math_tutor.slice conversations   (skips saved conversations)
-      3. python -m library.domain.math_tutor.agentic (word list with the replies), then
-         python -m library.domain.math_tutor.slice corpus
-      4. python experiments/slice_trial.py: save teacher data (forced read of its own replies), train
-         "kd" (probabilities + its words) and "ce" (its words only), report vs most common answer,
-         Gemma's own accuracy, Gemma's-history vs own-history.
+    - Conversation pass: graceful stop (Stop button / Ctrl+C saves every conversation as far as it got),
+      4 replies per model call (8 spilled GPU memory into system RAM), saves every 32, progress per round.
+      224 of 950 originals saved in items/conversations/slice_v1.jsonl (~17 min per 32). Gemma: answers
+      right 246/253 and explanations pass 339/342 over the last 3 chunks. The pass was then killed from
+      outside (Claude Code reaps background jobs when system RAM is low: ~6 GB free, Chrome); the chunk in
+      progress was lost. Avoid: close heavy apps, or start Claude Code with
+      CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1.
+    - Word list rebuilt with the replies: 18,672 tokens. Slice corpus from the 224 conversations:
+      1,345 train records (solve 496, explain 622, route 227) + 158 test; 0 targets outside the word list.
+    - experiments/slice_trial.py started 2026-10-13 23:40 on the 224 conversations (pipeline check;
+      small data): save teacher data, train "kd" and "ce", report.
+    NEXT
+      1. Read the trial report (experiments/results/slice_trial.csv).
+      2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
+         conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
+         Rebuilding the word list reorders its columns: delete the slice's teacher data
+         (batches/math_tutor_slice_v1) and save it again after each rebuild.
   CRITICAL OPEN (X-C1): the part-1 reddit/math students only learned the class prior (accuracy at the
             majority baseline; excess <= 0 everywhere). Part 2 uses the same training code.
   NEXT      1. X-C1 diagnosis, CPU first (me): label vs format positions on E-01 checkpoints; does the
