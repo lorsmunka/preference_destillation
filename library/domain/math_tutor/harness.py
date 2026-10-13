@@ -217,22 +217,39 @@ class TutorSession:
         self.advance()
 
 
-def run_sessions(model, sessions: List[TutorSession]) -> None:
-    """Drive every session to the end, batching each round's pending requests."""
+def run_sessions(model, sessions: List[TutorSession], exit_listener=None, progress: bool = False) -> bool:
+    """Drive every session to the end, batching each round's pending requests. With an
+    exit_listener (Stop button / Ctrl+C), a stop is honoured between rounds: the round in progress
+    finishes and the sessions keep everything said so far. False when stopped before the end."""
+    from time import time
+    round_number = 0
     while True:
         active = [session for session in sessions if not session.done]
         if not active:
-            return
+            return True
+        if exit_listener is not None and exit_listener.check_exit():
+            return False
+        round_number += 1
+        started = time()
         outputs = model.generate([session.pending for session in active])
         for session, output in zip(active, outputs):
             session.receive(output)
+        if progress:
+            finished = sum(session.done for session in sessions)
+            print(f"    round {round_number}: {len(active)} replies in {time() - started:.0f} s, "
+                  f"{finished}/{len(sessions)} conversations finished", flush=True)
 
 
-def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk: int = 64, seed: int = 0) -> None:
+def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk: int = 32, batch: int = 4,
+                          seed: int = 0) -> bool:
     """Gemma as the tutor in every item's simulated conversation (the template pupil), the source of
     the training data: every reply in it is Gemma's own. Items are played in a seeded random order,
-    `chunk` conversations at a time, each chunk appended to `path` when it ends; items already in
-    the file are skipped, so a stopped pass resumes (losing at most the chunk in progress)."""
+    `chunk` conversations at a time (`batch` replies per model call), each chunk appended to `path`
+    when it ends. Graceful stop (Stop button / Ctrl+C): the round in progress finishes, and every
+    conversation of the chunk is saved as far as it got ("complete": false for an unfinished one;
+    its replies are still training data). Items already in the file are skipped, so a stopped pass
+    resumes with the next ones. False when stopped."""
+    from library.shared import ExitListener
     from .questions import generator as question_generator
 
     done = set()
@@ -241,20 +258,27 @@ def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk:
     order = list(items)
     random.Random(seed).shuffle(order)
     todo = [item for item in order if item["id"] not in done]
-    questions, tutor = question_generator(), GemmaTutor(handler, domain)
+    questions, tutor = question_generator(), GemmaTutor(handler, domain, batch=batch)
+    exit_listener = ExitListener()
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"{len(done)} conversations saved, {len(todo)} to go", flush=True)
+    saved = len(done)
     for start in range(0, len(todo), chunk):
         sessions = [TutorSession(TemplatePupil(item, questions)) for item in todo[start:start + chunk]]
-        run_sessions(tutor, sessions)
+        finished = run_sessions(tutor, sessions, exit_listener, progress=True)
         with open(path, "a", encoding="utf-8") as out:
             for session in sessions:
                 out.write(json.dumps({"item_id": session.pupil.item["id"], "split": session.pupil.item["split"],
-                                      "turns": session.transcript}, ensure_ascii=False) + "\n")
+                                      "complete": session.done, "turns": session.transcript}, ensure_ascii=False) + "\n")
+        saved += len(sessions)
         summary = summarise(sessions)
-        print(f"  {len(done) + start + len(sessions)} conversations saved; this chunk: answers correct "
-              f"{summary['answers_correct']}/{summary['tasks']}, explanations pass "
+        print(f"  {saved} conversations saved ({sum(not session.done for session in sessions)} of this chunk unfinished); "
+              f"answers correct {summary['answers_correct']}/{summary['tasks']}, explanations pass "
               f"{summary['explanations_pass_check']}/{summary['question_routed_explanation']}", flush=True)
+        if not finished:
+            print("Stopped: rerun to continue with the next conversations.", flush=True)
+            return False
+    return True
 
 
 def parsable(turn: Dict) -> bool:

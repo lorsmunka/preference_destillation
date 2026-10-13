@@ -110,8 +110,9 @@ def main() -> None:
         domain = MathTutorAgenticDomain("facts")
         handler = ModelHandler("google/gemma-4-12B-it", domain, load_in_4bit=True, chat_template=True)
         played = [item for item in slice_items() if item["split"] != "heldout_shape"]   # held-out shapes: student test only
-        run_conversation_pass(handler, domain, played, CONVERSATIONS_PATH)
-        run_conversation_pass(handler, domain, [item for item in copy_items() if item["split"] != "heldout_shape"], CONVERSATIONS_PATH)
+        if run_conversation_pass(handler, domain, played, CONVERSATIONS_PATH):   # the originals first; False = stopped
+            run_conversation_pass(handler, domain, [item for item in copy_items() if item["split"] != "heldout_shape"],
+                                  CONVERSATIONS_PATH)
         return
     items = slice_items()
     print(f"slice: {len(items)} problems {dict(Counter(item['split'] for item in items))}, "
