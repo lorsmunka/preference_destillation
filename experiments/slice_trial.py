@@ -39,7 +39,7 @@ SCORING_JOB = GenerationJob(
     max_examples=1_000_000,   # the whole slice corpus
     batch_size=32,
     generation_batch_size=8,
-    description="trial slice: facts-first targets scored by Gemma 4 12B (NF4, forced)",
+    description="trial slice: Gemma 4 12B (NF4) reads its own conversation replies back (forced)",
 )
 
 ARMS = {"kd": (0.9, 0.1), "ce": (0.0, 0.0)}   # arm -> (kl_ratio_start, kl_ratio_end)

@@ -1,5 +1,5 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   2026-10-13 23:40: experiments/slice_trial.py (GPU, user present). 117 unittest tests pass
+  RUNNING   nothing (2026-10-14 00:20). GPU idle. 117 unittest tests pass
             (python -m unittest discover -s tests).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
@@ -26,10 +26,19 @@ STATUS 2026-10-13 (pick up here)
       CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1.
     - Word list rebuilt with the replies: 18,672 tokens. Slice corpus from the 224 conversations:
       1,345 train records (solve 496, explain 622, route 227) + 158 test; 0 targets outside the word list.
-    - experiments/slice_trial.py started 2026-10-13 23:40 on the 224 conversations (pipeline check;
-      small data): save teacher data, train "kd" and "ce", report.
+    - TRIAL RESULT 2026-10-14 (experiments/results/slice_trial.csv), 224 conversations:
+      teacher data 1,503/1,503 kept (31 min, 8 per call, ~1.8 GB GPU spill). Students 5.9M params, 10 epochs
+      (~1 min each). Both arms: task accuracy 0/54 final (best 2/54 kd, 1/54 ce) vs most-common-answer 4/54;
+      Gemma 95%. Format learned (valid replies 98-100%, routes right), content not: the students invent
+      objects and numbers instead of copying them from the problem (e.g. "total tulip bulbs = 30" for a
+      basil/mint problem). Token accuracy reading Gemma's text 52%. = the X-C1 pattern again: output does
+      not depend on the input. Possible causes (unverified): too little data (1,345 replies); separate
+      input/output embedding tables, so "26" in the problem and "26" in the answer are unrelated rows the
+      student must link from scratch.
+      Crash to know: the input word list build (8 worker processes) ran out of Windows memory while Gemma
+      was still loaded in the same run; a rerun (skips the saved teacher data) worked.
     NEXT
-      1. Read the trial report (experiments/results/slice_trial.csv).
+      1. Decide with the user: diagnose the copying failure (CPU) before more data, or more data first.
       2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
          conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
          Rebuilding the word list reorders its columns: delete the slice's teacher data
