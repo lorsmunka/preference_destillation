@@ -194,6 +194,11 @@ def build_output_tokens() -> None:
               f"targets, so data generation would drop about half of the explain records ('unexpected_tokens'). "
               f"Run the thread pass first (python -m library.domain.math_tutor.threads), then build again.")
     texts = vocabulary_texts(items, thread_records)
+    replies = []   # Gemma's replies in the harness conversations (training data since 2026-10-13)
+    for path in sorted((PACKAGE / "items" / "conversations").glob("*.jsonl")):
+        for line in open(path, encoding="utf-8"):
+            replies += [turn["output"] for turn in json.loads(line)["turns"] if turn.get("answered_by") != "harness" and turn.get("output")]
+    texts += replies
     counts = Counter()
     for start in range(0, len(texts), 5000):
         for ids in tokenizer(texts[start:start + 5000], add_special_tokens=False)["input_ids"]:
@@ -204,10 +209,11 @@ def build_output_tokens() -> None:
         if len(other) > 1 and other in vocabulary and other not in counts:
             counts[other] = 1
     tokens = [token for token, _ in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))]
-    json.dump({"tokens": tokens, "texts": len(texts), "explanation_threads": len(thread_records),
+    json.dump({"tokens": tokens, "texts": len(texts), "explanation_threads": len(thread_records), "conversation_replies": len(replies),
                "built_from": "items.jsonl problems, follow-ups, gold targets" + (", thread targets" if thread_records else "")},
               open(OUTPUT_TOKENS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    print(f"{len(tokens):,} output tokens from {len(texts):,} texts ({len(thread_records):,} explanation threads) -> {OUTPUT_TOKENS}")
+    print(f"{len(tokens):,} output tokens from {len(texts):,} texts ({len(thread_records):,} explanation threads, "
+          f"{len(replies):,} conversation replies) -> {OUTPUT_TOKENS}")
     print("Check a corpus against it: python -m library.domain.math_tutor.agentic report <annotation>")
 
 

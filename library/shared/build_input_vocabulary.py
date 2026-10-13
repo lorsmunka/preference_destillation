@@ -23,7 +23,7 @@ from transformers import AutoTokenizer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))   # the repo root
 from library.shared.batch_files import batch_paths, read_batch_texts
-from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME
+from library.shared.config import get_batches_dir, PROMPT_DELIMITER, MODEL_NAME, teacher_weights_path
 from library.shared.vocabulary import build_vocabulary
 from library.domain import as_domain
 
@@ -100,7 +100,7 @@ def scan_batches(batches_directory, tokenizer):
 def build_input_vocabulary(domain, teacher_model=MODEL_NAME):
     domain_object = as_domain(domain)  # accepts a Domain object or a built-in name
     domain_name = domain_object.name
-    tokenizer = AutoTokenizer.from_pretrained(teacher_model)
+    tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path(teacher_model))   # the local copy when there is one
     full_vocab_size = tokenizer.vocab_size
 
     batches_directory = get_batches_dir(domain_name, teacher_model)

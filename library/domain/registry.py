@@ -46,3 +46,7 @@ for _domain in (RedditSentimentDomain(), MathWordProblemDomain(), PostGeneration
 for _annotation in ANNOTATIONS:
     for _teacher in TEACHER_MODES:
         register_domain(MathTutorAgenticDomain(_annotation, _teacher))
+
+# The trial slice (math_tutor/slice.py): its own name, so its own batches folder.
+from .math_tutor.slice import SliceDomain
+register_domain(SliceDomain())

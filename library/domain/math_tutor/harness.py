@@ -228,6 +228,83 @@ def run_sessions(model, sessions: List[TutorSession]) -> None:
             session.receive(output)
 
 
+def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk: int = 64, seed: int = 0) -> None:
+    """Gemma as the tutor in every item's simulated conversation (the template pupil), the source of
+    the training data: every reply in it is Gemma's own. Items are played in a seeded random order,
+    `chunk` conversations at a time, each chunk appended to `path` when it ends; items already in
+    the file are skipped, so a stopped pass resumes (losing at most the chunk in progress)."""
+    from .questions import generator as question_generator
+
+    done = set()
+    if path.exists():
+        done = {json.loads(line)["item_id"] for line in open(path, encoding="utf-8")}
+    order = list(items)
+    random.Random(seed).shuffle(order)
+    todo = [item for item in order if item["id"] not in done]
+    questions, tutor = question_generator(), GemmaTutor(handler, domain)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"{len(done)} conversations saved, {len(todo)} to go", flush=True)
+    for start in range(0, len(todo), chunk):
+        sessions = [TutorSession(TemplatePupil(item, questions)) for item in todo[start:start + chunk]]
+        run_sessions(tutor, sessions)
+        with open(path, "a", encoding="utf-8") as out:
+            for session in sessions:
+                out.write(json.dumps({"item_id": session.pupil.item["id"], "split": session.pupil.item["split"],
+                                      "turns": session.transcript}, ensure_ascii=False) + "\n")
+        summary = summarise(sessions)
+        print(f"  {len(done) + start + len(sessions)} conversations saved; this chunk: answers correct "
+              f"{summary['answers_correct']}/{summary['tasks']}, explanations pass "
+              f"{summary['explanations_pass_check']}/{summary['question_routed_explanation']}", flush=True)
+
+
+def parsable(turn: Dict) -> bool:
+    """Whether the harness could read the reply: a clean opening tag for the route, and for a
+    solution or an explanation its closing tag (and a solution's Answer line)."""
+    route, output = turn.get("route"), turn.get("output", "")
+    if not turn.get("route_text", "").startswith(f"<{route}>"):
+        return False
+    if route == "solution":
+        return output.endswith("</solution>") and final_answer(output) is not None
+    return route == "out_of_scope" or output.endswith("</explanation>")
+
+
+def transcript_records(item: Dict, transcript: List[Dict]) -> List[Dict]:
+    """Training records from one conversation of the pass above: each reply Gemma wrote, in the
+    context it was written in, mistakes included (it is the teacher's behaviour that is distilled;
+    each record carries route_correct / check / answer_correct, so a correct-only subset stays
+    possible). A conversation ends at the first reply the harness could not parse (parsable). A
+    solution is learned in the clean history (the side thread dropped); when a thread was open,
+    the route to it is a record of its own. An off-topic route gives a route record
+    (<out_of_scope>) and the message never enters the context, as in the harness. `answer` is the
+    code's answer, which task accuracy is measured against."""
+    conversation = Conversation()
+    base = {"item_id": item["id"], "family": item["family"], "split": item["split"], "slice": item["slice"],
+            "problem_shape": item["problem_shape"], "teacher": "forced"}
+    records = []
+    for turn in transcript:
+        if not parsable(turn):
+            break
+        route, message = turn["route"], turn["message"]
+        context = {**base, "turn": turn["pupil_turn"], "event": turn["event"], "expected_route": turn["expected_route"],
+                   "route_correct": turn["route_correct"], "check": turn.get("check")}
+        if route == "out_of_scope":
+            records.append({**context, "text": conversation.route_context(message), "target": f"<{route}>", "turn_type": "route"})
+            continue
+        if route == "explanation":
+            records.append({**context, "text": conversation.explain_context(message), "target": turn["output"],
+                            "turn_type": "explain", "depth": len(conversation.thread) + 1})
+            conversation.add_explanation(message, turn["output"][len(EXPLANATION_PREFIX):].replace("</explanation>", "").strip())
+            continue
+        if conversation.thread:
+            records.append({**context, "text": conversation.route_context(message), "target": "<solution>", "turn_type": "route"})
+        records.append({**context, "text": conversation.solve_context(message), "target": turn["output"], "turn_type": "solve",
+                        "answer": turn.get("expected_answer"), "answer_correct": turn.get("answer_correct"),   # none for a misrouted question
+                        "shape": item["shape"].split("|")[turn["pupil_turn"]]})
+        stored = turn.get("stored_completed", turn["output"])
+        conversation.add_solution(message, stored.replace("<solution>", "").replace("</solution>", "").strip())
+    return records
+
+
 def summarise(sessions: List[TutorSession], tokenizer=None, allowed_tokens=None) -> Dict:
     turns = [turn for session in sessions for turn in session.transcript]
     by_event = defaultdict(list)
