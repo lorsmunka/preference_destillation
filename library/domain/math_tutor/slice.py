@@ -10,6 +10,7 @@ probabilities are then saved by reading its own replies back (forced mode: the s
 had while writing them).
 
     python -m library.domain.math_tutor.slice conversations   # GPU: the slice's originals, then their copies
+    python -m library.domain.math_tutor.slice conversations originals   # the originals only
     python -m library.domain.math_tutor.agentic               # the output vocabulary (with the replies)
     python -m library.domain.math_tutor.slice corpus          # the slice corpus (SliceDomain)
     python experiments/slice_trial.py                         # GPU: save the teacher data, train, report
@@ -110,7 +111,8 @@ def main() -> None:
         domain = MathTutorAgenticDomain("facts")
         handler = ModelHandler("google/gemma-4-12B-it", domain, load_in_4bit=True, chat_template=True)
         played = [item for item in slice_items() if item["split"] != "heldout_shape"]   # held-out shapes: student test only
-        if run_conversation_pass(handler, domain, played, CONVERSATIONS_PATH):   # the originals first; False = stopped
+        originals_only = len(sys.argv) > 2 and sys.argv[2] == "originals"
+        if run_conversation_pass(handler, domain, played, CONVERSATIONS_PATH) and not originals_only:   # False = stopped
             run_conversation_pass(handler, domain, [item for item in copy_items() if item["split"] != "heldout_shape"],
                                   CONVERSATIONS_PATH)
         return
