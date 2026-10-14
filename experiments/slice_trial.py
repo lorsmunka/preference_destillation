@@ -38,7 +38,8 @@ SCORING_JOB = GenerationJob(
     chat_template=True,
     max_examples=1_000_000,   # the whole slice corpus
     batch_size=32,
-    generation_batch_size=8,
+    generation_batch_size=4,   # 8 spilled ~2 GB of GPU memory into system RAM: ~7 s per call in the
+                               # trial, 20-90 s with little free RAM (2026-10-14)
     description="trial slice: Gemma 4 12B (NF4) reads its own conversation replies back (forced)",
 )
 
