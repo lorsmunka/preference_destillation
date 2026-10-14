@@ -27,7 +27,7 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from .agentic import MathTutorAgenticDomain
 from .items import answer_only_test
@@ -38,6 +38,7 @@ SLICE_PATH = ITEMS_DIR / "slice_v1.txt"
 CONVERSATIONS_PATH = ITEMS_DIR / "conversations" / "slice_v1.jsonl"   # Gemma as the tutor, appended
 COUNTS = {"train": 850, "test": 100, "heldout_shape": 50}   # problems per split
 SEED = 0
+CURVE_SIZES = (100, 200, 500)   # learning curve (2026-10-14): students on the first 100, 200, 500 and all train conversations
 
 
 def all_items() -> List[Dict]:
@@ -55,11 +56,37 @@ def choose_slice() -> List[str]:
     return chosen
 
 
+def train_stages(conversations: List[Dict]) -> Dict[str, int]:
+    """item id -> learning-curve stage of each train conversation, in the order Gemma played them
+    (the file order): 0 for the first 100, 1 for the next 100, 2 up to 500, 3 for the rest."""
+    played = [conversation["item_id"] for conversation in conversations if conversation["split"] == "train"]
+    return {item_id: sum(position >= size for size in CURVE_SIZES) for position, item_id in enumerate(played)}
+
+
 def slice_items() -> List[Dict]:
     if not SLICE_PATH.exists():
         choose_slice()
     wanted = set(SLICE_PATH.read_text(encoding="utf-8").split())
     return [item for item in all_items() if item["id"] in wanted]
+
+
+def corpus_records() -> Tuple[List[Dict], List[Dict]]:
+    """The slice corpus as (train, test) records of the saved conversations. Train records are
+    ordered by learning-curve stage (train_stages) and shuffled within each stage, so the first
+    100 train conversations' records come first; test records are shuffled."""
+    from .harness import transcript_records
+    by_id = {item["id"]: item for item in all_items() + copy_items()}
+    conversations = [json.loads(line) for line in open(CONVERSATIONS_PATH, encoding="utf-8")]
+    records = [record for conversation in conversations
+               for record in transcript_records(by_id[conversation["item_id"]], conversation["turns"])]
+    stages = train_stages(conversations)
+    random_generator = random.Random(SEED)
+    train = [record for record in records if record["split"] == "train"]
+    test = [record for record in records if record["split"] == "test"]
+    random_generator.shuffle(train)
+    train.sort(key=lambda record: stages[record["item_id"]])   # stable: stays shuffled within a stage
+    random_generator.shuffle(test)
+    return train, test
 
 
 class SliceDomain(MathTutorAgenticDomain):
@@ -74,23 +101,14 @@ class SliceDomain(MathTutorAgenticDomain):
         return str(PACKAGE / "corpus_slice_v1.jsonl")
 
     def build_corpus(self, count=None) -> None:
-        """Train records (shuffled), then test records (shuffled); held-out shapes are not played."""
-        from .harness import transcript_records
-        by_id = {item["id"]: item for item in all_items() + copy_items()}
-        conversations = [json.loads(line) for line in open(CONVERSATIONS_PATH, encoding="utf-8")]
-        records = [record for conversation in conversations
-                   for record in transcript_records(by_id[conversation["item_id"]], conversation["turns"])]
-        random_generator = random.Random(SEED)
-        train = [record for record in records if record["split"] == "train"]
-        test = [record for record in records if record["split"] == "test"]
-        random_generator.shuffle(train)
-        random_generator.shuffle(test)
+        """Train records, then test records (corpus_records); held-out shapes are not played."""
+        train, test = corpus_records()
         with open(self.corpus_path, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
             for record in train[:count] + test:
                 file.write(json.dumps(record, ensure_ascii=False) + "\n")
-        print(f"{len(conversations)} conversations -> {len(train[:count])} train records, then {len(test)} test records "
-              f"-> {self.corpus_path}")
-        print(dict(Counter((record["split"], record["turn_type"]) for record in records)))
+        print(f"{len({record['item_id'] for record in train + test})} conversations -> {len(train[:count])} train records, "
+              f"then {len(test)} test records -> {self.corpus_path}")
+        print(dict(Counter((record["split"], record["turn_type"]) for record in train + test)))
 
 
 def copy_items() -> List[Dict]:

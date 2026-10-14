@@ -91,6 +91,12 @@ def score_slice() -> bool:
     DistillationDataGenerator(SCORING_JOB, exit_listener).run()
     stopped = exit_listener.check_exit()
     exit_listener.stop()
+    # Free Gemma before the next step: the input vocabulary build (8 worker processes) once ran
+    # out of Windows memory with Gemma still loaded in this process.
+    import gc
+    import torch
+    gc.collect()
+    torch.cuda.empty_cache()
     return not stopped
 
 
