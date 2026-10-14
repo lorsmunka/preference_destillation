@@ -3,6 +3,7 @@ with the true conversation vs another record's conversation (same turn type), on
 records; separately at digit positions (numbers the student must take from the problem).
 Result on the trial students (slice-kd-s1 / slice-ce-s1): test digits 31% with the right
 conversation vs 24% with another one (train 38% vs 25%): the input is barely used.
+With one update per batch (slice-*-batched-s1): test 27% vs 22%, train 35% vs 22%: no better.
 
     python experiments/input_use_check.py   # after experiments/slice_trial.py"""
 import random, sys
@@ -31,8 +32,11 @@ def scores(model, encoder, example):
     digit = [step["token"].strip("▁").isdigit() for step in example["steps"]]
     return correct, digit
 
-for arm in ("kd", "ce"):
-    run = store.get(f"slice-{arm}-s1")
+RUN_NAMES = ["slice-kd-s1", "slice-ce-s1",                   # one update per example (before 2026-10-14)
+             "slice-kd-batched-s1", "slice-ce-batched-s1"]   # one update per batch
+for arm in [name for name in RUN_NAMES if (store.runs_dir / name / "info.json").exists()]:
+    random_generator = random.Random(0)   # the same records and swaps for every run
+    run = store.get(arm)
     _, path = store.resolve_checkpoint(run.name, "latest")
     student = StudentModel.from_run(run, path, device="cpu", domain=domain)
     model = student.model.eval()

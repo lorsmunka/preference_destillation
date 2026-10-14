@@ -320,3 +320,8 @@ X-C1b PER-EXAMPLE UPDATES STOP THE STUDENT FROM READING ITS INPUT (2026-10-14, C
       Toy copy task, same student and lr, 1,345 examples x10 (experiments/copy_check.py): batches of
       32 copy 99.9% of the message's digits; one optimizer step per example (Trainer today) 45%.
       Likely cause of the trial failure, possibly of X-C1 (same Trainer). Unconfirmed on real data.
+      UPDATE 2026-10-14: NOT THE CAUSE ON THE REAL DATA. The trial retrained with one update per batch
+      (slice-kd/ce-batched-s1): 0/54 answers again; digits on test 27% right conversation vs 22%
+      another (train 35% vs 22%). The toy result does not carry over: the toy's message is one fixed
+      template. Both trainings flatten by pass 6 (test loss ~2.63-2.71, then rising), train above test:
+      looks data-limited (1,345 replies). The per-batch update stays (standard; it mattered on the toy).
