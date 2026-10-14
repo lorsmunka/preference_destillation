@@ -1,8 +1,11 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   2026-10-14 ~13:00: the conversation pass on the rest of the 950 originals (no copies),
-            detached process (python -m library.domain.math_tutor.slice conversations originals,
-            log in the session scratchpad conversations3.log). Stop with the dashboard's Stop button
-            (STOP file); rerun the same command to resume. 117 unittest tests pass.
+  RUNNING   nothing (2026-10-14 19:36). GPU idle. 117 unittest tests pass.
+            Conversation pass stopped right after a save: 896 of 950 originals saved, 0 unfinished
+            (Gemma ~94% of answers right, explanations ~99% pass). Resume (GPU, ~30 min):
+            python -m library.domain.math_tutor.slice conversations originals
+            It was launched as a detached process (Start-Process, log in the session scratchpad) so the
+            low-RAM reaper could not kill it; stopped with taskkill right after a batch saved (the Stop
+            button would have saved the batch in progress half-finished).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
       All code fixes applied in 5 areas (items, agent layer, data generation, training, tooling), one
@@ -60,6 +63,11 @@ STATUS 2026-10-13 (pick up here)
          sessions), then a LEARNING CURVE: students on nested subsets (about 100 / 200 / 500 / 950
          conversations), same test set, reading answers right, digits copied (input_use_check) and
          test loss. Rising and not yet flat at 950 -> the copies are worth playing; flat -> rethink.
+         Script ready: experiments/slice_curve.py (kd students on the first 100 / 200 / 500 / all train
+         conversations; corpus train records ordered by stage). Order: finish the conversations ->
+         python -m library.domain.math_tutor.agentic (word list) -> ASK, then delete
+         batches/math_tutor_slice_v1 (teacher data of the 224-conversation corpus) ->
+         python experiments/slice_curve.py (teacher data ~2 h for ~6,000 records, then 4 students).
       2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
          conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
          Rebuilding the word list reorders its columns: delete the slice's teacher data
