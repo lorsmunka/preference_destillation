@@ -1,11 +1,18 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing (2026-10-14 19:36). GPU idle. 117 unittest tests pass.
-            Conversation pass stopped right after a save: 896 of 950 originals saved, 0 unfinished
-            (Gemma ~94% of answers right, explanations ~99% pass). Resume (GPU, ~30 min):
-            python -m library.domain.math_tutor.slice conversations originals
-            It was launched as a detached process (Start-Process, log in the session scratchpad) so the
-            low-RAM reaper could not kill it; stopped with taskkill right after a batch saved (the Stop
-            button would have saved the batch in progress half-finished).
+  RUNNING   nothing (2026-10-15 ~00:20). GPU idle. 117 unittest tests pass.
+            Learning curve (experiments/slice_curve.py) stopped by the user leaving: the last student
+            (slice-curve-850-kd-s1) saved a resume checkpoint at pass 5 of 10. Resume (GPU, ~10 min, then
+            the report incl. the digit-copying check on CPU): python experiments/slice_curve.py
+            Launch detached (Start-Process, WorkingDirectory experiments/); its STOP file goes in experiments/.
+  LEARNING CURVE so far (2026-10-15, kd students, 10 passes, test = 100 test conversations, 688 replies,
+    123 answers, most-common-answer baseline 6.1%):
+      train conversations   test error (CE)   token accuracy   answers best
+      100 (576 records)       2.97              47%              0.8%
+      200                     2.56              52%              2.4%
+      500                     2.18              56%              2.8%
+    Error falls steadily with data, still falling at the last pass; answers stay near zero.
+    All 950 originals played (Gemma 2,232/2,328 answers right); teacher data 6,071/6,071 kept, saved
+    with 4 replies per call (8 spilled GPU memory into RAM and ran 10x slower with little free RAM).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
       All code fixes applied in 5 areas (items, agent layer, data generation, training, tooling), one
