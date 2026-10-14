@@ -134,6 +134,7 @@ class TrainingRunner:
 
     def _write_info(self, status, started_at=None, completed_at=None, longest_sequence=0):
         info = dict(self.config)
+        info["optimizer_updates"] = "per_batch"   # runs without this key were updated after every example
         info["status"] = status
         info["started_at"] = started_at
         info["completed_at"] = completed_at

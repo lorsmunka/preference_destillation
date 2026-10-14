@@ -188,13 +188,22 @@ class Trainer:
         batch_steps = 0
         batch_correct = 0
 
+        # One optimizer step per batch: each example adds its gradient, averaged over every
+        # target token of the batch. (Until 2026-10-14 the model was updated after every single
+        # example; on a toy copy task that left the student at 45% of the copied digits, against
+        # 99.9% with one update per 32: findings.txt X-C1b.)
+        batch_target_steps = sum(len(example['steps']) for example in batch_data)
+        self.optimizer.zero_grad(set_to_none=True)
         for example in batch_data:
-            example_loss, example_kl_loss, example_ce_loss, example_steps, example_correct = self.train_single_example(example)
+            example_loss, example_kl_loss, example_ce_loss, example_steps, example_correct = \
+                self.accumulate_example_gradient(example, batch_target_steps)
             batch_loss += example_loss
             batch_kl_loss += example_kl_loss
             batch_ce_loss += example_ce_loss
             batch_steps += example_steps
             batch_correct += example_correct
+        if batch_target_steps > 0:
+            self.optimizer.step()
 
         self.current_step += 1
         self._apply_learning_rate()   # for the next batch
@@ -216,7 +225,9 @@ class Trainer:
             'attention_noise': self._get_current_attention_noise(),
         }
 
-    def train_single_example(self, example: Dict) -> Tuple[float, float, float, int, int]:
+    def accumulate_example_gradient(self, example: Dict, batch_target_steps: int) -> Tuple[float, float, float, int, int]:
+        """Adds one example's gradient to its batch's (the optimizer steps after the batch).
+        Returns the example's summed losses, steps and correct predictions, for the logs."""
         if len(example['steps']) == 0:
             return 0.0, 0.0, 0.0, 0, 0
 
@@ -224,7 +235,6 @@ class Trainer:
         num_steps = encoded.num_steps
         self.longest_sequence = max(self.longest_sequence, encoded.input_tensor.shape[1])
 
-        self.optimizer.zero_grad(set_to_none=True)
         self.model.set_attention_noise(self._get_current_attention_noise())
         model_logits = self.model(encoded.input_tensor)
 
@@ -234,8 +244,7 @@ class Trainer:
         kl_loss, ce_loss, total_loss = self._compute_loss(
             prediction_logits, encoded.target_logits_tensor, encoded.target_indices_tensor, reduction='sum')
 
-        total_loss.backward()
-        self.optimizer.step()
+        (total_loss / batch_target_steps).backward()
 
         correct_predictions = (torch.argmax(prediction_logits, dim=-1) == encoded.target_indices_tensor).sum().item()
 

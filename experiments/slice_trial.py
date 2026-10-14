@@ -65,13 +65,15 @@ RESULT_COLUMNS = [
 
 
 def run_name(arm):
-    return f"slice-{arm}-s{SEED}"
+    # "-batched": trained with one optimizer step per batch (2026-10-14). The runs without it
+    # (slice-kd-s1, slice-ce-s1) were updated after every example and stay as the before.
+    return f"slice-{arm}-batched-s{SEED}"
 
 
 def build_runs():
     return [(SEED, TrainingRun(**STUDENT, domain=DOMAIN, teacher_model=TEACHER, kl_ratio_start=start, kl_ratio_end=end,
                                run_name=run_name(arm), experiment=EXPERIMENT,
-                               description=f"trial slice, {arm} ({start}->{end}), seed {SEED}"))
+                               description=f"trial slice, {arm} ({start}->{end}), one update per batch, seed {SEED}"))
             for arm, (start, end) in ARMS.items()]
 
 

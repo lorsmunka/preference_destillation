@@ -401,12 +401,12 @@ class RunTests(unittest.TestCase):
             torch.optim.AdamW.step = original_step
         schedules = Schedules(self.spec("x").as_dict(), TRAINING_FILES, 2 * TRAINING_FILES)
         self.assertEqual(schedules.warmup_steps, 3)
-        per_batch = [used_rates[batch * 4:(batch + 1) * 4] for batch in range(2 * TRAINING_FILES)]
-        for step, rates in enumerate(per_batch):
-            self.assertTrue(all(rate == schedules.learning_rate(step) for rate in rates), (step, rates))
-        self.assertEqual(per_batch[0], [0.0] * 4)   # batch 1 is inside the warm-up, not at the peak
+        self.assertEqual(len(used_rates), 2 * TRAINING_FILES)   # one optimizer step per batch, not per example
+        for step, rate in enumerate(used_rates):
+            self.assertEqual(rate, schedules.learning_rate(step), step)
+        self.assertEqual(used_rates[0], 0.0)   # batch 1 is inside the warm-up, not at the peak
         logged = [record["learning_rate"] for record in self.records("warmup", "train_batch")]
-        self.assertEqual(logged, [rates[0] for rates in per_batch])
+        self.assertEqual(logged, used_rates)
         logged_kl = [record["kl_ratio"] for record in self.records("warmup", "train_batch")]
         self.assertAlmostEqual(logged_kl[0], 0.9)   # the dials of the batch itself, not of the next one
 
@@ -416,6 +416,7 @@ class RunTests(unittest.TestCase):
         self.assertTrue((run_dir / "input_vocabulary.json").exists())
         info = json.loads((run_dir / "info.json").read_text(encoding="utf-8"))
         self.assertEqual((info["status"], info["training_batch_count"], info["test_batch_count"]), ("completed", 6, 2))
+        self.assertEqual(info["optimizer_updates"], "per_batch")   # tells these runs apart from the per-example ones
         evaluations = self.records("straight", "eval_epoch")
         self.assertEqual([record["epoch"] for record in evaluations], [0, 1])
         for record in evaluations:
