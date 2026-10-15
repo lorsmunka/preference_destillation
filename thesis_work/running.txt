@@ -1,5 +1,8 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing (2026-10-15 ~12:55). GPU idle. 117 unittest tests pass.
+  RUNNING   nothing (2026-10-16 01:25). GPU idle. 118 unittest tests pass.
+            Copies-vs-new conversation pass stopped (user went to sleep): 1,280 of 1,594 saved (new 646,
+            copy 634), 0 unfinished; the batch in progress was dropped and is replayed. Resume (GPU, ~2.7 h):
+            python -m library.domain.math_tutor.slice conversations   (launch detached, Start-Process)
   LEARNING CURVE DONE (findings.txt X-C1c, experiments/results/slice_curve.csv): test error 2.97 / 2.56 /
     2.18 / 1.86 at 100 / 200 / 500 / 850 train conversations (~0.4 per doubling, not flattening);
     answers 0.8-3.7% (baseline 6.1%); digits right vs swapped conversation 48% vs 37% at 850, the gap
