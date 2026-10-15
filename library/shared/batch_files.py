@@ -34,8 +34,9 @@ import torch
 
 BATCH_FILE = re.compile(r"^batch_(\d+)\.(npz|jsonl)$")
 
-# Per-example fields carried from the corpus record into the batch (None when absent).
-RECORD_METADATA_KEYS = ("split", "item_id", "turn_type", "teacher_mode")
+# Per-example fields carried from the corpus record into the batch (None when absent). "group" is a
+# corpus's own flag for where a record came from (e.g. "original" / "new" / "copy"), for training on a part.
+RECORD_METADATA_KEYS = ("split", "item_id", "turn_type", "teacher_mode", "group")
 
 
 def vocabulary_fingerprint(token_list: List[str]) -> str:

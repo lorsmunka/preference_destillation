@@ -7,7 +7,7 @@ same function, so a re-evaluation always scores a run on its own test set.
 import random
 from pathlib import Path
 from time import time
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from library.shared.batch_files import (batch_paths, read_batch, read_batch_meta,
                                         vocabulary_fingerprint)
@@ -19,8 +19,8 @@ TEST = "test"
 
 def split_batch_files(batches_dir, training_test_ratio: float,
                       max_training_examples: Optional[int] = None, batch_size: int = 32,
-                      max_test_examples: Optional[int] = DEFAULT_MAX_TEST_EXAMPLES
-                      ) -> Tuple[List[Path], List[Path]]:
+                      max_test_examples: Optional[int] = DEFAULT_MAX_TEST_EXAMPLES,
+                      training_groups: Optional[Sequence[str]] = None) -> Tuple[List[Path], List[Path]]:
     """The run's (training_files, test_files): two lists of batch-file Paths in batch order.
 
         training_files, test_files = split_batch_files(
@@ -39,6 +39,10 @@ def split_batch_files(batches_dir, training_test_ratio: float,
     test file if it holds a "test" record (the same caps apply). A file holding both is in
     both lists, so read every file through select_records(records, role), which keeps only
     the records of that role (BatchHandler does this).
+
+    training_groups (e.g. ("original", "new")) keeps only the training files holding a record
+    with one of those "group" flags, before the cap; BatchHandler then trains on those records
+    only. The test set never depends on it.
     """
     all_files = batch_paths(batches_dir)
     test_region_start = int(len(all_files) * training_test_ratio)
@@ -52,6 +56,8 @@ def split_batch_files(batches_dir, training_test_ratio: float,
     training_files = [path for path, roles in zip(all_files, file_roles) if TRAIN in roles]
     test_files = [path for path, roles in zip(all_files, file_roles) if TEST in roles]
 
+    if training_groups is not None:
+        training_files = [path for path in training_files if set(_record_groups(path)) & set(training_groups)]
     if max_training_examples is not None:
         training_files = training_files[:max_training_examples // batch_size]
     if max_test_examples is not None:
@@ -80,6 +86,14 @@ def _record_splits(path) -> List[Optional[str]]:
     return [record.get("split") for record in read_batch(path)]   # legacy .jsonl
 
 
+def _record_groups(path) -> List[Optional[str]]:
+    """The "group" flag of every record in one batch file (None where it has none)."""
+    meta = read_batch_meta(path)
+    if meta:
+        return meta.get("group") or [None] * len(meta.get("sentences", []))
+    return [record.get("group") for record in read_batch(path)]   # legacy .jsonl
+
+
 def _carries_split_labels(all_files: List[Path]) -> bool:
     """Whether the batches carry per-record split labels. Corpora that have them write
     their train records first and test records last, so the first and last files tell."""
@@ -97,10 +111,12 @@ def _labelled_file_roles(path, in_test_region: bool) -> set:
 class BatchHandler:
     def __init__(self, batches_dir: str, training_test_ratio: float, max_training_examples: int = None,
                  batch_size: int = 32, max_test_examples: Optional[int] = DEFAULT_MAX_TEST_EXAMPLES,
-                 teacher_token_list: Optional[List[str]] = None, shuffle_seed: Optional[int] = None):
+                 teacher_token_list: Optional[List[str]] = None, shuffle_seed: Optional[int] = None,
+                 training_groups: Optional[Sequence[str]] = None):
         self.batches_dir = batches_dir
+        self.training_groups = training_groups
         self.training_files, self.test_files = split_batch_files(
-            batches_dir, training_test_ratio, max_training_examples, batch_size, max_test_examples)
+            batches_dir, training_test_ratio, max_training_examples, batch_size, max_test_examples, training_groups)
         # The domain's full reduced vocabulary (auxiliary percentage 1.0): the tokens the
         # batches' logit columns must be, checked against each batch's vocabulary_sha1.
         self.expected_vocabulary_sha1 = (vocabulary_fingerprint(teacher_token_list)
@@ -137,6 +153,8 @@ class BatchHandler:
         start_time = time()
         self._check_vocabulary(path)
         records = select_records(read_batch(path), role)
+        if role == TRAIN and self.training_groups is not None:
+            records = [record for record in records if record.get("group") in self.training_groups]
         print(f"Loaded {path.name} -> took {time() - start_time:.2f} seconds.")
         return records
 

@@ -45,6 +45,7 @@ class TrainingRun:
     training_test_ratio: float = 0.8                     # the last (1 - ratio) of the batch files are the test region
     max_test_examples: Optional[int] = DEFAULT_MAX_TEST_EXAMPLES   # test set = the region's last N examples' files; None = the whole region
     shuffle_seed: Optional[int] = None                   # None = batches in file order (every past run); an int shuffles file and example order per epoch
+    training_groups: Optional[tuple] = None              # e.g. ("original", "new"): train only on records with these "group" flags; None = all
     auxiliary_token_percentage: float = 1.0
     kl_ratio_start: float = 0.99
     kl_ratio_end: float = 0.5

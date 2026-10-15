@@ -163,6 +163,32 @@ class SplitTests(unittest.TestCase):
         unlabelled = [{"split": None}, {"split": None}]
         self.assertEqual(select_records(unlabelled, "test"), unlabelled)
 
+    def test_training_groups_select_training_records_and_leave_the_test_set_alone(self):
+        groups = [["original"] * 4, ["original", "original", "new", "new"], ["copy"] * 4, ["copy"] * 4]
+        self.folder.mkdir(parents=True, exist_ok=True)
+        for file_index, file_groups in enumerate(groups):
+            split = "test" if file_index == 3 else "train"
+            records = [{**synthetic_record(file_index * 100 + record_index, split), "group": group}
+                       for record_index, group in enumerate(file_groups)]
+            write_batch(self.folder / f"batch_{file_index + 1}.npz", records)
+        everything, test_files = split_batch_files(self.folder, 0.5, None, batch_size=4, max_test_examples=None)
+        self.assertEqual([path.name for path in everything], ["batch_1.npz", "batch_2.npz", "batch_3.npz"])
+
+        handler = BatchHandler(self.folder, 0.5, None, batch_size=4, max_test_examples=None,
+                               training_groups=("original", "new"))
+        self.assertEqual([path.name for path in handler.training_files], ["batch_1.npz", "batch_2.npz"])
+        self.assertEqual([record["group"] for record in handler.get_training_batch(0, 1)],
+                         ["original", "original", "new", "new"])
+        only_copies = BatchHandler(self.folder, 0.5, None, batch_size=4, max_test_examples=None,
+                                   training_groups=("copy",))
+        self.assertEqual([path.name for path in only_copies.training_files], ["batch_3.npz"])
+        self.assertEqual(only_copies.test_files, handler.test_files)
+        self.assertEqual(handler.test_files, test_files)   # the test set never depends on the groups
+
+        only_originals = BatchHandler(self.folder, 0.5, None, batch_size=4, max_test_examples=None,
+                                      training_groups=("original",))
+        self.assertEqual([record["group"] for record in only_originals.get_training_batch(0, 1)], ["original", "original"])
+
     def test_shuffling_is_off_by_default_and_fixed_per_seed_and_epoch(self):
         write_batches(self.folder, 10, records_per_file=1)
         in_file_order = BatchHandler(self.folder, 1.0, None, batch_size=1)

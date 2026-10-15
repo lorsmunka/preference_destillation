@@ -162,6 +162,7 @@ class Run:
             max_training_examples=self.info.get("max_training_examples"),
             batch_size=self.info.get("batch_size", 32),
             max_test_examples=self.info.get("max_test_examples", DEFAULT_MAX_TEST_EXAMPLES),
+            training_groups=self.info.get("training_groups"),
         )
 
     def logged_test_files(self) -> List[Path]:

@@ -80,12 +80,14 @@ def teacher_data_current() -> bool:
 def curve_sizes() -> dict:
     """Training size (train conversations) -> (max_training_examples, train records used). A size
     takes the leading training files that hold only its conversations (whole files of 32, so up
-    to 31 of its records are left out); None = all training files."""
+    to 31 of its records are left out); None = all training files of the originals."""
     stages = train_stages(conversations())
     files = []   # (latest stage, train records) of each training file, in order
     for path in batch_paths(BATCHES_DIR):
         meta = read_batch_meta(path)
-        train_ids = [item_id for item_id, split in zip(meta["item_id"], meta["split"]) if split == "train"]
+        groups = meta.get("group") or ["original"] * len(meta["item_id"])
+        train_ids = [item_id for item_id, split, group in zip(meta["item_id"], meta["split"], groups)
+                     if split == "train" and group == "original"]
         if train_ids:
             files.append((max(stages[item_id] for item_id in train_ids), len(train_ids)))
     sizes = {}
@@ -102,7 +104,10 @@ def run_name(size):
 
 def build_runs(sizes):
     start, end = KL_RATIO
+    # The originals only: the copies-vs-new extension (slice_mix.py) came later; the four curve runs
+    # (2026-10-15) were trained before it existed, on the same original records.
     return [(SEED, TrainingRun(**{**STUDENT, "max_training_examples": examples}, domain=DOMAIN, teacher_model=TEACHER,
+                               training_groups=("original",),
                                kl_ratio_start=start, kl_ratio_end=end, run_name=run_name(size), experiment=EXPERIMENT,
                                description=f"learning curve: first {size} train conversations, kd ({start}->{end}), "
                                            f"seed {SEED}"))

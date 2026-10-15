@@ -83,6 +83,7 @@ class TrainingRunner:
             max_test_examples=self.config.get("max_test_examples", DEFAULT_MAX_TEST_EXAMPLES),
             teacher_token_list=teacher_token_list,
             shuffle_seed=self.config.get("shuffle_seed"),
+            training_groups=self.config.get("training_groups"),
         )
         logger = RunLogger(self.logs_dir)
 

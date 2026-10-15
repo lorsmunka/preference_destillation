@@ -42,7 +42,8 @@ class InputHandler:
         return self.records[index].get("answer")
 
     def get_metadata(self, index):
-        """The record's split, item id and turn type (None where the record has none), carried
-        into the batches so training can split on them instead of on file order."""
+        """The record's split, item id, turn type and group (None where the record has none),
+        carried into the batches so training can split or select on them instead of on file order."""
         record = self.records[index]
-        return {"split": record.get("split"), "item_id": record.get("item_id"), "turn_type": record.get("turn_type")}
+        return {"split": record.get("split"), "item_id": record.get("item_id"), "turn_type": record.get("turn_type"),
+                "group": record.get("group")}

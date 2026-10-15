@@ -57,12 +57,18 @@ STATUS 2026-10-13 (pick up here)
          0/54 again; digits test 27% vs 22% with another conversation. NOT the cause on the real data.
          Both trainings flatten by pass 6 with train above test: looks data-limited (1,345 replies).
     NEXT
-      1. DONE 2026-10-15: the learning curve (user decision 2026-10-14: no side test on the old labels,
-         grow the data with the same process). Result above (X-C1c): still improving at 850 -> by the
-         agreed rule the copies are worth playing. NEXT DECISION (user): play the slice's 2,645
-         renumbered copies (2,367 train, ~22 GPU hours at ~16 min per 32), in steps with a check after
-         each session (does the right-vs-swapped digit gap grow?). Copies' test conversations stay out
-         of the test set so the curve stays comparable.
+      1. DONE 2026-10-15: the learning curve (X-C1c): still improving at 850 conversations.
+      2. NOW (user idea + go, 2026-10-15): COPIES VS NEW PROBLEMS at equal GPU cost (experiments/slice_mix.py).
+         Every record carries a group flag: "original" = everything played before (the 950, rewordings
+         included, user: "flag all previous versions as original"); "copy" = one renumbered copy of each
+         train original that has one (797: same text, new numbers); "new" = 797 new train problems, one
+         per family, from families the slice does not use (items/slice_v1_extension.txt, seeded).
+         Arms original / +new / +copy / +both, seeds 1-2, same 100 test conversations; key reading: the
+         digit gap right vs swapped conversation (numbers taken from the problem). Maybe we find something.
+         Training selects by flag (TrainingRun.training_groups; batches carry "group").
+         Steps: python -m library.domain.math_tutor.slice conversations (1,594 conversations, new and copies
+         mixed, ~13 GPU hours, resumable) -> word list -> ASK, delete the teacher data -> slice_mix.py
+         (teacher data ~1.5 h for ~10,000 records, 8 students ~3 h).
       2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
          conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
          Rebuilding the word list reorders its columns: delete the slice's teacher data

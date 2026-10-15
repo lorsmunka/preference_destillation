@@ -268,7 +268,8 @@ def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk:
         finished = run_sessions(tutor, sessions, exit_listener, progress=True)
         with open(path, "a", encoding="utf-8") as out:
             for session in sessions:
-                out.write(json.dumps({"item_id": session.pupil.item["id"], "split": session.pupil.item["split"],
+                group = {"group": session.pupil.item["group"]} if "group" in session.pupil.item else {}
+                out.write(json.dumps({"item_id": session.pupil.item["id"], "split": session.pupil.item["split"], **group,
                                       "complete": session.done, "turns": session.transcript}, ensure_ascii=False) + "\n")
         saved += len(sessions)
         summary = summarise(sessions)
