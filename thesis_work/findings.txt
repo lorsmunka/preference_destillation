@@ -325,3 +325,17 @@ X-C1b PER-EXAMPLE UPDATES STOP THE STUDENT FROM READING ITS INPUT (2026-10-14, C
       another (train 35% vs 22%). The toy result does not carry over: the toy's message is one fixed
       template. Both trainings flatten by pass 6 (test loss ~2.63-2.71, then rising), train above test:
       looks data-limited (1,345 replies). The per-batch update stays (standard; it mattered on the toy).
+X-C1c LEARNING CURVE ON THE SLICE: THE STUDENT IS DATA-LIMITED (2026-10-15, one seed per size)
+      experiments/slice_curve.py, results/slice_curve.csv. kd students (128x4x4, 10 passes, one update
+      per batch) on the first 100 / 200 / 500 / 850 train conversations (576 / 1,344 / 3,136 / 5,383
+      replies); same test set (100 test conversations, 688 replies, 123 answers, baseline 6.1%).
+        conversations  test error  token acc  answers best  digits right conv / other conv
+        100            2.97        47%        0.8%          17% / 13%
+        200            2.56        52%        2.4%          29% / 18%
+        500            2.18        56%        2.9%          34% / 23%
+        850            1.86        62%        3.7%          48% / 37%
+      Test error falls ~0.4 per doubling of the data with no sign of flattening; within each run it
+      flattens by pass 8 (train error 1.23 vs test 1.86 at 850), so more passes would not replace data.
+      Answers stay below the most-common-answer baseline. Digits improve with data, but the gap between
+      the right and a swapped conversation (= numbers taken from the problem) stays ~11 points from
+      200 conversations on: the gain is mostly numbers repeated inside the reply, not read from the problem.

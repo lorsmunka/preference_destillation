@@ -1,0 +1,5 @@
+run,train_conversations,train_records,task_accuracy_best,task_accuracy_final,majority_baseline,task_accuracy_excess_best,validity_rate_final,test_error_best,test_error_final,test_token_accuracy_final,test_digits_own,test_digits_other
+slice-curve-100-kd-s1,100,576,0.0081,0.0081,0.061,-0.0528,0.9512195121951219,2.9645,2.9645,0.4654,0.173,0.13
+slice-curve-200-kd-s1,200,1344,0.0244,0.0244,0.061,-0.0366,0.967479674796748,2.5596,2.5612,0.5177,0.294,0.181
+slice-curve-500-kd-s1,500,3136,0.0285,0.0081,0.061,-0.0325,0.9715447154471545,2.179,2.179,0.5648,0.339,0.227
+slice-curve-850-kd-s1,850,5383,0.0366,0.0244,0.061,-0.0244,0.9715447154471545,1.8554,1.8559,0.618,0.477,0.368

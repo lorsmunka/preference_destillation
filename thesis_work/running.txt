@@ -1,18 +1,10 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing (2026-10-15 ~00:20). GPU idle. 117 unittest tests pass.
-            Learning curve (experiments/slice_curve.py) stopped by the user leaving: the last student
-            (slice-curve-850-kd-s1) saved a resume checkpoint at pass 5 of 10. Resume (GPU, ~10 min, then
-            the report incl. the digit-copying check on CPU): python experiments/slice_curve.py
-            Launch detached (Start-Process, WorkingDirectory experiments/); its STOP file goes in experiments/.
-  LEARNING CURVE so far (2026-10-15, kd students, 10 passes, test = 100 test conversations, 688 replies,
-    123 answers, most-common-answer baseline 6.1%):
-      train conversations   test error (CE)   token accuracy   answers best
-      100 (576 records)       2.97              47%              0.8%
-      200                     2.56              52%              2.4%
-      500                     2.18              56%              2.8%
-    Error falls steadily with data, still falling at the last pass; answers stay near zero.
-    All 950 originals played (Gemma 2,232/2,328 answers right); teacher data 6,071/6,071 kept, saved
-    with 4 replies per call (8 spilled GPU memory into RAM and ran 10x slower with little free RAM).
+  RUNNING   nothing (2026-10-15 ~12:55). GPU idle. 117 unittest tests pass.
+  LEARNING CURVE DONE (findings.txt X-C1c, experiments/results/slice_curve.csv): test error 2.97 / 2.56 /
+    2.18 / 1.86 at 100 / 200 / 500 / 850 train conversations (~0.4 per doubling, not flattening);
+    answers 0.8-3.7% (baseline 6.1%); digits right vs swapped conversation 48% vs 37% at 850, the gap
+    stuck at ~11 points since 200. All 950 originals played (Gemma 2,232/2,328 right); teacher data
+    6,071/6,071 kept, 4 replies per call (8 spilled GPU memory into RAM: 10x slower with little RAM).
   DONE TODAY
     - Adversarial code review: thesis_work/code_review.html (58 findings: 1 critical, 10 high).
       All code fixes applied in 5 areas (items, agent layer, data generation, training, tooling), one
@@ -65,16 +57,12 @@ STATUS 2026-10-13 (pick up here)
          0/54 again; digits test 27% vs 22% with another conversation. NOT the cause on the real data.
          Both trainings flatten by pass 6 with train above test: looks data-limited (1,345 replies).
     NEXT
-      1. DECIDED 2026-10-14 (user): no side test on the old labels ("I don't like to mix"); grow the
-         data with the same process instead: all 950 originals (~6.5 GPU hours, can be split over
-         sessions), then a LEARNING CURVE: students on nested subsets (about 100 / 200 / 500 / 950
-         conversations), same test set, reading answers right, digits copied (input_use_check) and
-         test loss. Rising and not yet flat at 950 -> the copies are worth playing; flat -> rethink.
-         Script ready: experiments/slice_curve.py (kd students on the first 100 / 200 / 500 / all train
-         conversations; corpus train records ordered by stage). Order: finish the conversations ->
-         python -m library.domain.math_tutor.agentic (word list) -> ASK, then delete
-         batches/math_tutor_slice_v1 (teacher data of the 224-conversation corpus) ->
-         python experiments/slice_curve.py (teacher data ~2 h for ~6,000 records, then 4 students).
+      1. DONE 2026-10-15: the learning curve (user decision 2026-10-14: no side test on the old labels,
+         grow the data with the same process). Result above (X-C1c): still improving at 850 -> by the
+         agreed rule the copies are worth playing. NEXT DECISION (user): play the slice's 2,645
+         renumbered copies (2,367 train, ~22 GPU hours at ~16 min per 32), in steps with a check after
+         each session (does the right-vs-swapped digit gap grow?). Copies' test conversations stay out
+         of the test set so the curve stays comparable.
       2. Later sessions: resume the conversation pass (python -m library.domain.math_tutor.slice
          conversations: the rest of the originals, then the copies), rebuild word list + corpus, retrain.
          Rebuilding the word list reorders its columns: delete the slice's teacher data
