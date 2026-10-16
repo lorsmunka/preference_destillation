@@ -339,3 +339,21 @@ X-C1c LEARNING CURVE ON THE SLICE: THE STUDENT IS DATA-LIMITED (2026-10-15, one 
       Answers stay below the most-common-answer baseline. Digits improve with data, but the gap between
       the right and a swapped conversation (= numbers taken from the problem) stays ~11 points from
       200 conversations on: the gain is mostly numbers repeated inside the reply, not read from the problem.
+      NOTE 2026-10-16: the word list was rebuilt for X-C1d, so these four students can no longer be read
+      (their vocabulary fingerprint no longer matches); their numbers stay in results/slice_curve.csv.
+X-C1d COPIES VS NEW PROBLEMS: BOTH MAKE THE STUDENT READ THE NUMBERS, NEW PROBLEMS HELP MORE (2026-10-16,
+      SEED 1 ONLY; seed 2 not trained yet). experiments/slice_mix.py. Same kd students as X-C1c, word list
+      18,962 tokens, teacher data 15,989 replies. Arms: the 850 train originals alone, + 797 new problems
+      (one per unused family), + 797 renumbered copies (same text, new numbers), + both; same 100 test
+      conversations. Digits: input_use_check on 120 test replies (923 digits), the same replies and
+      swaps for every arm (a different sample and word list than X-C1c: compare within this table only).
+        arm        train replies  test error  token acc  answers best  digits right conv / swapped  gap
+        original   5,383          1.80        64%        2.9%          61% / 43%                    18
+        +new       10,262         1.48        69%        4.1%          72% / 45%                    27
+        +copy      10,422         1.59        69%        2.4%          71% / 44%                    27
+        +both      15,301         1.38        72%        3.7%          74% / 46%                    28
+      Doubling the data with either kind widens the gap by ~9 points: the student takes more numbers from
+      the problem. Copies widen it no more than new problems do, and lower the test error less (1.59 vs
+      1.48), at the same GPU cost: new problems are the better buy. Both together lower the error further
+      (1.38), but the gap barely grows beyond either alone. Answers stay below the 6.1% baseline.
+      Gemma itself was right less often on the copies (93.2% vs 96%); why is unverified.

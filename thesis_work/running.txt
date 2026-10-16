@@ -1,10 +1,13 @@
 STATUS 2026-10-13 (pick up here)
-  RUNNING   nothing (2026-10-16 ~15:00). GPU idle. 118 unittest tests pass.
-            Copies-vs-new conversations DONE: 2,544 in total (original 950, new 797, copy 797; 0 unfinished).
-            Gemma's answers right: original 95.9%, new 96.0%, copy 93.2% (copies are harder for the teacher
-            too; why is unverified). Word list rebuilt: 18,962 tokens. NEXT: ASK, then delete the teacher
-            data of the 950 originals (batches/math_tutor_slice_v1/...), then python experiments/slice_mix.py
-            (teacher data ~1.5 h, 8 students ~3 h, launch detached).
+  RUNNING   nothing (2026-10-16 23:26). GPU idle. 118 unittest tests pass.
+            COPIES VS NEW, ROUND 1 (seed 1) DONE (findings.txt X-C1d): test error original 1.80, +new 1.48,
+            +copy 1.59, +both 1.38; digit gap right vs swapped conversation 18 -> 27 / 27 / 28 points.
+            Both kinds make the student read the numbers; copies no more than new problems, and they help
+            less overall. Teacher data saved for all 15,989 replies (~2.5 h, 4 per call; the old 7.9 GB of the
+            originals deleted with the user's OK). Round 2 (seed 2) stopped cleanly at its start (resume
+            checkpoint of slice-mix-original-kd-s2): NEXT = rerun python experiments/slice_mix.py (detached,
+            ~2.5 h: originals ~17 min, +new / +copy ~30-50 min each, +both ~75 min), then the report writes
+            results/slice_mix.csv with mean +- std.
   LEARNING CURVE DONE (findings.txt X-C1c, experiments/results/slice_curve.csv): test error 2.97 / 2.56 /
     2.18 / 1.86 at 100 / 200 / 500 / 850 train conversations (~0.4 per doubling, not flattening);
     answers 0.8-3.7% (baseline 6.1%); digits right vs swapped conversation 48% vs 37% at 850, the gap
@@ -63,7 +66,7 @@ STATUS 2026-10-13 (pick up here)
          Both trainings flatten by pass 6 with train above test: looks data-limited (1,345 replies).
     NEXT
       1. DONE 2026-10-15: the learning curve (X-C1c): still improving at 850 conversations.
-      2. NOW (user idea + go, 2026-10-15): COPIES VS NEW PROBLEMS at equal GPU cost (experiments/slice_mix.py).
+      2. ROUND 1 DONE 2026-10-16 (X-C1d; round 2 pending): COPIES VS NEW PROBLEMS at equal GPU cost (experiments/slice_mix.py).
          Every record carries a group flag: "original" = everything played before (the 950, rewordings
          included, user: "flag all previous versions as original"); "copy" = one renumbered copy of each
          train original that has one (797: same text, new numbers); "new" = 797 new train problems, one
