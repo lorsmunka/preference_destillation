@@ -1,0 +1,9 @@
+run,arm,seed,train_records,task_accuracy_best,task_accuracy_final,majority_baseline,test_error_best,test_error_final,test_token_accuracy_final,test_digits_own,test_digits_other,test_digits_gap
+slice-mix-original-kd-s1,original,1,5383,0.0285,0.0041,0.061,1.8017,1.8017,0.6392,0.606,0.427,0.179
+slice-mix-original-kd-s2,original,2,5383,0.0325,0.0285,0.061,1.7995,1.7995,0.643,0.632,0.434,0.198
+slice-mix-new-kd-s1,new,1,10262,0.0407,0.0366,0.061,1.483,1.483,0.6944,0.719,0.454,0.265
+slice-mix-new-kd-s2,new,2,10262,0.0203,0.0163,0.061,1.4746,1.4746,0.6993,0.724,0.46,0.264
+slice-mix-copy-kd-s1,copy,1,10422,0.0244,0.0244,0.061,1.5873,1.5873,0.6904,0.711,0.437,0.274
+slice-mix-copy-kd-s2,copy,2,10422,0.0203,0.0203,0.061,1.5844,1.5847,0.6892,0.714,0.463,0.251
+slice-mix-both-kd-s1,both,1,15301,0.0366,0.0366,0.061,1.384,1.384,0.7175,0.739,0.46,0.279
+slice-mix-both-kd-s2,both,2,15301,0.0325,0.0325,0.061,1.4011,1.4011,0.7114,0.725,0.45,0.275
