@@ -9,7 +9,8 @@ STATUS 2026-10-13 (pick up here)
             DECIDED 2026-10-17 (user: "Yes"): MORE DATA. "new2" = 1,600 more new train problems, one per
             family neither the slice nor the extension uses (slice.choose_more_new, appended to
             items/slice_v1_extension.txt; 964 of them rewordings, like before). Doubles the train
-            conversations to ~3,200. NOW: python -m library.domain.math_tutor.slice conversations (GPU,
+            conversations to ~3,200. 2026-10-17 19:26: 384 of 1,600 saved (0 unfinished; ~14 min per 32,
+            Gemma ~95% answers right), stopped for the night. NOW: python -m library.domain.math_tutor.slice conversations (GPU,
             ~13 h over several sessions, detached; stop by taskkill right after a "conversations saved"
             line). Then the word list, then delete the slice's teacher data (ASK; the rebuilt word list
             makes it stale) and save it again for all ~24,000 replies (~3.5 h), then train the "all"
