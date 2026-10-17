@@ -19,7 +19,8 @@ Groups (decided 2026-10-15): every record carries a "group" flag. "original" = t
 950 problems as played (rewordings among them included); the extension adds, for the copies-vs-new
 test, "copy" = one renumbered copy of each train original (same text, new numbers) and "new" = as
 many new train problems from families the slice does not use. Training can select by group
-(TrainingRun.training_groups).
+(TrainingRun.training_groups). "new2" (decided 2026-10-17) = 1,600 more new problems, one per family
+still unused, appended to the extension (new problems helped more than copies).
 
 The earlier facts-first labels and explanation threads of the slice (commands labels, threads)
 stay on disk; the slice corpus no longer uses them. The teacher data and students of the slice
@@ -41,8 +42,9 @@ from .items import answer_only_test
 PACKAGE = Path(__file__).resolve().parent
 ITEMS_DIR = PACKAGE / "items"
 SLICE_PATH = ITEMS_DIR / "slice_v1.txt"
-EXTENSION_PATH = ITEMS_DIR / "slice_v1_extension.txt"   # "<item id> <group>" per line (the copies-vs-new test)
-GROUPS = ("original", "new", "copy")   # corpus order of the train records
+EXTENSION_PATH = ITEMS_DIR / "slice_v1_extension.txt"   # "<item id> <group>" per line (the copies-vs-new test, then "new2")
+GROUPS = ("original", "new", "copy", "new2")   # corpus order of the train records
+MORE_NEW_COUNT = 1600   # "new2": the second batch of new problems (2026-10-17), about doubling the train conversations
 CONVERSATIONS_PATH = ITEMS_DIR / "conversations" / "slice_v1.jsonl"   # Gemma as the tutor, appended
 COUNTS = {"train": 850, "test": 100, "heldout_shape": 50}   # problems per split
 SEED = 0
@@ -158,10 +160,30 @@ def choose_extension() -> List[Tuple[str, str]]:
     return chosen
 
 
+def choose_more_new() -> List[str]:
+    """The second batch of new problems (decided 2026-10-17: the copies-vs-new test found new
+    problems the better buy): MORE_NEW_COUNT train problems, one per family, from families neither
+    the slice nor the extension uses (seeded), appended to EXTENSION_PATH as group "new2"."""
+    used_ids = {item["id"] for item in slice_items()} | set(EXTENSION_PATH.read_text(encoding="utf-8").split()[::2])
+    used_families = {item["family"] for item in all_items() if item["id"] in used_ids}
+    by_family = {}
+    for item in all_items():
+        if item["split"] == "train" and not answer_only_test(item) and item["family"] not in used_families:
+            by_family.setdefault(item["family"], []).append(item["id"])
+    random_generator = random.Random(SEED)
+    families = random_generator.sample(sorted(by_family), MORE_NEW_COUNT)
+    chosen = sorted(random_generator.choice(sorted(by_family[family])) for family in families)
+    with open(EXTENSION_PATH, "a", encoding="utf-8") as file:
+        file.write("".join(f"{item_id} new2\n" for item_id in chosen))
+    return chosen
+
+
 def extension_items() -> List[Dict]:
-    """The extension's problems, each with its "group" ("new" or "copy")."""
+    """The extension's problems, each with its "group" ("new", "copy" or "new2")."""
     if not EXTENSION_PATH.exists():
         choose_extension()
+    if "new2" not in EXTENSION_PATH.read_text(encoding="utf-8").split():
+        choose_more_new()
     group_of = dict(line.split() for line in EXTENSION_PATH.read_text(encoding="utf-8").splitlines() if line)
     by_id = {item["id"]: item for item in all_items() + copy_items()}
     return [{**by_id[item_id], "group": group} for item_id, group in group_of.items()]
