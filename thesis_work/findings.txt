@@ -328,7 +328,7 @@ X-C1b PER-EXAMPLE UPDATES STOP THE STUDENT FROM READING ITS INPUT (2026-10-14, C
 X-C1c LEARNING CURVE ON THE SLICE: THE STUDENT IS DATA-LIMITED (2026-10-15, one seed per size)
       experiments/slice_curve.py, results/slice_curve.csv. kd students (128x4x4, 10 passes, one update
       per batch) on the first 100 / 200 / 500 / 850 train conversations (576 / 1,344 / 3,136 / 5,383
-      replies); same test set (100 test conversations, 688 replies, 123 answers, baseline 6.1%).
+      replies); same test set (100 test conversations, 688 replies, 246 answers, baseline 6.1% = always "8").
         conversations  test error  token acc  answers best  digits right conv / other conv
         100            2.97        47%        0.8%          17% / 13%
         200            2.56        52%        2.4%          29% / 18%
@@ -357,6 +357,10 @@ X-C1d COPIES VS NEW PROBLEMS: BOTH MAKE THE STUDENT READ THE NUMBERS, NEW PROBLE
       from the problem. Copies widen it no more than new problems do, and lower the test error less
       (1.59 vs 1.48; the seeds differ by <0.01, so the ordering is solid even at n=2), at the same GPU
       cost: new problems are the better buy. Both together lower the error further (1.39), but the gap
-      barely grows beyond either alone. Answers stay below the 6.1% baseline in every arm (123 test
-      answers: one answer = 0.8 points, so the answer column is mostly noise).
+      barely grows beyond either alone. Answers stay below the 6.1% baseline in every arm (246 test
+      answers: one answer = 0.4 points, so small answer differences are noise).
+      What the students write (slice-mix-both-kd-s1, test): the facts-first layout is right (quantity =
+      number lines, a calculation line, "Answer: N"), but the names, numbers and operations are mostly
+      wrong, e.g. "pears per bag = 6 / pears per bag = 30 / total pegs = 6 * 30 = 100" for Gemma's
+      "pegs for one tent = 30 / 6 = 5 ... pegs needed = 8 * 5 = 40"; arithmetic is often wrong too.
       Gemma itself was right less often on the copies (93.2% vs 96%); why is unverified.
