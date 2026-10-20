@@ -10,6 +10,7 @@ the cloud. What runs there, in order:
    problems only, no copies): `library/domain/math_tutor/items/conversations/full_v1.jsonl`.
 3. The two output vocabularies (from those replies), then the teacher data (Gemma reads its own
    replies back) and the students: `experiments/code_agent_trial.py`, `experiments/math_full.py`.
+4. The size sweep: the kd student at four more sizes, ~1M to ~100M parameters (step 6b).
 
 Only while you are present; stop with Ctrl+C or a `STOP` file in the working folder. Every pass
 resumes where it stopped (items already in the file are skipped; a chunk is saved every 16 / 32).
@@ -35,7 +36,7 @@ git clone https://github.com/lorsmunka/preference_destillation.git && cd prefere
 ```
 pip install -r requirements.txt
 huggingface-cli login            # your token; the Gemma 4 licence must be accepted on HF
-python -m unittest discover -s tests     # 141 tests, CPU, ~20 s
+python -m unittest discover -s tests     # 142 tests, CPU, ~20 s
 ```
 
 ## 3. Derived files (gitignored, rebuilt the same every time, ~10 min)
@@ -69,6 +70,32 @@ python experiments/math_full.py               # the same for the math tutor
 ```
 Training the math students locally would take ~16 h each (the slice's 15,301 replies took ~75 min
 for 10 passes), so train them on the cloud too.
+
+## 6b. The size sweep (the same two scripts, after kd and ce)
+For the question "how does the student improve with its size?" (added 2026-10-20), both scripts then
+train the kd student at four more sizes (`experiments/_common.py`, `STUDENT_SIZES`), smallest first,
+one seed each. Run names: `math-full-kd-<size>-s1`, `code-agent-v1-kd-<size>-s1`.
+
+| size | layers x width x heads | math tutor | coding agent | learning rate |
+|---|---|---|---|---|
+| xs | 2 x 64 x 2 | 2.6M | 0.6M | 1.5e-3 |
+| s (kd and ce) | 4 x 128 x 4 | 6.0M | 2.0M | 1.5e-3 |
+| m | 6 x 256 x 4 | 16M | 8M | 1e-3 |
+| l | 8 x 512 x 8 | 53M | 37M | 7e-4 |
+| xl | 12 x 640 x 10 | 103M | 84M | 5e-4 |
+
+Memory is no limit: PyTorch's fused attention (2026-10-20) trains a 6,000-token coding-agent input
+in 0.6 GB (s) to 5.3 GB (xl); math tutor inputs need at most 1.1 GB. Time is the cost. Rough hours
+for 10 passes on a 4070-class card (time per example measured on the 4070, plus the slice's
+per-example overhead; a 5090 / H100 should be faster on the large sizes):
+
+| | xs | s | m | l | xl | the sweep (xs, m, l, xl) |
+|---|---|---|---|---|---|---|
+| math tutor (~187,000 train replies) | 10 | 15 | 20 | 24 | 33 | ~90 h |
+| coding agent (24,000 train records) | 1.5 | 3.4 | 6 | 17 | 32 | ~55 h |
+
+Every run resumes after a stop. To end the sweep early, delete the remaining sizes from
+`STUDENT_SIZES` and rerun: the report then covers the runs that are left.
 
 ## 7. Bring home, then stop paying
 ```

@@ -19,6 +19,24 @@ if str(REPO_ROOT) not in sys.path:
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
+# The size sweep of the agents (2026-10-20): size -> (hidden_dim, num_layers, num_heads, learning_rate).
+# "s" is the student trained so far. Parameters depend on the vocabularies: math tutor xs 2.6M, s 6.0M,
+# m 16M, l 53M, xl 103M; coding agent 0.6M, 2.0M, 8M, 37M, 84M. Larger students get a smaller learning
+# rate (the usual practice; 1.5e-3 is the small students' rate).
+STUDENT_SIZES = {
+    "xs": (64, 2, 2, 0.0015),
+    "s": (128, 4, 4, 0.0015),
+    "m": (256, 6, 4, 0.001),
+    "l": (512, 8, 8, 0.0007),
+    "xl": (640, 12, 10, 0.0005),
+}
+BASE_SIZE = "s"
+
+
+def size_settings(size):
+    hidden_dim, num_layers, num_heads, learning_rate = STUDENT_SIZES[size]
+    return dict(hidden_dim=hidden_dim, num_layers=num_layers, num_heads=num_heads, learning_rate=learning_rate)
+
 
 def seeded_run_training(seeded_runs) -> bool:
     """Train `(seed, TrainingRun)` pairs, seeding torch before each one.

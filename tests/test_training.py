@@ -312,6 +312,22 @@ class ModelTests(unittest.TestCase):
                     sequence.append(token)
                 decoder.append(next_tokens)
 
+    def test_fused_attention_equals_the_explicit_masked_attention(self):
+        torch.manual_seed(5)
+        model = Transformer(domain=REDDIT_SENTIMENT, hidden_dim=16, num_layers=2, num_heads=2, dropout=0.0,
+                            input_vocabulary=tiny_input_vocabulary()).eval()
+        input_ids = torch.randint(0, 50, (1, 13))
+        with torch.no_grad():
+            fused = model(input_ids)   # no mask: the fused kernel
+            explicit = model(input_ids, attention_mask=model.create_causal_mask(13, input_ids.device))
+        self.assertLess((fused - explicit).abs().max().item(), 1e-5)
+
+        model.train()
+        model.set_attention_noise(0.5)   # noise needs the explicit scores: still trains, and differs from no noise
+        noisy = model(input_ids)
+        noisy.sum().backward()
+        self.assertGreater((noisy.detach() - explicit).abs().max().item(), 1e-4)
+
     def test_batched_rollouts_equal_one_at_a_time(self):
         model = tiny_model(seed=4).eval()
         encoder = ExampleEncoder(model, "cpu")

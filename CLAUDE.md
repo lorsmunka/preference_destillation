@@ -14,7 +14,8 @@ technique works for generation).
 - **Part 2 — distilling an agent** (in progress): two agents, each = distilled student + harness: the
   **agentic math tutor** and the **coding agent** (added 2026-10-20: find / explain code in a synthetic project).
   Direction (2026-10-20): both work end to end locally, then the large data runs on rented GPU time
-  (`thesis_work/cloud_runbook.md`). Status, decisions and next steps: the STATUS block at the top of
+  (`thesis_work/cloud_runbook.md`), including a student size sweep (~1M to ~100M parameters,
+  `experiments/_common.STUDENT_SIZES`). Status, decisions and next steps: the STATUS block at the top of
   `thesis_work/running.txt`.
 
 ## Architecture

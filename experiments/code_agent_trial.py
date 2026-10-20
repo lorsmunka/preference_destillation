@@ -7,7 +7,8 @@ Steps, each skipped when done (so the script resumes):
      its probabilities at every position stored
   3. the input vocabulary of the batches
   4. two students, as on the math slice: "kd" (Gemma's probabilities + its words, KL share 0.9 -> 0.1)
-     and "ce" (its words only)
+     and "ce" (its words only); then the size sweep: kd at every other size of _common.STUDENT_SIZES
+     (~1M to ~80M parameters)
   5. the report, on the test items (whole projects the students never saw): each student in the
      harness doing both steps itself (its own scope narrows its own context), against the true
      places: lines covered, lines on target, places hit; the decision (explain or found); the
@@ -21,7 +22,7 @@ import json
 import os
 import sys
 
-from _common import best_and_final, seeded_run_training, write_rows
+from _common import BASE_SIZE, STUDENT_SIZES, best_and_final, seeded_run_training, size_settings, write_rows
 
 from library import GenerationJob, RunStore, TrainingRun
 from library.domain.code_agent import CodeAgentDomain
@@ -30,19 +31,19 @@ TEACHER = "google/gemma-4-12B-it"
 ARMS = {"kd": (0.9, 0.1), "ce": (0.0, 0.0)}   # arm -> (kl_ratio_start, kl_ratio_end)
 SEED = 1
 STUDENT = dict(
-    hidden_dim=128,   # the math slice's student; a 6,500-token input needs ~7.5 GB to train (2026-10-20)
-    num_layers=4,
-    num_heads=4,
     dropout=0.1,
     epoch_count=10,
     batch_size=32,
-    learning_rate=0.0015,
     lr_warmup_ratio=0.1,
     max_training_examples=None,
     shuffle_seed=SEED,
 )
-RESULT_COLUMNS = ["run", "arm", "items", "scopes", "recall", "precision", "places_hit", "places", "decision_right",
-                  "explanations_pass", "explanations", "task_accuracy_best", "test_error_best", "test_token_accuracy_final"]
+# kd and ce at the base size (the math slice's student), then the size sweep: kd at every other size,
+# smallest first. A 6,000-token input trains in 0.6 GB (s) to 5.3 GB (xl) with the fused attention.
+RUNS = [(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE]
+RESULT_COLUMNS = ["run", "arm", "size", "parameters", "items", "scopes", "recall", "precision", "places_hit", "places",
+                  "decision_right", "explanations_pass", "explanations", "task_accuracy_best", "test_error_best",
+                  "test_token_accuracy_final"]
 
 
 def chosen_variant() -> str:
@@ -64,15 +65,17 @@ def scoring_job() -> GenerationJob:
                                      f"({'NF4' if load_in_4bit else 'bf16'}) reads its own replies back (forced)")
 
 
-def run_name(arm):
-    return f"code-agent-{DOMAIN.conversations}-{arm}-s{SEED}"
+def run_name(arm, size):
+    return f"code-agent-{DOMAIN.conversations}-{arm}{'' if size == BASE_SIZE else '-' + size}-s{SEED}"
 
 
 def build_runs():
-    return [(SEED, TrainingRun(**STUDENT, domain=DOMAIN, teacher_model=TEACHER, kl_ratio_start=start, kl_ratio_end=end,
-                               run_name=run_name(arm), experiment=f"code-agent-{DOMAIN.conversations}",
-                               description=f"coding agent trial ({DOMAIN.conversations}), {arm} ({start}->{end}), seed {SEED}"))
-            for arm, (start, end) in ARMS.items()]
+    return [(SEED, TrainingRun(**STUDENT, **size_settings(size), domain=DOMAIN, teacher_model=TEACHER,
+                               kl_ratio_start=ARMS[arm][0], kl_ratio_end=ARMS[arm][1], run_name=run_name(arm, size),
+                               experiment=f"code-agent-{DOMAIN.conversations}",
+                               description=f"coding agent trial ({DOMAIN.conversations}), {arm} "
+                                           f"({ARMS[arm][0]}->{ARMS[arm][1]}), size {size}, seed {SEED}"))
+            for arm, size in RUNS]
 
 
 def save_teacher_data() -> bool:
@@ -140,17 +143,19 @@ def report():
     store = RunStore()
     test_items = played_test_items()
     rows = [summarise([turn for _, turn in test_items], "gemma")]
-    for arm in ARMS:
-        run = store.get(run_name(arm))
+    for arm, size in RUNS:
+        run = store.get(run_name(arm, size))
         best, final = best_and_final(run)
         _, checkpoint_path = store.resolve_checkpoint(run.name, "latest")
         student = StudentModel.from_run(run, checkpoint_path, domain=DOMAIN)
         row = summarise(student_turns(student, test_items), run.name)
-        row.update(arm=arm, task_accuracy_best=best.task_accuracy, test_error_best=round(min(e.ce_loss for e in run.eval_epochs), 4),
+        row.update(arm=arm, size=size, parameters=run.total_parameters, task_accuracy_best=best.task_accuracy,
+                   test_error_best=round(min(e.ce_loss for e in run.eval_epochs), 4),
                    test_token_accuracy_final=final.teacher_forced_accuracy)
         rows.append(row)
+        del student
     for row in rows:
-        print(f"{row['run']:<28} scopes {row['scopes']}/{row['items']}, lines covered {row['recall']}, on target "
+        print(f"{row['run']:<34} scopes {row['scopes']}/{row['items']}, lines covered {row['recall']}, on target "
               f"{row['precision']}, places hit {row['places_hit']}/{row['places']}, decision right "
               f"{row['decision_right']}/{row['items']}, explanations pass {row['explanations_pass']}/{row['explanations']}")
     write_rows(f"code_agent_trial_{DOMAIN.conversations}.csv", RESULT_COLUMNS, rows)

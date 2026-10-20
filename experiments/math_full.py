@@ -5,7 +5,8 @@ Steps, each skipped when done (so the script resumes):
   1. the corpus (FullDomain), from conversations/full_v1.jsonl
   2. saving the teacher data: Gemma reads its own replies back (forced), with the setup that wrote them
   3. the input vocabulary
-  4. two students, as on the slice: kd (KL share 0.9 -> 0.1) and ce
+  4. two students, as on the slice: kd (KL share 0.9 -> 0.1) and ce; then the size sweep: kd at
+     every other size of _common.STUDENT_SIZES (~3M to ~100M parameters), smallest first
   5. the report: task accuracy next to the most common answer, test error, token accuracy
 
     python -m library.domain.math_tutor.full conversations   # first: the pass (GPU)
@@ -17,7 +18,7 @@ import json
 import os
 import sys
 
-from _common import best_and_final, seeded_run_training, write_rows
+from _common import BASE_SIZE, STUDENT_SIZES, best_and_final, seeded_run_training, size_settings, write_rows
 
 from library import GenerationJob, RunStore, TrainingRun
 from library.domain.math_tutor.full import CONVERSATIONS_PATH, FullDomain
@@ -27,21 +28,23 @@ TEACHER = "google/gemma-4-12B-it"
 DOMAIN = FullDomain()
 ARMS = {"kd": (0.9, 0.1), "ce": (0.0, 0.0)}
 SEED = 1
-STUDENT = dict(hidden_dim=128, num_layers=4, num_heads=4, dropout=0.1, epoch_count=10, batch_size=32,
-               learning_rate=0.0015, lr_warmup_ratio=0.1, max_training_examples=None, shuffle_seed=SEED)
-RESULT_COLUMNS = ["run", "arm", "train_records", "task_accuracy_best", "task_accuracy_final", "majority_baseline",
-                  "test_error_best", "test_token_accuracy_final"]
+STUDENT = dict(dropout=0.1, epoch_count=10, batch_size=32, lr_warmup_ratio=0.1, max_training_examples=None,
+               shuffle_seed=SEED)
+RUNS = [(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE]
+RESULT_COLUMNS = ["run", "arm", "size", "parameters", "train_records", "task_accuracy_best", "task_accuracy_final",
+                  "majority_baseline", "test_error_best", "test_token_accuracy_final"]
 
 
-def run_name(arm):
-    return f"math-full-{arm}-s{SEED}"
+def run_name(arm, size):
+    return f"math-full-{arm}{'' if size == BASE_SIZE else '-' + size}-s{SEED}"
 
 
 def build_runs():
-    return [(SEED, TrainingRun(**STUDENT, domain=DOMAIN, teacher_model=TEACHER, kl_ratio_start=start, kl_ratio_end=end,
-                               run_name=run_name(arm), experiment=EXPERIMENT,
-                               description=f"full math tutor, {arm} ({start}->{end}), seed {SEED}"))
-            for arm, (start, end) in ARMS.items()]
+    return [(SEED, TrainingRun(**STUDENT, **size_settings(size), domain=DOMAIN, teacher_model=TEACHER,
+                               kl_ratio_start=ARMS[arm][0], kl_ratio_end=ARMS[arm][1], run_name=run_name(arm, size),
+                               experiment=EXPERIMENT,
+                               description=f"full math tutor, {arm} ({ARMS[arm][0]}->{ARMS[arm][1]}), size {size}, seed {SEED}"))
+            for arm, size in RUNS]
 
 
 def save_teacher_data() -> bool:
@@ -79,10 +82,11 @@ def ensure_input_vocabulary() -> None:
 def report():
     store = RunStore()
     rows = []
-    for arm in ARMS:
-        run = store.get(run_name(arm))
+    for arm, size in RUNS:
+        run = store.get(run_name(arm, size))
         best, final = best_and_final(run)
-        rows.append({"run": run.name, "arm": arm, "train_records": run.info.get("train_examples"),
+        rows.append({"run": run.name, "arm": arm, "size": size, "parameters": run.total_parameters,
+                     "train_records": run.info.get("train_examples"),
                      "task_accuracy_best": best.task_accuracy, "task_accuracy_final": final.task_accuracy,
                      "majority_baseline": run.majority_baseline(final),
                      "test_error_best": round(min(e.ce_loss for e in run.eval_epochs), 4),
