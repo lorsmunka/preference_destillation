@@ -3,8 +3,9 @@ the conversation state, the context rules, checking each answer and asking again
 to off-topic messages itself.
 
 Parts, each replaceable on its own:
-  TutorModel     anything with generate(requests) -> texts. GemmaTutor runs the teacher (to try
-                 the harness before any student exists); the distilled student plugs in later.
+  TutorModel     anything with generate(requests) -> texts. TeacherModel (library/agent/runner.py)
+                 runs the teacher (to try the harness before any student exists); the distilled
+                 student plugs in later.
   Conversation   the context rules (conversation.py): typed history, newest input <message>,
                  a follow-up task closes the side thread of follow-up questions.
   checker        a function block -> problem or None (checks.check_lines: well formed, every
@@ -32,11 +33,11 @@ requests of many conversations into one model call.
 import json
 import random
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 from library.agent.question_templates import Message, QuestionGenerator, related
+from library.agent.runner import Request, TeacherModel, run_sessions
 from .checks import check_explanation, check_lines, complete_results, final_answer
 from .conversation import Conversation, parse_route
 from .questions import kind_weights, solution_foci, tasks_of, what_if_foci
@@ -46,39 +47,6 @@ RUNS_DIR = PACKAGE / "harness_runs"
 SOLUTION_PREFIX, EXPLANATION_PREFIX = "<solution>\n", "<explanation>"
 ROUTE_PREFIX = "<"   # a route asked again starts the tag, so the reply cannot open with prose or bullets
 OUT_OF_SCOPE_REPLY = "This question is outside the scope of this task."
-
-
-@dataclass
-class Request:
-    kind: str                 # "route" | "solution" | "explanation"
-    context: str              # the conversation text
-    prefix: str = ""          # what the model's turn starts with
-    max_tokens: int = 120
-    temperature: float = 0.0
-    stop: List[str] = field(default_factory=list)
-
-
-class GemmaTutor:
-    """The teacher as the tutor model: the agentic domain's prompt around the conversation.
-    At most `batch` requests per model call (8 keeps a 12 GB card off its memory limit)."""
-
-    def __init__(self, handler, domain, batch: int = 8):
-        self.handler, self.domain, self.batch = handler, domain, batch
-
-    def generate(self, requests: List[Request]) -> List[str]:
-        groups: Dict[tuple, List[int]] = {}
-        for index, request in enumerate(requests):
-            groups.setdefault((request.max_tokens, request.temperature, tuple(request.stop)), []).append(index)
-        texts = [""] * len(requests)
-        chunks = [(key, indices[start:start + self.batch]) for key, indices in groups.items()
-                  for start in range(0, len(indices), self.batch)]
-        for (max_tokens, temperature, stop), indices in chunks:
-            prompts = [self.domain.teacher_prompt(requests[i].context) for i in indices]
-            outputs = self.handler.generate_texts(prompts, max_new_tokens=max_tokens, temperature=temperature,
-                                                  stop_strings=list(stop) or None, prefixes=[requests[i].prefix for i in indices])
-            for i, output in zip(indices, outputs):
-                texts[i] = output
-        return texts
 
 
 class TemplatePupil:
@@ -217,29 +185,6 @@ class TutorSession:
         self.advance()
 
 
-def run_sessions(model, sessions: List[TutorSession], exit_listener=None, progress: bool = False) -> bool:
-    """Drive every session to the end, batching each round's pending requests. With an
-    exit_listener (Stop button / Ctrl+C), a stop is honoured between rounds: the round in progress
-    finishes and the sessions keep everything said so far. False when stopped before the end."""
-    from time import time
-    round_number = 0
-    while True:
-        active = [session for session in sessions if not session.done]
-        if not active:
-            return True
-        if exit_listener is not None and exit_listener.check_exit():
-            return False
-        round_number += 1
-        started = time()
-        outputs = model.generate([session.pending for session in active])
-        for session, output in zip(active, outputs):
-            session.receive(output)
-        if progress:
-            finished = sum(session.done for session in sessions)
-            print(f"    round {round_number}: {len(active)} replies in {time() - started:.0f} s, "
-                  f"{finished}/{len(sessions)} conversations finished", flush=True)
-
-
 def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk: int = 32, batch: int = 4,
                           seed: int = 0) -> bool:
     """Gemma as the tutor in every item's simulated conversation (the template pupil), the source of
@@ -258,7 +203,7 @@ def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk:
     order = list(items)
     random.Random(seed).shuffle(order)
     todo = [item for item in order if item["id"] not in done]
-    questions, tutor = question_generator(), GemmaTutor(handler, domain, batch=batch)
+    questions, tutor = question_generator(), TeacherModel(handler, domain, batch=batch)
     exit_listener = ExitListener()
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"{len(done)} conversations saved, {len(todo)} to go", flush=True)
@@ -385,7 +330,7 @@ def main() -> None:
     handler = ModelHandler("google/gemma-4-12B-it", domain, load_in_4bit=True, chat_template=True)
     questions = generator()
     sessions = [TutorSession(TemplatePupil(item, questions)) for item in chosen]
-    run_sessions(GemmaTutor(handler, domain), sessions)
+    run_sessions(TeacherModel(handler, domain), sessions)
     tokenizer = AutoTokenizer.from_pretrained("models/gemma-4-12B-it")
     summary = summarise(sessions, tokenizer, set(domain.example_tokens) | {"\n\n", "▁▁"})
     RUNS_DIR.mkdir(exist_ok=True)
