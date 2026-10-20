@@ -13,8 +13,15 @@ STATUS 2026-10-13 (pick up here)
             Scored: the scope exactly (the generator knows where things are), the explanation against
             Gemma (closeness to its text; Gemma as judge). KEEP IN MIND (user): Gemma's knowledge matters
             where it decides (reading the request, the explanation), not where the generator knows the
-            answer. OPEN: step 1 shows the full files or a project map (files + classes / functions with
-            line ranges).
+            answer. DECIDED (user): step 1 shows the FULL files; projects of 10-15 files x 20-50 lines;
+            5-10 hand-written base projects, each randomized by a program into many versions (the true
+            places tracked), distractions = the project's own other parts; scopes may have 2-3 parts
+            ("find the Transaction logic").
+            PILOT 2026-10-20 (experiments/code_agent_pilot.py, banking project of 15 files / 490 lines /
+            ~6,200 tokens, 18 questions): Gemma CAN do it. Scope parts hit 27/31, decision right 17/18,
+            7 explanations correct on reading with 0 made-up names. Misses: drops a helper one level down
+            (save_json, to_dict, overdraft_fee); adds the config constants used (sensible). The full
+            project fills the 4070: 45-270 s per question once memory spills (cloud: no issue).
   RUNNING   nothing (2026-10-17 14:20). GPU idle. 118 unittest tests pass.
             COPIES VS NEW DONE, both seeds (findings.txt X-C1d, experiments/results/slice_mix.csv): test
             error original 1.80, +new 1.48, +copy 1.59, +both 1.39 (seeds within 0.012); digit gap right vs
