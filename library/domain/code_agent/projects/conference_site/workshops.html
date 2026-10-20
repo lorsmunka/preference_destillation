@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Workshops | CodeCoast 2027</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="schedule.html">Schedule</a>
+  <a href="speakers.html">Speakers</a> <a href="tickets.html">Tickets</a>
+</nav>
+<main>
+  <section id="workshop-list">
+    <h1>Workshops</h1>
+    <table id="workshop-table">
+      <tr><th>Workshop</th><th>Time</th><th>Seats</th></tr>
+      <tr><td>Intro to Rust</td><td>09:30-12:30</td><td>30</td></tr>
+      <tr><td>Testing in practice</td><td>09:30-12:30</td><td>25</td></tr>
+      <tr><td>Deploying containers</td><td>13:30-16:00</td><td>30</td></tr>
+    </table>
+  </section>
+
+  <section id="workshop-rules">
+    <h2>Before you sign up</h2>
+    <ul>
+      <li>You need a workshop day or full pass ticket.</li>
+      <li>Bring a laptop with the setup already done.</li>
+      <li>At most one morning and one afternoon workshop.</li>
+    </ul>
+  </section>
+
+  <form id="workshop-form" action="thanks.html" method="post">
+    <label for="ticket-number">Ticket number</label>
+    <input type="text" id="ticket-number" name="ticket" required>
+    <label for="workshop-choice">Workshop</label>
+    <select id="workshop-choice" name="workshop">
+      <option>Intro to Rust</option>
+      <option>Testing in practice</option>
+      <option>Deploying containers</option>
+    </select>
+    <button type="submit">Save my seat</button>
+  </form>
+</main>
+<footer id="page-footer">CodeCoast 2027, Port Ellis</footer>
+</body>
+</html>

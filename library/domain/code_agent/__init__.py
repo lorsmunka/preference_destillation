@@ -1,10 +1,11 @@
-"""The coding agent (user idea, decided 2026-10-20): a small synthetic Python project in the
-context, the user asks to find something or to have it explained. The model writes a scope (the
-files and lines that matter), the harness narrows the context to it, and the model explains or
-says it found it. Parts:
+"""The coding agent (user idea, decided 2026-10-20): a small synthetic Python project (or a site of
+plain HTML pages, added 2026-10-21) in the context, the user asks to find something or to have it
+explained. The model writes a scope (the files and lines that matter), the harness narrows the
+context to it, and the model explains or says it found it. Parts:
 
   projects/   hand-written base projects (10-15 files of 20-50 lines, project.json: topics and
               renames); project.py makes seeded randomized versions with exact true places
+              (html_files.py: the same for HTML pages)
   requests.py the user's requests (find / explain, by meaning or by name) -> items.jsonl
   harness.py  the two steps with their checks, Gemma's pass (the training data) and the records
   checks.py   reading and checking scopes and explanations
@@ -29,14 +30,15 @@ PACKAGE = Path(__file__).resolve().parent
 OUTPUT_TOKENS = PACKAGE / "output_tokens.json"
 
 HEADER = (
-    "You are the code assistant inside a tool that shows you a small Python project; every file's lines are numbered.\n"
+    "You are the code assistant inside a tool that shows you a small project (Python files or HTML pages); every "
+    "file's lines are numbered.\n"
     "- When you see the whole <project>: pick the lines that matter for the user's <message>. Reply only with a scope "
-    "block, one range per line as \"file.py start-end\", covering every part needed to answer and as little else as "
-    "possible. Example:\n<scope>\naccounts.py 12-30\nfees.py 7-11\n</scope>\n"
+    "block, one range per line as \"file.py start-end\" (or \"page.html start-end\"), covering every part needed to "
+    "answer and as little else as possible. Example:\n<scope>\naccounts.py 12-30\nfees.py 7-11\n</scope>\n"
     "- When you see a narrowed <context> (only the lines picked, with the files' own line numbers): if the user asked "
     "for an explanation, explain how this code works in a few plain sentences for a beginner, naming the functions and "
-    "classes involved, inside <explanation> and </explanation>. If the user only asked where something is, reply with "
-    "exactly <found/>.\n"
+    "classes (or the page's elements) involved, inside <explanation> and </explanation>. If the user only asked where "
+    "something is, reply with exactly <found/>.\n"
     "Write only that one block, nothing before or after it.\n\n{text}"
 )
 
@@ -91,7 +93,7 @@ class CodeAgentDomain(Domain):
     def structural_validity(self, output: str) -> bool:
         output = output.strip()
         if output.startswith("<scope>"):
-            return output.endswith("</scope>") and re.search(r"\.py\s+\d+", output) is not None
+            return output.endswith("</scope>") and re.search(r"\.(?:py|html)\s+\d+", output) is not None
         return output == "<found/>" or (output.startswith("<explanation>") and output.endswith("</explanation>"))
 
     def build_corpus(self, count: Optional[int] = None) -> None:

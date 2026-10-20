@@ -3,7 +3,20 @@ STATUS 2026-10-13 (pick up here)
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
             (one Gemma setup per domain).
-  SIZE SWEEP 2026-10-20 (user: "Yes please"; for the abstract's question "how does the performance
+  MORE PROJECTS 2026-10-21 (user: "Alright, add more please then", HTML: "Just add html only projects. Keep it
+            easy"): the coding agent has 20 base projects instead of 8, for variety at the same GPU cost (the
+            pass costs per request, not per project): 8 new Python ones with their own structure (text_adventure,
+            spreadsheet, fitness_tracker, checkers, log_analyzer, music_player, email_client, delivery_routes:
+            more classes, a formula parser, minimax, Dijkstra, argparse) and 4 plain HTML sites (restaurant,
+            museum, conference, travel; html_files.py: places = elements with an id, a version renames ids and
+            page names inside the link attributes only and shuffles the sections of <main>). Test = shop, todo +
+            spreadsheet + travel_site (one new Python and one HTML drawn with seed 0). 16 train x 190 versions +
+            4 test x 50 = 12,960 requests (was 12,400). HTML contexts are ~7,200 Gemma tokens (Python
+            5,300-6,100). The old 8 projects give exactly the same versions as before. The pilot (pilot_nf4) is
+            left as it is; its train items above version 189 no longer exist (its corpus is already built).
+            New rule in check_base: no class inherits from a class in its own file (a shuffle can put it first).
+            By-name requests skip ids on more than 3 pages (the nav and footer repeat on every page).
+  SIZE SWEEP 2026-10-20 (user approved: "7 yes i will ru it"; for the abstract's question "how does the performance
             improve with the model size?"): both cloud scripts train kd at xs / m / l / xl after kd + ce
             at s (experiments/_common.STUDENT_SIZES; math 2.6M-103M, coding agent 0.6M-84M parameters; one
             seed; a smaller learning rate for the larger sizes). Attention uses PyTorch's fused kernel when

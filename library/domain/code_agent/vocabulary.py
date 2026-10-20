@@ -15,7 +15,8 @@ from . import OUTPUT_TOKENS, PACKAGE
 from .project import load_base, project_list
 
 FORMAT_TEXTS = [
-    "<scope>\naccounts.py 12-30\nfees.py 7-11\nmain.py 1-9\n</scope>", "<found/>", "<explanation>The</explanation>",
+    "<scope>\naccounts.py 12-30\nfees.py 7-11\nmain.py 1-9\n</scope>", "<scope>\nindex.html 8-21\n</scope>",
+    "<found/>", "<explanation>The</explanation>",
     "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 "
     "41 42 43 44 45 46 47 48 49 50 51 52 53 54 55",
     # Gemma's tokenizer glues punctuation and spaces onto a closing tag: every form
@@ -30,7 +31,8 @@ def vocabulary_texts() -> List[str]:
         base = load_base(project)
         texts += list(base["files"].values()) + list(base["files"])
         for name, alternatives in base["renames"].items():
-            texts += [f"`{alternative}` {alternative} {alternative}.py {alternative}()" for alternative in [name] + alternatives]
+            texts += [f"`{alternative}` {alternative} {alternative}.py {alternative}() {alternative}.html #{alternative}"
+                      for alternative in [name] + alternatives]
     for path in sorted((PACKAGE / "conversations").glob("*.jsonl")):   # every variant's replies
         for line in open(path, encoding="utf-8"):
             turn = json.loads(line)["turn"]

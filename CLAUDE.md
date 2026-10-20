@@ -49,13 +49,15 @@ replies in simulated conversations (decided 2026-10-13): `slice.py` (the 1,000-p
 
 ## The coding agent (part 2) in one paragraph
 
-8 hand-written base projects (`code_agent/projects/`: 12-15 files of 20-50 lines, ~400-500 lines each, with
-`project.json`: ~20 topics with their true places, and renames). `project.py` makes seeded randomized versions
-(renames, shuffled functions / methods / files) whose true places are found again by parsing. Requests: find or
+20 hand-written base projects (`code_agent/projects/`: 12-15 files of 20-50 lines, ~400-500 lines each, with
+`project.json`: ~20-30 topics with their true places, and renames): 16 Python (8 menu + JSON apps, 8 added
+2026-10-21 with more classes and algorithms) and 4 plain HTML sites (`html_files.py`: places = elements with an id,
+~7,200 tokens each vs ~5,300-6,100 for Python). `project.py` makes seeded randomized versions
+(renames, shuffled functions / methods / files / sections of `<main>`) whose true places are found again by parsing. Requests: find or
 explain, by meaning (a topic) or by name; 4 per version (`requests.py`). Two steps (`harness.py`): the model reads
 the whole project and writes `<scope>` (file + line ranges, checked); the harness narrows the context to it; the
 model writes `<explanation>` or `<found/>` (checked: no made-up names). Scored: the scope against the true places,
-the explanation against Gemma. Test = 2 whole base projects (shop, todo). No edit actions (user, 2026-10-20).
+the explanation against Gemma. Test = 4 whole base projects (shop, todo, spreadsheet, travel_site). No edit actions (user, 2026-10-20).
 
 ## Project structure
 
@@ -65,7 +67,7 @@ library/
   domain/      one package per domain + registry; math_tutor/ = items, renumber, prune, annotations,
                labels (facts-first label pass), conversation (context rules + training records),
                checks, questions (+ questions/bank), threads (explanation pass), harness, agentic (domain),
-               slice / full (the conversation passes), demo; code_agent/ = projects, project, requests,
+               slice / full (the conversation passes), demo; code_agent/ = projects, project (+ html_files), requests,
                harness, checks, corpus, vocabulary, demo
   agent/       domain-free parts of an agent: question_templates (template engine), runner (Request,
                TeacherModel, StudentAgentModel, run_sessions, teacher_setup)

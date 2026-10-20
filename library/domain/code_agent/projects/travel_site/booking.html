@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Booking request | Northstar Travel</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="tours.html">Tours</a>
+  <a href="booking.html">Book</a> <a href="contact.html">Contact</a>
+</nav>
+<main>
+  <section id="booking-intro">
+    <h1>Booking request</h1>
+    <p>We confirm your places within 2 working days.</p>
+    <p>Nothing is paid until we confirm.</p>
+  </section>
+
+  <form id="request-form" action="thanks.html" method="post">
+    <label for="traveller-name">Name</label>
+    <input type="text" id="traveller-name" name="name" required>
+    <label for="traveller-email">Email</label>
+    <input type="email" id="traveller-email" name="email" required>
+    <label for="tour-choice">Tour</label>
+    <select id="tour-choice" name="tour">
+      <option>Iceland Ring Road</option>
+      <option>Tuscany by Bike</option>
+      <option>Morocco Desert</option>
+    </select>
+    <label for="start-date">Start date</label>
+    <input type="date" id="start-date" name="start" required>
+    <label for="traveller-count">Travellers</label>
+    <input type="number" id="traveller-count" name="travellers" min="1" max="14">
+    <button type="submit">Send request</button>
+  </form>
+
+  <section id="cancellation">
+    <h2>If you cancel</h2>
+    <ul>
+      <li>8 weeks or more before: you lose the deposit.</li>
+      <li>4 to 8 weeks before: you pay half the price.</li>
+      <li>Less than 4 weeks before: no refund.</li>
+    </ul>
+  </section>
+</main>
+<footer id="page-footer">Northstar Travel, 8 Bridge Street, Elmford</footer>
+</body>
+</html>

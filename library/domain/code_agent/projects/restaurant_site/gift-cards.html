@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Gift cards | Copper Pot</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="menu.html">Menu</a>
+  <a href="booking.html">Book a table</a> <a href="contact.html">Contact</a>
+</nav>
+<main>
+  <section id="card-amounts">
+    <h1>Gift cards</h1>
+    <p>Cards for $25, $50 or $100, or a tasting menu for two at $150.</p>
+    <p>We post them within 2 working days.</p>
+  </section>
+
+  <form id="gift-form" action="thanks.html" method="post">
+    <label for="gift-amount">Card</label>
+    <select id="gift-amount" name="amount">
+      <option>$25</option>
+      <option>$50</option>
+      <option>$100</option>
+      <option>Tasting menu for two</option>
+    </select>
+    <label for="gift-address">Postal address</label>
+    <textarea id="gift-address" name="address" required></textarea>
+    <button type="submit">Buy</button>
+  </form>
+
+  <section id="card-terms">
+    <h2>Terms</h2>
+    <ul>
+      <li>Valid for 12 months.</li>
+      <li>Not for booking deposits.</li>
+      <li>No cash refunds.</li>
+    </ul>
+  </section>
+</main>
+<footer id="page-footer">Copper Pot, 14 Mill Lane, Riverside</footer>
+</body>
+</html>

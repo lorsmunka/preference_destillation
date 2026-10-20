@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Book a table | Copper Pot</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="menu.html">Menu</a>
+  <a href="booking.html">Book a table</a> <a href="contact.html">Contact</a>
+</nav>
+<main>
+  <section id="booking-intro">
+    <h1>Book a table</h1>
+    <p>Tables for 1 to 8 guests, up to 60 days ahead.</p>
+    <p>Larger groups: see <a href="private-dining.html">private dining</a>.</p>
+  </section>
+
+  <form id="booking-form" action="thanks.html" method="post">
+    <label for="booking-name">Name</label>
+    <input type="text" id="booking-name" name="name" required>
+    <label for="booking-email">Email</label>
+    <input type="email" id="booking-email" name="email" required>
+    <label for="booking-date">Date</label>
+    <input type="date" id="booking-date" name="date" required>
+    <label for="booking-time">Time</label>
+    <select id="booking-time" name="time">
+      <option>12:00</option>
+      <option>18:00</option>
+      <option>20:00</option>
+    </select>
+    <label for="party-size">Guests</label>
+    <input type="number" id="party-size" name="guests" min="1" max="8">
+    <button type="submit">Book</button>
+  </form>
+
+  <section id="booking-rules">
+    <h2>Booking rules</h2>
+    <ul>
+      <li>We hold your table for 15 minutes.</li>
+      <li>Tables of 6 to 8 pay a $10 deposit per guest.</li>
+      <li>Cancel 24 hours ahead to get the deposit back.</li>
+    </ul>
+  </section>
+</main>
+<footer id="page-footer">Copper Pot, 14 Mill Lane, Riverside</footer>
+</body>
+</html>

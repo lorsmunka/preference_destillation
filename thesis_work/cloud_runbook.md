@@ -3,8 +3,9 @@
 Direction (user, 2026-10-20): both agents work end to end locally first, then the large runs on
 the cloud. What runs there, in order:
 
-1. **Coding agent pass**: Gemma does both steps (scope, then explanation / found) of all 12,400
-   requests (8 base projects, 6 train x 500 versions + 2 test x 50, 4 requests each):
+1. **Coding agent pass**: Gemma does both steps (scope, then explanation / found) of all 12,960
+   requests (20 base projects, 16 of them Python and 4 plain HTML sites: 16 train x 190 versions +
+   4 test x 50, 4 requests each):
    `library/domain/code_agent/conversations/v1.jsonl`.
 2. **Math tutor full pass**: Gemma tutors every train and test problem (29,747 + 1,250, new
    problems only, no copies): `library/domain/math_tutor/items/conversations/full_v1.jsonl`.
@@ -36,13 +37,13 @@ git clone https://github.com/lorsmunka/preference_destillation.git && cd prefere
 ```
 pip install -r requirements.txt
 huggingface-cli login            # your token; the Gemma 4 licence must be accepted on HF
-python -m unittest discover -s tests     # 142 tests, CPU, ~20 s
+python -m unittest discover -s tests     # 147 tests, CPU, ~25 s
 ```
 
 ## 3. Derived files (gitignored, rebuilt the same every time, ~10 min)
 ```
 python -m library.domain.math_tutor.prune         # -> items.jsonl (34,002 items)
-python -m library.domain.code_agent.requests      # -> items.jsonl of the coding agent (12,400 requests)
+python -m library.domain.code_agent.requests      # -> items.jsonl of the coding agent (12,960 requests)
 ```
 
 ## 4. Check before the long runs (~15 min)
@@ -92,7 +93,7 @@ per-example overhead; a 5090 / H100 should be faster on the large sizes):
 | | xs | s | m | l | xl | the sweep (xs, m, l, xl) |
 |---|---|---|---|---|---|---|
 | math tutor (~187,000 train replies) | 10 | 15 | 20 | 24 | 33 | ~90 h |
-| coding agent (24,000 train records) | 1.5 | 3.4 | 6 | 17 | 32 | ~55 h |
+| coding agent (24,320 train records) | 1.5 | 3.4 | 6 | 17 | 32 | ~55 h |
 
 Every run resumes after a stop. To end the sweep early, delete the remaining sizes from
 `STUDENT_SIZES` and rerun: the report then covers the runs that are left.

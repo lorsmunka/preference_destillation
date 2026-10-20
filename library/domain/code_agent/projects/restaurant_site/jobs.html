@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jobs | Copper Pot</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="menu.html">Menu</a>
+  <a href="booking.html">Book a table</a> <a href="contact.html">Contact</a>
+</nav>
+<main>
+  <section id="open-positions">
+    <h1>Jobs</h1>
+    <ul id="position-list">
+      <li>Chef de partie, full time, $16 an hour</li>
+      <li>Waiter, weekends, $12 an hour plus tips</li>
+      <li>Kitchen porter, evenings, $12 an hour</li>
+    </ul>
+  </section>
+
+  <section id="staff-benefits">
+    <h2>What we offer</h2>
+    <p>A free meal every shift and 28 days of holiday.</p>
+  </section>
+
+  <form id="application-form" action="thanks.html" method="post">
+    <label for="applicant-name">Name</label>
+    <input type="text" id="applicant-name" name="name" required>
+    <label for="applicant-email">Email</label>
+    <input type="email" id="applicant-email" name="email" required>
+    <label for="applicant-job">Job</label>
+    <select id="applicant-job" name="job">
+      <option>Chef de partie</option>
+      <option>Waiter</option>
+      <option>Kitchen porter</option>
+    </select>
+    <button type="submit">Apply</button>
+  </form>
+</main>
+<footer id="page-footer">Copper Pot, 14 Mill Lane, Riverside</footer>
+</body>
+</html>

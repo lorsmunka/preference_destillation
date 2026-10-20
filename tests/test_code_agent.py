@@ -16,6 +16,7 @@ from library.domain.code_agent import CodeAgentDomain, ScopeMetric
 from library.domain.code_agent.checks import (canonical_scope, check_explanation, check_scope, made_up_names, parse_scope,
                                               score_scope, usable_ranges)
 from library.domain.code_agent.harness import CodeAgentSession, transcript_records
+from library.domain.code_agent.html_files import page_problems, rename_page, reorder_page
 from library.domain.code_agent.project import (check_base, identifiers, known_names, load_base, make_version, project_list,
                                                rename, reorder, symbol_lines)
 from library.domain.code_agent.requests import version_requests
@@ -77,6 +78,69 @@ class Reordering(unittest.TestCase):
         orders = {tuple(line for line in reorder(self.TEXT, random.Random(seed)).splitlines() if line.startswith("def "))
                   for seed in range(20)}
         self.assertGreater(len(orders), 1)
+
+
+PAGE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Contact</title>
+</head>
+<body>
+  <nav id="site-nav">
+    <a href="menu.html#drinks-list">Drinks</a>
+  </nav>
+  <main>
+    <!-- how to reach us -->
+    <section id="opening-hours">
+      <p>Mon-Fri 9-17<br></p>
+    </section>
+
+    <form id="contact-form" action="thanks.html">
+      <label for="email-field">Email</label>
+      <input id="email-field" type="email" name="email">
+    </form>
+
+    <section id="map-box">
+      <p>Next to the opening-hours sign.</p>
+    </section>
+  </main>
+</body>
+</html>
+"""
+
+
+class HtmlPages(unittest.TestCase):
+    def test_places_are_the_elements_with_an_id(self):
+        places = symbol_lines({"contact.html": PAGE.splitlines()})
+        self.assertEqual(places, {("contact.html", "site-nav"): (7, 9), ("contact.html", "opening-hours"): (12, 14),
+                                  ("contact.html", "contact-form"): (16, 19), ("contact.html", "map-box"): (21, 23)})
+
+    def test_renames_change_the_links_but_not_the_text(self):
+        renamed = rename_page(PAGE, {"opening-hours": "hours-box", "menu": "food", "email-field": "mail-input"})
+        self.assertIn('<section id="hours-box">', renamed)
+        self.assertIn('href="food.html#drinks-list"', renamed)
+        self.assertIn('<label for="mail-input">', renamed)
+        self.assertIn('name="email"', renamed)
+        self.assertIn("Next to the opening-hours sign.", renamed)
+
+    def test_the_sections_of_main_move_with_their_comment(self):
+        orders = set()
+        for seed in range(20):
+            lines = reorder_page(PAGE, random.Random(seed)).splitlines()
+            self.assertEqual(set(symbol_lines({"contact.html": lines})), set(symbol_lines({"contact.html": PAGE.splitlines()})))
+            self.assertEqual(lines.index('    <section id="opening-hours">') - 1, lines.index("    <!-- how to reach us -->"))
+            orders.add(tuple(line.strip() for line in lines if 'id="' in line and "<input" not in line))
+        self.assertGreater(len(orders), 1)
+
+    def test_an_unclosed_element_is_a_problem(self):
+        self.assertEqual(page_problems(PAGE.splitlines()), [])
+        problems = page_problems(PAGE.replace("    </section>\n\n    <form", "\n    <form").splitlines())
+        self.assertIn("</main> does not close the open element", problems[0])
+        self.assertIn("<section> is never closed", problems[-1])
+
+    def test_a_page_scope_parses(self):
+        self.assertEqual(parse_scope("<scope>\ncontact.html 12-14\n</scope>"), {"contact.html": [(12, 14)]})
+        self.assertTrue(CodeAgentDomain().structural_validity("<scope>\ncontact.html 12-14\n</scope>"))
 
 
 FILES = {"accounts.py": [f"line {number}" for number in range(1, 41)], "fees.py": [f"line {number}" for number in range(1, 21)]}

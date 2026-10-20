@@ -1,0 +1,16 @@
+"""Settings of the spreadsheet, and the error codes a cell can show."""
+
+COLUMNS = 8          # A to H
+ROWS = 30
+COLUMN_WIDTH = 10
+DECIMALS = 2
+MAX_UNDO = 25
+CSV_FILE = "sheet.csv"
+
+DIVIDE_BY_ZERO = "#DIV/0!"
+BAD_REFERENCE = "#REF!"
+CYCLE_ERROR = "#CYCLE!"
+SYNTAX_ERROR = "#SYNTAX!"
+NOT_A_NUMBER = "#VALUE!"
+UNKNOWN_FUNCTION = "#NAME?"
+ERROR_CODES = (DIVIDE_BY_ZERO, BAD_REFERENCE, CYCLE_ERROR, SYNTAX_ERROR, NOT_A_NUMBER, UNKNOWN_FUNCTION)

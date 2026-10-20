@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tickets | CodeCoast 2027</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="schedule.html">Schedule</a>
+  <a href="speakers.html">Speakers</a> <a href="tickets.html">Tickets</a>
+</nav>
+<main>
+  <section id="ticket-types">
+    <h1>Tickets</h1>
+    <table id="price-table">
+      <tr><th>Ticket</th><th>Early bird</th><th>Regular</th></tr>
+      <tr><td>Two-day conference</td><td>$290</td><td>$390</td></tr>
+      <tr><td>Workshop day</td><td>$150</td><td>$190</td></tr>
+      <tr><td>Full pass, three days</td><td>$400</td><td>$520</td></tr>
+      <tr><td>Student, two days</td><td>$90</td><td>$90</td></tr>
+    </table>
+    <p>Early bird prices end on 28 February.</p>
+  </section>
+
+  <form id="ticket-form" action="thanks.html" method="post">
+    <label for="buyer-email">Email</label>
+    <input type="email" id="buyer-email" name="email" required>
+    <label for="ticket-choice">Ticket</label>
+    <select id="ticket-choice" name="ticket">
+      <option>Two-day conference</option>
+      <option>Workshop day</option>
+      <option>Full pass</option>
+    </select>
+    <label for="ticket-count">How many</label>
+    <input type="number" id="ticket-count" name="count" min="1">
+    <button type="submit">Buy</button>
+  </form>
+
+  <section id="ticket-terms">
+    <h2>Refunds and groups</h2>
+    <p>Full refund until 15 March, no refunds after that.</p>
+    <p>You may pass your ticket to a colleague for free.</p>
+    <p>Teams of 5 or more get 15% off every ticket.</p>
+  </section>
+</main>
+<footer id="page-footer">CodeCoast 2027, Port Ellis</footer>
+</body>
+</html>

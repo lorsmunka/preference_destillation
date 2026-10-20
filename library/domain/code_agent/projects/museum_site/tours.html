@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Guided tours | Ashford Museum</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="exhibitions.html">Exhibitions</a>
+  <a href="tickets.html">Tickets</a> <a href="visit.html">Visit</a>
+</nav>
+<main>
+  <section id="daily-tours">
+    <h1>Guided tours</h1>
+    <table id="tour-times">
+      <tr><th>Time</th><th>Tour</th><th>Length</th></tr>
+      <tr><td>11:00</td><td>Collection highlights</td><td>60 min</td></tr>
+      <tr><td>14:00</td><td>Ships and the Sea</td><td>45 min</td></tr>
+    </table>
+    <p>Daily tours are free. Meet at the main desk.</p>
+  </section>
+
+  <section id="group-tours">
+    <h2>Private group tours</h2>
+    <p>For 10 to 25 people, $120 per group.</p>
+    <p>Book at least two weeks ahead.</p>
+  </section>
+
+  <form id="tour-form" action="thanks.html" method="post">
+    <label for="group-name">Group name</label>
+    <input type="text" id="group-name" name="group" required>
+    <label for="tour-date">Date</label>
+    <input type="date" id="tour-date" name="date" required>
+    <label for="group-size">People</label>
+    <input type="number" id="group-size" name="size" min="10" max="25">
+    <button type="submit">Ask for a tour</button>
+  </form>
+</main>
+<footer id="page-footer">Ashford Museum, 2 Castle Street</footer>
+</body>
+</html>

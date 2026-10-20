@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Call for papers | CodeCoast 2027</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="schedule.html">Schedule</a>
+  <a href="speakers.html">Speakers</a> <a href="tickets.html">Tickets</a>
+</nav>
+<main>
+  <section id="cfp-intro">
+    <h1>Call for papers</h1>
+    <p>Send your idea by 31 January. We answer by 20 February.</p>
+    <p>First-time speakers are very welcome.</p>
+  </section>
+
+  <section id="cfp-topics">
+    <h2>What we are looking for</h2>
+    <ul>
+      <li>Web and front end</li>
+      <li>Data and back end</li>
+      <li>Testing, tools and teams</li>
+    </ul>
+  </section>
+
+  <form id="proposal-form" action="thanks.html" method="post">
+    <label for="speaker-name">Your name</label>
+    <input type="text" id="speaker-name" name="name" required>
+    <label for="talk-title">Talk title</label>
+    <input type="text" id="talk-title" name="title" required>
+    <label for="talk-abstract">Abstract, up to 300 words</label>
+    <textarea id="talk-abstract" name="abstract" required></textarea>
+    <label for="talk-length">Length</label>
+    <select id="talk-length" name="length">
+      <option>30 minute talk</option>
+      <option>3 hour workshop</option>
+    </select>
+    <button type="submit">Send proposal</button>
+  </form>
+</main>
+<footer id="page-footer">CodeCoast 2027, Port Ellis</footer>
+</body>
+</html>

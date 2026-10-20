@@ -2,7 +2,8 @@
 
 A request finds or explains something, named by its meaning (a topic of the base project:
 "the code that takes money out of an account") or by its name (any class, function, method or
-top-level constant: "Find the withdraw method of Account."). Each version gets one request of each
+top-level constant: "Find the withdraw method of Account."; in a page, an element with an id:
+"Where is #opening-hours in contact.html?"). Each version gets one request of each
 of the four kinds. An item = one request on one version; the version itself is rebuilt from its
 seed whenever it is needed (project.make_version), so items stay small.
 
@@ -15,6 +16,7 @@ Splits (decided 2026-10-20): test = whole base projects the student never sees i
 import json
 import random
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List
 
@@ -22,9 +24,13 @@ from .project import Version, load_base, make_version, project_list, symbol_kind
 
 PACKAGE = Path(__file__).resolve().parent
 ITEMS_PATH = PACKAGE / "items.jsonl"
-TEST_PROJECTS = ("shop", "todo")   # drawn once all 8 existed: sorted(random.Random(0).sample(project_list(), 2))
-VERSIONS = {"train": 500, "test": 50}   # versions per base project
+# shop and todo were drawn once the first 8 projects existed: sorted(random.Random(0).sample(project_list(), 2)); with
+# the 12 added on 2026-10-21, one of the 8 new Python projects and one of the 4 HTML sites, drawn the same way
+# (random.Random(0).sample(sorted(group), 1))
+TEST_PROJECTS = ("shop", "todo", "spreadsheet", "travel_site")
+VERSIONS = {"train": 190, "test": 50}   # versions per base project: 16 x 190 x 4 = 12,160 train requests, 4 x 50 x 4 = 800 test
 KINDS = ("find_meaning", "explain_meaning", "find_name", "explain_name")   # one request of each per version
+SITE_WIDE_PAGES = 3   # an id on more pages than this (the nav, the footer) is never asked for by name
 
 WH_WORDS = ("where", "how", "what", "which", "why", "when", "who")
 FIND_NOUN = ["Find {phrase}.", "Where is {phrase}?", "Show me {phrase}.", "Which lines hold {phrase}?",
@@ -38,11 +44,15 @@ FIND_NAME = {
     "class": ["Find the {name} class.", "Where is the {name} class?", "Which file has the {name} class, and on which lines?"],
     "method": ["Find the {method} method of {cls}.", "Where is {cls}.{method}?", "Show me the {method} method in the {cls} class."],
     "constant": ["Where is {name} set?", "Find {name}.", "Which line sets {name}?"],
+    "element": ["Find the {name} element in {file}.", "Where is #{name} in {file}?", "Which lines of {file} hold #{name}?",
+                "Show me the {name} part of {file}."],
 }
 EXPLAIN_NAME = {
     "function": ["Explain the {name} function.", "What does {name} do?", "How does {name} work?"],
     "class": ["Explain the {name} class.", "What is the {name} class for?", "How does the {name} class work?"],
     "method": ["What does {cls}.{method} do?", "Explain the {method} method of {cls}."],
+    "element": ["Explain the {name} element in {file}.", "What is the {name} part of {file} for?",
+                "What does #{name} in {file} show?"],
 }
 
 
@@ -64,7 +74,7 @@ def name_request(version: Version, place, symbol_kind: str, kind: str, random_ge
     file_name, name = place
     templates = (FIND_NAME if kind == "find" else EXPLAIN_NAME)[symbol_kind]
     cls, _, method = name.partition(".")
-    message = random_generator.choice(templates).format(name=name, cls=cls, method=method)
+    message = random_generator.choice(templates).format(name=name, cls=cls, method=method, file=file_name)
     return {"kind": kind, "source": "name", "symbol": name, "symbol_kind": symbol_kind, "message": message,
             "truth": [[file_name, name]]}
 
@@ -74,7 +84,9 @@ def version_requests(base: Dict, version: Version) -> List[Dict]:
     random_generator = random.Random(f"{version.id}-requests")
     topics = random_generator.sample(base["topics"], 2)
     kinds = symbol_kinds(version.files)
-    findable = sorted(place for place, symbol_kind in kinds.items() if not place[1].split(".")[-1].startswith("__"))
+    pages_with = Counter(name for (_, name), symbol_kind in kinds.items() if symbol_kind == "element")
+    findable = sorted(place for place, symbol_kind in kinds.items() if not place[1].split(".")[-1].startswith("__")
+                      and pages_with[place[1]] <= SITE_WIDE_PAGES)
     explainable = [place for place in findable if kinds[place] != "constant"]
     find_place = random_generator.choice(findable)
     explain_place = random_generator.choice([place for place in explainable if place != find_place])
@@ -104,7 +116,6 @@ def read_items() -> List[Dict]:
 
 
 def main() -> None:
-    from collections import Counter
     items = build_items()
     print(f"{len(items)} items -> {ITEMS_PATH}")
     print(dict(Counter((item["split"], item["project"]) for item in items)))

@@ -1,7 +1,8 @@
 """A synthetic project and its randomized versions (decided 2026-10-20).
 
 A base project is a folder under projects/: 10-15 small hand-written Python files (data for the
-agent, never run) and project.json:
+agent, never run), or HTML pages (html_files.py: their places are the elements with an id, a place
+"menu.html:opening-hours"), and project.json:
 
     {"description": "a bank simulator ...",
      "topics": [{"id": "withdrawal", "places": ["accounts.py:Account.withdraw", "fees.py:overdraft_fee"],
@@ -33,6 +34,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
+from .html_files import is_page, page_names, page_places, page_problems, page_words, rename_page, reorder_page
+
 PACKAGE = Path(__file__).resolve().parent
 PROJECTS_DIR = PACKAGE / "projects"
 RENAME_CHANCE = 0.6   # each renameable name gets one of its alternatives with this chance
@@ -59,8 +62,8 @@ class Version:
         return ".".join(self.renames.get(part, part) for part in base_name.split("."))
 
     def file_of(self, base_file: str) -> str:
-        stem = base_file[:-3]
-        return self.renames.get(stem, stem) + ".py"
+        stem, extension = base_file.rsplit(".", 1)
+        return f"{self.renames.get(stem, stem)}.{extension}"
 
     def place(self, base_place: str) -> Tuple[str, str]:
         """"accounts.py:Account.withdraw" -> (file, name) in this version."""
@@ -69,7 +72,7 @@ class Version:
 
     def fill(self, phrase: str) -> str:
         """A topic phrase with its {Name} slots in this version's names."""
-        return re.sub(r"\{(\w+)\}", lambda match: self.renames.get(match.group(1), match.group(1)), phrase)
+        return re.sub(r"\{([\w-]+)\}", lambda match: self.renames.get(match.group(1), match.group(1)), phrase)
 
 
 def project_list() -> List[str]:
@@ -78,7 +81,7 @@ def project_list() -> List[str]:
 
 def load_base(name: str) -> Dict:
     folder = PROJECTS_DIR / name
-    files = {path.name: path.read_text(encoding="utf-8") for path in sorted(folder.glob("*.py"))}
+    files = {path.name: path.read_text(encoding="utf-8") for path in sorted([*folder.glob("*.py"), *folder.glob("*.html")])}
     meta = json.loads((folder / "project.json").read_text(encoding="utf-8"))
     return {"name": name, "files": files, **meta}
 
@@ -87,9 +90,12 @@ def load_base(name: str) -> Dict:
 
 def symbol_lines(files: Dict[str, List[str]]) -> Dict[Tuple[str, str], Tuple[int, int]]:
     """(file, name) -> (first line, last line) of every class, function, method and top-level
-    constant. A definition's lines include its decorators."""
+    constant, and of every element with an id in a page. A definition's lines include its decorators."""
     places = {}
     for file_name, lines in files.items():
+        if is_page(file_name):
+            places.update({(file_name, element_id): span for element_id, span in page_places(lines).items()})
+            continue
         for node in ast.parse("\n".join(lines)).body:
             if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
                 places[(file_name, node.name)] = (first_line(node), node.end_lineno)
@@ -105,9 +111,13 @@ def symbol_lines(files: Dict[str, List[str]]) -> Dict[Tuple[str, str], Tuple[int
 
 
 def symbol_kinds(files: Dict[str, List[str]]) -> Dict[Tuple[str, str], str]:
-    """(file, name) -> "class", "function", "method" or "constant", for the places of symbol_lines."""
+    """(file, name) -> "class", "function", "method", "constant" or "element" (a page's), for the
+    places of symbol_lines."""
     kinds = {}
     for file_name, lines in files.items():
+        if is_page(file_name):
+            kinds.update({(file_name, element_id): "element" for element_id in page_places(lines)})
+            continue
         for node in ast.parse("\n".join(lines)).body:
             if isinstance(node, ast.ClassDef):
                 kinds[(file_name, node.name)] = "class"
@@ -125,9 +135,13 @@ def first_line(node) -> int:
 
 
 def identifiers(files: Dict[str, List[str]]) -> Set[str]:
-    """Every identifier the project defines or uses, plus its module names."""
-    names = {file_name[:-3] for file_name in files}
-    for lines in files.values():
+    """Every identifier the project defines or uses, plus its module and page names (in a page: the
+    names its id and link attributes hold)."""
+    names = {file_name.rsplit(".", 1)[0] for file_name in files}
+    for file_name, lines in files.items():
+        if is_page(file_name):
+            names |= page_names(lines)
+            continue
         for node in ast.walk(ast.parse("\n".join(lines))):
             if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
                 names.add(node.name)
@@ -142,9 +156,12 @@ def identifiers(files: Dict[str, List[str]]) -> Set[str]:
 
 def known_names(files: Dict[str, List[str]]) -> Set[str]:
     """What an explanation may name: the identifiers, plus string values that look like names
-    ("transfer_in", "savings") and the data file names."""
+    ("transfer_in", "savings") and the data file names; in a page, every word it has."""
     names = identifiers(files)
-    for lines in files.values():
+    for file_name, lines in files.items():
+        if is_page(file_name):
+            names |= page_words(lines)
+            continue
         for node in ast.walk(ast.parse("\n".join(lines))):
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 names.update(re.findall(r"[A-Za-z_]\w*", node.value))
@@ -152,8 +169,9 @@ def known_names(files: Dict[str, List[str]]) -> Set[str]:
 
 
 def defined_names(files: Dict[str, List[str]]) -> Set[str]:
-    """Names the project itself defines: modules, classes, functions, methods, top-level constants."""
-    names = {file_name[:-3] for file_name in files}
+    """Names the project itself defines: modules, classes, functions, methods, top-level constants,
+    pages and the ids of their elements."""
+    names = {file_name.rsplit(".", 1)[0] for file_name in files}
     for _, name in symbol_lines(files):
         names.update(name.split("."))
     return names
@@ -163,12 +181,20 @@ def check_base(base: Dict) -> List[str]:
     """Problems with a base project's project.json (empty when it is fine)."""
     files = {name: text.splitlines() for name, text in base["files"].items()}
     places, defined, used = symbol_lines(files), defined_names(files), identifiers(files)
-    problems = []
+    problems = [f"{file_name}: {problem}" for file_name, lines in files.items() if is_page(file_name)
+                for problem in page_problems(lines)]
+    for file_name, lines in files.items():
+        if is_page(file_name):
+            continue
+        body = ast.parse("\n".join(lines)).body
+        classes = {node.name for node in body if isinstance(node, ast.ClassDef)}
+        problems += [f"{file_name}: {node.name} inherits from {ast.unparse(base)} in the same file (a shuffle can put it first)"
+                     for node in body if isinstance(node, ast.ClassDef) for base in node.bases if ast.unparse(base) in classes]
     for topic in base["topics"]:
         problems += [f"topic {topic['id']}: no place {place}" for place in topic["places"]
                      if tuple(place.split(":")) not in places]
         for phrase in topic["find"] + topic["explain"]:
-            problems += [f"topic {topic['id']}: slot {{{slot}}} is not renameable" for slot in re.findall(r"\{(\w+)\}", phrase)
+            problems += [f"topic {topic['id']}: slot {{{slot}}} is not renameable" for slot in re.findall(r"\{([\w-]+)\}", phrase)
                          if slot not in base["renames"]]
     taken = {}
     for name, alternatives in base["renames"].items():
@@ -195,9 +221,12 @@ def make_version(base: Dict, number: int) -> Version:
                if random_generator.random() < RENAME_CHANCE}
     files = {}
     for file_name, text in base["files"].items():
-        stem = file_name[:-3]
-        new_text = reorder(rename(text, renames), random_generator)
-        files[renames.get(stem, stem) + ".py"] = new_text.splitlines()
+        stem, extension = file_name.rsplit(".", 1)
+        if is_page(file_name):
+            new_text = reorder_page(rename_page(text, renames), random_generator)
+        else:
+            new_text = reorder(rename(text, renames), random_generator)
+        files[f"{renames.get(stem, stem)}.{extension}"] = new_text.splitlines()
     order = list(files)
     random_generator.shuffle(order)
     version = Version(base["name"], number, {name: files[name] for name in order}, renames)

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Membership | Ashford Museum</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="exhibitions.html">Exhibitions</a>
+  <a href="tickets.html">Tickets</a> <a href="visit.html">Visit</a>
+</nav>
+<main>
+  <section id="membership-levels">
+    <h1>Membership</h1>
+    <table id="level-table">
+      <tr><th>Level</th><th>Per year</th></tr>
+      <tr><td>Single</td><td>$45</td></tr>
+      <tr><td>Joint (two adults)</td><td>$70</td></tr>
+      <tr><td>Family</td><td>$85</td></tr>
+    </table>
+  </section>
+
+  <section id="member-benefits">
+    <h2>What members get</h2>
+    <ul>
+      <li>Free entry to every exhibition</li>
+      <li>10% off in the shop and the cafe</li>
+      <li>Preview evenings for new exhibitions</li>
+    </ul>
+  </section>
+
+  <form id="join-form" action="thanks.html" method="post">
+    <label for="member-name">Name</label>
+    <input type="text" id="member-name" name="name" required>
+    <label for="member-level">Level</label>
+    <select id="member-level" name="level">
+      <option>Single</option>
+      <option>Joint</option>
+      <option>Family</option>
+    </select>
+    <button type="submit">Join</button>
+  </form>
+</main>
+<footer id="page-footer">Ashford Museum, 2 Castle Street</footer>
+</body>
+</html>

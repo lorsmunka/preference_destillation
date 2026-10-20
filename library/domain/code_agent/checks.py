@@ -7,12 +7,12 @@ import re
 from typing import Dict, List, Optional, Set, Tuple
 
 Ranges = Dict[str, List[Tuple[int, int]]]
-SCOPE_LINE = re.compile(r"([\w./-]+\.py)\s+(\d+)(?:\s*-\s*(\d+))?")
+SCOPE_LINE = re.compile(r"([\w./-]+\.(?:py|html))\s+(\d+)(?:\s*-\s*(\d+))?")
 
 
 def parse_scope(text: str) -> Ranges:
-    """{file: [(start, end)]} from a <scope> block, one "file.py start-end" (or "file.py line")
-    per line; a path keeps only its file name."""
+    """{file: [(start, end)]} from a <scope> block, one "file.py start-end" (or "file.py line",
+    or a page: "menu.html 4-20") per line; a path keeps only its file name."""
     body = text.split("<scope>")[-1].split("</scope>")[0]
     ranges: Ranges = {}
     for match in SCOPE_LINE.finditer(body):

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>School visits | Ashford Museum</title>
+</head>
+<body>
+<nav id="site-nav">
+  <a href="index.html">Home</a> <a href="exhibitions.html">Exhibitions</a>
+  <a href="tickets.html">Tickets</a> <a href="visit.html">Visit</a>
+</nav>
+<main>
+  <section id="school-workshops">
+    <h1>School visits</h1>
+    <table id="workshop-table">
+      <tr><th>Workshop</th><th>Ages</th><th>Price</th></tr>
+      <tr><td>Roman coins</td><td>7-11</td><td>$4 a pupil</td></tr>
+      <tr><td>Build a steam engine</td><td>11-14</td><td>$5 a pupil</td></tr>
+      <tr><td>Portrait drawing</td><td>14-18</td><td>$5 a pupil</td></tr>
+    </table>
+  </section>
+
+  <section id="teacher-info">
+    <h2>For teachers</h2>
+    <ul>
+      <li>Bring one adult for every 10 pupils.</li>
+      <li>Teachers and helpers go free.</li>
+    </ul>
+  </section>
+
+  <form id="school-form" action="thanks.html" method="post">
+    <label for="school-name">School</label>
+    <input type="text" id="school-name" name="school" required>
+    <label for="workshop-choice">Workshop</label>
+    <select id="workshop-choice" name="workshop">
+      <option>Roman coins</option>
+      <option>Build a steam engine</option>
+      <option>Portrait drawing</option>
+    </select>
+    <label for="pupil-count">Pupils</label>
+    <input type="number" id="pupil-count" name="pupils" max="60">
+    <button type="submit">Book a visit</button>
+  </form>
+</main>
+<footer id="page-footer">Ashford Museum, 2 Castle Street</footer>
+</body>
+</html>
