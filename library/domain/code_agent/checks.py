@@ -1,6 +1,8 @@
 """Reading and checking the coding agent's replies: the scope (which files and lines matter) and
 the explanation (it must not name things the project does not have)."""
 
+import builtins
+import keyword
 import re
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -94,7 +96,8 @@ def made_up_names(explanation: str, names: Set[str]) -> List[str]:
     candidates |= set(re.findall(r"\b([a-z]+_[a-z_]+|[A-Z][a-z]+[A-Z]\w*)\b", explanation))
     candidates |= set(re.findall(r"\b([A-Za-z_]\w*)\(", explanation))
     parts = {part for candidate in candidates for part in candidate.split(".") if part}
-    return sorted(part for part in parts if part not in names and part not in ("py", "json", "self"))
+    allowed = names | set(keyword.kwlist) | set(dir(builtins)) | {"py", "json", "self", "__name__", "__main__"}
+    return sorted(part for part in parts if part not in allowed)
 
 
 def check_explanation(text: str, names: Set[str]) -> Optional[str]:

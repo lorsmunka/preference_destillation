@@ -123,6 +123,9 @@ class ExplanationChecks(unittest.TestCase):
         self.assertIsNone(check_explanation("<explanation>`withdraw` takes money out.</explanation>", names))
         self.assertIn("cut off", check_explanation("<explanation>`withdraw` takes", names))
 
+    def test_python_words_are_not_made_up(self):
+        self.assertEqual(made_up_names("It enters a `while` loop and calls `len()` on the `list`.", set()), [])
+
     def test_string_values_count_as_names(self):
         version = make_version(load_base("banking"), 0)
         self.assertIn("transfer_in", known_names(version.files))
@@ -151,7 +154,7 @@ class Harness(unittest.TestCase):
     def test_scope_then_explanation_gives_two_records(self):
         session = CodeAgentSession(self.item, self.version)
         model = ScriptedModel([f"{self.file_name} {self.start}-{self.end}\n</scope>",
-                               "explanation>It checks the amount first.</explanation>"])
+                               "<explanation>It checks the amount first.</explanation>"])
         run_sessions(model, [session])
         self.assertEqual(session.turn["route"], "explain")
         self.assertTrue(session.turn["route_correct"])
@@ -165,11 +168,18 @@ class Harness(unittest.TestCase):
     def test_a_bad_scope_is_asked_for_again_once(self):
         session = CodeAgentSession(self.item, self.version)
         run_sessions(ScriptedModel(["nowhere.py 1-2\n</scope>", f"{self.file_name} {self.start}-{self.end}\n</scope>",
-                                    "found/>"]), [session])
+                                    "<found/>"]), [session])
         self.assertEqual(len(session.turn["rejected"]), 1)
         self.assertIsNone(session.turn["scope_check"])
         self.assertEqual(session.turn["route"], "find")
         self.assertFalse(session.turn["route_correct"])
+
+    def test_a_little_junk_before_the_tag_is_dropped(self):
+        session = CodeAgentSession(self.item, self.version)
+        run_sessions(ScriptedModel([f"{self.file_name} {self.start}-{self.end}\n</scope>",
+                                    "<channel|><explanation>It checks.</explanation>"]), [session])
+        self.assertEqual(session.turn["output"], "<explanation>It checks.</explanation>")
+        self.assertEqual(session.turn["route"], "explain")
 
     def test_an_unusable_scope_ends_the_item_without_records(self):
         session = CodeAgentSession(self.item, self.version)

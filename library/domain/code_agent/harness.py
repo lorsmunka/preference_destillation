@@ -14,8 +14,9 @@ for the training data, the distilled student later.
 The pass below is the source of the training data: Gemma does both steps of every item, and each
 of its replies, in the context it was written in, becomes a record (mistakes included, flagged).
 
-    python -m library.domain.code_agent.harness     # GPU: Gemma on all items not played yet -> conversations/v1.jsonl
-    python -m library.domain.code_agent.harness 8   # 8 requests per model call (a bigger card)
+    python -m library.domain.code_agent.harness                    # GPU: Gemma on every item not played yet -> conversations/v1.jsonl
+    python -m library.domain.code_agent.harness v1 - 8             # the same, 8 requests per model call (a bigger card)
+    python -m library.domain.code_agent.harness pilot_nf4 16 1     # a local trial: 16 train + 8 test items, one at a time
 """
 
 import json
@@ -29,7 +30,9 @@ from .checks import check_explanation, check_scope, score_scope, usable_ranges
 from .project import Version, known_names, load_base, make_version, project_context, scoped_context, symbol_lines
 
 PACKAGE = Path(__file__).resolve().parent
-SCOPE_PREFIX, ANSWER_PREFIX = "<scope>\n", "<"
+SCOPE_PREFIX = "<scope>\n"
+ANSWER_TAGS = ("<explanation>", "<found/>")
+JUNK_BEFORE_TAG = 40   # characters a reply may have before its tag (Gemma 4 sometimes leaks "<channel|>")
 SCOPE_TOKENS, ANSWER_TOKENS = 120, 400
 
 
@@ -65,11 +68,11 @@ class CodeAgentSession:
             if not ranges:   # nothing to show: the request ends here
                 self.pending = None
                 return
-            self.pending = Request("answer", scoped_context(self.version, ranges, self.item["message"]), prefix=ANSWER_PREFIX,
+            self.pending = Request("answer", scoped_context(self.version, ranges, self.item["message"]),
                                    stop=["</explanation>", "<found/>"], max_tokens=ANSWER_TOKENS)
             return
         turn["answer_attempts"] += 1
-        output = ANSWER_PREFIX + text
+        output = from_first_tag(text)
         route = "explain" if output.startswith("<explanation>") else "find" if output.startswith("<found/>") else "unclear"
         problem = None
         if route == "unclear":
@@ -78,11 +81,20 @@ class CodeAgentSession:
             problem = check_explanation(output, self.names)
         if problem and turn["answer_attempts"] <= self.retries:
             turn.setdefault("rejected", []).append({"step": "answer", "output": output, "problem": problem})
-            self.pending = Request("answer", self.pending.context, prefix=ANSWER_PREFIX, stop=["</explanation>", "<found/>"],
+            self.pending = Request("answer", self.pending.context, stop=["</explanation>", "<found/>"],
                                    max_tokens=ANSWER_TOKENS, temperature=0.7)
             return
         turn.update(output=output, route=route, route_correct=route == self.item["kind"], check=problem)
         self.pending = None
+
+
+def from_first_tag(text: str) -> str:
+    """The reply from its first <explanation> or <found/> on, when only a little comes before it
+    (the reply is free: a forced "<" made Gemma write "<10.555 is refused..." or "<int>"); the
+    reply as it is otherwise."""
+    text = text.strip()
+    starts = [text.find(tag) for tag in ANSWER_TAGS if 0 <= text.find(tag) <= JUNK_BEFORE_TAG]
+    return text[min(starts):] if starts else text
 
 
 def version_cache():
@@ -173,9 +185,21 @@ def main() -> None:
 
     # Plain generation never uses the handler's own reduced vocabulary, and the coding agent's is
     # built from these very replies: the handler gets a domain whose vocabulary always exists.
+    variant = sys.argv[1] if len(sys.argv) > 1 else "v1"
+    count = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2] != "-" else None
+    batch = int(sys.argv[3]) if len(sys.argv) > 3 else 2
+    domain = CodeAgentDomain(variant)
+    items = read_items() if count is None else pilot_items(read_items(), count)
     handler = ModelHandler("google/gemma-4-12B-it", CODE_RECALL, load_in_4bit=True, chat_template=True)
-    domain = CodeAgentDomain()   # the real data: conversations/v1.jsonl
-    run_pass(handler, domain, read_items(), domain.conversations_path, batch=int(sys.argv[1]) if len(sys.argv) > 1 else 2)
+    run_pass(handler, domain, items, domain.conversations_path, batch=batch)
+
+
+def pilot_items(items: List[Dict], count: int) -> List[Dict]:
+    """A small seeded sample for a local trial: `count` train items and half as many test items."""
+    random_generator = random.Random(0)
+    train = [item for item in items if item["split"] == "train"]
+    test = [item for item in items if item["split"] == "test"]
+    return random_generator.sample(train, count) + random_generator.sample(test, count // 2)
 
 
 if __name__ == "__main__":
