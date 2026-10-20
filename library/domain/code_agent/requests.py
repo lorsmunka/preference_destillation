@@ -22,7 +22,7 @@ from .project import Version, load_base, make_version, project_list, symbol_kind
 
 PACKAGE = Path(__file__).resolve().parent
 ITEMS_PATH = PACKAGE / "items.jsonl"
-TEST_PROJECTS = ()          # chosen once all base projects exist
+TEST_PROJECTS = ("shop", "todo")   # drawn once all 8 existed: sorted(random.Random(0).sample(project_list(), 2))
 VERSIONS = {"train": 500, "test": 50}   # versions per base project
 KINDS = ("find_meaning", "explain_meaning", "find_name", "explain_name")   # one request of each per version
 
