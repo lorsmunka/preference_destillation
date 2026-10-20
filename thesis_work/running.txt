@@ -3,6 +3,22 @@ STATUS 2026-10-13 (pick up here)
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
             (one Gemma setup per domain).
+  BUILT 2026-10-20 (user: "Build it out"; commits 7d4eeaf..0afd809):
+    - library/agent/runner.py: Request, TeacherModel, StudentAgentModel (a trained student in either
+      harness), run_sessions, teacher_setup (bf16 on a 30 GB+ card, NF4 below; recorded per data file,
+      a different setup refuses).
+    - Coding agent (library/domain/code_agent): 8 base projects (banking, gradebook, hotel, library,
+      parking, recipes, shop, todo; 12-15 files, 372-490 lines, 19-20 topics, ~50 renames each);
+      randomized versions with exact true places; 12,400 requests (test = shop, todo, drawn seed 0);
+      the two-step harness + checks + Gemma's pass + records + corpus + vocabulary + domain variants
+      (v1 = the cloud data, pilot_nf4 = local trial); experiments/code_agent_trial.py; demo.py. 25 tests.
+      A 6,500-token input trains in 7.5 GB (0.27 s per example) on the 4070; 8,000 spills.
+    - Gemma check of the combined prompt (16 banking requests, NF4): scopes 16/16, true lines covered
+      88%, places hit 22/26, decision right 14/16; explanations correct on reading. Fixed after it: the
+      answer step is free (a forced "<" gave "<int>", "<10.555 is refused"), keywords are not made-up names.
+    - Math tutor: full.py (the full pass: 29,747 train + 1,250 test problems, new only), FullDomain,
+      experiments/math_full.py; demo.py (tried: routes 4/4 right, the harness caught wrong arithmetic).
+    - thesis_work/cloud_runbook.md v2: sizes ~300 GB teacher data (1.4 MB per reply), Python 3.12+.
   CODING AGENT (user idea 2026-10-20, design not written yet, revives the dropped code finder): a small
             synthetic codebase (several project files) in the context; the pupil asks to find something
             (which file / lines hold the Transaction class) or to explain it (how Transactions work).
