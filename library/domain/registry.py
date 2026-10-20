@@ -54,3 +54,4 @@ register_domain(SliceDomain())
 # The coding agent (code_agent/): a synthetic project in the context, find or explain.
 from .code_agent import CodeAgentDomain
 register_domain(CodeAgentDomain())
+register_domain(CodeAgentDomain("pilot_nf4"))   # the local trial: Gemma NF4 on the 4070, never mixed with v1

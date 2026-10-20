@@ -1,6 +1,6 @@
 """The coding agent's output vocabulary: every token a reply may contain, most frequent first. Built
 from the format texts, every base project (its code, and every alternative name a version can use,
-also as a file name) and Gemma's replies in the pass. Build it after the pass and before saving the
+also as a file name) and Gemma's replies in the pass (every conversations file). Build it after the pass and before saving the
 teacher data: rebuilding it later reorders the logit columns of existing batches.
 
     python -m library.domain.code_agent.vocabulary
@@ -11,8 +11,7 @@ import sys
 from collections import Counter
 from typing import List
 
-from . import OUTPUT_TOKENS
-from .harness import CONVERSATIONS_PATH
+from . import OUTPUT_TOKENS, PACKAGE
 from .project import load_base, project_list
 
 FORMAT_TEXTS = [
@@ -32,8 +31,8 @@ def vocabulary_texts() -> List[str]:
         texts += list(base["files"].values()) + list(base["files"])
         for name, alternatives in base["renames"].items():
             texts += [f"`{alternative}` {alternative} {alternative}.py {alternative}()" for alternative in [name] + alternatives]
-    if CONVERSATIONS_PATH.exists():
-        for line in open(CONVERSATIONS_PATH, encoding="utf-8"):
+    for path in sorted((PACKAGE / "conversations").glob("*.jsonl")):   # every variant's replies
+        for line in open(path, encoding="utf-8"):
             turn = json.loads(line)["turn"]
             texts += [turn[key] for key in ("scope", "output") if turn.get(key)]
     return texts
@@ -55,7 +54,7 @@ def build_output_tokens() -> None:
         if len(other) > 1 and other in vocabulary and other not in counts:
             counts[other] = 1
     tokens = [token for token, _ in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))]
-    replies = sum(1 for _ in open(CONVERSATIONS_PATH, encoding="utf-8")) if CONVERSATIONS_PATH.exists() else 0
+    replies = sum(1 for path in (PACKAGE / "conversations").glob("*.jsonl") for _ in open(path, encoding="utf-8"))
     with open(OUTPUT_TOKENS, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
         json.dump({"tokens": tokens, "texts": len(texts), "played_items": replies, "projects": project_list()},
                   file, ensure_ascii=False, indent=0)

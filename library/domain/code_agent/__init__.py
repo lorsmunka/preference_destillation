@@ -50,13 +50,26 @@ class ScopeMetric(ExactAnswerMetric):
 
 
 class CodeAgentDomain(Domain):
-    name = "code_agent"
+    """One variant per conversations file (conversations/<name>.jsonl), each with its own name, so
+    its own corpus and batches folder: "v1" is the real data (one Gemma setup), others are small
+    local trials (e.g. "pilot_nf4": Gemma in 4 bits on the 4070) that never mix with it."""
     stop_token = "</scope>"
     stop_strings = ["</scope>", "</explanation>", "<found/>"]   # generation stops at any reply's end
     max_steps = 400   # runaway guard: explanations up to ~250 tokens in the pilot, +35% and some
+    teacher = "forced"   # the teacher data: Gemma reads its own replies back (every record says so too)
 
-    def __init__(self):
+    def __init__(self, conversations: str = "v1"):
+        self.conversations = conversations
+        self.name = "code_agent" if conversations == "v1" else f"code_agent_{conversations}"
         self._example_tokens: Optional[List[str]] = None
+
+    @property
+    def conversations_path(self) -> Path:
+        return PACKAGE / "conversations" / f"{self.conversations}.jsonl"
+
+    @property
+    def corpus_path(self) -> str:
+        return str(PACKAGE / f"corpus_{self.conversations}.jsonl")
 
     @property
     def example_tokens(self) -> List[str]:
@@ -83,4 +96,4 @@ class CodeAgentDomain(Domain):
 
     def build_corpus(self, count: Optional[int] = None) -> None:
         from .corpus import build_corpus
-        build_corpus(self.corpus_path, count=count)
+        build_corpus(self.corpus_path, self.conversations_path, count=count)

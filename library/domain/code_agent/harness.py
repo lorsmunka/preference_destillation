@@ -14,7 +14,8 @@ for the training data, the distilled student later.
 The pass below is the source of the training data: Gemma does both steps of every item, and each
 of its replies, in the context it was written in, becomes a record (mistakes included, flagged).
 
-    python -m library.domain.code_agent.harness     # GPU: Gemma on all items not played yet
+    python -m library.domain.code_agent.harness     # GPU: Gemma on all items not played yet -> conversations/v1.jsonl
+    python -m library.domain.code_agent.harness 8   # 8 requests per model call (a bigger card)
 """
 
 import json
@@ -28,7 +29,6 @@ from .checks import check_explanation, check_scope, score_scope, usable_ranges
 from .project import Version, known_names, load_base, make_version, project_context, scoped_context, symbol_lines
 
 PACKAGE = Path(__file__).resolve().parent
-CONVERSATIONS_PATH = PACKAGE / "conversations" / "v1.jsonl"   # Gemma's replies, appended
 SCOPE_PREFIX, ANSWER_PREFIX = "<scope>\n", "<"
 SCOPE_TOKENS, ANSWER_TOKENS = 120, 400
 
@@ -106,8 +106,7 @@ def scored_turn(item: Dict, version: Version, turn: Dict) -> Dict:
     return {**turn, **score_scope(turn["ranges"], [tuple(place) for place in item["truth"]], places)}
 
 
-def run_pass(handler, domain, items: List[Dict], path: Path = CONVERSATIONS_PATH, chunk: int = 16, batch: int = 2,
-             seed: int = 0) -> bool:
+def run_pass(handler, domain, items: List[Dict], path: Path, chunk: int = 16, batch: int = 2, seed: int = 0) -> bool:
     """Gemma as the agent on every item not in `path` yet, in a seeded random order, `chunk` items
     at a time (`batch` requests per model call: the whole project is ~6,000 tokens, so 2 on a
     12 GB card, more on a bigger one); each chunk appended when it ends. False when stopped
@@ -175,7 +174,8 @@ def main() -> None:
     # Plain generation never uses the handler's own reduced vocabulary, and the coding agent's is
     # built from these very replies: the handler gets a domain whose vocabulary always exists.
     handler = ModelHandler("google/gemma-4-12B-it", CODE_RECALL, load_in_4bit=True, chat_template=True)
-    run_pass(handler, CodeAgentDomain(), read_items(), batch=int(sys.argv[1]) if len(sys.argv) > 1 else 2)
+    domain = CodeAgentDomain()   # the real data: conversations/v1.jsonl
+    run_pass(handler, domain, read_items(), domain.conversations_path, batch=int(sys.argv[1]) if len(sys.argv) > 1 else 2)
 
 
 if __name__ == "__main__":

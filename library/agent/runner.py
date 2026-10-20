@@ -44,6 +44,24 @@ class TeacherModel:
         return texts
 
 
+class StudentAgentModel:
+    """A trained student as the agent's model. It writes its whole reply itself (it was trained on
+    whole replies), so the prefix the teacher's turn was started with is taken off the front, as the
+    sessions expect. A reply that does not start with it is passed on as it is: the session's check
+    then fails and asks again."""
+
+    def __init__(self, student, max_steps: int):
+        self.student, self.max_steps = student, max_steps
+
+    def generate(self, requests: List[Request]) -> List[str]:
+        texts = []
+        for request in requests:
+            output = self.student.generate(request.context, max_new_tokens=self.max_steps,
+                                           temperature=request.temperature).text.strip()
+            texts.append(output[len(request.prefix):] if request.prefix and output.startswith(request.prefix) else output)
+        return texts
+
+
 def run_sessions(model, sessions: List, exit_listener=None, progress: bool = False) -> bool:
     """Drive every session to the end, batching each round's pending requests. With an
     exit_listener (Stop button / Ctrl+C), a stop is honoured between rounds: the round in progress

@@ -6,17 +6,17 @@ import random
 from collections import Counter
 from typing import Dict, List, Optional, Tuple
 
-from .harness import CONVERSATIONS_PATH, transcript_records, version_cache
+from .harness import transcript_records, version_cache
 from .requests import read_items
 
 SEED = 0
 
 
-def corpus_records() -> Tuple[List[Dict], List[Dict]]:
+def corpus_records(conversations_path) -> Tuple[List[Dict], List[Dict]]:
     items = {item["id"]: item for item in read_items()}
     versions = version_cache()
     records = []
-    for line in open(CONVERSATIONS_PATH, encoding="utf-8"):
+    for line in open(conversations_path, encoding="utf-8"):
         played = json.loads(line)
         item = items[played["item_id"]]
         records += transcript_records(item, versions(item["project"], item["version"]), played["turn"])
@@ -28,8 +28,8 @@ def corpus_records() -> Tuple[List[Dict], List[Dict]]:
     return train, test
 
 
-def build_corpus(path: str, count: Optional[int] = None) -> None:
-    train, test = corpus_records()
+def build_corpus(path: str, conversations_path, count: Optional[int] = None) -> None:
+    train, test = corpus_records(conversations_path)
     with open(path, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
         for record in train[:count] + test:
             file.write(json.dumps(record, ensure_ascii=False) + "\n")
