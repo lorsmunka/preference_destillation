@@ -50,3 +50,7 @@ for _annotation in ANNOTATIONS:
 # The trial slice (math_tutor/slice.py): its own name, so its own batches folder.
 from .math_tutor.slice import SliceDomain
 register_domain(SliceDomain())
+
+# The coding agent (code_agent/): a synthetic project in the context, find or explain.
+from .code_agent import CodeAgentDomain
+register_domain(CodeAgentDomain())

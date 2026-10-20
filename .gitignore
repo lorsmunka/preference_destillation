@@ -52,3 +52,6 @@ datasets/
 library/domain/math_tutor/items/items.jsonl
 library/domain/math_tutor/items/renumbered.jsonl
 library/domain/*/corpus_*.jsonl
+
+# code_agent: derived files, rebuilt by python -m library.domain.code_agent.requests / .vocabulary
+library/domain/code_agent/items.jsonl
