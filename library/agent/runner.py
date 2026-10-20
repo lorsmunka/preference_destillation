@@ -7,8 +7,12 @@ call per round. The math tutor (math_tutor/harness.py) and the coding agent (cod
 each bring their own sessions.
 """
 
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, List
+
+FULL_PRECISION_MEMORY_GB = 30   # a 12B teacher in bf16 needs ~26 GB: below this, 4 bits (NF4)
 
 
 @dataclass
@@ -42,6 +46,33 @@ class TeacherModel:
             for i, output in zip(indices, outputs):
                 texts[i] = output
         return texts
+
+
+def teacher_setup(conversations_path: Path) -> bool:
+    """Whether the teacher of this pass runs in 4 bits (True) or full precision (False): full
+    precision when the card has room for it. The first run writes the choice next to the
+    conversations file (<name>.setup.json) and every later run must match it, so one file never
+    mixes replies of two teacher setups (the teacher data is read back with the same setup)."""
+    import torch
+    setup_path = conversations_path.with_suffix(".setup.json")
+    memory_gb = torch.cuda.get_device_properties(0).total_memory / 2**30 if torch.cuda.is_available() else 0
+    load_in_4bit = memory_gb < FULL_PRECISION_MEMORY_GB
+    if setup_path.exists():
+        recorded = json.loads(setup_path.read_text(encoding="utf-8"))["load_in_4bit"]
+        if recorded != load_in_4bit:
+            raise SystemExit(f"{conversations_path.name} was made with load_in_4bit={recorded}, this card gives "
+                             f"{load_in_4bit} ({memory_gb:.0f} GB): use the same setup, or start a new conversations file.")
+        return recorded
+    if conversations_path.exists():
+        raise SystemExit(f"{conversations_path.name} exists without {setup_path.name}: its teacher setup is unknown.")
+    setup_path.parent.mkdir(parents=True, exist_ok=True)
+    setup_path.write_text(json.dumps({"load_in_4bit": load_in_4bit, "gpu_memory_gb": round(memory_gb)}), encoding="utf-8")
+    return load_in_4bit
+
+
+def recorded_setup(conversations_path: Path) -> bool:
+    """load_in_4bit of a finished pass (for reading its replies back with the same setup)."""
+    return json.loads(conversations_path.with_suffix(".setup.json").read_text(encoding="utf-8"))["load_in_4bit"]
 
 
 class StudentAgentModel:

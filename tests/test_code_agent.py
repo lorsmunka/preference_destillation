@@ -195,5 +195,32 @@ class Harness(unittest.TestCase):
         self.assertIn("<project>", domain.teacher_prompt("<project>\n</project>"))
 
 
+class TeacherSetup(unittest.TestCase):
+    def test_a_pass_keeps_its_first_setup_and_refuses_another(self):
+        import tempfile
+        from library.agent import runner
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "v1.jsonl"
+            first = runner.teacher_setup(path)
+            self.assertEqual(runner.teacher_setup(path), first)
+            self.assertEqual(runner.recorded_setup(path), first)
+            saved = runner.FULL_PRECISION_MEMORY_GB
+            runner.FULL_PRECISION_MEMORY_GB = 0 if first else 10_000   # a card that gives the other setup
+            try:
+                with self.assertRaises(SystemExit):
+                    runner.teacher_setup(path)
+            finally:
+                runner.FULL_PRECISION_MEMORY_GB = saved
+
+    def test_replies_without_a_setup_are_refused(self):
+        import tempfile
+        from library.agent import runner
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "old.jsonl"
+            path.write_text("{}\n", encoding="utf-8")
+            with self.assertRaises(SystemExit):
+                runner.teacher_setup(path)
+
+
 if __name__ == "__main__":
     unittest.main()

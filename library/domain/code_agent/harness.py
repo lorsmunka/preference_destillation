@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from library.agent.runner import Request, TeacherModel, run_sessions
+from library.agent.runner import Request, TeacherModel, run_sessions, teacher_setup
 from .checks import check_explanation, check_scope, score_scope, usable_ranges
 from .project import Version, known_names, load_base, make_version, project_context, scoped_context, symbol_lines
 
@@ -190,7 +190,8 @@ def main() -> None:
     batch = int(sys.argv[3]) if len(sys.argv) > 3 else 2
     domain = CodeAgentDomain(variant)
     items = read_items() if count is None else pilot_items(read_items(), count)
-    handler = ModelHandler("google/gemma-4-12B-it", CODE_RECALL, load_in_4bit=True, chat_template=True)
+    load_in_4bit = teacher_setup(domain.conversations_path)   # full precision on a card with room for it
+    handler = ModelHandler("google/gemma-4-12B-it", CODE_RECALL, load_in_4bit=load_in_4bit, chat_template=True)
     run_pass(handler, domain, items, domain.conversations_path, batch=batch)
 
 

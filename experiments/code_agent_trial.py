@@ -55,9 +55,13 @@ DOMAIN = CodeAgentDomain(chosen_variant())
 
 
 def scoring_job() -> GenerationJob:
-    return GenerationJob(domain=DOMAIN, teacher_model=TEACHER, load_in_4bit=True, chat_template=True, max_examples=1_000_000,
-                         batch_size=32, generation_batch_size=1,   # ~6,500-token inputs: one at a time on a 12 GB card
-                         description=f"coding agent ({DOMAIN.conversations}): Gemma 4 12B (NF4) reads its own replies back (forced)")
+    from library.agent.runner import recorded_setup
+    load_in_4bit = recorded_setup(DOMAIN.conversations_path)   # read back with the setup that wrote the replies
+    return GenerationJob(domain=DOMAIN, teacher_model=TEACHER, load_in_4bit=load_in_4bit, chat_template=True,
+                         max_examples=1_000_000, batch_size=32,
+                         generation_batch_size=1 if load_in_4bit else 8,   # ~6,500-token inputs: one at a time on a 12 GB card
+                         description=f"coding agent ({DOMAIN.conversations}): Gemma 4 12B "
+                                     f"({'NF4' if load_in_4bit else 'bf16'}) reads its own replies back (forced)")
 
 
 def run_name(arm):
