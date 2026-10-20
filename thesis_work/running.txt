@@ -19,6 +19,15 @@ STATUS 2026-10-13 (pick up here)
     - Math tutor: full.py (the full pass: 29,747 train + 1,250 test problems, new only), FullDomain,
       experiments/math_full.py; demo.py (tried: routes 4/4 right, the harness caught wrong arithmetic).
     - thesis_work/cloud_runbook.md v2: sizes ~300 GB teacher data (1.4 MB per reply), Python 3.12+.
+    - VERIFIED END TO END 2026-10-20 (local pilot, conversations/pilot_nf4.jsonl: 16 train + 8 test requests,
+      Gemma NF4, fixed answer step): Gemma scopes 24/24, decision right 24/24 (test: lines covered 82%,
+      on target 81%, places hit 9/12, explanations pass 2/2). Corpus 32 train + 16 test records, teacher
+      data 48/48 kept (no target outside the 3,498-token vocabulary), kd + ce students trained, report
+      written (results/code_agent_trial_pilot_nf4.csv), demo run. The students write nothing usable
+      (32 records = one update per pass, 10 updates): expected. A memorisation check (same model and
+      saved records, 300 updates of 4, 2.7 min on the 4070) reproduces explanations word for word and
+      <found/>; scopes get the line numbers but often the wrong file: the student can learn the task on
+      6,000-token inputs. Inputs of every version: 4,815-6,071 tokens (fits training).
   CODING AGENT (user idea 2026-10-20, design not written yet, revives the dropped code finder): a small
             synthetic codebase (several project files) in the context; the pupil asks to find something
             (which file / lines hold the Transaction class) or to explain it (how Transactions work).

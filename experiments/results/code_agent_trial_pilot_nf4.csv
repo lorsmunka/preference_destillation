@@ -1,0 +1,4 @@
+run,arm,items,scopes,recall,precision,places_hit,places,decision_right,explanations_pass,explanations,task_accuracy_best,test_error_best,test_token_accuracy_final
+gemma,,8,8,0.819,0.808,9,12,8,2,2,,,
+code-agent-pilot_nf4-kd-s1,kd,8,0,,,0,0,0,0,0,0.0,7.0932,0.1953
+code-agent-pilot_nf4-ce-s1,ce,8,0,,,0,0,0,0,0,0.0,7.1102,0.1983
