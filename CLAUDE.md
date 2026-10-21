@@ -82,6 +82,7 @@ agents/       briefs and evidence of past agent runs (agents/README.txt); agents
 runs/, batches/  on disk only (gitignored)
 thesis_work/  thesis docs: running.txt (STATUS), findings.txt, domain_specs.txt, code_review.html,
               literature_review.html (+ literature.bib), thesis_positioning.html, harness_deck.html,
+              harness_chat.html (both harnesses replayed step by step: python harness_chat.py),
               thesis.md (the draft: never overwrite), thesis_description.txt (official topic text)
 ```
 
