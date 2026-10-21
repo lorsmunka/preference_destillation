@@ -37,7 +37,7 @@ git clone https://github.com/lorsmunka/preference_destillation.git && cd prefere
 ```
 pip install -r requirements.txt
 huggingface-cli login            # your token; the Gemma 4 licence must be accepted on HF
-python -m unittest discover -s tests     # 148 tests, CPU, ~25 s
+python -m unittest discover -s tests     # 150 tests, CPU, ~25 s
 ```
 
 ## 3. Derived files (gitignored, rebuilt the same every time, ~10 min)

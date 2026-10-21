@@ -21,7 +21,7 @@ from library.domain.math_tutor.agentic import MathTutorAgenticDomain, outside_vo
 from library.domain.math_tutor.annotations import turn_executions
 from library.domain.math_tutor.checks import arithmetic_true, check_against_trace, check_explanation, check_lines, parse
 from library.domain.math_tutor.conversation import Conversation, labelled_turns, solve_turns, thread_turns, usable
-from library.domain.math_tutor.harness import TemplatePupil, TutorSession, run_sessions
+from library.domain.math_tutor.harness import TemplatePupil, TutorSession, parsable, run_sessions
 from library.domain.math_tutor.items import validate
 from library.domain.math_tutor.labels import (by_position, computed_values, gold_calculations, number_mapping,
                                               solve_context, transfer, transfer_turn)
@@ -252,6 +252,21 @@ class ExplanationCutOff(unittest.TestCase):   # A-L2
         entry = threads.reply_entry(self.MESSAGE, "<explanation>Each bag holds 7 bottles, so 63 / 7 = 9 bags.</explanation>")
         self.assertIsNone(entry["check"])
         self.assertEqual(entry["explanation"], "Each bag holds 7 bottles, so 63 / 7 = 9 bags.")
+
+
+class JunkBeforeTheRouteTag(unittest.TestCase):   # user, 2026-10-21: a little junk before the tag keeps the reply
+    SOLUTION = "<solution>\napples = 5 + 3 = 8\nAnswer: 8\n</solution>"
+
+    def turn(self, route_text):
+        return {"route": "solution", "route_text": route_text, "output": self.SOLUTION}
+
+    def test_a_short_preamble_is_read(self):
+        self.assertTrue(parsable(self.turn("<solution>\napples")))
+        self.assertTrue(parsable(self.turn("100%\n<|channel>thought\n<channel|><solution>\napples")))
+
+    def test_a_long_preamble_or_no_tag_is_not(self):
+        self.assertFalse(parsable(self.turn("Let me think about the apples first, then I will " + "<solution>")))
+        self.assertFalse(parsable({"route": "unclear", "route_text": "- apples", "output": self.SOLUTION}))
 
 
 def stub_message(kind: str, route: str) -> Message:

@@ -15,11 +15,13 @@ STATUS 2026-10-13 (pick up here)
       kept (1 word outside the slice's vocabulary, rebuilt on the cloud anyway); the 7 students; report
       (fixed: train_records was always empty); demo. Students learn nothing from ~100 records: expected.
     - Fixed: Gemma's leaked "<|channel>" marker inside a coding scope is stripped (1/18 scopes).
-    - FOUND, OPEN (user decision): math records end a conversation at the first reply whose route text
-      does not START with its tag, though the harness read it and went on ("100%\n<|channel>thought\n
-      <channel|><solution>", "1. <out_of_scope>"). The targets are clean anyway (the solution / explanation
-      is generated with its tag forced). Lost: slice 862 of 16,822 replies (5.1%), this trial 23 of 138.
-      Proposed: accept up to 40 characters before the tag (as the coding agent does).
+    - FOUND AND FIXED (user: "Yeah i think yeah"): math records ended a conversation at the first reply
+      whose route text did not START with its tag, though the harness read it and went on ("100%\n
+      <|channel>thought\n<channel|><solution>", "1. <out_of_scope>"). The targets are clean anyway (the
+      solution / explanation is generated with its tag forced). Now up to 40 characters before the tag
+      are accepted (harness.JUNK_BEFORE_TAG, as the coding agent does). Replies lost: slice 1,004 -> 182
+      of 16,822 (6.0% -> 1.1%, the rest truly unreadable), this trial 23 -> 0 of 138. Applies to corpora
+      built from now on: the slice corpora on disk and the slice results so far used the old rule.
   MORE PROJECTS 2026-10-21 (user: "Alright, add more please then", HTML: "Just add html only projects. Keep it
             easy"): the coding agent has 20 base projects instead of 8, for variety at the same GPU cost (the
             pass costs per request, not per project): 8 new Python ones with their own structure (text_adventure,

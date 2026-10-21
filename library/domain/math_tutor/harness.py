@@ -47,6 +47,9 @@ RUNS_DIR = PACKAGE / "harness_runs"
 SOLUTION_PREFIX, EXPLANATION_PREFIX = "<solution>\n", "<explanation>"
 ROUTE_PREFIX = "<"   # a route asked again starts the tag, so the reply cannot open with prose or bullets
 OUT_OF_SCOPE_REPLY = "This question is outside the scope of this task."
+# characters a route reply may have before its tag (user, 2026-10-21): Gemma 4 sometimes writes "1. ", "100%"
+# or a leaked "<|channel>thought<channel|>" first; dropping those cost 5.1% of the slice's replies
+JUNK_BEFORE_TAG = 40
 
 
 class TemplatePupil:
@@ -228,10 +231,12 @@ def run_conversation_pass(handler, domain, items: List[Dict], path: Path, chunk:
 
 
 def parsable(turn: Dict) -> bool:
-    """Whether the harness could read the reply: a clean opening tag for the route, and for a
-    solution or an explanation its closing tag (and a solution's Answer line)."""
+    """Whether the harness could read the reply: the route's tag within the first JUNK_BEFORE_TAG
+    characters (the record's target is the clean reply either way: a solution or an explanation is
+    written after its forced tag), and for a solution or an explanation its closing tag (and a
+    solution's Answer line)."""
     route, output = turn.get("route"), turn.get("output", "")
-    if not turn.get("route_text", "").startswith(f"<{route}>"):
+    if not 0 <= turn.get("route_text", "").find(f"<{route}>") <= JUNK_BEFORE_TAG:
         return False
     if route == "solution":
         return output.endswith("</solution>") and final_answer(output) is not None
