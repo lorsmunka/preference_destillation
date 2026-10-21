@@ -37,7 +37,7 @@ git clone https://github.com/lorsmunka/preference_destillation.git && cd prefere
 ```
 pip install -r requirements.txt
 huggingface-cli login            # your token; the Gemma 4 licence must be accepted on HF
-python -m unittest discover -s tests     # 147 tests, CPU, ~25 s
+python -m unittest discover -s tests     # 148 tests, CPU, ~25 s
 ```
 
 ## 3. Derived files (gitignored, rebuilt the same every time, ~10 min)
@@ -79,11 +79,14 @@ one seed each. Run names: `math-full-kd-<size>-s1`, `code-agent-v1-kd-<size>-s1`
 
 | size | layers x width x heads | math tutor | coding agent | learning rate |
 |---|---|---|---|---|
-| xs | 2 x 64 x 2 | 2.6M | 0.6M | 1.5e-3 |
-| s (kd and ce) | 4 x 128 x 4 | 6.0M | 2.0M | 1.5e-3 |
-| m | 6 x 256 x 4 | 16M | 8M | 1e-3 |
-| l | 8 x 512 x 8 | 53M | 37M | 7e-4 |
-| xl | 12 x 640 x 10 | 103M | 84M | 5e-4 |
+| xs | 2 x 64 x 2 | 2.6M | 1.2M | 1.5e-3 |
+| s (kd and ce) | 4 x 128 x 4 | 6.0M | 3.1M | 1.5e-3 |
+| m | 6 x 256 x 4 | 16M | 10M | 1e-3 |
+| l | 8 x 512 x 8 | 53M | 42M | 7e-4 |
+| xl | 12 x 640 x 10 | 103M | 89M | 5e-4 |
+
+The coding agent's numbers are from the local trial of 2026-10-21 (20 projects, ~7,900-token vocabularies);
+v1's vocabulary is rebuilt from the cloud replies, so they shift a little.
 
 Memory is no limit: PyTorch's fused attention (2026-10-20) trains a 6,000-token coding-agent input
 in 0.6 GB (s) to 5.3 GB (xl); math tutor inputs need at most 1.1 GB. Time is the cost. Rough hours

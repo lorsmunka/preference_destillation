@@ -1,9 +1,12 @@
 """The coding agent's output vocabulary: every token a reply may contain, most frequent first. Built
 from the format texts, every base project (its code, and every alternative name a version can use,
 also as a file name) and Gemma's replies in the pass (every conversations file). Build it after the pass and before saving the
-teacher data: rebuilding it later reorders the logit columns of existing batches.
+teacher data: rebuilding it later reorders the logit columns of existing batches. Each variant has its
+own file (CodeAgentDomain.output_tokens_path): output_tokens.json for v1, output_tokens_<variant>.json
+for a trial.
 
-    python -m library.domain.code_agent.vocabulary
+    python -m library.domain.code_agent.vocabulary              # v1 (after the cloud pass)
+    python -m library.domain.code_agent.vocabulary pilot2_nf4   # a local trial's
 """
 
 import json
@@ -11,7 +14,7 @@ import sys
 from collections import Counter
 from typing import List
 
-from . import OUTPUT_TOKENS, PACKAGE
+from . import PACKAGE, CodeAgentDomain
 from .project import load_base, project_list
 
 FORMAT_TEXTS = [
@@ -40,7 +43,7 @@ def vocabulary_texts() -> List[str]:
     return texts
 
 
-def build_output_tokens() -> None:
+def build_output_tokens(domain: CodeAgentDomain) -> None:
     from transformers import AutoTokenizer
     from library.shared.config import teacher_weights_path
 
@@ -57,12 +60,12 @@ def build_output_tokens() -> None:
             counts[other] = 1
     tokens = [token for token, _ in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))]
     replies = sum(1 for path in (PACKAGE / "conversations").glob("*.jsonl") for _ in open(path, encoding="utf-8"))
-    with open(OUTPUT_TOKENS, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
+    with open(domain.output_tokens_path, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
         json.dump({"tokens": tokens, "texts": len(texts), "played_items": replies, "projects": project_list()},
                   file, ensure_ascii=False, indent=0)
-    print(f"{len(tokens):,} output tokens from {len(texts):,} texts ({replies:,} played items) -> {OUTPUT_TOKENS}")
+    print(f"{len(tokens):,} output tokens from {len(texts):,} texts ({replies:,} played items) -> {domain.output_tokens_path}")
 
 
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
-    build_output_tokens()
+    build_output_tokens(CodeAgentDomain(sys.argv[1] if len(sys.argv) > 1 else "v1"))

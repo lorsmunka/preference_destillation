@@ -1,0 +1,8 @@
+run,arm,size,parameters,items,scopes,recall,precision,places_hit,places,decision_right,explanations_pass,explanations,task_accuracy_best,test_error_best,test_token_accuracy_final
+gemma,,,,6,6,0.76,0.691,5,8,6,3,3,,,
+code-agent-pilot2_nf4-kd-s1,kd,s,3092360,6,0,,,0,0,0,0,0,0.0,7.7689,0.2471
+code-agent-pilot2_nf4-ce-s1,ce,s,3092360,6,0,,,0,0,0,0,0,0.0,7.7798,0.2441
+code-agent-pilot2_nf4-kd-xs-s1,kd,xs,1156680,6,0,,,0,0,0,0,0,0.0,8.2883,0.2765
+code-agent-pilot2_nf4-kd-m-s1,kd,m,10372104,6,0,,,0,0,0,0,0,0.0,7.3685,0.0647
+code-agent-pilot2_nf4-kd-l-s1,kd,l,41709832,6,0,,,0,0,0,0,0,0.0,6.5075,0.0706
+code-agent-pilot2_nf4-kd-xl-s1,kd,xl,88840584,6,0,,,0,0,0,0,0,0.0,6.4272,0.0588

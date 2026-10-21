@@ -74,11 +74,18 @@ class CodeAgentDomain(Domain):
         return str(PACKAGE / f"corpus_{self.conversations}.jsonl")
 
     @property
+    def output_tokens_path(self) -> Path:
+        """Each variant has its own output vocabulary, so rebuilding a trial's never reorders the
+        logit columns of another variant's teacher data."""
+        return OUTPUT_TOKENS if self.conversations == "v1" else PACKAGE / f"output_tokens_{self.conversations}.json"
+
+    @property
     def example_tokens(self) -> List[str]:
         if self._example_tokens is None:
-            if not OUTPUT_TOKENS.exists():
-                raise FileNotFoundError("output_tokens.json missing: python -m library.domain.code_agent.vocabulary")
-            self._example_tokens = json.load(open(OUTPUT_TOKENS, encoding="utf-8"))["tokens"]
+            if not self.output_tokens_path.exists():
+                raise FileNotFoundError(f"{self.output_tokens_path.name} missing: "
+                                        f"python -m library.domain.code_agent.vocabulary {self.conversations}")
+            self._example_tokens = json.load(open(self.output_tokens_path, encoding="utf-8"))["tokens"]
         return self._example_tokens
 
     def teacher_prompt(self, text: str) -> str:

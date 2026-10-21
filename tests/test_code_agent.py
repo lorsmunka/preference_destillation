@@ -245,6 +245,12 @@ class Harness(unittest.TestCase):
         self.assertEqual(session.turn["output"], "<explanation>It checks.</explanation>")
         self.assertEqual(session.turn["route"], "explain")
 
+    def test_a_leaked_channel_marker_is_dropped_from_the_scope(self):
+        session = CodeAgentSession(self.item, self.version)
+        run_sessions(ScriptedModel([f"<|channel>/{self.file_name} {self.start}-{self.end}\n</scope>", "<found/>"]), [session])
+        self.assertEqual(session.turn["scope"], f"<scope>\n/{self.file_name} {self.start}-{self.end}\n</scope>")
+        self.assertIsNone(session.turn["scope_check"])
+
     def test_an_unusable_scope_ends_the_item_without_records(self):
         session = CodeAgentSession(self.item, self.version)
         run_sessions(ScriptedModel(["nowhere.py 1-2\n</scope>", "nowhere.py 3-4\n</scope>"]), [session])

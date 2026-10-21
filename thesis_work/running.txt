@@ -3,6 +3,23 @@ STATUS 2026-10-13 (pick up here)
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
             (one Gemma setup per domain).
+  END TO END 2026-10-21 (user: "Yes", both agents once more before the cloud; local Gemma NF4, ~45 min GPU):
+    - Coding agent, variant pilot2_nf4 (12 train + 6 test requests over the 20 projects: museum_site x2,
+      travel_site, 5 of the new Python ones): Gemma scopes 18/18, decision right 18/18, lines covered 73-78%,
+      places hit 15/24; HTML read well (travel_site, unseen: right scope and list item). Its own vocabulary
+      (7,771 -> 7,944 with the input side; each variant now has its own output_tokens file, the old one
+      kept as output_tokens_pilot_nf4.json), teacher data 36/36 kept, the 7 students (kd + ce at s, kd at
+      xs / m / l / xl: 1.2M-89M parameters with this vocabulary), report + CSV with size / parameters, demo.
+    - Math tutor, variant pilot_nf4 of the full run (math_full.py never ran before; 16 train + 8 test
+      problems): answers right 52/60, explanations pass 71/71; corpus 95 + 40 records; teacher data 134/135
+      kept (1 word outside the slice's vocabulary, rebuilt on the cloud anyway); the 7 students; report
+      (fixed: train_records was always empty); demo. Students learn nothing from ~100 records: expected.
+    - Fixed: Gemma's leaked "<|channel>" marker inside a coding scope is stripped (1/18 scopes).
+    - FOUND, OPEN (user decision): math records end a conversation at the first reply whose route text
+      does not START with its tag, though the harness read it and went on ("100%\n<|channel>thought\n
+      <channel|><solution>", "1. <out_of_scope>"). The targets are clean anyway (the solution / explanation
+      is generated with its tag forced). Lost: slice 862 of 16,822 replies (5.1%), this trial 23 of 138.
+      Proposed: accept up to 40 characters before the tag (as the coding agent does).
   MORE PROJECTS 2026-10-21 (user: "Alright, add more please then", HTML: "Just add html only projects. Keep it
             easy"): the coding agent has 20 base projects instead of 8, for variety at the same GPU cost (the
             pass costs per request, not per project): 8 new Python ones with their own structure (text_adventure,

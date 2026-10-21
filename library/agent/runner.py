@@ -8,6 +8,7 @@ each bring their own sessions.
 """
 
 import json
+import random
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List
@@ -73,6 +74,14 @@ def teacher_setup(conversations_path: Path) -> bool:
 def recorded_setup(conversations_path: Path) -> bool:
     """load_in_4bit of a finished pass (for reading its replies back with the same setup)."""
     return json.loads(conversations_path.with_suffix(".setup.json").read_text(encoding="utf-8"))["load_in_4bit"]
+
+
+def trial_items(items: List[Dict], count: int) -> List[Dict]:
+    """A small seeded sample for a local trial: `count` train items and half as many test items."""
+    random_generator = random.Random(0)
+    train = [item for item in items if item["split"] == "train"]
+    test = [item for item in items if item["split"] == "test"]
+    return random_generator.sample(train, count) + random_generator.sample(test, count // 2)
 
 
 class StudentAgentModel:

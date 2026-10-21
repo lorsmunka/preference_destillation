@@ -55,7 +55,9 @@ register_domain(SliceDomain())
 from .code_agent import CodeAgentDomain
 register_domain(CodeAgentDomain())
 register_domain(CodeAgentDomain("pilot_nf4"))   # the local trial: Gemma NF4 on the 4070, never mixed with v1
+register_domain(CodeAgentDomain("pilot2_nf4"))  # the second local trial (2026-10-21): the 20 projects, HTML included
 
 # The full math-tutor run (math_tutor/full.py): every item, one teacher setup, its own batches folder.
 from .math_tutor.full import FullDomain
 register_domain(FullDomain())
+register_domain(FullDomain("pilot_nf4"))   # its local trial (2026-10-21): a few items, Gemma NF4 on the 4070

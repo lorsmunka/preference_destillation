@@ -21,11 +21,12 @@ of its replies, in the context it was written in, becomes a record (mistakes inc
 
 import json
 import random
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from library.agent.runner import Request, TeacherModel, run_sessions, teacher_setup
+from library.agent.runner import Request, TeacherModel, run_sessions, teacher_setup, trial_items
 from .checks import check_explanation, check_scope, score_scope, usable_ranges
 from .project import Version, known_names, load_base, make_version, project_context, scoped_context, symbol_lines
 
@@ -33,6 +34,7 @@ PACKAGE = Path(__file__).resolve().parent
 SCOPE_PREFIX = "<scope>\n"
 ANSWER_TAGS = ("<explanation>", "<found/>")
 JUNK_BEFORE_TAG = 40   # characters a reply may have before its tag (Gemma 4 sometimes leaks "<channel|>")
+LEAKED_MARKER = re.compile(r"<\|?channel\|?>")   # Gemma 4's channel markers, also seen inside a scope (2026-10-21)
 SCOPE_TOKENS, ANSWER_TOKENS = 120, 400
 
 
@@ -55,6 +57,7 @@ class CodeAgentSession:
 
     def receive(self, text: str) -> None:
         turn = self.turn
+        text = LEAKED_MARKER.sub("", text)
         if self.pending.kind == "scope":
             turn["scope_attempts"] += 1
             block = SCOPE_PREFIX + text
@@ -189,18 +192,10 @@ def main() -> None:
     count = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2] != "-" else None
     batch = int(sys.argv[3]) if len(sys.argv) > 3 else 2
     domain = CodeAgentDomain(variant)
-    items = read_items() if count is None else pilot_items(read_items(), count)
+    items = read_items() if count is None else trial_items(read_items(), count)
     load_in_4bit = teacher_setup(domain.conversations_path)   # full precision on a card with room for it
     handler = ModelHandler("google/gemma-4-12B-it", CODE_RECALL, load_in_4bit=load_in_4bit, chat_template=True)
     run_pass(handler, domain, items, domain.conversations_path, batch=batch)
-
-
-def pilot_items(items: List[Dict], count: int) -> List[Dict]:
-    """A small seeded sample for a local trial: `count` train items and half as many test items."""
-    random_generator = random.Random(0)
-    train = [item for item in items if item["split"] == "train"]
-    test = [item for item in items if item["split"] == "test"]
-    return random_generator.sample(train, count) + random_generator.sample(test, count // 2)
 
 
 if __name__ == "__main__":
