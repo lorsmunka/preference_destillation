@@ -25,6 +25,8 @@ resumes where it stopped (items already in the file are skipped; a chunk is save
   ~195,000 replies, measured on the slice) and ~35 GB for the coding agent.
 - Give Claude SSH access (host, port, user, key) if Claude should drive it; otherwise run the
   commands below yourself.
+- Hugging Face token: set it as the instance's environment variable `HF_TOKEN` when renting (a read
+  token of the account that accepted the Gemma 4 licence), so it never goes through a chat.
 
 ## 1. Code
 Clone (after `git push` from home; say the word and Claude pushes) or copy a tarball:
@@ -35,8 +37,9 @@ git clone https://github.com/lorsmunka/preference_destillation.git && cd prefere
 
 ## 2. Environment
 ```
-pip install -r requirements.txt
-huggingface-cli login            # your token; the Gemma 4 licence must be accepted on HF
+python3 --version                # 3.12+ (an Ubuntu 24.04 image has it; otherwise: pip install uv && uv venv --python 3.12)
+pip install -r requirements.txt  # keeps the image's CUDA build of torch
+huggingface-cli login            # only when HF_TOKEN is not set; the Gemma 4 licence must be accepted on HF
 python -m unittest discover -s tests     # 150 tests, CPU, ~25 s
 ```
 

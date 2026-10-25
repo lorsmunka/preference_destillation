@@ -1,6 +1,8 @@
 # Core — train / generate / analyze
 torch
-transformers>=5.10          # Gemma 4 (gemma4_unified) needs 5.x
+transformers==5.17.0        # Gemma 4 (gemma4_unified) needs 5.x; the version every local trial ran on
+accelerate                  # device_map="auto" when the teacher loads
+bitsandbytes                # the 4-bit (NF4) teacher on cards below 30 GB
 numpy
 matplotlib
 
