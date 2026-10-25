@@ -12,7 +12,7 @@ Steps, each skipped when done (so the script resumes):
     python -m library.domain.math_tutor.full conversations   # first: the pass (GPU)
     python -m library.domain.math_tutor.agentic              # the output vocabulary, with the replies
     python experiments/math_full.py
-    python experiments/math_full.py v1 1                     # only the first student (kd at size s): the first loop
+    python experiments/math_full.py v1 kd,kd-l               # only these students (the first loop: kd at s and at l)
     python experiments/math_full.py pilot_nf4                # the local trial (its own data, the current vocabulary)
 """
 
@@ -32,14 +32,23 @@ ARMS = {"kd": (0.9, 0.1), "ce": (0.0, 0.0)}
 SEED = 1
 STUDENT = dict(dropout=0.1, epoch_count=10, batch_size=32, lr_warmup_ratio=0.1, max_training_examples=None,
                shuffle_seed=SEED)
-RUN_COUNT = int(sys.argv[2]) if len(sys.argv) > 2 else None   # train (and report) only the first RUN_COUNT runs
-RUNS = ([(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE])[:RUN_COUNT]
+ALL_RUNS = [(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE]
+CHOSEN = sys.argv[2].split(",") if len(sys.argv) > 2 else None   # e.g. "kd,kd-l": train (and report) only these
 RESULT_COLUMNS = ["run", "arm", "size", "parameters", "train_records", "task_accuracy_best", "task_accuracy_final",
                   "majority_baseline", "test_error_best", "test_token_accuracy_final"]
 
 
+def run_key(arm, size):
+    return arm if size == BASE_SIZE else f"{arm}-{size}"
+
+
+RUNS = [run for run in ALL_RUNS if CHOSEN is None or run_key(*run) in CHOSEN]
+if CHOSEN and len(RUNS) < len(CHOSEN):
+    raise SystemExit(f"unknown students in {CHOSEN}: choose from {[run_key(*run) for run in ALL_RUNS]}")
+
+
 def run_name(arm, size):
-    return f"{EXPERIMENT}-{arm}{'' if size == BASE_SIZE else '-' + size}-s{SEED}"
+    return f"{EXPERIMENT}-{run_key(arm, size)}-s{SEED}"
 
 
 def build_runs():

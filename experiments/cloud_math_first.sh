@@ -3,7 +3,7 @@
 #   1. Gemma plays problems until PROBLEMS conversations are in full_v1.jsonl (then a graceful stop;
 #      a later run of the pass resumes in the same seeded order)
 #   2. the output vocabulary, from the replies
-#   3. the teacher data (Gemma reads its replies back) and one student (kd at size s), with its report
+#   3. the teacher data (Gemma reads its replies back) and two students (kd at size s, ~6M, and at l, ~53M), with their report
 # The machine stops itself at the end, and on any failure, so no credit burns idle.
 #
 #   tmux new-session -d -s run "bash experiments/cloud_math_first.sh"            # 10,000 problems, 48 replies per call (80 GB)
@@ -52,8 +52,8 @@ fi
 step "output vocabulary"
 python -u -m library.domain.math_tutor.agentic || stop_machine "the vocabulary failed"
 
-step "teacher data, the first student and its report"
-python -u experiments/math_full.py v1 1 || stop_machine "math_full.py failed"
+step "teacher data, the students kd at s and at l, and their report"
+python -u experiments/math_full.py v1 kd,kd-l || stop_machine "math_full.py failed"
 ls experiments/results/math_full.csv > /dev/null || stop_machine "no report (stopped before the end)"
 
 stop_machine "done"
