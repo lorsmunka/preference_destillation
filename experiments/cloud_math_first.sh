@@ -22,7 +22,19 @@ exec >> "$LOG" 2>&1
 
 step() { echo "== $1 $(date -u '+%Y-%m-%d %H:%M')"; }
 conversation_count() { [ -f "$CONVERSATIONS" ] && wc -l < "$CONVERSATIONS" || echo 0; }
-stop_machine() { step "$1: stopping the machine"; runpodctl stop pod "$RUNPOD_POD_ID"; exit; }
+# runpodctl refuses the pod's own key ("Unauthorized"); RunPod's GraphQL API takes it (tested on a
+# throwaway pod, 2026-10-25). Retried, in case the API does not answer.
+stop_machine() {
+    step "$1: stopping the machine"
+    for attempt in 1 2 3 4 5; do
+        reply=$(curl -s -m 30 -H "Content-Type: application/json" -H "Authorization: Bearer $RUNPOD_API_KEY" \
+                https://api.runpod.io/graphql \
+                -d "{\"query\": \"mutation { podStop(input: {podId: \\\"$RUNPOD_POD_ID\\\"}) { id desiredStatus } }\"}")
+        echo "podStop attempt $attempt: $reply"
+        sleep 30
+    done
+    exit
+}
 
 step "Gemma's conversations: $(conversation_count) of $PROBLEMS played, $BATCH replies per call"
 if [ "$(conversation_count)" -lt "$PROBLEMS" ]; then

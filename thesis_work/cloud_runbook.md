@@ -28,7 +28,11 @@ vocabulary and the teacher data are then rebuilt for all of them).
   (an SSH command does not load them: `. /etc/rp_environment`).
 - The loop: `tmux new-session -d -s run "bash experiments/cloud_math_first.sh"` (10,000 problems, 48 replies per call: measured 3.8 s per conversation, ~10 h ->
   vocabulary -> teacher data -> the kd student at size s -> report); the pod stops itself at the end
-  or on a failure. Log: `/workspace/logs/math_first.log`.
+  or on a failure. Log: `/workspace/logs/math_first.log`. The self-stop goes through RunPod's GraphQL
+  API with the pod's own key (`RUNPOD_API_KEY`): runpodctl refuses that key ("Unauthorized"); tested on
+  a throwaway CPU pod, which went to EXITED. A stopped pod bills no GPU; the network volume keeps
+  everything (code, conversations, teacher data, runs, logs, Gemma), the container disk (pip packages) is
+  wiped: after a start, `pip install --break-system-packages -r requirements.txt` again.
 - Bringing it home: the pod rebuilds `math_tutor/output_tokens.json` from its replies. Copy it home
   under another name, never over the local one (the slice's batches are fingerprinted against it).
 
