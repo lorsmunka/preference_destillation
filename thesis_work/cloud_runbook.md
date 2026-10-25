@@ -13,8 +13,24 @@ the cloud. What runs there, in order:
    replies back) and the students: `experiments/code_agent_trial.py`, `experiments/math_full.py`.
 4. The size sweep: the kd student at four more sizes, ~1M to ~100M parameters (step 6b).
 
-Only while you are present; stop with Ctrl+C or a `STOP` file in the working folder. Every pass
-resumes where it stopped (items already in the file are skipped; a chunk is saved every 16 / 32).
+Unattended runs are fine on the cloud (user, 2026-10-25; the prepaid credit caps the spend); stop
+with Ctrl+C or a `STOP` file in the working folder. Every pass resumes where it stopped (items
+already in the file are skipped; a chunk is saved every 16 / 32).
+
+## Now: the math tutor first, in loops (user, 2026-10-25)
+Math first, end to end, on 10,000 problems (~63k replies); if one student learns, the rest of the
+students and then the coding agent; if not, more problems (the pass resumes in the same order; the
+vocabulary and the teacher data are then rebuilt for all of them).
+- RunPod (Secure Cloud, EUR-IS-1): pod `0dinvacw6k48sj` (1x A100 SXM 80 GB, $1.79/h, image
+  `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404`, Python 3.12), network volume `ghqjx77s5o`
+  (250 GB) at `/workspace`, the code in `/workspace/preference_destillation`, Gemma in `HF_HOME=/workspace/hf`.
+  The Hugging Face token is the account secret `hf_token`; the pod's variables are in `/etc/rp_environment`
+  (an SSH command does not load them: `. /etc/rp_environment`).
+- The loop: `tmux new-session -d -s run "bash experiments/cloud_math_first.sh"` (10,000 problems, 48 replies per call: measured 3.8 s per conversation, ~10 h ->
+  vocabulary -> teacher data -> the kd student at size s -> report); the pod stops itself at the end
+  or on a failure. Log: `/workspace/logs/math_first.log`.
+- Bringing it home: the pod rebuilds `math_tutor/output_tokens.json` from its replies. Copy it home
+  under another name, never over the local one (the slice's batches are fingerprinted against it).
 
 ## 0. Rent
 - 1x RTX 5090 (32 GB) or bigger (A100 / H100 40-80 GB). Full precision (bf16) needs ~26 GB: a pass

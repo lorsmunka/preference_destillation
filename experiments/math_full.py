@@ -12,6 +12,7 @@ Steps, each skipped when done (so the script resumes):
     python -m library.domain.math_tutor.full conversations   # first: the pass (GPU)
     python -m library.domain.math_tutor.agentic              # the output vocabulary, with the replies
     python experiments/math_full.py
+    python experiments/math_full.py v1 1                     # only the first student (kd at size s): the first loop
     python experiments/math_full.py pilot_nf4                # the local trial (its own data, the current vocabulary)
 """
 
@@ -31,7 +32,8 @@ ARMS = {"kd": (0.9, 0.1), "ce": (0.0, 0.0)}
 SEED = 1
 STUDENT = dict(dropout=0.1, epoch_count=10, batch_size=32, lr_warmup_ratio=0.1, max_training_examples=None,
                shuffle_seed=SEED)
-RUNS = [(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE]
+RUN_COUNT = int(sys.argv[2]) if len(sys.argv) > 2 else None   # train (and report) only the first RUN_COUNT runs
+RUNS = ([(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE])[:RUN_COUNT]
 RESULT_COLUMNS = ["run", "arm", "size", "parameters", "train_records", "task_accuracy_best", "task_accuracy_final",
                   "majority_baseline", "test_error_best", "test_token_accuracy_final"]
 

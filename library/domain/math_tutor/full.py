@@ -11,6 +11,7 @@ trial is a variant with its own file and name too (pilot_nf4: a few items, Gemma
 
     python -m library.domain.math_tutor.full conversations        # GPU: every item not played yet
     python -m library.domain.math_tutor.full conversations 16     # 16 replies per model call (a bigger card)
+    python -m library.domain.math_tutor.full conversations 48     # 48 per call, 96 conversations at a time (80 GB)
     python -m library.domain.math_tutor.full conversations 4 pilot_nf4 16   # a local trial: 16 train + 8 test items
     python -m library.domain.math_tutor.agentic                   # the output vocabulary, with the replies
     python -m library.domain.math_tutor.full corpus               # the corpus (FullDomain)
@@ -97,7 +98,8 @@ def main() -> None:
     items = full_items() if len(sys.argv) <= 4 else trial_items(full_items(), int(sys.argv[4]))
     print(f"{len(items)} items ({dict(Counter(item['split'] for item in items))}), "
           f"{sum(1 + len(item['follow_ups']) for item in items)} tasks -> {path}", flush=True)
-    run_conversation_pass(handler, domain, items, path, batch=batch)
+    # at least two calls' worth of conversations at a time, so the rounds stay full while sessions finish
+    run_conversation_pass(handler, domain, items, path, chunk=max(32, 2 * batch), batch=batch)
 
 
 if __name__ == "__main__":

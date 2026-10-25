@@ -1,4 +1,14 @@
 STATUS 2026-10-13 (pick up here)
+  CLOUD 2026-10-25 (user: math tutor first, "10k, train a simple neural net, if it works great, if not we
+            later make more examples"; cloud runs may go unattended, the prepaid credit caps the spend):
+            RunPod pod 0dinvacw6k48sj (A100 SXM 80 GB, $1.79/h, EUR-IS-1) + network volume ghqjx77s5o
+            (250 GB at /workspace); details in thesis_work/cloud_runbook.md ("Now"). Checks on the card
+            (bf16): 24 problems at 16 per call, 7.3 s per conversation, answers 55/60, explanations 69/69;
+            96 problems at 48 per call (96 at a time), 3.8 s per conversation, answers 227/232, explanations
+            310/311, peak 64 GB. RUNNING since 21:22 UTC: experiments/cloud_math_first.sh (10,000 problems,
+            ~10 h -> vocabulary -> teacher data -> the kd student at size s -> report -> the pod stops
+            itself). Then: does the student beat the most-common-answer baseline? Yes: the other students,
+            then the coding agent. No: more problems.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
