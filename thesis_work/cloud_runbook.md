@@ -59,6 +59,13 @@ per problem, 0.20 s per reply -> ~28 h, ~$50.
   pod `pip install --break-system-packages -r requirements.txt` (and remove torchvision / torchaudio),
   the code as a `git archive` tarball (the volume keeps corpus_full_v1.jsonl, the batches, Gemma);
   check the corpus has 67,058 records and info.json's input_count matches; time the first chunk.
+- Launched 2026-10-26 23:18 UTC on pod `xqekl9emfe4e4s`: no A100 was free in EUR-IS-1, so an RTX PRO 6000
+  (96 GB, $2.49/h), timed first on 288 problems: 2.40 s per problem (A100 3.44), 0.116 s per reply scored
+  (A100 0.20), so cheaper per problem than the A100: the rest ~18 h, ~$45.50; cap 21 h ($52.30). The
+  sample's 288 problems and their 1,515 records are already in (2 dropped for a word outside the
+  vocabulary); a graceful stop leaves the chunk's unfinished conversations partial (84 here). The volume
+  grown to 350 GB. Pack the code with `git -c core.autocrlf=false archive HEAD` (on Windows a plain
+  `git archive` writes CRLF: shell scripts break and the data files' checksums change).
 - After: download home (the batches, `corpus_full_v1.jsonl`, `full_v1.jsonl`, the batches' info /
   state), then delete the volume. At home, `math_full.py` refuses to rebuild the corpus while its
   teacher data exists, and rebuilds the input vocabulary when newer batches exist.

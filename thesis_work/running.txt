@@ -29,6 +29,9 @@ STATUS 2026-10-13 (pick up here)
             the file numbering of added batches fixed (it would have overwritten a file). Before launch: a
             >= 30 GB card in EUR-IS-1 (none free on 2026-10-26 evening but the RTX PRO 6000, $2.49/h,
             speed on our job unmeasured: time a sample first), the volume grown to 350 GB, a money cap.
+            RUNNING since 23:18 UTC (user: "Run a sample", then within the agreed plan): RTX PRO 6000 pod
+            xqekl9emfe4e4s, 2.40 s per problem and 0.116 s per reply scored (both faster than the A100,
+            cheaper per problem); ~18 h, ~$45.50, cap 21 h; then download home, delete the volume.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
