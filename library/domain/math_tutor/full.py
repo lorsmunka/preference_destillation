@@ -15,6 +15,12 @@ trial is a variant with its own file and name too (pilot_nf4: a few items, Gemma
     python -m library.domain.math_tutor.full conversations 4 pilot_nf4 16   # a local trial: 16 train + 8 test items
     python -m library.domain.math_tutor.agentic                   # the output vocabulary, with the replies
     python -m library.domain.math_tutor.full corpus               # the corpus (FullDomain)
+
+More problems later (2026-10-26): the pass goes on where it stopped (played items are skipped), the
+vocabulary stays as it is (a reply with a word outside it is dropped, ~0.5%), and the corpus is
+extended, not rebuilt: the new records (train, then test) go after the records already there, so their
+teacher data stays valid. The default test (the last test files) then becomes the newest test
+problems; earlier students still run and can be tested on them (user: "Simplify").
 """
 
 import json
@@ -22,7 +28,7 @@ import random
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 from .agentic import MathTutorAgenticDomain
 from .items import answer_only_test
@@ -41,12 +47,12 @@ def full_items() -> List[Dict]:
     return [item for item in all_items() if item["split"] in ("train", "test") and not answer_only_test(item)]
 
 
-def corpus_records(path: Path) -> Tuple[List[Dict], List[Dict]]:
-    """(train, test) records of the saved conversations, each shuffled (seeded)."""
+def corpus_records(path: Path, known_items: Set[str] = frozenset()) -> Tuple[List[Dict], List[Dict]]:
+    """(train, test) records of the saved conversations (but those of known_items), each shuffled (seeded)."""
     from .harness import transcript_records
     by_id = {item["id"]: item for item in all_items()}
     records = [record for line in open(path, encoding="utf-8")
-               for conversation in [json.loads(line)]
+               for conversation in [json.loads(line)] if conversation["item_id"] not in known_items
                for record in transcript_records(by_id[conversation["item_id"]], conversation["turns"])]
     random_generator = random.Random(SEED)
     train = [record for record in records if record["split"] == "train"]
@@ -86,6 +92,22 @@ class FullDomain(MathTutorAgenticDomain):
         print(f"{len({record['item_id'] for record in train + test})} conversations -> {len(train[:count])} train records, "
               f"then {len(test)} test records -> {self.corpus_path}")
         print(dict(Counter((record["split"], record["turn_type"]) for record in train + test)))
+
+    def known_items(self) -> Set[str]:
+        """The items whose records are in the corpus already."""
+        return {json.loads(line)["item_id"] for line in open(self.corpus_path, encoding="utf-8")}
+
+    def extend_corpus(self) -> int:
+        """Appends the records of the conversations played since the corpus was built (train, then
+        test) after the records already there, which keep their places; returns how many."""
+        train, test = corpus_records(self.conversations_path, self.known_items())
+        with open(self.corpus_path, "a", encoding="utf-8") as file:
+            for record in train + test:
+                file.write(json.dumps(record, ensure_ascii=False) + "\n")
+        if train or test:
+            print(f"{len({record['item_id'] for record in train + test})} conversations -> {len(train)} train "
+                  f"and {len(test)} test records added -> {self.corpus_path}")
+        return len(train) + len(test)
 
 
 def main() -> None:

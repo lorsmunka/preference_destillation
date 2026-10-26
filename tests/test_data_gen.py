@@ -288,6 +288,23 @@ class CrashResumesAfterSavedBatches(unittest.TestCase):   # D-H2 (and D-L3: star
             self.assertEqual([path.name for path in batch_paths(directory)], ["batch_1.npz"])
             self.assertEqual(read_batch(Path(directory) / "batch_1.npz")[0]["sentence"], "a")
 
+    def test_records_added_after_a_partial_batch_overwrite_nothing(self):
+        # 10 records in batches of 4: the last file holds 2. Records added to the corpus later go to
+        # new files after it; numbering by the example count would have reused numbers 3 and 4.
+        for added in (1, 5):
+            with tempfile.TemporaryDirectory() as directory:
+                write_corpus(directory, corpus(10))
+                output = run_generation(directory, FakeTeacher())
+                old_files = {path.name: path.read_bytes() for path in batch_paths(output)}
+                self.assertEqual(sorted(old_files), ["batch_1.npz", "batch_2.npz", "batch_3.npz"])
+                write_corpus(directory, corpus(10 + added))   # the same 10 records first, then the new ones
+                run_generation(directory, FakeTeacher())
+                self.assertTrue(all((output / name).read_bytes() == data for name, data in old_files.items()))
+                self.assertEqual([record["sentence"] for record in saved_records(output)],
+                                 [f"text {index}" for index in range(10 + added)])
+                self.assertEqual(len(batch_paths(output)), 3 + -(-added // 4))
+                self.assertEqual(read_json(output / "info.json")["batches_written"], 3 + -(-added // 4))
+
     def test_graceful_stop_then_resume(self):
         with tempfile.TemporaryDirectory() as directory:
             write_corpus(directory, corpus(40))

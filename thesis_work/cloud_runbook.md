@@ -40,6 +40,29 @@ vocabulary and the teacher data are then rebuilt for all of them).
   it was copied home renamed). Never copy a pod's output_tokens.json over the local one (the slice's
   batches are fingerprinted against it).
 
+## Next: more math data, the second loop (user, 2026-10-26: "let's first make more data", $55)
+Data only, no students (they train at home from then on). `experiments/cloud_math_more.sh <hours>`:
+Gemma plays every problem not played yet (20,821 after the first loop), then scores the new replies;
+the machine stops at the end, on a failure, and after `<hours>` whatever happens (the money cap:
+budget / hourly price, e.g. 29 h on the A100 = $52). Measured on the A100 in the first loop: 3.44 s
+per problem, 0.20 s per reply -> ~28 h, ~$50.
+- Added, not redone: the pass skips played problems; the vocabulary stays as it is (~0.5% of new
+  replies have a word outside it and are dropped: measured by building it from part of the first
+  loop's conversations); the corpus is extended (full.py, `extend_corpus`), the new records (train,
+  then test) after the old ones, scored into new batch files after the old ones (the file numbers come
+  from the files written so far, kept in state.json: numbering by the example count would have
+  overwritten a file after the first loop's partial last batch). The default test (the last test
+  files) becomes the newest test problems. Checked at home end to end (Gemma NF4, throwaway variants
+  extend_check / extend_merge): old batch files byte-identical, corpus prefix unchanged, nothing redone.
+- Before launch: a card with >= 30 GB in EUR-IS-1 (the volume's data center; the stopped A100 restarts
+  only if its GPU is free); the volume grown to 350 GB (~250 GB of teacher data + Gemma 23 GB); on the
+  pod `pip install --break-system-packages -r requirements.txt` (and remove torchvision / torchaudio),
+  the code as a `git archive` tarball (the volume keeps corpus_full_v1.jsonl, the batches, Gemma);
+  check the corpus has 67,058 records and info.json's input_count matches; time the first chunk.
+- After: download home (the batches, `corpus_full_v1.jsonl`, `full_v1.jsonl`, the batches' info /
+  state), then delete the volume. At home, `math_full.py` refuses to rebuild the corpus while its
+  teacher data exists, and rebuilds the input vocabulary when newer batches exist.
+
 ## 0. Rent
 - 1x RTX 5090 (32 GB) or bigger (A100 / H100 40-80 GB). Full precision (bf16) needs ~26 GB: a pass
   picks bf16 by itself on a card with 30 GB or more, and NF4 below (`teacher_setup`).

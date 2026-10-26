@@ -24,6 +24,7 @@ class RunLogger:
 
         self.processed_sentence_count = 0
         self.successful_sentence_count = 0
+        self.batch_files_written = 0
         self.current_epoch = 0
         self.current_batch = 0
         self.total_batches_processed = 0
@@ -42,6 +43,8 @@ class RunLogger:
                 data = json.load(file)
             self.processed_sentence_count = data.get("processed_sentence_count", 0)
             self.successful_sentence_count = data.get("successful_sentence_count", 0)
+            # states written before this was kept: every file full but the last
+            self.batch_files_written = data.get("batch_files_written", -(-self.successful_sentence_count // self.batch_size))
             self.current_epoch = data.get("current_epoch", 0)
             self.current_batch = data.get("current_batch", 0)
             self.total_batches_processed = data.get("total_batches_processed", 0)
@@ -63,6 +66,7 @@ class RunLogger:
                 {
                     "processed_sentence_count": self.processed_sentence_count,
                     "successful_sentence_count": self.successful_sentence_count,
+                    "batch_files_written": self.batch_files_written,
                     "current_epoch": self.current_epoch,
                     "current_batch": self.current_batch,
                     "total_batches_processed": self.total_batches_processed,

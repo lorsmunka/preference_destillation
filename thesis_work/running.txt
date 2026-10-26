@@ -22,6 +22,13 @@ STATUS 2026-10-13 (pick up here)
             output_tokens.json, renamed: the local one is the slice's). The volume keeps the teacher data
             (82 GB, ~$0.6/day). NEXT (the user's choice): more kd / ce seeds at s (the core claim), the
             coding agent, or more math problems.
+            DECIDED (user, 2026-10-26: "let's first make more data", $55 of the ~$59.5 left, ~$4.5 for
+            storage; "Simplify"): the second loop = the other 20,821 problems, data only (~28 h, ~$50 on
+            the A100), added to the first loop's data, not redone; then the data comes home and the
+            students train on the 4070 from then on (cloud_runbook.md "Next"). Built and checked at home;
+            the file numbering of added batches fixed (it would have overwritten a file). Before launch: a
+            >= 30 GB card in EUR-IS-1 (none free on 2026-10-26 evening but the RTX PRO 6000, $2.49/h,
+            speed on our job unmeasured: time a sample first), the volume grown to 350 GB, a money cap.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it

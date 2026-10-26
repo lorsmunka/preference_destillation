@@ -13,7 +13,7 @@ Steps, each skipped when done (so the script resumes):
     python -m library.domain.math_tutor.agentic              # the output vocabulary, with the replies
     python experiments/math_full.py
     python experiments/math_full.py v1 kd,kd-l               # only these students (the first loop: kd at s and at l)
-    python experiments/math_full.py v1 none                  # only the teacher data and the input vocabulary
+    python experiments/math_full.py v1 none                  # only the teacher data (also of records added since: full.py)
     python experiments/math_full.py v1 kd-l                  # one student per process: several train side by side on one card
     python experiments/math_full.py pilot_nf4                # the local trial (its own data, the current vocabulary)
 """
@@ -63,20 +63,31 @@ def build_runs():
             for arm, size in RUNS]
 
 
-def save_teacher_data() -> bool:
+def save_teacher_data(domain) -> bool:
+    """The teacher data of every record in the domain's corpus. A corpus whose teacher data exists is
+    extended, never rebuilt (a rebuilt one would put the records in another order than the batches);
+    the records added since are scored into the batches after the others."""
     from library.agent.runner import recorded_setup
     from library.data_gen.generator import DistillationDataGenerator
     from library.shared import ExitListener, get_output_dir
 
-    info_path = os.path.join(get_output_dir(DOMAIN.name, TEACHER), "info.json")
-    if os.path.exists(info_path) and json.load(open(info_path, encoding="utf-8")).get("status") == "completed":
-        return True
-    if not os.path.exists(DOMAIN.corpus_path):
-        DOMAIN.build_corpus()
-    load_in_4bit = recorded_setup(DOMAIN.conversations_path)
-    job = GenerationJob(domain=DOMAIN, teacher_model=TEACHER, load_in_4bit=load_in_4bit, chat_template=True,
+    info_path = os.path.join(get_output_dir(domain.name, TEACHER), "info.json")
+    if os.path.exists(domain.corpus_path):
+        domain.extend_corpus()
+    elif os.path.exists(info_path):
+        raise SystemExit(f"{domain.corpus_path} is missing, but its teacher data exists: copy the corpus file it was "
+                         f"made from (a rebuilt one would put the records in another order than the batches)")
+    else:
+        domain.build_corpus()
+    corpus_count = sum(1 for _ in open(domain.corpus_path, encoding="utf-8"))
+    if os.path.exists(info_path):
+        info = json.load(open(info_path, encoding="utf-8"))
+        if info.get("status") == "completed" and info.get("input_count") == corpus_count:
+            return True
+    load_in_4bit = recorded_setup(domain.conversations_path)
+    job = GenerationJob(domain=domain, teacher_model=TEACHER, load_in_4bit=load_in_4bit, chat_template=True,
                         max_examples=10_000_000, batch_size=32, generation_batch_size=4 if load_in_4bit else 16,
-                        description=f"full math tutor ({DOMAIN.variant}): Gemma 4 12B ({'NF4' if load_in_4bit else 'bf16'}) "
+                        description=f"full math tutor ({domain.name}): Gemma 4 12B ({'NF4' if load_in_4bit else 'bf16'}) "
                                     f"reads its own replies back")
     exit_listener = ExitListener()
     DistillationDataGenerator(job, exit_listener).run()
@@ -90,9 +101,13 @@ def save_teacher_data() -> bool:
 
 
 def ensure_input_vocabulary() -> None:
+    """Built from all the batches, and again when batches were added after it (each run keeps its own copy)."""
+    from library.shared.batch_files import batch_paths
     from library.shared.build_input_vocabulary import build_input_vocabulary
-    from library.shared.config import load_input_vocabulary
-    if load_input_vocabulary(DOMAIN.name, TEACHER) is None:
+    from library.shared.config import get_batches_dir, input_vocabulary_path
+    path = input_vocabulary_path(DOMAIN.name, TEACHER)
+    newest_batch = max(batch.stat().st_mtime for batch in batch_paths(get_batches_dir(DOMAIN.name, TEACHER)))
+    if not path.exists() or path.stat().st_mtime < newest_batch:
         build_input_vocabulary(DOMAIN, TEACHER)
 
 
@@ -119,13 +134,13 @@ def main():
     if not DOMAIN.conversations_path.exists():
         print("No conversations yet: python -m library.domain.math_tutor.full conversations (GPU)")
         return
-    if not save_teacher_data():
+    if not save_teacher_data(DOMAIN):
         print("Stopped while saving the teacher data: rerun to resume.")
         return
-    ensure_input_vocabulary()
     if NO_STUDENTS:
-        print("The teacher data and the input vocabulary are ready (no students chosen).")
+        print("The teacher data is ready (no students chosen).")
         return
+    ensure_input_vocabulary()
     if not seeded_run_training(build_runs()):
         return
     report()

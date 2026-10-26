@@ -20,11 +20,15 @@ class SavingHandler:
     def save_batch(self, batch_examples):
         start_time = time()
 
-        # Numbered by the examples saved so far, rounded up: a final partial batch gets the next
-        # number instead of overwriting the last full one (which cost Virag 32 of 5,000 examples).
-        index = -(-self.logger.successful_sentence_count // self.logger.batch_size)
+        # The number after the files written so far (kept in the state with the counts, which is saved
+        # after the file: a crash in between writes the same number again). A final partial batch never
+        # overwrites the last full one (which cost Virag 32 of 5,000 examples), and records added to the
+        # corpus later go to new files after a partial one (2026-10-26: numbering by the example count
+        # would have reused the number of the last file).
+        index = self.logger.batch_files_written + 1
         path = write_batch(os.path.join(self.output_dir, f"batch_{index}.npz"), batch_examples,
                            vocabulary_sha1=self.vocabulary_sha1)
+        self.logger.batch_files_written = index
 
         elapsed_time = time() - start_time
         print(f"\nSaved batch to {path} -> took {elapsed_time:.2f} seconds.\n")

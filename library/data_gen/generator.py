@@ -79,7 +79,7 @@ class DistillationDataGenerator:
             "input_count": self.input_handler.input_count,
             "examples_processed": self.logger.processed_sentence_count,
             "examples_generated": self.logger.successful_sentence_count,
-            "batches_written": -(-self.logger.successful_sentence_count // self.batch_size),
+            "batches_written": self.logger.batch_files_written,
             "kept_by_turn_type": self.kept_by_turn_type,
             "skipped_by_turn_type": self.skipped_by_turn_type,
         }
@@ -180,7 +180,7 @@ class DistillationDataGenerator:
         batch_time = time() - batch_start_time
         target_examples = min(self.max_examples, self.input_handler.input_count)
         progress_percent = (self.logger.successful_sentence_count / target_examples) * 100
-        batch_index = -(-self.logger.successful_sentence_count // self.batch_size)   # the number in the file name
+        batch_index = self.logger.batch_files_written + 1   # the number in the file name (SavingHandler)
 
         print(f"Saving batch {batch_index}, progress: {progress_percent:.2f}% "
               f"({self.logger.successful_sentence_count}/{target_examples}), "
