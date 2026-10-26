@@ -1,0 +1,6 @@
+run,arm,size,parameters,train_records,task_accuracy_best,task_accuracy_final,majority_baseline,test_error_best,test_token_accuracy_final
+math-full-kd-s1,kd,s,6106798,64554,0.3508,0.3398,0.0414,0.9588,0.7884
+math-full-kd-xs-s1,kd,xs,2669678,64554,0.0497,0.0497,0.0414,1.2357,0.7224
+math-full-ce-s1,ce,s,6106798,64554,0.3066,0.3039,0.0414,0.9929,0.7845
+math-full-kd-m-s1,kd,m,16389422,64554,0.4945,0.4945,0.0414,0.7816,0.8244
+math-full-kd-l-s1,kd,l,53732910,64554,0.5801,0.5801,0.0414,0.8484,0.8193

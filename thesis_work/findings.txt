@@ -260,6 +260,23 @@ F-E1   E-01: ANNEAL DIRECTION IS A NULL AT exp(H)~1 AND A STRICT ORDERING AT exp
        late is better". That is the entropy-indexed claim in one table, and the reason
        every later experiment reports fidelity, not only accuracy, on post-gen.
 
+F-M1   MATH TUTOR, FULL RUN (cloud, 2026-10-26): THE FIRST STUDENTS FAR ABOVE THE PRIOR
+       Gemma 4 12B (bf16) played 10,176 problems -> 67,058 replies (64,554 train records),
+       output vocabulary 19,502 tokens. Test: 1,024 records of held-out families, 362 of
+       them with an answer; task accuracy = the student's own solution (autoregressive)
+       ends in Gemma's answer (Gemma right ~95%); majority baseline .041. 10 passes, one
+       seed each, final (best): kd xs 2.7M .050 (.050) | kd s 6.1M .340 (.351) |
+       ce s 6.1M .304 (.307) | kd m 16.4M .495 (.495) | kd l 53.7M .580 (.580).
+       Token accuracy given Gemma's text .722 / .788 / .785 / .824 / .819; on its own
+       writing .219 / .268 / .260 / .302 / .304. Best test CE: m .782 < l .848 < s .959,
+       yet l answers best. kd-s led ce-s on all 10 passes (pass 3 .077 vs .033, final
+       .340 vs .304 = 13 answers of 362): a direction at n=1, not a result.
+       Cost: Gemma 9.7 h, teacher data 3.8 h (82 GB), the five students side by side
+       7.2 h (one alone left the A100 ~75% idle): ~$40 at $1.79/h.
+       WHY IT MATTERS: unlike X-C1 the students learn the task itself; capacity orders
+       them (2.7M stays at the prior, 53M still rising at pass 10), and kd vs ce needs
+       seeds before it is claimed.
+
 ------------------------------------------------------------------------
 OPEN NUMERIC INCONSISTENCIES — resolve before any of this is written up
 ------------------------------------------------------------------------

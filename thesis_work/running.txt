@@ -15,6 +15,13 @@ STATUS 2026-10-13 (pick up here)
             "Alright" to three more) kd-s was stopped at pass 3 and five students now train side by side:
             kd at s, l, xs, m and ce at s (0.9-1.35 s per batch each, GPU ~98%, ~4x the throughput of one).
             Estimate: done ~19:00-20:00 UTC, ~$40 in all (my earlier ~$31 timed only Gemma's pass).
+            DONE 19:14 UTC, the pod stopped itself (podStop -> EXITED, first attempt), 0 errors. Task
+            accuracy, final (baseline .041, 362 test answers): kd 53M .580, kd 16M .495, kd 6M .340, ce 6M
+            .304, kd 2.6M .050 (findings F-M1). Home (md5 checked): runs/math-full-*, experiments/results/
+            math_full.csv, conversations/full_v1.*, math_tutor/output_tokens_full_v1.json (the pod's
+            output_tokens.json, renamed: the local one is the slice's). The volume keeps the teacher data
+            (82 GB, ~$0.6/day). NEXT (the user's choice): more kd / ce seeds at s (the core claim), the
+            coding agent, or more math problems.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
