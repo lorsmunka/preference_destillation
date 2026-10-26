@@ -9,6 +9,12 @@ STATUS 2026-10-13 (pick up here)
             ~10 h -> vocabulary -> teacher data -> kd students at s (~6M) and l (~53M, user: "Yes" to a bigger one: size vs data) -> report -> the pod stops
             itself). Then: does the student beat the most-common-answer baseline? Yes: the other students,
             then the coding agent. No: more problems.
+            2026-10-26: Gemma done 07:06 UTC (10,176 conversations, 0 errors; last chunks answers 94-97%,
+            explanations ~99%); teacher data 67,058 replies (82 GB) took ~3.8 h; students from 10:57 UTC. One
+            student left the card ~75% idle (0.78 s per batch of 32, ~26 min per pass), so (user: "Yep", then
+            "Alright" to three more) kd-s was stopped at pass 3 and five students now train side by side:
+            kd at s, l, xs, m and ce at s (0.9-1.35 s per batch each, GPU ~98%, ~4x the throughput of one).
+            Estimate: done ~19:00-20:00 UTC, ~$40 in all (my earlier ~$31 timed only Gemma's pass).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it

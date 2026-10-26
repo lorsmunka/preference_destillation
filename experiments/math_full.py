@@ -13,6 +13,8 @@ Steps, each skipped when done (so the script resumes):
     python -m library.domain.math_tutor.agentic              # the output vocabulary, with the replies
     python experiments/math_full.py
     python experiments/math_full.py v1 kd,kd-l               # only these students (the first loop: kd at s and at l)
+    python experiments/math_full.py v1 none                  # only the teacher data and the input vocabulary
+    python experiments/math_full.py v1 kd-l                  # one student per process: several train side by side on one card
     python experiments/math_full.py pilot_nf4                # the local trial (its own data, the current vocabulary)
 """
 
@@ -34,6 +36,7 @@ STUDENT = dict(dropout=0.1, epoch_count=10, batch_size=32, lr_warmup_ratio=0.1, 
                shuffle_seed=SEED)
 ALL_RUNS = [(arm, BASE_SIZE) for arm in ARMS] + [("kd", size) for size in STUDENT_SIZES if size != BASE_SIZE]
 CHOSEN = sys.argv[2].split(",") if len(sys.argv) > 2 else None   # e.g. "kd,kd-l": train (and report) only these
+NO_STUDENTS = CHOSEN == ["none"]
 RESULT_COLUMNS = ["run", "arm", "size", "parameters", "train_records", "task_accuracy_best", "task_accuracy_final",
                   "majority_baseline", "test_error_best", "test_token_accuracy_final"]
 
@@ -43,7 +46,7 @@ def run_key(arm, size):
 
 
 RUNS = [run for run in ALL_RUNS if CHOSEN is None or run_key(*run) in CHOSEN]
-if CHOSEN and len(RUNS) < len(CHOSEN):
+if CHOSEN and not NO_STUDENTS and len(RUNS) < len(CHOSEN):
     raise SystemExit(f"unknown students in {CHOSEN}: choose from {[run_key(*run) for run in ALL_RUNS]}")
 
 
@@ -120,6 +123,9 @@ def main():
         print("Stopped while saving the teacher data: rerun to resume.")
         return
     ensure_input_vocabulary()
+    if NO_STUDENTS:
+        print("The teacher data and the input vocabulary are ready (no students chosen).")
+        return
     if not seeded_run_training(build_runs()):
         return
     report()

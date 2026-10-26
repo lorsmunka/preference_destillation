@@ -27,7 +27,9 @@ vocabulary and the teacher data are then rebuilt for all of them).
   The Hugging Face token is the account secret `hf_token`; the pod's variables are in `/etc/rp_environment`
   (an SSH command does not load them: `. /etc/rp_environment`).
 - The loop: `tmux new-session -d -s run "bash experiments/cloud_math_first.sh"` (10,000 problems, 48 replies per call: measured 3.8 s per conversation, ~10 h ->
-  vocabulary -> teacher data -> kd students at s ~6M and l ~53M -> report); the pod stops itself at the end
+  vocabulary -> teacher data (~3.8 h for 67,058 replies) -> five students side by side: kd at s ~6M, l ~53M,
+  xs ~2.6M, m ~16M and ce at s, one process each (one student alone left the card ~75% idle; five fill it, ~4x
+  the throughput) -> report); the pod stops itself at the end
   or on a failure. Log: `/workspace/logs/math_first.log`. The self-stop goes through RunPod's GraphQL
   API with the pod's own key (`RUNPOD_API_KEY`): runpodctl refuses that key ("Unauthorized"); tested on
   a throwaway CPU pod, which went to EXITED. A stopped pod bills no GPU; the network volume keeps
