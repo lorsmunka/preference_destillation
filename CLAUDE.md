@@ -103,7 +103,8 @@ python -m library.domain.math_tutor.threads
 python -m library.domain.math_tutor.agentic      # output vocabulary (after the threads)
 python -m library.domain.math_tutor.harness      # Gemma as tutor on test conversations (GPU)
 python -m library.domain.math_tutor.full conversations   # the full pass (cloud), then experiments/math_full.py
-python -m library.domain.math_tutor.demo         # talk to a trained tutor student
+python -m library.domain.math_tutor.demo         # talk to a trained tutor student (default: the full run's best)
+python tutor_chat.py                             # the same in a local chat page (127.0.0.1): test problems, steps, contexts
 # coding agent:
 python -m library.domain.code_agent.requests     # items.jsonl
 python -m library.domain.code_agent.harness      # Gemma's pass -> conversations/v1.jsonl (cloud); "pilot_nf4 16 1" = local trial

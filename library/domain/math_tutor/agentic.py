@@ -10,9 +10,11 @@ each with its own name (and so its own batches folder):
 All variants share one output vocabulary (output_tokens.json): the answer and format tokens,
 every token of the corpus texts (labels are written in the problem's words), the gold
 targets of every format and the explanation threads' targets. Build it after the thread pass,
-and see what a corpus would lose to it, per turn type:
+and see what a corpus would lose to it, per turn type. The full run's v1 (full.py, the cloud
+card) has its own, built there from its replies (output_tokens_full_v1.json):
 
     python -m library.domain.math_tutor.agentic
+    python -m library.domain.math_tutor.agentic full_v1      # the full run's own, on the card
     python -m library.domain.math_tutor.agentic report facts
 """
 
@@ -93,11 +95,15 @@ class MathTutorAgenticDomain(Domain):
         self._example_tokens: Optional[List[str]] = None
 
     @property
+    def output_tokens_path(self) -> Path:
+        return OUTPUT_TOKENS
+
+    @property
     def example_tokens(self) -> List[str]:
         if self._example_tokens is None:
-            if not OUTPUT_TOKENS.exists():
-                raise FileNotFoundError("output_tokens.json missing: python -m library.domain.math_tutor.agentic")
-            self._example_tokens = json.load(open(OUTPUT_TOKENS, encoding="utf-8"))["tokens"]
+            if not self.output_tokens_path.exists():
+                raise FileNotFoundError(f"{self.output_tokens_path.name} missing: python -m library.domain.math_tutor.agentic")
+            self._example_tokens = json.load(open(self.output_tokens_path, encoding="utf-8"))["tokens"]
         return self._example_tokens
 
     @property
@@ -175,7 +181,7 @@ def vocabulary_texts(items: List[Dict], thread_records: List[Dict]) -> List[str]
     return texts + list(thread_targets)
 
 
-def build_output_tokens() -> None:
+def build_output_tokens(path: Path = OUTPUT_TOKENS) -> None:
     """Every token a tutor block may contain, most frequent first: the tokens of vocabulary_texts
     (plus the line-start form of each word, since a label starts a line). Build it after the
     thread pass and before any data generation: data generation drops every target with a token
@@ -211,9 +217,9 @@ def build_output_tokens() -> None:
     tokens = [token for token, _ in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))]
     json.dump({"tokens": tokens, "texts": len(texts), "explanation_threads": len(thread_records), "conversation_replies": len(replies),
                "built_from": "items.jsonl problems, follow-ups, gold targets" + (", thread targets" if thread_records else "")},
-              open(OUTPUT_TOKENS, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+              open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     print(f"{len(tokens):,} output tokens from {len(texts):,} texts ({len(thread_records):,} explanation threads, "
-          f"{len(replies):,} conversation replies) -> {OUTPUT_TOKENS}")
+          f"{len(replies):,} conversation replies) -> {path}")
     print("Check a corpus against it: python -m library.domain.math_tutor.agentic report <annotation>")
 
 
@@ -257,5 +263,7 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")   # tokens such as "▁represents" (the Windows console is cp1252)
     if len(sys.argv) >= 2 and sys.argv[1] == "report":
         print_vocabulary_report(sys.argv[2] if len(sys.argv) >= 3 else "facts")
+    elif len(sys.argv) >= 2:
+        build_output_tokens(PACKAGE / f"output_tokens_{sys.argv[1]}.json")
     else:
         build_output_tokens()

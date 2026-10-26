@@ -35,8 +35,10 @@ vocabulary and the teacher data are then rebuilt for all of them).
   a throwaway CPU pod, which went to EXITED. A stopped pod bills no GPU; the network volume keeps
   everything (code, conversations, teacher data, runs, logs, Gemma), the container disk (pip packages) is
   wiped: after a start, `pip install --break-system-packages -r requirements.txt` again.
-- Bringing it home: the pod rebuilds `math_tutor/output_tokens.json` from its replies. Copy it home
-  under another name, never over the local one (the slice's batches are fingerprinted against it).
+- Bringing it home: the full run has its own output vocabulary, `math_tutor/output_tokens_full_v1.json`
+  (`agentic full_v1`, built on the card from its replies; the first loop wrote it as output_tokens.json and
+  it was copied home renamed). Never copy a pod's output_tokens.json over the local one (the slice's
+  batches are fingerprinted against it).
 
 ## 0. Rent
 - 1x RTX 5090 (32 GB) or bigger (A100 / H100 40-80 GB). Full precision (bf16) needs ~26 GB: a pass

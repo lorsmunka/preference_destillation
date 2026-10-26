@@ -54,7 +54,7 @@ fi
 [ "$(conversation_count)" -ge "$PROBLEMS" ] || stop_machine "the pass ended with only $(conversation_count) conversations"
 
 step "output vocabulary"
-python -u -m library.domain.math_tutor.agentic || stop_machine "the vocabulary failed"
+python -u -m library.domain.math_tutor.agentic full_v1 || stop_machine "the vocabulary failed"
 
 step "teacher data"
 python -u experiments/math_full.py v1 none || stop_machine "the teacher data failed"

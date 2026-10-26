@@ -69,6 +69,11 @@ class FullDomain(MathTutorAgenticDomain):
         return conversations_path(self.variant)
 
     @property
+    def output_tokens_path(self) -> Path:
+        """v1's own, built on the card from its replies (agentic full_v1); the local trials share the slice's."""
+        return PACKAGE / "output_tokens_full_v1.json" if self.variant == "v1" else super().output_tokens_path
+
+    @property
     def corpus_path(self) -> str:
         return str(PACKAGE / f"corpus_full_{self.variant}.jsonl")
 
