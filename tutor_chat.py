@@ -2,7 +2,8 @@
 then follow-ups. Each reply shows the harness's steps (the route call, the solution or explanation
 call, the check, a second try), and the context panel shows exactly what the student read in each
 call. A test problem also shows the right answer and Gemma's reply to the same message in its own
-saved conversation (full_v1.jsonl, the problem families no student trained on).
+saved conversation (full_v1.jsonl, the problem families no student trained on). Any message can be
+edited and sent again: the chat goes on from that point, and the earlier versions stay one click away.
 
     python tutor_chat.py                          # the best student (math-full-kd-l-s1), http://127.0.0.1:8765
     python tutor_chat.py math-full-kd-s1          # another trained run
@@ -59,25 +60,31 @@ def run_summary(run):
     return summary
 
 
+def conversation_from(state) -> Conversation:
+    """The conversation the page sends back with each message (main line and side thread). The page
+    keeps them, so any earlier point of a chat, or another version of it, goes on from its own state."""
+    conversation = Conversation()
+    if state:
+        conversation.main_line = [tuple(pair) for pair in state["main_line"]]
+        conversation.thread = [tuple(pair) for pair in state["thread"]]
+    return conversation
+
+
 class TutorServer:
-    """One student and one conversation per chat id (a page's chat); one reply at a time on the GPU."""
+    """One student, one reply at a time on the GPU."""
 
     def __init__(self, model):
         self.model = model
-        self.conversations = {}
         self.lock = threading.Lock()
 
-    def turn(self, chat_id: str, message: str):
+    def turn(self, state, message: str):
+        conversation = conversation_from(state)
         with self.lock:
-            conversation = self.conversations.setdefault(chat_id, Conversation())
             start = time.time()
             turn = take_turn(self.model, conversation, message)
-            turn["seconds"] = round(time.time() - start, 2)
-            return turn
-
-    def reset(self, chat_id: str):
-        with self.lock:
-            self.conversations[chat_id] = Conversation()
+        turn["seconds"] = round(time.time() - start, 2)
+        turn["state"] = {"main_line": conversation.main_line, "thread": conversation.thread}
+        return turn
 
 
 def make_handler(server: TutorServer, page: bytes, port: int):
@@ -115,10 +122,7 @@ def make_handler(server: TutorServer, page: bytes, port: int):
             request = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
             try:
                 if self.path == "/api/turn":
-                    self.send_json(200, server.turn(str(request["chat"]), str(request["message"])))
-                elif self.path == "/api/reset":
-                    server.reset(str(request["chat"]))
-                    self.send_json(200, {"ok": True})
+                    self.send_json(200, server.turn(request.get("state"), str(request["message"])))
                 else:
                     self.send_json(404, {"error": "not found"})
             except Exception as error:   # shown in the page, so a failed reply does not look like a hang
@@ -215,8 +219,18 @@ button, input, textarea { font: inherit; color: inherit; }
 .chat-scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .chat { max-width: 780px; margin: 0 auto; padding: 4px 24px 24px; }
 .msg { margin: 22px 0; display: flex; }
-.msg.user { justify-content: flex-end; }
+.msg.user { flex-direction: column; align-items: flex-end; }
 .msg.user .bubble { background: var(--bubble); border-radius: 18px; padding: 9px 16px; max-width: 78%; white-space: pre-wrap; }
+.user-tools { display: flex; gap: 2px; align-items: center; font-size: 12px; color: var(--faint); margin-top: 3px; min-height: 24px; opacity: 0; transition: opacity .15s; }
+.msg.user:hover .user-tools, .user-tools.always { opacity: 1; }
+.tool-btn { border: 0; background: transparent; color: var(--faint); cursor: pointer; border-radius: 6px; padding: 2px 7px; font-size: 12.5px; }
+.tool-btn:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.tool-btn:disabled { opacity: .35; cursor: default; }
+.editor { width: min(100%, 640px); background: var(--bubble); border-radius: 18px; padding: 10px 14px; }
+.editor textarea { width: 100%; border: 0; outline: 0; background: transparent; resize: vertical; min-height: 64px; line-height: 1.5; }
+.editor-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.editor-actions button { border-radius: 999px; padding: 5px 14px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); }
+.editor-actions .primary { background: var(--send); color: var(--send-text); border-color: var(--send); }
 .msg.assistant { gap: 14px; align-items: flex-start; }
 .avatar { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); display: grid; place-items: center; flex: none;
   font: 600 11px/1 var(--mono); color: var(--muted); }
@@ -327,7 +341,8 @@ details.gemma pre { background: var(--code-bg); border: 1px solid var(--border);
         <textarea id="input" rows="1" placeholder="Type a word problem, a what-if, or a question about the working"></textarea>
         <button class="send" id="send" disabled title="Send (Enter)">&#8593;</button>
       </div>
-      <div class="footnote">The student runs on this computer. The harness routes each message, checks the reply and asks again once.</div>
+      <div class="footnote">The student runs on this computer. The harness routes each message, checks the reply and asks again once.
+        Edit any message of yours to try another version; &#8249; &#8250; switches between them.</div>
     </div>
   </main>
   <aside class="panel" id="panel">
@@ -344,9 +359,10 @@ const DATA = __DATA__;
 const ROUTE_WORDS = { solution: "a solution", explanation: "an explanation", out_of_scope: "out of scope", unclear: "no tag (treated as a task)" };
 const BLOCK = /<(task|solution|question|explanation|message)>([\s\S]*?)<\/\1>/g;
 const $ = id => document.getElementById(id);
-let chat = null;          // { id, problem, next, turns: [...] }
+let chat = null;          // { problem, root }: the messages as a tree, each version of a message a child of the one before
 let busy = false;
-let selected = null;      // { turnIndex, callIndex }
+let editing = null;       // the message being edited
+let selected = null;      // { node, callIndex }: the call shown in the context panel
 
 function escapeHtml(text) {
   return String(text).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -371,36 +387,55 @@ function renderProblems() {
     const button = document.createElement("button");
     button.className = "side-item" + (chat && chat.problem === problem ? " active" : "");
     const tasks = problem.turns.filter(t => t.route === "solution").length;
-    button.innerHTML = `${escapeHtml(shortTitle(problem))}<small>${problem.turns.length} messages, ${tasks} tasks · answer ${problem.turns[0].answer}</small>`;
+    button.innerHTML = `${escapeHtml(shortTitle(problem))}<small>${problem.turns.length} messages, ${tasks} task${tasks === 1 ? "" : "s"} · answer ${problem.turns[0].answer}</small>`;
     button.onclick = () => startChat(problem);
     list.appendChild(button);
   }
 }
 
-/* chats */
-async function startChat(problem) {
+/* chats: a node is one message of the pupil with its reply, the conversation after it (state, from the
+   server) and how far the saved conversation got (next); its children are the versions of the next message */
+function newNode(fields) {
+  return Object.assign({ children: [], active: -1 }, fields);
+}
+function currentPath() {
+  const nodes = [];
+  let node = chat ? chat.root : null;
+  while (node && node.active >= 0) {
+    node = node.children[node.active];
+    nodes.push(node);
+  }
+  return nodes;
+}
+function lastNode() {
+  const nodes = currentPath();
+  return nodes.length ? nodes[nodes.length - 1] : chat.root;
+}
+
+function startChat(problem) {
   if (busy) return;
-  chat = { id: Math.random().toString(36).slice(2), problem, next: 0, turns: [] };
+  chat = { problem, root: newNode({ state: null, next: 0 }) };
   selected = null;
-  await fetch("/api/reset", { method: "POST", body: JSON.stringify({ chat: chat.id }) });
+  editing = null;
   $("title").textContent = problem ? shortTitle(problem) : "New chat";
   renderProblems();
   renderChat();
   renderPanel();
-  if (problem) setInput(problem.turns[0].message);
-  $("input").focus();
+  setInput(problem ? problem.turns[0].message : "");
 }
 
-function savedTurn() {
-  return chat && chat.problem && chat.next < chat.problem.turns.length ? chat.problem.turns[chat.next] : null;
+function savedAfter(node) {
+  return chat && chat.problem && node.next < chat.problem.turns.length ? chat.problem.turns[node.next] : null;
 }
 
 function renderSuggest() {
   const box = $("suggest");
   box.innerHTML = "";
-  const saved = savedTurn();
+  if (!chat) return;
+  const last = lastNode();
+  const saved = savedAfter(last);
   if (!saved) {
-    if (chat && chat.problem) box.textContent = "End of the saved conversation: type your own follow-ups.";
+    if (chat.problem) box.textContent = "End of the saved conversation: type your own follow-ups.";
     return;
   }
   const label = document.createElement("span");
@@ -413,7 +448,7 @@ function renderSuggest() {
   const skip = document.createElement("button");
   skip.className = "link-btn";
   skip.textContent = "skip";
-  skip.onclick = () => { chat.next += 1; renderSuggest(); };
+  skip.onclick = () => { last.next += 1; renderSuggest(); };
   box.append(label, chip, skip);
 }
 
@@ -430,26 +465,34 @@ function autoSize() {
   input.style.height = Math.min(input.scrollHeight, 180) + "px";
 }
 
-async function send() {
+function send() {
   const message = $("input").value.trim();
   if (!message || busy) return;
-  if (!chat) await startChat(null);
-  const saved = savedTurn();
-  const matches = saved && saved.message.trim() === message;
-  const turn = { message, saved: matches ? saved : null, result: null, error: null };
-  if (matches) chat.next += 1;
-  chat.turns.push(turn);
+  if (!chat) startChat(null);
   setInput("");
+  ask(lastNode(), message);
+}
+
+async function ask(parent, message) {
+  // a message after `parent`: at the end of the chat, or a new version of one of parent's messages
+  const saved = savedAfter(parent);
+  const matches = saved && saved.message.trim() === message;
+  const node = newNode({ message, saved: matches ? saved : null, result: null, error: null, state: parent.state,
+                         next: parent.next + (matches ? 1 : 0) });
+  parent.children.push(node);
+  parent.active = parent.children.length - 1;
+  editing = null;
   busy = true;
   renderChat();
   try {
-    const response = await fetch("/api/turn", { method: "POST", body: JSON.stringify({ chat: chat.id, message }) });
+    const response = await fetch("/api/turn", { method: "POST", body: JSON.stringify({ state: parent.state, message }) });
     const reply = await response.json();
     if (!response.ok) throw new Error(reply.error || response.statusText);
-    turn.result = reply;
-    selected = { turnIndex: chat.turns.length - 1, callIndex: reply.calls.length - 1 };
+    node.result = reply;
+    node.state = reply.state;
+    selected = { node, callIndex: reply.calls.length - 1 };
   } catch (error) {
-    turn.error = String(error.message || error);
+    node.error = String(error.message || error);
   }
   busy = false;
   renderChat();
@@ -457,20 +500,63 @@ async function send() {
   $("send").disabled = !$("input").value.trim();
 }
 
+function switchVersion(parent, step) {
+  if (busy) return;
+  parent.active = Math.max(0, Math.min(parent.children.length - 1, parent.active + step));
+  selected = null;
+  editing = null;
+  renderChat(false);
+  renderPanel();
+}
+
 /* the conversation */
-function renderChat() {
-  const box = $("chat");
+function renderChat(toEnd = true) {
+  const box = $("chat"), scroll = $("scroll");
+  const scrollTop = scroll.scrollTop;
   box.innerHTML = "";
-  if (!chat || !chat.turns.length) {
-    box.appendChild(emptyState());
-  }
-  if (chat) chat.turns.forEach((turn, index) => {
-    box.insertAdjacentHTML("beforeend", `<div class="msg user"><div class="bubble">${escapeHtml(turn.message)}</div></div>`);
-    box.appendChild(assistantMessage(turn, index));
+  const nodes = currentPath();
+  if (!nodes.length) box.appendChild(emptyState());
+  nodes.forEach((node, index) => {
+    box.appendChild(userMessage(node, index === 0 ? chat.root : nodes[index - 1]));
+    box.appendChild(assistantMessage(node));
   });
   renderSuggest();
-  const scroll = $("scroll");
-  scroll.scrollTop = scroll.scrollHeight;
+  scroll.scrollTop = toEnd ? scroll.scrollHeight : scrollTop;
+}
+
+function userMessage(node, parent) {
+  const div = document.createElement("div");
+  div.className = "msg user";
+  if (editing === node) {
+    div.innerHTML = `<div class="editor"><textarea></textarea>
+      <div class="editor-actions"><button class="cancel">Cancel</button><button class="primary">Send</button></div></div>`;
+    const area = div.querySelector("textarea");
+    area.value = node.message;
+    const cancel = () => { editing = null; renderChat(false); };
+    const submit = () => { const text = area.value.trim(); if (text && !busy) ask(parent, text); };
+    div.querySelector(".cancel").onclick = cancel;
+    div.querySelector(".primary").onclick = submit;
+    area.onkeydown = event => {
+      if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit(); }
+      if (event.key === "Escape") cancel();
+    };
+    setTimeout(() => { area.focus(); area.setSelectionRange(area.value.length, area.value.length); }, 0);
+    return div;
+  }
+  const versions = parent.children.length, position = parent.children.indexOf(node) + 1;
+  const pager = versions > 1
+    ? `<button class="tool-btn prev" title="Earlier version" ${position === 1 ? "disabled" : ""}>&#8249;</button>
+       <span>${position} / ${versions}</span>
+       <button class="tool-btn next" title="Later version" ${position === versions ? "disabled" : ""}>&#8250;</button>` : "";
+  div.innerHTML = `<div class="bubble">${escapeHtml(node.message)}</div>
+    <div class="user-tools${versions > 1 ? " always" : ""}">${pager}
+      <button class="tool-btn edit" title="Edit and send again: the chat goes on from here" ${busy ? "disabled" : ""}>&#9998; Edit</button></div>`;
+  div.querySelector(".edit").onclick = () => { if (!busy) { editing = node; renderChat(false); } };
+  if (versions > 1) {
+    div.querySelector(".prev").onclick = () => switchVersion(parent, -1);
+    div.querySelector(".next").onclick = () => switchVersion(parent, 1);
+  }
+  return div;
 }
 
 function emptyState() {
@@ -504,27 +590,27 @@ function emptyState() {
   return div;
 }
 
-function stepRow(kind, icon, html, turnIndex, callIndex) {
+function stepRow(kind, icon, html, node, callIndex) {
   const clickable = callIndex != null;
-  const isSelected = clickable && selected && selected.turnIndex === turnIndex && selected.callIndex === callIndex;
+  const isSelected = clickable && selected && selected.node === node && selected.callIndex === callIndex;
   return `<div class="step ${kind}${clickable ? " clickable" : ""}${isSelected ? " selected" : ""}"
-    ${clickable ? `data-turn="${turnIndex}" data-call="${callIndex}"` : ""}><span class="ic">${icon}</span><span>${html}</span></div>`;
+    ${clickable ? `data-call="${callIndex}"` : ""}><span class="ic">${icon}</span><span>${html}</span></div>`;
 }
 
-function stepsHtml(result, turnIndex) {
-  const rows = [];
+function stepsHtml(node) {
+  const result = node.result, rows = [];
   result.calls.forEach((call, callIndex) => {
     if (call.kind === "route") {
       const tag = /<(solution|explanation|out_of_scope)/.exec(call.reply);
-      rows.push(stepRow("route", "&#8594;", `<b>Route call</b>: the student starts with ${tag ? `<code>&lt;${tag[1]}&gt;</code>` : "no tag"}, so the harness reads it as <b>${ROUTE_WORDS[result.route]}</b>`, turnIndex, callIndex));
+      rows.push(stepRow("route", "&#8594;", `<b>Route call</b>: the student starts with ${tag ? `<code>&lt;${tag[1]}&gt;</code>` : "no tag"}, so the harness reads it as <b>${ROUTE_WORDS[result.route]}</b>`, node, callIndex));
       return;
     }
     const retry = call.temperature > 0;
     const name = call.kind === "solution" ? "Solution call" : "Explanation call";
-    rows.push(stepRow("call", "&#9679;", `<b>${name}</b>${retry ? " again, sampled (temperature 0.7)" : ""}`, turnIndex, callIndex));
+    rows.push(stepRow("call", "&#9679;", `<b>${name}</b>${retry ? " again, sampled (temperature 0.7)" : ""}`, node, callIndex));
     rows.push(call.problem
-      ? stepRow("fail", "&#10005;", `<b>Check failed</b>: ${escapeHtml(call.problem)}`, turnIndex, callIndex)
-      : stepRow("pass", "&#10003;", call.kind === "solution" ? "Check passed: well formed, every calculation true" : "Check passed", turnIndex, callIndex));
+      ? stepRow("fail", "&#10005;", `<b>Check failed</b>: ${escapeHtml(call.problem)}`, node, callIndex)
+      : stepRow("pass", "&#10003;", call.kind === "solution" ? "Check passed: well formed, every calculation true" : "Check passed", node, callIndex));
   });
   if (result.route === "out_of_scope") {
     rows.push(stepRow("info", "i", "The harness answers with its fixed sentence; the message does not enter the student's history"));
@@ -548,8 +634,8 @@ function replyHtml(result) {
   return `<p class="explanation-text">${escapeHtml(text)}</p>`;
 }
 
-function gradesHtml(turn) {
-  const saved = turn.saved, result = turn.result;
+function gradesHtml(node) {
+  const saved = node.saved, result = node.result;
   if (!saved) return "";
   const grades = [];
   const routeRight = result.route === saved.route || (saved.route === "solution" && result.route === "unclear");
@@ -564,19 +650,19 @@ function gradesHtml(turn) {
     <details class="gemma"><summary>${gemmaWord}</summary><pre>${escapeHtml(saved.gemma)}</pre></details>`;
 }
 
-function assistantMessage(turn, turnIndex) {
+function assistantMessage(node) {
   const div = document.createElement("div");
   div.className = "msg assistant";
   let body;
-  if (turn.error) body = `<p class="error">The reply failed: ${escapeHtml(turn.error)}</p>`;
-  else if (!turn.result) body = `<div class="thinking"><span class="dot"></span>The student is writing…</div>`;
-  else body = stepsHtml(turn.result, turnIndex) + replyHtml(turn.result) + gradesHtml(turn) + `<div class="seconds">${turn.result.seconds} s</div>`;
-  div.innerHTML = `<div class="avatar">${(DATA.run.parameters / 1e6).toFixed(0)}M</div><div class="a-body">${body}</div>`;
+  if (node.error) body = `<p class="error">The reply failed: ${escapeHtml(node.error)}</p>`;
+  else if (!node.result) body = `<div class="thinking"><span class="dot"></span>The student is writing…</div>`;
+  else body = stepsHtml(node) + replyHtml(node.result) + gradesHtml(node) + `<div class="seconds">${node.result.seconds} s</div>`;
+  div.innerHTML = `<div class="avatar">${(DATA.run.parameters / 1e6).toFixed(1)}M</div><div class="a-body">${body}</div>`;
   div.querySelectorAll(".step.clickable").forEach(row => row.onclick = () => {
-    selected = { turnIndex: Number(row.dataset.turn), callIndex: Number(row.dataset.call) };
+    selected = { node, callIndex: Number(row.dataset.call) };
     $("app").classList.add("panel-open");
     $("panelBtn").classList.add("on");
-    renderChat();
+    renderChat(false);
     renderPanel();
   });
   return div;
@@ -606,19 +692,19 @@ const CALL_NOTES = {
 function renderPanel() {
   const tabs = $("callTabs"), body = $("panelBody"), note = $("callNote");
   tabs.innerHTML = ""; note.textContent = "";
-  const turn = selected && chat && chat.turns[selected.turnIndex];
-  if (!turn || !turn.result) {
+  const node = selected && selected.node;
+  if (!node || !node.result) {
     body.innerHTML = `<div class="p-empty">Send a message, then click a step to see the exact text of that call.</div>`;
     return;
   }
-  turn.result.calls.forEach((call, callIndex) => {
+  node.result.calls.forEach((call, callIndex) => {
     const button = document.createElement("button");
     button.className = "call-tab" + (callIndex === selected.callIndex ? " on" : "");
     button.textContent = call.kind + (call.temperature > 0 ? " (second try)" : "");
-    button.onclick = () => { selected.callIndex = callIndex; renderChat(); renderPanel(); };
+    button.onclick = () => { selected.callIndex = callIndex; renderChat(false); renderPanel(); };
     tabs.appendChild(button);
   });
-  const call = turn.result.calls[selected.callIndex];
+  const call = node.result.calls[selected.callIndex];
   note.textContent = CALL_NOTES[call.kind] + (call.temperature > 0 ? " Asked again with sampling (temperature 0.7)." : " Greedy (temperature 0).");
   body.innerHTML = `<div class="p-label">The student's input</div>${contextHtml(call.context)}
     <div class="p-label">What it wrote</div><pre class="raw">${escapeHtml(call.reply)}</pre>
