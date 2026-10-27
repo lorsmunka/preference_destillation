@@ -38,6 +38,16 @@ STATUS 2026-10-13 (pick up here)
             6,389 batch files, 265 GB (volume 295 GB used); scoring 0.13-0.14 s per reply (the sample's
             0.116 was optimistic), so ~18 h, ~$45.50 as first estimated. Read with a CPU pod (deleted).
             NEXT: download home (batches, corpus, conversations, info/state), then delete the volume.
+            HOME 2026-10-27 22:08: the 6,393 files of batches/math_tutor_full_v1 (265 GB, every md5 matches
+            the volume's), corpus_full_v1.jsonl (204,808 records) and conversations/full_v1.jsonl (30,997;
+            the first loop's 10,176 an exact prefix; 103 MB: over GitHub's 100 MB, not committed), md5 checked.
+            DECIDED (user, 2026-10-27, $50 added, $62 in all; "you should do 1)"): the coding agent's data
+            now, on the same volume. Priced first on 96 requests (cloud_runbook.md: ~16 h, ~$40, up to ~$47).
+            RUNNING since 19:58 UTC: experiments/cloud_code.sh 21 on pod qvlorzxwxw2exl (RTX PRO 6000), all
+            12,960 requests, 12 per call, ~2.0 s each; then its teacher data (~14 GB); the pod stops itself.
+            Then: its data home (~5 min), delete the volume (user's OK). Students at home (user, 2026-10-27:
+            pure CE vs pure KL at ~20M, 10 passes each, with a graph; or a size sweep 2M-120M): time a local
+            sample first.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
