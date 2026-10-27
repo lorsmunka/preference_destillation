@@ -52,6 +52,8 @@ datasets/
 library/domain/math_tutor/items/items.jsonl
 library/domain/math_tutor/items/renumbered.jsonl
 library/domain/*/corpus_*.jsonl
+# the full run's conversations: 103 MB after the second loop, over GitHub's 100 MB per file (user, 2026-10-27: "fine")
+library/domain/math_tutor/items/conversations/full_v1.jsonl
 
 # code_agent: derived files, rebuilt by python -m library.domain.code_agent.requests / .vocabulary
 library/domain/code_agent/items.jsonl
