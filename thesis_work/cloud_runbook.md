@@ -76,7 +76,7 @@ per problem, 0.20 s per reply -> ~28 h, ~$50.
   (one stream with the default cipher: ~23 MB/s).
 
 ## Next: the coding agent, priced (2026-10-27, user: "test the code domain and give me a price estimate")
-`experiments/cloud_code_sample.sh 1 64 16 32` on an RTX PRO 6000 ($2.49/h): 64 train + 32 test requests
+`experiments/cloud_code.sh 1 16 32 pilot_cloud 64` on an RTX PRO 6000 ($2.49/h): 64 train + 32 test requests
 (variant pilot_cloud, a trial), 16 per call, 32 at a time; the machine stopped itself at the end.
 - Gemma's pass: ~2.0 s per request (scope round 44-49 s and answer round 14-17 s per 32); scopes 96/96,
   true lines covered 81-89%, places hit 108/149, decision right 94/96. GPU memory peaked at 94.6 GB of
