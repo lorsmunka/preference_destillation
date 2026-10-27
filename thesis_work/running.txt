@@ -32,6 +32,12 @@ STATUS 2026-10-13 (pick up here)
             RUNNING since 23:18 UTC (user: "Run a sample", then within the agreed plan): RTX PRO 6000 pod
             xqekl9emfe4e4s, 2.40 s per problem and 0.116 s per reply scored (both faster than the A100,
             cheaper per problem); ~18 h, ~$45.50, cap 21 h; then download home, delete the volume.
+            DONE 2026-10-27 17:14 UTC, the pod stopped itself (podStop -> EXITED, first attempt), 0 errors.
+            Gemma's pass ended 11:52 UTC (all 30,997 problems; this run's answers 97.1%, explanations 99.7%,
+            2.21 s per problem); teacher data "completed": 204,808 records (68,573 before), 204,395 kept,
+            6,389 batch files, 265 GB (volume 295 GB used); scoring 0.13-0.14 s per reply (the sample's
+            0.116 was optimistic), so ~18 h, ~$45.50 as first estimated. Read with a CPU pod (deleted).
+            NEXT: download home (batches, corpus, conversations, info/state), then delete the volume.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
