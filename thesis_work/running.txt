@@ -48,6 +48,13 @@ STATUS 2026-10-13 (pick up here)
             Then: its data home (~5 min), delete the volume (user's OK). Students at home (user, 2026-10-27:
             pure CE vs pure KL at ~20M, 10 passes each, with a graph; or a size sweep 2M-120M): time a local
             sample first.
+            Input vocabulary rebuilt from all the data (20,115 words + unknown, was 19,853; 38 s). Timed on
+            the 4070 (16.5M student): 0.80 s per batch alone, 0.86 s each with two side by side (GPU ~40% ->
+            ~78%), one eval of 1,008 test replies ~40 s. RUNNING (local, only while the user is here) since
+            2026-10-27 23:39: experiments/math_ce_vs_kl.py kl and ... ce in two windows (math-agent-kl-m-s1,
+            math-agent-ce-m-s1; size m, 10 passes, seed 1, every test reply: 195,980 train / 8,415 test),
+            ~94 min per pass, ~16 h. One STOP stops both (fixed: the first process used to delete the file);
+            checked live: both stopped (batch 163 / 176) and resumed at 164 / 177.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
