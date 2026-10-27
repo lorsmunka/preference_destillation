@@ -16,6 +16,7 @@ of its replies, in the context it was written in, becomes a record (mistakes inc
 
     python -m library.domain.code_agent.harness                    # GPU: Gemma on every item not played yet -> conversations/v1.jsonl
     python -m library.domain.code_agent.harness v1 - 8             # the same, 8 requests per model call (a bigger card)
+    python -m library.domain.code_agent.harness v1 - 16 32         # 16 per call, 32 items at a time (default 16)
     python -m library.domain.code_agent.harness pilot_nf4 16 1     # a local trial: 16 train + 8 test items, one at a time
 """
 
@@ -191,11 +192,12 @@ def main() -> None:
     variant = sys.argv[1] if len(sys.argv) > 1 else "v1"
     count = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2] != "-" else None
     batch = int(sys.argv[3]) if len(sys.argv) > 3 else 2
+    chunk = int(sys.argv[4]) if len(sys.argv) > 4 else 16
     domain = CodeAgentDomain(variant)
     items = read_items() if count is None else trial_items(read_items(), count)
     load_in_4bit = teacher_setup(domain.conversations_path)   # full precision on a card with room for it
     handler = ModelHandler("google/gemma-4-12B-it", CODE_RECALL, load_in_4bit=load_in_4bit, chat_template=True)
-    run_pass(handler, domain, items, domain.conversations_path, batch=batch)
+    run_pass(handler, domain, items, domain.conversations_path, chunk=chunk, batch=batch)
 
 
 if __name__ == "__main__":
