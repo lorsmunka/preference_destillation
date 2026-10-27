@@ -6,6 +6,7 @@ batches/). Needs the Gemma tokenizer in the local Hugging Face cache (no network
     python -m unittest discover -s tests -p "test_training.py"
 """
 
+import contextlib
 import json
 import math
 import os
@@ -366,6 +367,26 @@ class MajorityBaselineTests(unittest.TestCase):
         }
         self.assertAlmostEqual(majority_baseline(confusion_matrices), (6 + 9) / (8 + 10))
         self.assertIsNone(majority_baseline({}))
+
+
+# ── one Stop for students training side by side (2026-10-27) ─────────
+
+class StopFileTests(unittest.TestCase):
+    def test_one_stop_file_reaches_every_process_and_the_next_start_clears_it(self):
+        from library.shared.exit_listener import STOP_FILE, ExitListener
+        previous_directory = os.getcwd()
+        with tempfile.TemporaryDirectory() as directory:
+            os.chdir(directory)
+            try:
+                with open(os.devnull, "w") as quiet, contextlib.redirect_stdout(quiet):
+                    first, second = ExitListener(), ExitListener()
+                    Path(STOP_FILE).touch()
+                    self.assertTrue(first.check_exit())
+                    self.assertTrue(second.check_exit())   # the first one saw it, the file is still there
+                    ExitListener()
+                self.assertFalse(os.path.exists(STOP_FILE))
+            finally:
+                os.chdir(previous_directory)
 
 
 # ── T-M1, T-L2, T-H2, T-M2, X-M2: whole runs on synthetic batches ────

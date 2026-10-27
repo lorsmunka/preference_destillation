@@ -5,8 +5,9 @@
 
 Either one sets `should_exit`; the training / generation loop checks it after every batch,
 saves a resume checkpoint, and returns. The reason is written to queue/last_stop.json so the
-dashboard can show it. A leftover STOP file is cleared when a run starts so it can never
-kill the next one.
+dashboard can show it. The STOP file stays while the runs stop, so one Stop reaches every
+process watching it (students training side by side, 2026-10-27); it is cleared when a run
+starts, so it can never kill the next one.
 """
 
 import json
@@ -45,7 +46,6 @@ class ExitListener:
 
     def check_exit(self) -> bool:
         if not self.should_exit and os.path.exists(STOP_FILE):
-            os.remove(STOP_FILE)
             self._trigger("STOP file (dashboard)")
         return self.should_exit
 

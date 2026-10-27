@@ -20,7 +20,7 @@ from library.domain.math_tutor.full import FullDomain
 
 TEACHER = "google/gemma-4-12B-it"
 DOMAIN = FullDomain("v1")
-EXPERIMENT = "math-ce-vs-kl"
+EXPERIMENT = "math-agent"
 ARMS = {"kl": (1.0, 1.0), "ce": (0.0, 0.0)}   # arm -> (kl_ratio_start, kl_ratio_end)
 SIZE = "m"
 SEED = 1
@@ -58,7 +58,7 @@ def report():
                          "test_token_accuracy": evaluation.teacher_forced_accuracy})
     for row in rows:
         print(", ".join(f"{column}={row[column]}" for column in RESULT_COLUMNS[1:]))
-    write_rows("math_ce_vs_kl.csv", RESULT_COLUMNS, rows)
+    write_rows("math_agent.csv", RESULT_COLUMNS, rows)
 
 
 def main():
