@@ -69,6 +69,24 @@ per problem, 0.20 s per reply -> ~28 h, ~$50.
 - After: download home (the batches, `corpus_full_v1.jsonl`, `full_v1.jsonl`, the batches' info /
   state), then delete the volume. At home, `math_full.py` refuses to rebuild the corpus while its
   teacher data exists, and rebuilds the input vocabulary when newer batches exist.
+- Done 2026-10-27 17:14 UTC (the pod stopped itself): 30,997 conversations, 204,808 records (204,395
+  kept), 6,389 batch files, 265 GB; ~18 h, ~$45.50. Scoring ran at 0.13-0.14 s per reply, not the
+  sample's 0.116 (the sample's replies were not typical): time a larger sample before trusting it.
+  Downloaded with 6 parallel `tar | ssh -c aes128-gcm@openssh.com` streams from a CPU pod: ~47 MB/s
+  (one stream with the default cipher: ~23 MB/s).
+
+## Next: the coding agent, priced (2026-10-27, user: "test the code domain and give me a price estimate")
+`experiments/cloud_code_sample.sh 1 64 16 32` on an RTX PRO 6000 ($2.49/h): 64 train + 32 test requests
+(variant pilot_cloud, a trial), 16 per call, 32 at a time; the machine stopped itself at the end.
+- Gemma's pass: ~2.0 s per request (scope round 44-49 s and answer round 14-17 s per 32); scopes 96/96,
+  true lines covered 81-89%, places hit 108/149, decision right 94/96. GPU memory peaked at 94.6 GB of
+  96 (one allocator retry warning at 16 per call): 16 per call is the most this card takes.
+- Teacher data: 2 records per request (scope, answer), 1.13 s per record at 8 per call (the
+  ~6,000-token project contexts: the cost is reading them, logits_to_keep already limits the output
+  side); 0.53 MB per record. Output vocabulary of the sample: 8,049 tokens.
+- The whole pass (12,960 requests): ~7.1 h + ~8.1 h teacher data + ~0.5 h setup = ~16 h, ~$40 (up to
+  ~$47 if the sample is optimistic, as the math one was); ~14 GB of teacher data. The A100 is no cheaper
+  (math: 1.4x slower in the pass, 1.8x in the scoring, at 72% of the price).
 
 ## 0. Rent
 - 1x RTX 5090 (32 GB) or bigger (A100 / H100 40-80 GB). Full precision (bf16) needs ~26 GB: a pass
