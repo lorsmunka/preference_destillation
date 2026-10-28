@@ -55,6 +55,10 @@ STATUS 2026-10-13 (pick up here)
             math-agent-ce-m-s1; size m, 10 passes, seed 1, every test reply: 195,980 train / 8,415 test),
             ~94 min per pass, ~16 h. One STOP stops both (fixed: the first process used to delete the file);
             checked live: both stopped (batch 163 / 176) and resumed at 164 / 177.
+            Pass 1 (all 8,415 test replies, baseline .042): task accuracy kl .118, ce .102; token accuracy
+            .747 / .738; test error 1.066 / 1.129. ~73 min per pass with the test (0.68 / 0.72 s per batch).
+            PAUSED 2026-10-28 02:02 (user asleep): kl at pass 2 batch 3364, ce at pass 2 batch 3121; resume =
+            the same two commands again. The coding pass was at 9,264 of 12,960 at 01:05 UTC (30 per min).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
