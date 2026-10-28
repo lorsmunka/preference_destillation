@@ -34,6 +34,14 @@ Vannak természetesen specifikusabban desztillált modellek, ilyenek például a
 Busbridge és társai [5] szerint a desztillált modell teljesítménye előre jelezhető a tanulómodell méretéből és a tanításra fordított számítási keretből, és ha a modell általános képességeit nézzük, akkor ez a tömörítés veszteséges. Ha viszont lemondunk az általánosságról, és csak egy szűk feladatra (domain-re) szeretnénk fókuszálni, a szükséges tudás egy jóval kisebb modellbe is beférhet.
 
 2.2 Kvantálás
+A nagy modellek lokális futtatásának egyik legelterjedtebb módja a kvantálás, amikor a modell súlyait az általában használt 16 bites számok helyett kevesebb biten, például 8 vagy 4 biten tároljuk. Ehhez nem kell újratanítani a modellt: a GPTQ módszerrel [6] például egy 175 milliárd paraméteres modell nagyjából négy GPU-óra alatt 3-4 bitesre kvantálható, elhanyagolható pontosságvesztéssel, így egyetlen GPU-n is futtatható. A dolgozat lokális kísérleteiben a 12 milliárd paraméteres tanármodellt is így futtattuk: 16 biten nagyjából 26 GB memóriát igényelne, a QLoRA [7] által bevezetett 4 bites NF4 formátumban viszont nagyjából 7 GB-ot, így elfért egy 12 GB-os videokártyán.
+A kvantálás viszont csak a modell számábrázolásának pontosságát csökkenti: a paraméterek száma, a modell felépítése és a teljes szókincse változatlan marad, tehát továbbra is ugyanaz az általános modell fut, csak kevesebb memóriát foglal. A pontosság csökkentésének ráadásul határa van: Dettmers és Zettlemoyer [8] több mint 35 ezer kísérlet alapján arra jutott, hogy adott memóriakeret mellett szinte mindig a 4 bites pontosság adja a legjobb eredményt. A kvantálással tehát nagyjából négyszeres méretcsökkenés érhető el, a dolgozatban vizsgált, a tanárnál több százszor, akár több ezerszer kisebb tanulómodellekhez ez önmagában nem elég.
+
+NOTE (delete before submitting): why I added these sources
+[6] GPTQ (Frantar et al., ICLR 2023, peer reviewed): the standard method that made 3-4 bit LLMs practical. It works after training (no retraining): a 175B model in ~4 GPU hours, with negligible accuracy loss, run on a single GPU for the first time. It shows what quantization does well, so the next paragraph's limit is fair rather than a strawman.
+[7] QLoRA (Dettmers et al., NeurIPS 2023, peer reviewed): it introduced NF4, the exact format your local Gemma runs use (bitsandbytes with bnb_4bit_quant_type="nf4", library/data_gen/model_handler.py). The 26 GB vs 7 GB figures come from your own code's notes (library/agent/runner.py, model_handler.py), not from the paper. Double-check them against a real run if you want exact numbers. QLoRA is mainly about finetuning (LoRA adapters on a 4-bit model), so you can cite it again in 2.3.
+[8] Dettmers & Zettlemoyer (ICML 2023, peer reviewed): over 35,000 experiments, models from 19M to 176B parameters, 3 to 8 bits. For a fixed memory budget, 4 bits is almost always the best choice. That is the floor, so ~4x (16 -> 4 bits) is the realistic gain from quantization alone. The angle: distillation shrinks your teacher 200-4,600x (12B vs 53M-2.6M), quantization ~4x. They stack: a distilled student can be quantized too. Their models start at 19M, close to your students' sizes, so 4-bit students are a plausible later test. Ternary weights (BitNet-style) are a different thing: the model is trained that way from the start.
+
 2.3 Modellfinomhangolás
 2.4 Domain-specifikus desztillálás
 2.5 Ügynökdesztillálás
@@ -87,5 +95,8 @@ Busbridge és társai [5] szerint a desztillált modell teljesítménye előre j
 [3] Gemma Team, "Gemma 2: Improving open language models at a practical size," 2024, arXiv:2408.00118. [Online]. Available: https://arxiv.org/abs/2408.00118
 [4] D. Guo et al., "DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning," Nature, vol. 645, pp. 633–638, 2025, doi: 10.1038/s41586-025-09422-z.
 [5] D. Busbridge, A. Shidani, F. Weers, J. Ramapuram, E. Littwin, and R. Webb, "Distillation scaling laws," in Proc. 42nd Int. Conf. Mach. Learn. (ICML), 2025. [Online]. Available: https://arxiv.org/abs/2502.08606
+[6] E. Frantar, S. Ashkboos, T. Hoefler, and D. Alistarh, "GPTQ: Accurate post-training quantization for generative pre-trained transformers," in Proc. 11th Int. Conf. Learn. Represent. (ICLR), 2023. [Online]. Available: https://arxiv.org/abs/2210.17323
+[7] T. Dettmers, A. Pagnoni, A. Holtzman, and L. Zettlemoyer, "QLoRA: Efficient finetuning of quantized LLMs," in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 36, 2023. [Online]. Available: https://arxiv.org/abs/2305.14314
+[8] T. Dettmers and L. Zettlemoyer, "The case for 4-bit precision: k-bit inference scaling laws," in Proc. 40th Int. Conf. Mach. Learn. (ICML), 2023, pp. 7750–7774.
 
 14. MELLÉKLETEK
