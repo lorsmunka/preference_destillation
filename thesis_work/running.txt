@@ -59,6 +59,15 @@ STATUS 2026-10-13 (pick up here)
             .747 / .738; test error 1.066 / 1.129. ~73 min per pass with the test (0.68 / 0.72 s per batch).
             PAUSED 2026-10-28 02:02 (user asleep): kl at pass 2 batch 3364, ce at pass 2 batch 3121; resume =
             the same two commands again. The coding pass was at 9,264 of 12,960 at 01:05 UTC (30 per min).
+            Resumed 2026-10-28 11:50 and 14:58 local (paused 12:25 while the user was out). KL pass 2: task
+            accuracy .419 (pass 1 .118), token accuracy .806.
+  CODING DATA DONE 2026-10-28 11:32 UTC, the pod stopped itself (podStop, first attempt), 0 errors: Gemma's
+            pass ended 03:06 UTC (12,938 of 12,960 items kept), output vocabulary 10,883 tokens, teacher data
+            25,783 records (24,188 train / 1,595 test), 806 batch files, 18 GB (the 14 GB estimate assumed the
+            price test's 8,049 tokens), 1.2 s per record; 15.6 h, ~$39. HOME (md5 checked, all 809 files + the
+            corpus, conversations/v1.*, output_tokens.json): batches/code_agent/google_gemma-4-12B-it. The
+            volume's logs and the price test's files are kept in the session scratchpad (volume_leftovers).
+            NEXT: delete the volume (user's OK) once the two older stopped pods are removed (user's call).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
