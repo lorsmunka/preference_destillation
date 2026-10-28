@@ -67,7 +67,8 @@ STATUS 2026-10-13 (pick up here)
             price test's 8,049 tokens), 1.2 s per record; 15.6 h, ~$39. HOME (md5 checked, all 809 files + the
             corpus, conversations/v1.*, output_tokens.json): batches/code_agent/google_gemma-4-12B-it. The
             volume's logs and the price test's files are kept in the session scratchpad (volume_leftovers).
-            NEXT: delete the volume (user's OK) once the two older stopped pods are removed (user's call).
+            The volume and every pod deleted (user: "You can delete it"); RunPod is empty, ~$23 credit left.
+            CE pass 2: task accuracy .372 (KL .419).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
