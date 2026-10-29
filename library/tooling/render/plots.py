@@ -90,9 +90,15 @@ def _end_label_heights(values, minimum_gap):
 
 def plot_tests_by_pass(runs_by_label, out_path: Path, title: str = ""):
     """One point per test (after every pass) for each run: task accuracy next to the most common answer,
-    and the test error. Two panels with their own scales; the label order fixes each run's colour."""
+    and the test error. Two panels with their own scales; the label order fixes each run's colour.
+    A label may hold several runs (seeds of one setup): the thick line is their mean over the passes
+    every one of them has, a thin line in the same colour shows each run."""
     plt = _plt()
-    labelled = [(label, run) for label, run in runs_by_label.items() if run.eval_epochs]
+    labelled = []
+    for label, runs in runs_by_label.items():
+        runs = [run for run in (runs if isinstance(runs, (list, tuple)) else [runs]) if run.eval_epochs]
+        if runs:
+            labelled.append((label, runs))
     if not labelled:
         raise ValueError("No run has a test yet.")
     fig, (accuracy_axis, error_axis) = plt.subplots(1, 2, figsize=(12, 4.8), facecolor=SURFACE)
@@ -100,13 +106,18 @@ def plot_tests_by_pass(runs_by_label, out_path: Path, title: str = ""):
         (accuracy_axis, "Task accuracy (all test replies)", lambda evaluation: evaluation.task_accuracy * 100, "%"),
         (error_axis, "Test error (cross-entropy, lower is better)", lambda evaluation: evaluation.ce_loss, ""),
     ]
-    most_passes = max(len(run.eval_epochs) for _, run in labelled)
+    most_passes = max(len(run.eval_epochs) for _, runs in labelled for run in runs)
     for axis, panel_title, read_value, unit in panels:
         axis.set_facecolor(SURFACE)
         end_values = []
-        for (label, run), color in zip(labelled, SERIES_COLORS):
-            passes = list(range(1, len(run.eval_epochs) + 1))
-            values = [read_value(evaluation) for evaluation in run.eval_epochs]
+        for (label, runs), color in zip(labelled, SERIES_COLORS):
+            if len(runs) > 1:
+                for run in runs:
+                    axis.plot(range(1, len(run.eval_epochs) + 1), [read_value(evaluation) for evaluation in run.eval_epochs],
+                              color=color, linewidth=1, alpha=0.35, zorder=2)
+            shared_passes = min(len(run.eval_epochs) for run in runs)
+            passes = list(range(1, shared_passes + 1))
+            values = [float(np.mean([read_value(run.eval_epochs[index]) for run in runs])) for index in range(shared_passes)]
             axis.plot(passes, values, color=color, linewidth=2, marker="o", markersize=6,
                       markeredgecolor=SURFACE, markeredgewidth=1.5, label=label, zorder=3)
             end_values.append((label, passes[-1], values[-1]))
@@ -127,9 +138,10 @@ def plot_tests_by_pass(runs_by_label, out_path: Path, title: str = ""):
             axis.spines[side].set_visible(False)
         for side in ("left", "bottom"):
             axis.spines[side].set_color(AXIS)
-    baselines = [run.majority_baseline(run.eval_epochs[-1]) for _, run in labelled]
-    if baselines[0] is not None:
-        baseline = baselines[0] * 100
+    first_run = labelled[0][1][0]
+    baseline = first_run.majority_baseline(first_run.eval_epochs[-1])
+    if baseline is not None:
+        baseline = baseline * 100
         accuracy_axis.axhline(baseline, color=MUTED_INK, linewidth=1.2, linestyle="--", zorder=2)
         accuracy_axis.annotate(f"most common answer {baseline:.1f}%", (1, baseline), xytext=(0, 5),
                                textcoords="offset points", color=MUTED_INK, fontsize=9)
