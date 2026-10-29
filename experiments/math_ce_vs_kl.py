@@ -13,10 +13,11 @@ far apart only if the difference is real.
 
 import sys
 
-from _common import seeded_run_training, size_settings, write_rows
+from _common import RESULTS_DIR, seeded_run_training, size_settings, write_rows
 
 from library import RunStore, TrainingRun
 from library.domain.math_tutor.full import FullDomain
+from library.tooling.render.plots import plot_tests_by_pass
 
 TEACHER = "google/gemma-4-12B-it"
 DOMAIN = FullDomain("v1")
@@ -59,6 +60,9 @@ def report():
     for row in rows:
         print(", ".join(f"{column}={row[column]}" for column in RESULT_COLUMNS[1:]))
     write_rows("math_agent.csv", RESULT_COLUMNS, rows)
+    graph = plot_tests_by_pass({arm.upper(): store.get(run_name(arm)) for arm in ARMS}, RESULTS_DIR / "math_agent.png",
+                               title=f"Pure KL vs pure CE, math tutor, size {SIZE} ({store.get(run_name('kl')).params_millions():.1f}M), seed {SEED}")
+    print(f"Graph: {graph}")
 
 
 def main():

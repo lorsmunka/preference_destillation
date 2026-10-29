@@ -71,6 +71,78 @@ def plot_training_logs(logs_dir, out_path: Optional[Path] = None, title: str = "
     return _render_training(logs.train_batches, title or logs_dir.parent.name, out_path)
 
 
+SERIES_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]   # fixed order, colour-blind checked
+INK = "#0b0b0b"
+MUTED_INK = "#898781"
+GRID = "#e1e0d9"
+AXIS = "#c3c2b7"
+SURFACE = "#fcfcfb"
+
+
+def _end_label_heights(values, minimum_gap):
+    """Spread the end-of-line labels so close lines (e.g. 69% and 68%) do not print on top of each other."""
+    order = sorted(range(len(values)), key=lambda index: values[index])
+    heights = list(values)
+    for previous, current in zip(order, order[1:]):
+        heights[current] = max(heights[current], heights[previous] + minimum_gap)
+    return heights
+
+
+def plot_tests_by_pass(runs_by_label, out_path: Path, title: str = ""):
+    """One point per test (after every pass) for each run: task accuracy next to the most common answer,
+    and the test error. Two panels with their own scales; the label order fixes each run's colour."""
+    plt = _plt()
+    labelled = [(label, run) for label, run in runs_by_label.items() if run.eval_epochs]
+    if not labelled:
+        raise ValueError("No run has a test yet.")
+    fig, (accuracy_axis, error_axis) = plt.subplots(1, 2, figsize=(12, 4.8), facecolor=SURFACE)
+    panels = [
+        (accuracy_axis, "Task accuracy (all test replies)", lambda evaluation: evaluation.task_accuracy * 100, "%"),
+        (error_axis, "Test error (cross-entropy, lower is better)", lambda evaluation: evaluation.ce_loss, ""),
+    ]
+    most_passes = max(len(run.eval_epochs) for _, run in labelled)
+    for axis, panel_title, read_value, unit in panels:
+        axis.set_facecolor(SURFACE)
+        end_values = []
+        for (label, run), color in zip(labelled, SERIES_COLORS):
+            passes = list(range(1, len(run.eval_epochs) + 1))
+            values = [read_value(evaluation) for evaluation in run.eval_epochs]
+            axis.plot(passes, values, color=color, linewidth=2, marker="o", markersize=6,
+                      markeredgecolor=SURFACE, markeredgewidth=1.5, label=label, zorder=3)
+            end_values.append((label, passes[-1], values[-1]))
+        low, high = axis.get_ylim()
+        heights = _end_label_heights([value for _, _, value in end_values], (high - low) * 0.06)
+        for (label, last_pass, value), height in zip(end_values, heights):
+            shown = f"{value:.1f}{unit}" if unit else f"{value:.3f}"
+            axis.annotate(f"{label} {shown}", (last_pass, value), xytext=(last_pass + 0.25, height),
+                          color=INK, fontsize=9, va="center")
+        axis.set_title(panel_title, color=INK, fontsize=11, loc="left")
+        axis.set_xlabel("Pass", color=MUTED_INK)
+        axis.set_xticks(range(1, most_passes + 1))
+        axis.set_xlim(0.6, most_passes + 1.6)
+        axis.grid(True, axis="y", color=GRID, linewidth=0.8)
+        axis.set_axisbelow(True)
+        axis.tick_params(colors=MUTED_INK, labelcolor=MUTED_INK)
+        for side in ("top", "right"):
+            axis.spines[side].set_visible(False)
+        for side in ("left", "bottom"):
+            axis.spines[side].set_color(AXIS)
+    baselines = [run.majority_baseline(run.eval_epochs[-1]) for _, run in labelled]
+    if baselines[0] is not None:
+        baseline = baselines[0] * 100
+        accuracy_axis.axhline(baseline, color=MUTED_INK, linewidth=1.2, linestyle="--", zorder=2)
+        accuracy_axis.annotate(f"most common answer {baseline:.1f}%", (1, baseline), xytext=(0, 5),
+                               textcoords="offset points", color=MUTED_INK, fontsize=9)
+    accuracy_axis.set_ylim(bottom=0)
+    accuracy_axis.legend(frameon=False, loc="upper left", labelcolor=INK)
+    if title:
+        fig.suptitle(title, color=INK, fontweight="bold")
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=SURFACE)
+    plt.close(fig)
+    return out_path
+
+
 def plot_scaling(runs: Sequence[Run], out_path: Path, metric: str = "student_accuracy"):
     """Accuracy vs parameter count (the central scaling figure)."""
     plt = _plt()
