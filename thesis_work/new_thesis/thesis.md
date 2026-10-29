@@ -61,24 +61,8 @@ Könnyen látható, hogy ezek a feladatkörök egyszerűen bővíthetőek és sk
 A rendszerrel szemben támasztott követelmények két csoportra bonthatóak. A funkcionális követelmények azt írják le, hogy mit kell tudnia a rendszernek, a nem funkcionális követelmények pedig azt, hogy milyen minőségben és milyen korlátok között. A követelmények a keretrendszerre és a rá épülő két ügynökre vonatkoznak, teljesülésüket a 8. fejezet ellenőrzi.
 Funkcionális követelmények:
 F1 – Új domain külön modulként hozzáadható, amely megadja a feladatokat, a kiértékelés módját, valamint a domain be- és kimeneti szótárát.
-F2 – A keretrendszer a tanármodellel tanítóadatokat állít elő: a tanármodell vagy maga írja meg a választ, vagy egy megadott helyes választ pontoz egyetlen lépésben. Minden válaszhoz eltárolja a tanármodell eloszlását a csökkentett kimeneti szótáron.
-F3 – A tanulómodell architektúrája (rejtett dimenzió, rétegek és figyelemfejek száma) és a tanítás (veszteség, KL/CE arány és annak változása, hőmérséklet, tanulási ráta, epochok száma) konfigurációval állítható, a futtatandó tanítások pedig egy listában adhatóak meg.
-F4 – A kiértékelés a tanulómodellt helyes előzménnyel és a saját kimenetei alapján is méri, a feladat pontosságát a leggyakoribb válasz arányához (majority baseline) viszonyítja, és több futás eredményét statisztikai próbával hasonlítja össze.
-F5 – Egy megszakított tanítás leállításkor elmenti az állapotát, és újraindításkor onnan folytatódik.
-F6 – A matematikai ügynök a válasza nyitó tagjével dönt: új feladatnál vagy egy „mi lenne, ha" kérdésnél megoldást ír, a megoldásra vonatkozó kérdésnél magyarázatot ad, a feladathoz nem kapcsolódó üzenetre pedig a hám egy rögzített mondattal válaszol. A hám a megoldás minden sorát és a magyarázatot ellenőrzi, hiba esetén egyszer újrakérdez.
-F7 – A kódoló ügynök először kijelöli a releváns fájlokat és sorokat, a hám ezekre szűkíti a kontextust, majd az ügynök megmagyarázza vagy megtalálja a keresett kódrészt. A hám ellenőrzi a kijelölést, a válaszban pedig azt, hogy nem hivatkozik nem létező nevekre.
-F8 – A betanított tanulómodellel egy demóprogramon vagy egy lokális csevegőoldalon keresztül lehet beszélgetni.
 Nem funkcionális követelmények:
-NF1 – Hardver: a teljes folyamat a tanármodell 4 bites futtatásával egy 12 GB-os fogyasztói videokártyán is elvégezhető, a nagyobb adatmennyiségek előállítása pedig bérelt GPU-n is futtatható.
-NF2 – Méret: a tanulómodellek legfeljebb nagyjából 100 millió paraméteresek, így a betanított ügynök egy átlagos laptopon is futtatható.
-NF3 – Költség: egy ügynök tanítóadatainak előállítása 100 dollárnál kevesebb bérelt GPU-időt igényel, tehát egy magánszemély számára is megfizethető.
-NF4 – Megbízhatóság: megszakításkor legfeljebb az utolsó mentés óta végzett munka vész el, a felhalmozott adatfájlok soha nem íródnak felül, és a keretrendszer elutasítja a nem egyező szótárral készült tanítóadatokat, illetve a nem egyező állapotból történő folytatást.
-NF5 – Reprodukálhatóság: minden futás a beállításaival együtt mentésre kerül, a véletlenszám-generátor kezdőértéke (seed) rögzíthető.
-NF6 – Bővíthetőség: új domain vagy ügynök hozzáadása nem igényli a keretrendszer magjának módosítását.
-NF7 – Adatvédelem: a betanított ügynök internetkapcsolat nélkül fut, a felhasználó adatai nem hagyják el a gépet.
-NF8 – Biztonság: a matematikai feladatokhoz tartozó kódot a rendszer saját értelmezővel futtatja, tetszőleges Python-kód végrehajtása nélkül.
-NF9 – Tesztelhetőség: a rendszer automatikus egységtesztekkel rendelkezik, amelyek videokártya nélkül, nagyjából 20 másodperc alatt lefutnak.
-NF10 – Használhatóság: a szkriptek argumentumok nélkül is a várt alapértelmezett műveletet végzik, a futások állapota pedig egy irányítópulton (dashboard) követhető.
+NF1 – Megbízhatóság: megszakításkor legfeljebb az utolsó mentés óta végzett munka vész el, a felhalmozott adatfájlok soha nem íródnak felül, és a keretrendszer elutasítja a nem egyező szótárral készült tanítóadatokat, illetve a nem egyező állapotból történő folytatást.
 
 2.7 Használati esetek - DRAFT, review before subbmitting
 A dolgozatban leírt rendszerek és azok eredményei többféle módon is felhasználhatóak.
@@ -87,19 +71,7 @@ Használhatják fejlesztők, akik különböző vállalati, infrastrukturális v
 A kész modelleket pedig természetesen használhatják végfelhasználók különböző felhasználási területeken.
 A főbb használati esetek szereplőnként:
 Kutató vagy fejlesztő:
-HE1 – Új domain definiálása: megadja a feladatokat, a kiértékelés módját, valamint a be- és kimeneti szótárt.
-HE2 – Tanítóadatok előállítása: kiválasztja a tanármodellt, és konfigurációval elindítja az adatok előállítását.
-HE3 – Tanulómodell tanítása: beállítja az architektúrát és a tanítás paramétereit, elindítja a tanítást, szükség esetén leállítja, majd később folytatja.
-HE4 – Futások kiértékelése és összehasonlítása: a futások eredményeit a leggyakoribb válasz arányához viszonyítja, és statisztikai próbával veti össze őket.
-HE5 – A betanított modell kipróbálása a demóprogramban vagy beépítése egy saját szoftverbe.
-Tanuló (a matematikai ügynök felhasználója):
-HE6 – Megad egy szöveges matematikai feladatot, és megkapja a lépésenkénti megoldást.
-HE7 – Kérdez a megoldás egy lépéséről, és magyarázatot kap rá.
-HE8 – Megváltoztat egy adatot a feladatban („mi lenne, ha…"), és megkapja az új megoldást.
-HE9 – A feladathoz nem kapcsolódó üzenetet ír, amelyre a hám egy rögzített mondattal válaszol.
-Programozó (a kódoló ügynök felhasználója):
-HE10 – Megkérdezi, hol található egy funkció vagy egy adott nevű elem a projektben, és megkapja a fájlt és a sorokat.
-HE11 – Egy kódrész magyarázatát kéri, amelyet az ügynök a releváns részre szűkítve megmagyaráz.
+HE1 – Tanítóadatok előállítása: kiválasztja a tanármodellt, és konfigurációval elindítja az adatok előállítását.
 
 3. SZAKIRODALMI ÁTTEKINTÉS – LEHETSÉGES MEGKÖZELÍTÉSEK ÉS MEGOLDÁSOK
 
