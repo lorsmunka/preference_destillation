@@ -69,11 +69,13 @@ STATUS 2026-10-13 (pick up here)
             volume's logs and the price test's files are kept in the session scratchpad (volume_leftovers).
             The volume and every pod deleted (user: "You can delete it"); RunPod is empty, ~$23 credit left.
             CE pass 2: task accuracy .372 (KL .419).
-  CE VS KL so far (task accuracy, all 8,415 test replies, baseline .042): KL .118 .419 .502 .582 .619 .667
-            .680 .693 (passes 1-8); CE .102 .372 .474 .574 .594 .647 .656 (passes 1-7). KL ahead at every
-            test (0.8-4.7 points), test error ~0.04 lower throughout (pass 7: .505 vs .547). Speed: 0.70 s per
-            batch each while both windows are visible, 1.09 when hidden behind other apps (Windows throttling).
-            PAUSED 2026-10-29 00:23 (user asleep): KL pass 9 batch 427, CE pass 8 batch 5664; ~2.7 h left.
+  CE VS KL DONE 2026-10-29 (both 10 passes, seed 1; experiments/results/math_agent.csv + .png): task
+            accuracy (all 8,415 test replies, baseline .042) KL .118 .419 .502 .582 .619 .667 .680 .693 .698
+            .700; CE .102 .372 .474 .574 .594 .647 .656 .677 .678 .684. KL ahead at every test (0.1-4.7
+            points; final 1.6), test error lower throughout (final .481 vs .528), token accuracy .871 vs .865.
+            Both flatten after pass 8. One seed only: the gap is not yet shown to be more than seed noise
+            (next: seed 2 for both, ~13 h, then 3 vs 5 seeds, read paired). Speed: 0.70 s per batch each while
+            both windows are visible, 1.09 when hidden behind other apps (Windows throttling).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
