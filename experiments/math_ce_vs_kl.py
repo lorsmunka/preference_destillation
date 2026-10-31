@@ -5,8 +5,8 @@ graph at round 20m size"): two students, identical but for what they learn from.
 Size m (16M), 10 passes; each seed gives both students the same start weights and data order, so the two
 are read as a pair (KL minus CE per seed). Tested after every pass on every test reply
 (max_test_examples=None: 8,415 replies, not the default tail of 1,008), so the two lines of the graph are
-far apart only if the difference is real. Seed 1 done 2026-10-29 (KL .700 vs CE .684); seed 2 asked for the
-same day (user: "the next seed can go").
+far apart only if the difference is real. Seed 1 done 2026-10-29 (KL .700 vs CE .684), seed 2 2026-10-31
+(KL .719 vs CE .688); seed 3 the same day (user: "start the third seed").
 
     python experiments/math_ce_vs_kl.py        # trains what is missing (one after the other), then reports
     python experiments/math_ce_vs_kl.py kl     # one student per process: the two train side by side on one card
@@ -26,7 +26,7 @@ DOMAIN = FullDomain("v1")
 EXPERIMENT = "math-agent"
 ARMS = {"kl": (1.0, 1.0), "ce": (0.0, 0.0)}   # arm -> (kl_ratio_start, kl_ratio_end)
 SIZE = "m"
-SEEDS = [1, 2]
+SEEDS = [1, 2, 3]
 STUDENT = dict(dropout=0.1, epoch_count=10, batch_size=32, lr_warmup_ratio=0.1, max_training_examples=None,
                max_test_examples=None)
 CHOSEN = sys.argv[1].split(",") if len(sys.argv) > 1 else list(ARMS)
