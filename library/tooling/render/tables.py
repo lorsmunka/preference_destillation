@@ -22,12 +22,18 @@ def _num(value, fmt="{:.4f}") -> str:
     return fmt.format(value) if value is not None else "—"
 
 
+def _architecture(run: Run) -> str:
+    if run.custom_model:
+        return f"custom {run.custom_model} {run.info.get('model_settings', {})}"
+    return f"{run.hidden_dim}h / {run.num_layers}L / {run.num_heads} heads"
+
+
 def run_summary(run: Run) -> str:
     logs = run.logs
     lines = [
         f"Run: {run.name}",
         f"  Domain: {run.domain}   Status: {run.status}   Experiment: {run.experiment or '—'}",
-        f"  Arch: {run.hidden_dim}h / {run.num_layers}L / {run.num_heads} heads   "
+        f"  Arch: {_architecture(run)}   "
         f"Params: {run.params_millions():.2f}M   reduced_input_vocab={run.has_reduced_input_vocab}",
         f"  Batches: {len(logs.train_batches):,}   Epochs: {len(logs.train_epochs)}   "
         f"Training hours: {_num(run.training_hours, '{:.2f}')}",
@@ -61,7 +67,7 @@ def run_summary(run: Run) -> str:
 _DEFAULT_COLUMNS = [
     ("run", lambda r: r.short_name(), 30),
     ("params(M)", lambda r: f"{r.params_millions():.1f}", 10),
-    ("h/L/H", lambda r: f"{r.hidden_dim}/{r.num_layers}/{r.num_heads}", 12),
+    ("h/L/H", lambda r: r.architecture, 12),
     ("student", lambda r: _pct(run_metric(r, "student_accuracy")), 9),
     ("task", lambda r: _pct(run_metric(r, "task_accuracy")), 9),
     ("baseline", lambda r: _pct(run_metric(r, "majority_baseline")), 9),

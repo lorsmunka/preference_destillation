@@ -2,6 +2,7 @@
 checkpoint and generates. Importing this pulls in torch."""
 
 from library.model.transformer import Transformer
+from library.model.custom_student import CustomStudent
 from library.model.student import GenerationResult, StudentModel, pick_device
 
-__all__ = ["Transformer", "StudentModel", "GenerationResult", "pick_device"]
+__all__ = ["Transformer", "CustomStudent", "StudentModel", "GenerationResult", "pick_device"]

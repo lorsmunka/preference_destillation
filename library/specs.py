@@ -11,9 +11,16 @@
 object is auto-registered, so a brand-new custom domain works end-to-end. Defaults cover
 every other knob; only `run_name` (training) and `domain` are required.
 
+A custom student network instead of the built-in Transformer: `model=` takes its class (kept in
+an importable file such as library/model/custom/, so a finished run can be rebuilt later) and
+`model_settings=` the keyword arguments for its __init__; hidden_dim / num_layers / num_heads /
+dropout are then ignored. See library/model/custom_student.py for what the class must do.
+
 Torch-free: imports only `library.domain` + `library.shared` constants.
 """
 
+import importlib
+import json
 from dataclasses import dataclass
 from typing import Optional, Union
 
@@ -37,6 +44,8 @@ class TrainingRun:
     num_layers: int = 3
     num_heads: int = 1
     dropout: float = 0.08
+    model: Optional[type] = None                         # None = the built-in Transformer; a class = a custom student network
+    model_settings: Optional[dict] = None                # keyword arguments for the custom model's __init__
     epoch_count: int = 3
     batch_size: int = 32
     learning_rate: float = 0.0015
@@ -65,11 +74,58 @@ class TrainingRun:
 
     def __post_init__(self):
         self.domain = as_domain(self.domain)
+        if self.model is None and self.model_settings is not None:
+            raise ValueError(f"{self.run_name}: model_settings is for a custom model, so pass model= too")
+        if self.model is not None:
+            check_custom_model(self.model, self.model_settings)
 
     def as_dict(self) -> dict:
         data = dict(self.__dict__)
         data["domain"] = self.domain.name
+        if self.model is None:   # the built-in Transformer: info.json stays as it always was
+            del data["model"]
+            del data["model_settings"]
+        else:
+            data["model"] = model_path(self.model)
+            data["model_settings"] = dict(self.model_settings or {})
+            for key in CUSTOM_MODEL_IGNORES:
+                data[key] = None
         return data
+
+
+# The built-in Transformer's settings, which a custom model replaces with its own model_settings.
+CUSTOM_MODEL_IGNORES = ("hidden_dim", "num_layers", "num_heads", "dropout")
+
+
+def model_path(model_class: type) -> str:
+    """Where a model class can be imported from, as info.json records it."""
+    return f"{model_class.__module__}.{model_class.__qualname__}"
+
+
+def load_model_class(path: str) -> type:
+    module_name, class_name = path.rsplit(".", 1)
+    return getattr(importlib.import_module(module_name), class_name)
+
+
+def check_custom_model(model_class: type, model_settings: Optional[dict]) -> None:
+    """Refuse, before any training, a custom model that a finished run could not be rebuilt from."""
+    if not isinstance(model_class, type):
+        raise ValueError(f"model= takes the model's class (e.g. model=LstmStudent), not {model_class!r}")
+    if model_class.__module__ == "__main__":
+        raise ValueError(f"{model_class.__name__} is defined in the script being run, so a finished run could not "
+                         f"be rebuilt from it later: move it to an importable file such as library/model/custom/")
+    try:
+        found = load_model_class(model_path(model_class))
+    except (ImportError, AttributeError):
+        found = None
+    if found is not model_class:
+        raise ValueError(f"{model_path(model_class)} cannot be imported by that name (a class defined inside a "
+                         f"function or another class?): define it at the top level of an importable file")
+    try:
+        json.dumps(model_settings or {})
+    except TypeError as error:
+        raise ValueError(f"model_settings must be plain values (numbers, strings, lists), as info.json stores "
+                         f"them: {error}")
 
 
 @dataclass

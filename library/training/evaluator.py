@@ -2,7 +2,8 @@
 metrics) plus a free-running rollout per example (student accuracy, task metric,
 natural termination). Used for the per-epoch eval and the mini-evals during training.
 
-The rollouts of one batch file run together with a key/value cache (IncrementalDecoder):
+The rollouts of one batch file run together with a key/value cache (IncrementalDecoder; a custom
+student, which has no cache, re-reads each prefix with SimpleDecoder instead, library/model/decoding.py):
 one forward pass over one new position per token for the whole file, instead of one pass
 over the whole growing prefix per token per example. Every example still decodes greedily
 on its own, stops on the domain stop rule or at eval_cap_multiple x its teacher length, and
@@ -17,7 +18,7 @@ from typing import Callable, Dict, List, Optional
 import torch
 import torch.nn.functional as F
 
-from library.model.transformer import IncrementalDecoder
+from library.model.decoding import decoder_for
 from library.shared.metrics.distribution import step_distribution_stats
 from library.training.example_encoder import EncodedExample, ExampleEncoder
 
@@ -204,7 +205,7 @@ class Evaluator:
         caps = [max(encoded.num_steps, int(self.eval_cap_multiple * encoded.num_steps)) for encoded in encoded_examples]
         results = [Rollout() for _ in encoded_examples]
 
-        decoder = IncrementalDecoder(self.model, prompts)
+        decoder = decoder_for(self.model, prompts)
         running = list(range(len(encoded_examples)))   # example index of each decoder row
         while running:
             predicted_indices = decoder.next_logits().argmax(dim=-1).tolist()

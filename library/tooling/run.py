@@ -87,15 +87,26 @@ class Run:
 
     @property
     def hidden_dim(self) -> int:
-        return self.info.get("hidden_dim", 0)
+        return self.info.get("hidden_dim") or 0   # None for a custom model
 
     @property
     def num_layers(self) -> int:
-        return self.info.get("num_layers", 0)
+        return self.info.get("num_layers") or 0
 
     @property
     def num_heads(self) -> int:
-        return self.info.get("num_heads", 0)
+        return self.info.get("num_heads") or 0
+
+    @property
+    def custom_model(self) -> Optional[str]:
+        """The custom model's class name, or None for the built-in Transformer."""
+        path = self.info.get("model")
+        return path.rsplit(".", 1)[-1] if path else None
+
+    @property
+    def architecture(self) -> str:
+        """hidden / layers / heads of the built-in Transformer, or the custom model's class name."""
+        return self.custom_model or f"{self.hidden_dim}/{self.num_layers}/{self.num_heads}"
 
     @property
     def kl_ratio_start(self) -> float:

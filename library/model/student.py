@@ -59,7 +59,7 @@ class StudentModel:
     @classmethod
     def from_run(cls, run, checkpoint_path: Path, device: Optional[str] = None,
                  domain: Optional[Domain] = None) -> "StudentModel":
-        from library.model.transformer import Transformer  # lazy: pulls torch/tokenizer only on model path
+        from library.model.custom_student import build_student  # lazy: pulls torch/tokenizer only on model path
 
         device = device or pick_device()
         info = run.info
@@ -71,16 +71,7 @@ class StudentModel:
                     f"Run {run.name!r} uses custom domain {info['domain']!r} — pass "
                     f"domain=YourDomain() to analyse it (it isn't one of the built-ins)."
                 )
-        model = Transformer(
-            domain=domain,
-            teacher_model=info["teacher_model"],
-            hidden_dim=info["hidden_dim"],
-            num_layers=info["num_layers"],
-            num_heads=info["num_heads"],
-            dropout=info.get("dropout", 0.15),
-            auxiliary_token_percentage=info.get("auxiliary_token_percentage", 1.0),
-            input_vocabulary=cls._input_vocabulary(run),
-        ).to(device)
+        model = build_student(info, domain, cls._input_vocabulary(run)).to(device)
         cls._check_output_vocabulary(run, model, domain)
         cls._load_checkpoint(model, Path(checkpoint_path), device)
         model.eval()
@@ -158,10 +149,10 @@ class StudentModel:
         """Free-generation rollout: stop on the domain's stop rule (domain.is_stop, the same
         rule as the trainer's evaluation) or after max_new_tokens. `terminated` records whether
         it stopped on the rule (the natural-termination signal)."""
-        from library.model.transformer import IncrementalDecoder  # lazy, like Transformer in from_run
+        from library.model.decoding import decoder_for  # lazy, like build_student in from_run
 
         sentence_ids = self.tokenizer.encode(self.domain.student_prompt(text), add_special_tokens=False)
-        decoder = IncrementalDecoder(self.model, [self.model.remap_input_tokens(sentence_ids)])
+        decoder = decoder_for(self.model, [self.model.remap_input_tokens(sentence_ids)])
         generated_ids: List[int] = []
         token_strings: List[str] = []
         predicted_indices: List[int] = []

@@ -14,7 +14,9 @@ import shutil
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["HF_HUB_OFFLINE"] = "1"
@@ -26,11 +28,14 @@ import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer
 
-import library.model.transformer as transformer_module
+import library.model.student_vocabularies as student_vocabularies_module
 import library.training.trainer as trainer_module
 import library.training.training_runner as training_runner_module
 from library import TrainingRun
 from library.domain import REDDIT_SENTIMENT, RedditSentimentDomain
+from library.model.custom.lstm_student import LstmStudent
+from library.model.custom_student import CustomStudent
+from library.model.decoding import SimpleDecoder
 from library.model.student import StudentModel
 from library.model.transformer import IncrementalDecoder, Transformer
 from library.shared import DEFAULT_TEACHER_MODEL
@@ -56,7 +61,7 @@ class CachedAutoTokenizer:
         return cls.tokenizers[name]
 
 
-transformer_module.AutoTokenizer = CachedAutoTokenizer
+student_vocabularies_module.AutoTokenizer = CachedAutoTokenizer
 TOKENIZER = CachedAutoTokenizer.from_pretrained(DEFAULT_TEACHER_MODEL)
 VOCABULARY = build_vocabulary(TOKENIZER, REDDIT_SENTIMENT)
 TOKEN_LIST = VOCABULARY["token_list"]
@@ -106,6 +111,24 @@ def tiny_model(input_vocabulary=None, domain=REDDIT_SENTIMENT, seed: int = 0) ->
     torch.manual_seed(seed)
     return Transformer(domain=domain, hidden_dim=8, num_layers=1, num_heads=1, dropout=0.0,
                        input_vocabulary=input_vocabulary or tiny_input_vocabulary())
+
+
+class LooksAheadStudent(torch.nn.Module):
+    """Breaks the custom-model contract: every position also sees the mean of the whole input."""
+
+    def __init__(self, input_vocab_size, output_vocab_size):
+        super().__init__()
+        self.embedding = torch.nn.Embedding(input_vocab_size, 4)
+        self.output = torch.nn.Linear(4, output_vocab_size)
+
+    def forward(self, input_ids):
+        embedded = self.embedding(input_ids)
+        return self.output(embedded + embedded.mean(dim=1, keepdim=True))
+
+
+class WrongShapeStudent(LooksAheadStudent):
+    def forward(self, input_ids):
+        return self.output(self.embedding(input_ids))[:, -1]   # the last position only
 
 
 class ScriptedExit:
@@ -357,6 +380,65 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(result.steps, 2)
 
 
+# ── custom student networks (TrainingRun(model=...)) ──────────────────
+
+class CustomModelTests(unittest.TestCase):
+    @staticmethod
+    def custom_student(model_class, model_settings=None) -> CustomStudent:
+        torch.manual_seed(0)
+        return CustomStudent(model_class, model_settings, REDDIT_SENTIMENT, DEFAULT_TEACHER_MODEL,
+                             input_vocabulary=tiny_input_vocabulary())
+
+    def test_a_model_that_looks_ahead_or_has_the_wrong_shape_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "looks ahead"):
+            self.custom_student(LooksAheadStudent)
+        with self.assertRaisesRegex(ValueError, "shape"):
+            self.custom_student(WrongShapeStudent)
+        student = self.custom_student(LstmStudent, {"hidden": 8, "layers": 1})
+        self.assertEqual(student.get_model_info()["output_vocab_size"], len(TOKEN_LIST))
+
+    def test_a_custom_run_must_be_rebuildable_later(self):
+        class DefinedInAFunction(LstmStudent):
+            pass
+
+        script_model = type("ScriptModel", (LstmStudent,), {"__module__": "__main__"})
+        with self.assertRaisesRegex(ValueError, "script being run"):
+            TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model=script_model)
+        with self.assertRaisesRegex(ValueError, "cannot be imported"):
+            TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model=DefinedInAFunction)
+        with self.assertRaisesRegex(ValueError, "pass model= too"):
+            TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model_settings={"hidden": 8})
+        with self.assertRaisesRegex(ValueError, "plain values"):
+            TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model=LstmStudent,
+                        model_settings={"hidden": torch.tensor(8)})
+
+    def test_built_in_runs_keep_their_info_and_custom_runs_record_their_model(self):
+        built_in = TrainingRun(domain=REDDIT_SENTIMENT, run_name="built-in").as_dict()
+        self.assertNotIn("model", built_in)   # cohorts of old and new built-in runs still match
+        self.assertNotIn("model_settings", built_in)
+        self.assertEqual(built_in["hidden_dim"], 48)
+        custom = TrainingRun(domain=REDDIT_SENTIMENT, run_name="custom", model=LstmStudent,
+                             model_settings={"hidden": 8}).as_dict()
+        self.assertEqual(custom["model"], "library.model.custom.lstm_student.LstmStudent")
+        self.assertEqual(custom["model_settings"], {"hidden": 8})
+        self.assertEqual([custom[key] for key in ("hidden_dim", "num_layers", "num_heads", "dropout")], [None] * 4)
+
+    def test_simple_decoder_matches_the_cached_one(self):
+        model = tiny_model().eval()
+        torch.manual_seed(3)
+        prompts = [torch.randint(0, 50, (length,)).tolist() for length in (3, 11, 6)]
+        with torch.no_grad():
+            cached, simple = IncrementalDecoder(model, prompts), SimpleDecoder(model, prompts)
+            for step in range(6):
+                self.assertLess((cached.next_logits() - simple.next_logits()).abs().max().item(), 1e-5)
+                next_tokens = (cached.next_logits().argmax(-1) % 50).tolist()
+                cached.append(next_tokens)
+                simple.append(next_tokens)
+                if step == 2:
+                    cached.keep_rows([0, 2])
+                    simple.keep_rows([0, 2])
+
+
 # ── X-C1 ──────────────────────────────────────────────────────────────
 
 class MajorityBaselineTests(unittest.TestCase):
@@ -427,12 +509,17 @@ class RunTests(unittest.TestCase):
                            max_training_examples=None, training_test_ratio=0.75, max_test_examples=8,
                            kl_ratio_start=0.9, kl_ratio_end=0.1)
 
+    @staticmethod
+    def custom_spec(name: str) -> TrainingRun:
+        return replace(RunTests.spec(name), model=LstmStudent, model_settings={"hidden": 8, "layers": 1})
+
     @classmethod
-    def train(cls, name: str, stop_at_check: int = None):
+    def train(cls, name: str, stop_at_check: int = None, custom: bool = False):
         """One session of a run (seeded the same way every time). Returns the final
         weights, or None when the session stopped."""
         torch.manual_seed(7)
-        completed = training_runner_module.TrainingRunner(cls.spec(name), ScriptedExit(stop_at_check)).run()
+        spec = cls.custom_spec(name) if custom else cls.spec(name)
+        completed = training_runner_module.TrainingRunner(spec, ScriptedExit(stop_at_check)).run()
         return cls.final_weights(name) if completed else None
 
     @classmethod
@@ -496,6 +583,24 @@ class RunTests(unittest.TestCase):
     def test_mid_epoch_stop_resumes_exactly(self):
         self.assertIsNone(self.train("middle", stop_at_check=2))
         self.assertSameWeights(self.train("middle"), self.straight_weights)
+
+    def test_custom_model_trains_resumes_and_loads_back(self):
+        straight = self.train("lstm-straight", custom=True)
+        self.assertIsNone(self.train("lstm-middle", stop_at_check=2, custom=True))
+        self.assertSameWeights(self.train("lstm-middle", custom=True), straight)
+
+        run_dir = self.runs / "lstm-straight"
+        info = json.loads((run_dir / "info.json").read_text(encoding="utf-8"))
+        self.assertEqual((info["status"], info["model"], info["hidden_dim"]),
+                         ("completed", "library.model.custom.lstm_student.LstmStudent", None))
+        self.assertEqual(info["model_info"]["model"], "LstmStudent")
+        self.assertEqual([record["epoch"] for record in self.records("lstm-straight", "eval_epoch")], [0, 1])
+
+        run = SimpleNamespace(name="lstm-straight", info=info, run_dir=run_dir)
+        student = StudentModel.from_run(run, run_dir / "checkpoints" / "checkpoint_epoch_1.pt", device="cpu")
+        self.assertIsInstance(student.model, CustomStudent)
+        self.assertSameWeights(student.model.state_dict(), straight)
+        self.assertGreater(student.generate("lovely weather today", max_new_tokens=5).steps, 0)
 
     def test_hard_crash_resumes_from_the_last_epoch_end(self):
         self.crash_in_second_epoch("crash")

@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 from library.training.batch_handler import BatchHandler
-from library.model.transformer import Transformer
+from library.model.custom_student import build_student
 from library.training.trainer import Trainer
 from library.shared.logging import RunLogger
 from library.tooling.render.plots import plot_training_logs
@@ -51,7 +51,10 @@ class TrainingRunner:
         print(f"  Description: {self.config.get('description', '')}")
         print(f"  Domain: {self.domain.name}")
         print(f"  Teacher: {self.teacher_model}")
-        print(f"  Architecture: {self.config['hidden_dim']}h, {self.config['num_layers']}L, {self.config['num_heads']} heads")
+        if self.config.get("model"):
+            print(f"  Architecture: custom {self.config['model']} {self.config['model_settings']}")
+        else:
+            print(f"  Architecture: {self.config['hidden_dim']}h, {self.config['num_layers']}L, {self.config['num_heads']} heads")
         print(f"  KL annealing: {self.config['kl_ratio_start']} -> {self.config['kl_ratio_end']}")
         print(f"  Temperature annealing: {self.config['distillation_temperature_start']} -> {self.config['distillation_temperature_end']}")
         print(f"  LR: {self.config['learning_rate']}, Epochs: {self.config['epoch_count']}")
@@ -61,19 +64,10 @@ class TrainingRunner:
 
         started_at = datetime.now().isoformat()
 
-        transformer = Transformer(
-            domain=self.domain,
-            teacher_model=self.teacher_model,
-            hidden_dim=self.config["hidden_dim"],
-            num_layers=self.config["num_layers"],
-            num_heads=self.config["num_heads"],
-            dropout=self.config["dropout"],
-            auxiliary_token_percentage=self.config.get("auxiliary_token_percentage", 1.0),
-            input_vocabulary=self._input_vocabulary(),
-        )
+        student = build_student(self.config, self.domain, self._input_vocabulary())
         # The batches' logit columns are the domain's full reduced vocabulary (auxiliary 1.0);
         # the student's output vocabulary is a prefix of it.
-        teacher_token_list = build_vocabulary(transformer.tokenizer, self.domain)["token_list"]
+        teacher_token_list = build_vocabulary(student.tokenizer, self.domain)["token_list"]
 
         batch_handler = BatchHandler(
             get_batches_dir(self.domain.name, self.teacher_model),
@@ -87,7 +81,7 @@ class TrainingRunner:
         )
         logger = RunLogger(self.logs_dir)
 
-        self.model_info = transformer.get_model_info()
+        self.model_info = student.get_model_info()
         self.data_info = {
             "split_rule": "fixed_tail",   # test = fixed tail of the batch directory (batch_handler.split_batch_files)
             "training_batch_count": batch_handler.training_batch_count(),
@@ -96,7 +90,7 @@ class TrainingRunner:
         }
         self._write_info("in_progress", started_at=started_at)
 
-        trainer = Trainer(transformer, logger, self.exit_listener, batch_handler, trainer_config)
+        trainer = Trainer(student, logger, self.exit_listener, batch_handler, trainer_config)
 
         start_epoch = logger.current_epoch
         resume_batch = logger.current_batch

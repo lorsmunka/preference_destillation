@@ -71,7 +71,8 @@ library/
                harness, checks, corpus, vocabulary, demo
   agent/       domain-free parts of an agent: question_templates (template engine), runner (Request,
                TeacherModel, StudentAgentModel, run_sessions, teacher_setup)
-  model/       Transformer (KV-cached decoding) + StudentModel (checkpoint load + generate)
+  model/       Transformer (KV-cached decoding) + StudentModel (checkpoint load + generate); custom_student
+               + custom/ = any other student network (TrainingRun(model=...), e.g. custom/lstm_student.py)
   data_gen/    DistillationDataGenerator + ModelHandler (generate / teacher-forced scoring)
   training/    Trainer, TrainingRunner, BatchHandler (split_batch_files), schedules, losses,
                example_encoder, evaluator, checkpoints
@@ -122,7 +123,9 @@ Run configs are typed objects — `TrainingRun(...)` / `GenerationJob(...)` (`li
 entry in `RUNS` / `JOBS`. `domain=` takes a **Domain object** (no magic strings); required: `run_name`
 (training) + `domain`. Key params: `epoch_count`, `batch_size`, `learning_rate`, `kl_ratio_start/end`,
 `distillation_temperature_start/end`, `max_training_examples`, `max_test_examples` (fixed test tail,
-default 1024), `shuffle_seed` (default None = file order), `eval_top_k`, `eval_cap_multiple`. Each Domain
+default 1024), `shuffle_seed` (default None = file order), `eval_top_k`, `eval_cap_multiple`; `model=` +
+`model_settings=` train a custom student network instead of the Transformer (its hidden_dim / layers / heads /
+dropout are then ignored; contract in `library/model/custom_student.py`). Each Domain
 owns `max_steps` (a runaway guard: longest expected output + ~35%); there is no input-length limit
 (rotary positions grow on demand; each run records `longest_training_sequence`). Test set: a fixed tail
 of the batch directory, independent of `max_training_examples`; per-record `split` labels win when present.
