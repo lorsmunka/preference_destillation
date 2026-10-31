@@ -76,10 +76,14 @@ STATUS 2026-10-13 (pick up here)
             Both flatten after pass 8. One seed only: the gap is not yet shown to be more than seed noise
             (next: seed 2 for both, ~13 h, then 3 vs 5 seeds, read paired). Speed: 0.70 s per batch each while
             both windows are visible, 1.09 when hidden behind other apps (Windows throttling).
-            SEED 2 started 2026-10-29 20:09 (user: "the next seed can go"): passes 1-4 KL .111 .413 .515
-            .590, CE .106 .382 .490 .571 (KL ahead again at every test; test error ~0.04 lower, pass 4 .599
-            vs .635, while one student moves only 0.004-0.01 between seeds). PAUSED 2026-10-30 02:41 (user
-            asleep): both at pass 5 batch 5807 of 6127; ~6.5 h left. Resume = the launch command again.
+            SEED 2 DONE 2026-10-31 02:16 (user: "the next seed can go"; CE was stopped once by a stray
+            Ctrl+C in its window, 2026-10-30 18:39, and resumed): task accuracy KL .111 .412 .515 .590 .611
+            .653 .680 .706 .710 .719; CE .106 .382 .490 .571 .605 .635 .662 .683 .687 .688. Final gap
+            +3.1 points (seed 1: +1.6), test error .4755 vs .5175 (-.042; seed 1 -.047). KL ahead at all 20
+            paired tests (10 passes x 2 seeds). Mean of the 2 seeds: KL .710 vs CE .686, error .478 vs .523.
+            Seed spread at the last pass: KL 1.9 points / .005 error, CE 0.4 points / .010 error, so the
+            error gap is 4-9x the seed spread; the accuracy gap points the same way but its size is less
+            certain. Graph: thick = mean, thin = each seed.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
