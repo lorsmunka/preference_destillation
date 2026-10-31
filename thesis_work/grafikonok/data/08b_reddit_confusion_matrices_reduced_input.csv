@@ -1,0 +1,13 @@
+run,category,true_label,pred_aggressive,pred_rude,pred_neutral,pred_polite,pred_friendly,pred_negative,pred_positive,pred_harmful,pred_safe,pred_toxic,pred_respectful
+tsc-reduced-input-proj-5M-64h-8L,tone,aggressive,2134,0,403,0,1,,,,,,
+tsc-reduced-input-proj-5M-64h-8L,tone,rude,90,2,37,0,0,,,,,,
+tsc-reduced-input-proj-5M-64h-8L,tone,neutral,457,1,4989,0,7,,,,,,
+tsc-reduced-input-proj-5M-64h-8L,tone,polite,0,0,0,33,0,,,,,,
+tsc-reduced-input-proj-5M-64h-8L,tone,friendly,6,0,34,0,16,,,,,,
+tsc-reduced-input-proj-5M-64h-8L,sentiment,negative,,,615,,,3526,50,,,,
+tsc-reduced-input-proj-5M-64h-8L,sentiment,neutral,,,2486,,,718,135,,,,
+tsc-reduced-input-proj-5M-64h-8L,sentiment,positive,,,182,,,133,366,,,,
+tsc-reduced-input-proj-5M-64h-8L,safety,harmful,,,,,,,,1831,429,,
+tsc-reduced-input-proj-5M-64h-8L,safety,safe,,,,,,,,380,5571,,
+tsc-reduced-input-proj-5M-64h-8L,toxicity,toxic,,,,,,,,,,2436,429
+tsc-reduced-input-proj-5M-64h-8L,toxicity,respectful,,,,,,,,,,380,4965
