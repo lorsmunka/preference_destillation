@@ -1,7 +1,7 @@
 """A custom student network trained by the same framework as the built-in Transformer.
 
-    from library.model.custom.lstm_student import LstmStudent
-    TrainingRun(domain=..., run_name="lstm-trial", model=LstmStudent, model_settings={"hidden": 384})
+    from library.model.custom.my_student import MyStudent      # your own file in library/model/custom/
+    TrainingRun(domain=..., run_name="my-trial", model=MyStudent, model_settings={"hidden": 384})
 
 What the class must do (the whole contract):
   - __init__(input_vocab_size, output_vocab_size, **model_settings): the framework fills in the two sizes

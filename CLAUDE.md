@@ -72,7 +72,7 @@ library/
   agent/       domain-free parts of an agent: question_templates (template engine), runner (Request,
                TeacherModel, StudentAgentModel, run_sessions, teacher_setup)
   model/       Transformer (KV-cached decoding) + StudentModel (checkpoint load + generate); custom_student
-               + custom/ = any other student network (TrainingRun(model=...), e.g. custom/lstm_student.py)
+               + custom/ = any other student network (TrainingRun(model=...))
   data_gen/    DistillationDataGenerator + ModelHandler (generate / teacher-forced scoring)
   training/    Trainer, TrainingRunner, BatchHandler (split_batch_files), schedules, losses,
                example_encoder, evaluator, checkpoints

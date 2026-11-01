@@ -33,7 +33,6 @@ import library.training.trainer as trainer_module
 import library.training.training_runner as training_runner_module
 from library import TrainingRun
 from library.domain import REDDIT_SENTIMENT, RedditSentimentDomain
-from library.model.custom.lstm_student import LstmStudent
 from library.model.custom_student import CustomStudent
 from library.model.decoding import SimpleDecoder
 from library.model.student import StudentModel
@@ -129,6 +128,20 @@ class LooksAheadStudent(torch.nn.Module):
 class WrongShapeStudent(LooksAheadStudent):
     def forward(self, input_ids):
         return self.output(self.embedding(input_ids))[:, -1]   # the last position only
+
+
+class TinyLstmStudent(torch.nn.Module):
+    """Keeps the custom-model contract: an LSTM reads left to right, so it never looks ahead."""
+
+    def __init__(self, input_vocab_size, output_vocab_size, hidden=8, layers=1):
+        super().__init__()
+        self.embedding = torch.nn.Embedding(input_vocab_size, hidden)
+        self.lstm = torch.nn.LSTM(hidden, hidden, num_layers=layers, batch_first=True)
+        self.output = torch.nn.Linear(hidden, output_vocab_size)
+
+    def forward(self, input_ids):
+        hidden_states, _ = self.lstm(self.embedding(input_ids))
+        return self.output(hidden_states)
 
 
 class ScriptedExit:
@@ -394,14 +407,14 @@ class CustomModelTests(unittest.TestCase):
             self.custom_student(LooksAheadStudent)
         with self.assertRaisesRegex(ValueError, "shape"):
             self.custom_student(WrongShapeStudent)
-        student = self.custom_student(LstmStudent, {"hidden": 8, "layers": 1})
+        student = self.custom_student(TinyLstmStudent, {"hidden": 8, "layers": 1})
         self.assertEqual(student.get_model_info()["output_vocab_size"], len(TOKEN_LIST))
 
     def test_a_custom_run_must_be_rebuildable_later(self):
-        class DefinedInAFunction(LstmStudent):
+        class DefinedInAFunction(TinyLstmStudent):
             pass
 
-        script_model = type("ScriptModel", (LstmStudent,), {"__module__": "__main__"})
+        script_model = type("ScriptModel", (TinyLstmStudent,), {"__module__": "__main__"})
         with self.assertRaisesRegex(ValueError, "script being run"):
             TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model=script_model)
         with self.assertRaisesRegex(ValueError, "cannot be imported"):
@@ -409,7 +422,7 @@ class CustomModelTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "pass model= too"):
             TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model_settings={"hidden": 8})
         with self.assertRaisesRegex(ValueError, "plain values"):
-            TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model=LstmStudent,
+            TrainingRun(domain=REDDIT_SENTIMENT, run_name="check", model=TinyLstmStudent,
                         model_settings={"hidden": torch.tensor(8)})
 
     def test_built_in_runs_keep_their_info_and_custom_runs_record_their_model(self):
@@ -417,9 +430,9 @@ class CustomModelTests(unittest.TestCase):
         self.assertNotIn("model", built_in)   # cohorts of old and new built-in runs still match
         self.assertNotIn("model_settings", built_in)
         self.assertEqual(built_in["hidden_dim"], 48)
-        custom = TrainingRun(domain=REDDIT_SENTIMENT, run_name="custom", model=LstmStudent,
+        custom = TrainingRun(domain=REDDIT_SENTIMENT, run_name="custom", model=TinyLstmStudent,
                              model_settings={"hidden": 8}).as_dict()
-        self.assertEqual(custom["model"], "library.model.custom.lstm_student.LstmStudent")
+        self.assertEqual(custom["model"], f"{TinyLstmStudent.__module__}.TinyLstmStudent")
         self.assertEqual(custom["model_settings"], {"hidden": 8})
         self.assertEqual([custom[key] for key in ("hidden_dim", "num_layers", "num_heads", "dropout")], [None] * 4)
 
@@ -511,7 +524,7 @@ class RunTests(unittest.TestCase):
 
     @staticmethod
     def custom_spec(name: str) -> TrainingRun:
-        return replace(RunTests.spec(name), model=LstmStudent, model_settings={"hidden": 8, "layers": 1})
+        return replace(RunTests.spec(name), model=TinyLstmStudent, model_settings={"hidden": 8, "layers": 1})
 
     @classmethod
     def train(cls, name: str, stop_at_check: int = None, custom: bool = False):
@@ -592,8 +605,8 @@ class RunTests(unittest.TestCase):
         run_dir = self.runs / "lstm-straight"
         info = json.loads((run_dir / "info.json").read_text(encoding="utf-8"))
         self.assertEqual((info["status"], info["model"], info["hidden_dim"]),
-                         ("completed", "library.model.custom.lstm_student.LstmStudent", None))
-        self.assertEqual(info["model_info"]["model"], "LstmStudent")
+                         ("completed", f"{TinyLstmStudent.__module__}.TinyLstmStudent", None))
+        self.assertEqual(info["model_info"]["model"], "TinyLstmStudent")
         self.assertEqual([record["epoch"] for record in self.records("lstm-straight", "eval_epoch")], [0, 1])
 
         run = SimpleNamespace(name="lstm-straight", info=info, run_dir=run_dir)

@@ -110,7 +110,7 @@ def load_model_class(path: str) -> type:
 def check_custom_model(model_class: type, model_settings: Optional[dict]) -> None:
     """Refuse, before any training, a custom model that a finished run could not be rebuilt from."""
     if not isinstance(model_class, type):
-        raise ValueError(f"model= takes the model's class (e.g. model=LstmStudent), not {model_class!r}")
+        raise ValueError(f"model= takes the model's class (e.g. model=MyStudent), not {model_class!r}")
     if model_class.__module__ == "__main__":
         raise ValueError(f"{model_class.__name__} is defined in the script being run, so a finished run could not "
                          f"be rebuilt from it later: move it to an importable file such as library/model/custom/")

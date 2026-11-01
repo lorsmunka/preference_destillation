@@ -70,8 +70,8 @@ STATUS 2026-10-13 (pick up here)
             The volume and every pod deleted (user: "You can delete it"); RunPod is empty, ~$23 credit left.
             CE pass 2: task accuracy .372 (KL .419).
   CUSTOM MODELS 2026-10-31 (user: "Yes" to the plan): TrainingRun(model=SomeClass, model_settings={...})
-            trains any student network through the same framework (example: library/model/custom/
-            lstm_student.py); checked before training (output shape, no looking ahead, importable),
+            trains any student network through the same framework (put it in library/model/custom/; the
+            demo files were removed 2026-11-01); checked before training (output shape, no looking ahead, importable),
             recorded in info.json, rebuilt by StudentModel.from_run; the per-pass test decodes it without
             the key/value cache (slower). Built-in runs and their checkpoints unchanged. Thesis 2.1's claim holds.
   CE VS KL DONE 2026-10-29 (both 10 passes, seed 1; experiments/results/math_agent.csv + .png): task
