@@ -381,3 +381,22 @@ X-C1d COPIES VS NEW PROBLEMS: BOTH MAKE THE STUDENT READ THE NUMBERS, NEW PROBLE
       wrong, e.g. "pears per bag = 6 / pears per bag = 30 / total pegs = 6 * 30 = 100" for Gemma's
       "pegs for one tent = 30 / 6 = 5 ... pegs needed = 8 * 5 = 40"; arithmetic is often wrong too.
       Gemma itself was right less often on the copies (93.2% vs 96%); why is unverified.
+
+G-1   UNFAMILIAR PROBLEM STRUCTURE HURTS THE TUTOR STUDENT; ENTROPY SITS IN THE EXPLANATIONS (2026-11-01)
+      experiments/math_generalization_check.py: math-agent-kl-m-s2 (16.4M, best KL seed), first-turn
+      problems, greedy, its own "Answer:" vs the true answer, 300 sampled per set (seed 0):
+        test (held-out families, seen shapes)   1 step .905 (222)  2 steps .404 (57)   all .763
+        held-out shapes (add>mul, sub>div, sub>add; ~90% of the 2-step ones)
+                                                 1 step .922 (102)  2 steps .169 (183)  all .430
+        SVAMP (human-written)                    1 step .433 (224)  2 steps .079 (76)   all .343
+      Never-seen 2-step shapes: .40 -> .17. SVAMP drops even on 1 step (.91 -> .43); there the words
+      (3.1% of tokens outside the input vocabulary) and the writers differ too, and Gemma's own SVAMP
+      accuracy was not measured. One seed, one student.
+      experiments/math_v1_reorder_check.py: math v1 students (E-01, seed 1) on 200 test problems as
+      written vs question sentence first: .240/.200 (pure KL), .235/.190 (pure CE), .225/.220
+      (CE->KL), always "True" .190. They sit at the prior either way (X-C1), so v1 cannot show it.
+      experiments/teacher_entropy_by_reply_type.py (nats per step, T=1, reduced vocabulary):
+      math tutor (200 random batch files) explain .323 / solve .038 / route .003, all .1725;
+      coding agent (all test records) explain .242 / scope .043 / find .010, all .1725.
+      WHY IT MATTERS: backs thesis 2.5.2 (template structure is learned) with the agent, not v1, and
+      2.2.4's "the explanations make it uncertain".
