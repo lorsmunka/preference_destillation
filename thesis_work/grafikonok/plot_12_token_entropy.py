@@ -1,7 +1,7 @@
 """Thesis figure (section 2.2): the 2.2 example replies token by token, each token shaded by the
 teacher's entropy at that step (softmax over the stored reduced-vocabulary logits at T=1, nats).
-Input: entropy_tokens.json made by the extraction script (tokens + per-token entropy per example).
-Run: python thesis_work/grafikonok/plot_12_token_entropy.py <entropy_tokens.json>"""
+Input: data/12_token_entropy_examples.json from extract_12_token_entropy.py (tokens + per-token entropy).
+Run: python thesis_work/grafikonok/plot_12_token_entropy.py"""
 import json
 import sys
 from pathlib import Path
@@ -78,7 +78,8 @@ def text_color(entropy):
     return "#ffffff" if 0.2126 * red + 0.7152 * green + 0.0722 * blue < 0.5 else TEXT_PRIMARY
 
 
-data = json.load(open(sys.argv[1], encoding="utf-8"))
+DATA = Path(__file__).resolve().parent / "data" / "12_token_entropy_examples.json"
+data = json.load(open(sys.argv[1] if len(sys.argv) > 1 else DATA, encoding="utf-8"))
 laid_out = [(title, layout(data[key]["tokens"], data[key]["entropy"])) for key, title in PANELS]
 width = 2 * MARGIN + MAX_CHARS * CHAR_WIDTH + 0.2
 colorbar_height = 0.75
