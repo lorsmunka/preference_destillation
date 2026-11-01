@@ -46,13 +46,16 @@ ahol zᵢ az i-edik token logitja, pᵢ a valószínűsége, az összegzés pedi
 A softmax függvény egy T hőmérséklet (temperature) paraméterrel is kiegészíthető, amellyel a logitokat a valószínűségekké alakítás előtt elosztjuk [16]:
 pᵢ = exp(zᵢ / T) / Σⱼ exp(zⱼ / T) (2.2)
 T = 1 esetén a (2.1) képletet kapjuk vissza. Nagyobb hőmérséklet laposabb, „puhább” eloszlást ad, kisebb hőmérséklet pedig élesebbet, amely egyre inkább a legvalószínűbb tokenre koncentrálódik. Ez azért fontos, mert magasabb hőmérséklet mellett jobban kirajzolódnak a tanármodell kisebb valószínűségei is, így a tanulómodell jobban elsajátíthatja a tanármodell gondolkodását [16].
+Azt, hogy egy eloszlás mennyire éles vagy puha, az entrópia méri [17]. Melynek számítási módja:
+H = −Σᵢ pᵢ · ln pᵢ (2.3)
+ahol pᵢ az i-edik token valószínűsége, az összegzés pedig a kimeneti szótár összes tokenjére történik. Ha a modell egyetlen tokenben teljesen biztos, az entrópia 0, és minél inkább megoszlik a valószínűség több token között, annál nagyobb. Kisebb entrópia tehát élesebb, nagyobb entrópia puhább eloszlást jelent. Természetes alapú logaritmussal számolva az entrópia mértékegysége a nat. A dolgozatban a tanármodell entrópiáját tokenenként számoljuk, majd a válaszok összes tokenjére átlagoljuk.
 
 2.1.4 Tudásdesztilláció, tanár- és tanulómodell
 Ha szeretnénk egy nagy modell tudását egy kisebbe átültetni, a desztillálás jó megoldás lehet. A desztillálás egy olyan tömörítő eljárás, amely során azt próbáljuk elérni, hogy egy kisebb modell (függvény) ugyanúgy viselkedjen, mint a nagyobb, több számítást igénylő modell [16]. A nagy modellt tanármodellnek, a kis modellt tanulómodellnek hívjuk. A desztilláció bővebb kifejtése a 3.1.1. fejezetben található. A tanulómodell a tanármodell predikcióiból tanul. Arra optimalizálunk, hogy valamilyen szempont szerint minél inkább kövesse a tanár viselkedését.
 
 2.1.5 Veszteségek
 A tanítás során szükségünk van valamilyen módszerre, amivel számszerűsíteni lehet a modell hibáját. Ezt a feladatot látják el a veszteségfüggvények, amelyek gradiense valamilyen szempont szerint optimalizációs irányt mutat az optimalizálónak. LLM-ek desztillálásánál több veszteségfüggvény is elérhető számunkra. A kereszt-entrópia (cross-entropy, röviden CE) a modellt kizárólag a tanítószövegben szereplő következő tokenre (desztillációnál a tanármodell által választottra) tanítja [17]. Ezzel szemben a Kullback–Leibler-divergencia (röviden KL) veszteség a tanulómodell teljes eloszlását a tanármodell eloszlásával hasonlítja össze [17], és így az optimalizálni kívánt cél nem csupán a következő helyes token eltalálása lesz, hanem az úgynevezett "dark knowledge" többlettudás is átadásra kerülhet. A dolgozat elsősorban ezzel a két veszteséggel foglalkozik, illetve ezeknek vegyítésével, amikor is valamilyen arányban a két veszteséget keverjük, ezáltal többcélú optimalizációt elérve [16]:
-L = α · KL + (1 − α) · CE (2.3)
+L = α · KL + (1 − α) · CE (2.4)
 ahol α a KL-veszteség aránya, amelyet a keretrendszer a tanítás során fokozatosan változtathat. CE veszteség használatával a tanármodell következő tokenjének minél pontosabb becslése érhető el, míg KL veszteséggel a teljes eloszlás is követhető.
 
 2.1.6 Ügynök, modellhám, kontextus
@@ -62,64 +65,228 @@ A modell kontextusa (context) mindazon szövegek összessége, amelyeket a model
 2.1.7 Kiértékelés
 Ha van egy modellünk, hogyan tudjuk eldönteni, hogy jól vagy rosszul teljesít? Ha a veszteséget nézzük, vagyis hogy mekkora tévedés van a modell kimeneti valószínűségében, abból csak irányt tudunk olvasni, hogy tényleg fejlődött-e a modell. A különböző veszteségek és veszteségvegyítések során még kevésbé válik értelmezhetővé önmagában egy veszteség értéke. Ráadásul minket nem is feltétlenül a veszteség értéke érdekel, még ha kontextusba is tudnánk helyezni, hanem hogy a modell mennyire teljesít jól a tényleges tesztfeladatokon. Erre a dolgozat három fő metrikát használ. A helyes előzménnyel mért tokenpontosság (teacher forced) során a modell minden lépésben a helyes szöveget kapja, és ez alapján kell a következő tokent megjósolnia [17]. Ebből százalékos eredményt kapunk, vagyis hogy ha a modell kap valamilyen szöveget, mekkora valószínűséggel fog helyes következő tokent jósolni. Egy másik metrika a saját előzménnyel mért tokenpontosság (student only), ahol a modell saját magának állítja elő a szöveget, amely alapján a következő tokent is meg kell jósolnia. Egy korai hibás token könnyen elronthatja a modell teljes válaszát, a hiba úgymond eszkalálódik (compounding errors) [19]. Ez a metrika valamivel pontosabban tükrözi a modell valós tudását, hiszen azt mondja meg nekünk, hogy ha a modell teljes válaszát nézzük, a tokenek hány százaléka fog pozíciónként megegyezni a helyes válasszal (desztillációnál a tanármodell válaszával). Az is előfordulhat, hogy arra vagyunk kíváncsiak, hogy a modell helyesen oldotta-e meg a feladatot. Ez olyan feladatokon releváns, mint például a matematikai feladatok megoldása, egy szöveg hangulatának elemzése JSON-objektummal vagy a megfelelő kódrészlet kijelölése. Ez a metrika a feladatpontosság (task accuracy), vagyis hogy a modell a feladatok hány százalékát képes helyesen elvégezni (a dolgozatban a modell saját maga által generált válasza alapján, a tanármodell válaszához mérve).
 
-2.2 A probléma elemzése
+2.2 A vizsgált domainek
+A következő alfejezetekben rövid bemutatásra kerülnek a dolgozatban vizsgált domainek. A kiválasztásukról részletesebben a 4.4. fejezetben lehet olvasni.
+
+2.2.1 Szöveghangulat-elemzés
+Az első vizsgált domain a szöveghangulat-elemzés (text sentiment classification). A modell kap egy Reddit-kommentet, amelyet utána 4 tengely mentén kell kiértékelnie, egy JSON-objektumot használva. A kommentek egy Kaggle-adatbázisból [20] származnak. A kommentekből az URL-ek és a betűkön, számokon és alapvető írásjeleken kívüli karakterek törlésre, a törölt ([deleted], [removed]) kommentek, valamint a 3 tokennél rövidebb és a 25 tokennél hosszabb kommentek pedig kiszűrésre kerültek.
+Egy példa a feladatra:
+
+````
+You only need 1 friend now, they changed how the Friend boost works
+
+```json
+{
+  "tone": "neutral",
+  "sentiment": "negative",
+  "safety": "safe",
+  "toxicity": "respectful"
+}
+````
+
+A modell feladata a \n\n karakterek utáni rész generálása, és a "}" token állítja le a generálást. A domain strukturált, a Gemma 3 4B tokenenkénti átlagos entrópiája 0,02 nat, amely arra utal, hogy a domain eloszlása éles, tehát általában a tanármodell biztos a döntésében.
+
+2.2.2 Matematikai szöveges feladatok megoldása (első verzió)
+A következő domain a matematikai szöveges feladatok megoldásáról szól. A tanítópéldák 260 különböző sablont használva készültek. A sablonok 13 művelettípusba voltak bontva, például összeadás, kivonás, szorzás, osztás, két műveletből álló feladatok (például összeadás, majd szorzás) és összehasonlítás. A modell feladata a megadott levezetési váz kitöltése és a helyes megoldás leírása a "Solution:" után. A sablonok miatt fennáll a veszélye, hogy a modell a sablonok mintáját tanulja meg, és új szerkezetű feladatokat kevésbé képes megoldani (lásd 2.5.2. alfejezet).
+Egy példa a feladatra:
+
+```
+Problem: "Olivia has 93 seeds and buys 67 more. Each seed grows 63 flowers. How many flowers total?"
+A=?
+B=?
+C=?
+D=A+B=?
+E=D*C=?
+Solution: ?;
+
+93
+B=67
+C=63
+D=A+B=160
+E=D*C=10080
+Solution: 10080;
+```
+
+A modell feladata a \n\n karakterek utáni rész generálása, és a ";" token állítja meg a generálást. A domain strukturált, a Gemma 3 4B tokenenkénti átlagos entrópiája kb. 0,003 nat, amely arra utal, hogy a domain eloszlása éles, tehát általában a tanármodell biztos a döntésében.
+
+2.2.3 Posztgenerálás
+Az utolsó vizsgált, nem ügynök domain, a posztgenerálás. A modell kap egy, a 2.2.1. alfejezetben megismert kommentet, és az a feladata, hogy generáljon egy olyan posztot, amelyre érkezhetne ez a komment.
+Egy példa a feladatra:
+
+```
+Main problem was they showed it in slow motion. I thought it was a bit much by Bish
+
+Seriously, the slow-motion replays in this game were infuriating. It felt like they were trying to draw out the drama and make it more intense, but it just made me feel like I was watching a highlight reel instead of a real game.  I agree, it was a bit much, and honestly, distracting. <end>
+```
+
+A modell feladata a \n\n karakterek utáni rész generálása, és az "<end>" jelölés állítja meg a generálást. A domain strukturálatlan, a Gemma 3 4B tokenenkénti átlagos entrópiája kb. 1,0 nat, amely arra utal, hogy a domain eloszlása puha, tehát általában a tanármodell több válasz között vacillál.
+
+2.2.4 Matematikai feladatokat megoldó és magyarázó ügynök
+Ez a domain a matematikai szöveges feladatmegoldó domain továbbfejlesztett, ügynökösített változata. A modellnek egy szöveges feladat levezetése és megoldása a feladata. A feladatok valódi, matematikai feladatokat tartalmazó adatbázisok (ASDiv [21], MAWPS [22]) feladataiból kiindulva készültek, ezeket mesterséges intelligencia (Claude Opus 5.5) ügynökök bővítették a megfelelő példaszám elérése érdekében. A modellnek ezenfelül kezelnie kell a saját kontextusát egy modellhám segítségével, el kell döntenie, hogy következő részfeladatot vagy kiegészítő kérdést lát. Amennyiben kiegészítő kérdésről van szó, a következő részfeladatnál a kiegészítő kérdések törlésre kerülnek a kontextusból, így a modell kontextusa nincs túlterhelve. Ezenfelül a modell megtanulja az oda nem illő kérdéseket elutasítani, amelyek be sem kerülnek a kontextusba.
+Egy példa, a feladat megoldása után egy kiegészítő kérdéssel:
+
+```
+<task>The restaurant's Monday schedule calls for 16 lemons. Friday's schedule, with its fish special, calls for 5 times as many lemons. How many lemons does the Friday schedule call for?</task>
+<solution>
+lemons on Monday = 16
+multiplier for Friday = 5
+lemons on Friday = 16 * 5 = 80
+Answer: 80
+</solution>
+<message>what did you do with 16 and 5? I don't get it</message>
+
+<explanation>The word "times" means we need to multiply the numbers together. I multiplied 16 by 5 to find the total for Friday.</explanation>
+```
+
+Egy másik példa elutasított kérdésre:
+
+```
+<task>The restaurant's Monday schedule calls for 16 lemons. ...</task>
+<solution>
+...
+</solution>
+<message>this is the most boring day of my life</message>
+
+<out_of_scope>
+```
+
+Ilyenkor a modell csak az <out_of_scope> jelölést írja le, a modellhám pedig egy előre megírt mondattal ("This question is outside the scope of this task.") válaszol. A <task> és <solution> blokkokban szereplő szövegek végig megmaradnak a modell kontextusában, a <question> és <explanation> blokkok a következő <task> blokknál törlődnek, az elutasított üzenet pedig be sem kerül a kontextusba. A magyarázatok miatt a feladatoknak csak egy része strukturált, a Gemma 4 12B tokenenkénti átlagos entrópiája 0,17 nat, amelyből az olvasható le, hogy a modell nem minden tokenben volt teljesen biztos, volt, ahol több megoldást is választott volna.
+
+2.2.5 Kódkereső és -magyarázó ügynök
+Ebben a feladatban a modell 20 (16 Python- és 4 HTML-) példaprojekt valamelyikének teljes kódját kapja meg egy előre meghatározott formátumban. A modell feladata, hogy megkeressen vagy megmagyarázzon egy kódrészletet. Ha magyaráznia kell, a modell akkor is először leszűkíti a kontextust a <scope> blokkot használva, majd a modellhám által leszűkített kontextus alapján megválaszolja a rá vonatkozó kérdést.
+Egy példa a feladatra (kevesebb fájllal, rövidített fájlokkal bemutatva), 1. lépés:
+
+```
+<project>
+<file name="main.py">
+ 1: """To-do list in the terminal."""
+ 2:
+ 3: from calendar_help import read_date
+...
+22: def ask_new_task(username):
+23:     title = input("What needs doing? ")
+24:     due = read_date(input("Due (today, tomorrow, YYYY-MM-DD or Enter): ") or "none")
+25:     priority = parse_priority(input("Priority (h/m/l): ")) or "medium"
+26:     print(add_task(username, Task(title, due, priority)) or "Added.")
+...
+</file>
+<file name="jobs.py">
+...
+</file>
+...
+</project>
+<message>How does ask_new_task work?</message>
+
+<scope>
+main.py 22-26
+jobs.py 43-51
+checks.py 6-13
+checks.py 24-26
+calendar_help.py 6-16
+</scope>
+```
+
+2. lépés:
+
+```
+<context>
+<file name="calendar_help.py">
+ 6: def read_date(text):
+...
+</file>
+<file name="checks.py">
+ 6: def parse_priority(text):
+...
+</file>
+<file name="main.py">
+22: def ask_new_task(username):
+23:     title = input("What needs doing? ")
+24:     due = read_date(input("Due (today, tomorrow, YYYY-MM-DD or Enter): ") or "none")
+25:     priority = parse_priority(input("Priority (h/m/l): ")) or "medium"
+26:     print(add_task(username, Task(title, due, priority)) or "Added.")
+</file>
+<file name="jobs.py">
+43: def add_task(username, task):
+44:     """Put a new task on the user's list. None when it worked, otherwise why not."""
+45:     problem = title_problem(task.title)
+46:     if problem:
+47:         return problem
+48:     jobs = tasks_of(username)
+49:     jobs.append(task.to_data())
+50:     save_tasks(username, jobs)
+51:     return None
+</file>
+</context>
+<message>How does ask_new_task work?</message>
+
+<explanation>
+The `ask_new_task` function in `main.py` collects information from the user to create a new task. It uses `read_date` from `calendar_help.py` to interpret the due date, `parse_priority` from `checks.py` to determine the urgency, and then calls `add_task` in `jobs.py` to save the new task to the user's list.
+</explanation>
+```
+
+A modell a \n\n rész után kezdi meg a válaszadást. A Gemma 4 12B tokenenkénti átlagos entrópiája itt is 0,17 nat, amely gyakorlatilag megegyezik a matematikai ügynökével.
+
+2.3 A probléma elemzése
 A megoldandó feladat tehát egy nagy modell (későbbiekben tanármodell) sokrétű tudásának egy domainre koncentráltan hatékonyan kinyerni. Gyakorlatilag a tanármodell oly módú tömörítése, ahol nem számít a modell teljesítményének romlása más területeken, csak az számít, hogy a vizsgált területen a lehető legjobban másolja a tanárát. A probléma több részre bontható.
 
-2.2.1 A domain
+2.3.1 A domain
 Először is szükség van domainek definiálására. Itt megadhatjuk azt az utasítást, amit a tanármodell követve a tanítóadatokat elő tudja állítani. A domain feladata a kimeneti szótár tokenjeinek meghatározása (a bemeneti szótárat a keretrendszer a domain adataiból automatikusan állítja elő), a megállást jelző token szolgáltatása, illetve ügynökdesztillálás esetén a modellhám biztosítása.
 
-2.2.2 A tanítóadatok előállítása
+2.3.2 A tanítóadatok előállítása
 Ha van egy domainünk, ahhoz, hogy a tanár viselkedése másolható legyen, szükségünk van a tanártól adatokra. A tanítóadatok a következőképpen kerülnek előállításra: a keretrendszert használva bekonfigurálhatunk akár több adatgenerálási feladatot egy sorban, amelyek szekvenciálisan végrehajtódnak. Minden adatgenerálási feladat meghatározza, hogy melyik tanármodellt használva melyik domainen mennyi példát generáljon a keretrendszer. Az adatgenerálás során a tanármodell megkap egy feladatot, amelyre lépésenként (autoregresszív módon) választ ad. Minden lépésben mentésre kerül a tanár kimeneti eloszlása, vagyis hogy a tanármodell milyen valószínűséggel hogyan folytatná a szöveget. Ha a domain optimalizációs okokból így határozza meg, a tanármodell egy megadott választ pontoz egyetlen futtatással, az eloszlás ilyenkor is minden tokennél mentésre kerül. Egy később kifejtett optimalizációs stratégiának köszönhetően (a kimeneti szótár csökkentése) nem szükséges a teljes eloszlást elmenteni. Ez tovább optimalizálható: a mentett adatok mérete tovább csökkenthető, ha tokenenként csak a k legvalószínűbb token logitja kerül mentésre (top-k), vagy ha a tokeneket a tanármodell valószínűségei alapján mintavételezzük. A Gemma 3 modellek tanításánál például tokenenként 256, a tanár valószínűségei szerint mintavételezett logitot használtak [12]. Szükségesség híján a dolgozat ezt a stratégiát nem vizsgálja. A válaszadás akkor ér véget, amikor a tanármodell a domainben megadott záró tokent vagy a saját, szöveg végét jelző tokenjét használja. Ezenfelül, ha túllépi a megengedett válaszhosszt, a generálás leáll, és a példa elvetésre kerül.
 A folyamat végén kapni fogunk egy mappát (batches/<domain>/<tanármodell>), amelyben .npz formátumú kötegek kerülnek. Egy kötegfájlban alapértelmezett beállítások mellett 32 példa található, amelyek egy-egy probléma tanítóadatát tárolják. Egy ilyen példa tartalmazza a feladatot szövegként, a modell válaszát szövegként, metaadatokat (például hogy a példa a tanító- vagy a tesztkészlethez tartozik), illetve egy steps listát, amelyben lépésenként el van mentve a válasz következő tokenje, a tanármodell által legvalószínűbbnek tartott token sorszáma a kimeneti szótárban, valamint a kimeneti szótár összes tokenjéhez tartozó nyers logitértékek, amelyekből az eloszlás kiszámolható. Összességében tehát ez a folyamat domainenként és tanármodellenként külön mappába, rendszerezve tárolja az adatokat olyan formában, hogy a 3.1.1. fejezetben bemutatott desztillációs tanítás végrehajtható legyen a tanulómodellen.
 
-2.2.3 A tanulómodell és a tanítás
+2.3.3 A tanulómodell és a tanítás
 A következő kérdés a tanulómodell architektúrájának megválasztása. A keretrendszer alapértelmezett modellje egy sűrű, decoder-only transformer modell, amely a Gemma-modellekben is használt elemekre épül (RMSNorm normalizálás, rotary pozíciókódolás, kapuzott GELU előrecsatolt réteg), és amelynek konfigurálhatjuk rejtett dimenzióját (hidden dimension), figyelemfejeinek (attention head) és rétegeinek (layers) számát sok egyéb mellett. Ezenfelül a tanítási sorban saját modellt is átadhatunk a keretrendszernek, ha saját architektúrával szeretnénk kísérletezni, hiszen a keretrendszernek a könnyű, gyors, kontrollált és költséghatékony kísérletezésnek az elősegítése is célja.
 A tanítóadatok előállításához hasonlóan a tanítás is egy soralapú szekvenciális rendszerre épül. A tanítóadatok előállításához és a diákmodellhez hasonlóan a desztilláció ezen része is teljes mértékben konfigurálható kell hogy legyen, hiszen a kísérleteket csak így lehet nagy számban, megbízhatóan és pontosan végrehajtani. Beállítható kell legyen a vizsgált veszteségvegyítésen felül számos más paraméter.
 
-2.2.4 A kiértékelés
+2.3.4 A kiértékelés
 A modell betanulása után pedig fontos lépés a tanítás és a modell eredményeinek a kielemzése. A keretrendszer alaposan naplózza az összes fontos paramétert adatgenerálás és tanítás közben is. Visszakövethetjük a különböző folyamatokkal eltöltött időt, tanulás folyamán a veszteség- és pontosságértékeket, epochok közben a mini tesztadatsoron történő kiértékelést, epochok végén a teljes tesztadatokon történő értékelést.
 Mivel a tanulómodell tanítása nem determinisztikus, általában több futtatás átlagával és szórásával, statisztikai próbával tudjuk igazolni a különböző módszerek hatékonyságát, így egy kísérletcímke-rendszer (experiment tag) is szükséges, amelynek segítségével több futtatás eredménye összevonható egy adatsorrá.
 
-2.2.5 Integráció
+2.3.5 Integráció
 Az utolsó problémakör pedig a kész modellek integrálása különböző felületekbe, legyen az egy terminálos alkalmazás, amelyben a betanított ügynökkel beszélgethetünk, vagy egy webalkalmazás, amely mutatja a modell és a modellhám által tett lépéseket egy chatfelületen.
 
-2.3 Miért fontos nyílt súlyú LLM-et használni
-A projekt a Hugging Face-ről letölthető, nyílt súlyú modellekre alapoz. A 3.1.1. fejezetben kifejtett általános LLM-desztillációs módszerek alapján két fő desztillációs módszer érhető el. Az egyik, amikor a modell kimeneti szövegén tanítjuk a tanulómodellünket, a másik pedig, amikor a kimeneti szöveg generálása közben a modell eloszlásán is. Az előbbi módszer zárt súlyú modellek kimenetén is elvégezhető, bár ez a felhasználási feltételekbe (terms of use) ütközhet [20]. A nyílt súlyú modelleknél általában nincs ilyen megkötés [21]. További előnye a nyílt súlyú modelleknek, hogy ha mi telepítettük ki (deployment), hozzáférhetünk a modell kimeneti eloszlásához, azt el tudjuk menteni, és így a modell kimeneti eloszlásában rejlő többletinformáción, a Hinton-féle "dark knowledge"-en [16] is taníthatjuk a tanulómodelleinket. Ráadásul az LLM-eknél ez az eloszlás különösen fontos (lásd 3.1.1. fejezet).
+2.4 Miért fontos nyílt súlyú LLM-et használni
+A projekt a Hugging Face-ről letölthető, nyílt súlyú modellekre alapoz. A 3.1.1. fejezetben kifejtett általános LLM-desztillációs módszerek alapján két fő desztillációs módszer érhető el. Az egyik, amikor a modell kimeneti szövegén tanítjuk a tanulómodellünket, a másik pedig, amikor a kimeneti szöveg generálása közben a modell eloszlásán is. Az előbbi módszer zárt súlyú modellek kimenetén is elvégezhető, bár ez a felhasználási feltételekbe (terms of use) ütközhet [23]. A nyílt súlyú modelleknél általában nincs ilyen megkötés [24]. További előnye a nyílt súlyú modelleknek, hogy ha mi telepítettük ki (deployment), hozzáférhetünk a modell kimeneti eloszlásához, azt el tudjuk menteni, és így a modell kimeneti eloszlásában rejlő többletinformáción, a Hinton-féle "dark knowledge"-en [16] is taníthatjuk a tanulómodelleinket. Ráadásul az LLM-eknél ez az eloszlás különösen fontos (lásd 3.1.1. fejezet).
 
-2.4 Lehetséges buktatók
+2.5 Lehetséges buktatók
 
-2.4.1 A redukált szótár korlátai
+2.5.1 A redukált szótár korlátai
 A dolgozatban vizsgált tanulómodellek be- és kimeneti szótára optimalizációs célból, a domainhez igazítva, redukálva van. Ennek a módszernek fundamentális limitációja, hogy a modell bizonyos tokeneket nem tud olvasni vagy írni. Ez problémát okozhat, hiszen ha a modell olyan szöveget lát, amely nincs benne a bemeneti szótárában, akkor azt nem tudja felismerni, olyan szöveget pedig szintén nem képes generálni, amelyhez olyan tokent kellene használnia, amely nincs benne a kimeneti szótárában. Ezek ellen a problémák ellen kétféleképpen védekezhetünk, jól összeállított szótárakkal, illetve a kérés átirányításával vagy elutasításával. A korai kísérletek során a kimeneti szótár a lehetséges válaszok listájából vagy egy tanármodell által előre generált mintaszövegből készült. Később a kimeneti szótár a tanármodell válaszai alapján került felépítésre. Először a tanármodell előállítja a válaszait, majd egy második körben a teljes választ egyben átfuttatva a modellen kiolvashatók és menthetők a logitértékei. Mint kiderült, összességében messze adat- és számításkapacitás-hatékonyabb megoldás volt ez, hiszen nem kellett válaszokat eldobni azért, mert olyan tokeneket tartalmaztak, amelyek nem voltak benne az előre elkészített kimeneti szótárban. A bemeneti szótár mindvégig a tanító- és a tesztrekordokban előforduló összes token és a kimeneti szótár alapján került előállításra, kiegészítve egy ismeretlen (unknown) tokennel, amelyre a szótáron kívüli bemeneti tokenek leképeződnek. Az ismeretlen token sora nincs tanítva, így egy ilyen szó a modell számára gyakorlatilag üres helyként jelenik meg. Összességében tehát, ha a domain feladatai kellőképpen jól fel vannak építve, domainen belül csekély eséllyel kellene előfordulnia szótárhibának. Amennyiben mégis ilyen történne, a kérést tovább lehet irányítani egy olyan modellnek, amelynek nincsenek ilyen limitációi, vagy akár egy hibaüzenet is megjeleníthető. Szótárcsökkentés nélkül sem tudna a modell mit kezdeni azokkal a tokenekkel, amelyek a tanítóadatban nem fordulnak elő, mert ezek beágyazása nem kap tanítójelet. Hasonló a helyzet a kimeneti oldalon. Ha egy token sosem helyes válasz, a modell csak azt tanulja meg, hogy ne írja le, így a hozzá tartozó súlyok gyakorlatilag fölösleges költséget jelentenek a modellben. A tesztadatoknál előfordulhat, hogy van olyan token, amelynek a modellben van ki- vagy bemeneti sora, de a tanítóadatban sosem szerepelt. A redukált kimeneti szótárnak van egy kevésbé szembetűnő következménye is. A tanármodell eloszlásából csak a megtartott tokenekhez tartozó logitértékek kerülnek mentésre, a szótáron kívüli tokenekre jutó valószínűség elvész. A gyakorlatban ez csak minimális problémát jelent, hiszen a tanármodell valószínűségének túlnyomó része általában a szótárban szereplő tokenekre esik. Egy saját mérés szerint a szöveghangulat-elemző domainen a Gemma 3 4B valószínűségének kb. 99%-a a kimeneti szótáron belül maradt.
 
-2.4.2 Programozottan előállított feladatok
-A matematikai feladatmegoldó domain első verziójának feladatanyaga 260, 13 művelettípusba osztott sablont használt a feladatok előállítására. A mesterséges intelligenciát használó megoldások egyik óriási előnye, hogy olyan helyen is találnak mintákat, ahol az emberek nem, viszont a sablonos megoldásnál ez hátrány, abból a szempontból, hogy a modell nem feltétlenül csak azt tanulja meg, amit szeretnénk, hanem a sablonok logikáját is [22]. Ez azt eredményezheti, hogy ha a sablontól eltérő sorrendben szerepelnek egyébként jól ismert tokenek, a modell teljesítménye jelentősen romolhat [23]. Ennek veszélyét csökkentve a második verzióban már publikusan elérhető feladatbázisok (ASDiv [24], MAWPS [25]) feladataiból kiindulva, mesterséges intelligencia (Claude Opus 5.5 ügynökök) által írt feladatok lettek használva, így növelve a feladatszerkezetek változatosságát. A kódolóügynöknél hasonló, mesterséges intelligenciával bővített feladatadatbázis lett létrehozva, a korábbi programatikus feladatgenerálási hozzáálláshoz képest. Ha ezeket a modelleket élesben szeretnénk használni, több, nagyobb varianciájú adatra lenne szükség, mert most is megfigyelhető egyfajta "túltanulás". A módszer működőképességének bemutatására viszont megfelelőek a feladatbázisok.
+2.5.2 Programozottan előállított feladatok
+A matematikai feladatmegoldó domain első verziójának feladatanyaga 260, 13 művelettípusba osztott sablont használt a feladatok előállítására. A mesterséges intelligenciát használó megoldások egyik óriási előnye, hogy olyan helyen is találnak mintákat, ahol az emberek nem, viszont a sablonos megoldásnál ez hátrány, abból a szempontból, hogy a modell nem feltétlenül csak azt tanulja meg, amit szeretnénk, hanem a sablonok logikáját is [25]. Ez azt eredményezheti, hogy ha a sablontól eltérő sorrendben szerepelnek egyébként jól ismert tokenek, a modell teljesítménye jelentősen romolhat [26]. Ennek veszélyét csökkentve a második verzióban már publikusan elérhető feladatbázisok (ASDiv [21], MAWPS [22]) feladataiból kiindulva, mesterséges intelligencia (Claude Opus 5.5 ügynökök) által írt feladatok lettek használva, így növelve a feladatszerkezetek változatosságát. A kódolóügynöknél hasonló, mesterséges intelligenciával bővített feladatadatbázis lett létrehozva, a korábbi programatikus feladatgenerálási hozzáálláshoz képest. Ha ezeket a modelleket élesben szeretnénk használni, több, nagyobb varianciájú adatra lenne szükség, mert most is megfigyelhető egyfajta "túltanulás". A módszer működőképességének bemutatására viszont megfelelőek a feladatbázisok.
 
-2.4.3 A tanármodell hibáinak átvétele
+2.5.3 A tanármodell hibáinak átvétele
 Költséghatékonysági okokból a dolgozat 4, illetve 12 milliárd paraméteres tanármodelleket használ. Ezeknél vannak nagyságrendekkel nagyobb és jobban teljesítő nyílt súlyú modellek [5], [6], a legjobb zárt súlyú modellek pedig még ezeknél is jobban teljesítenek [4]. Ennek eredményeként a tanármodell válaszai néha hibásak. A desztillációs módszerek vizsgálatánál viszont ez kevésbé fontos, hiszen nem egy olyan rendszert szeretnénk létrehozni, amely jobb, vagy másképp viselkedik, mint a tanármodell, egyszerűen csak tömöríteni szeretnénk a tudását, a lehetséges hibáival együtt is. Ez azt is jelenti, hogy a tanármodell képességei egyfajta felső korlátot jelentenek a tanulómodell számára. Egyben viszont azt is jelenti, hogy ha egy módszer jól működik 4, illetve 12 milliárd paraméternél, akkor feltételezhetjük, hogy nagyobb modelleket is desztillálhatunk hasonlóan, tehát a felső korlát egy jobb tanármodellel tovább emelhető.
 
-2.4.4 Az alapoktól tanítás adatigénye
-Az alapoktól tanítás azt jelenti, hogy a modell véletlenszerűen van inicializálva, nincs semmilyen előtudása sem a nyelvről, sem az adott domainről, szemben például a finomhangolás módszerével, ahol egy meglévő modell meglévő tudása van tovább erősítve, bővítve (lásd 3.1.3. fejezet). A finomhangolás viszont elveszi a lehetőséget a saját méret és architektúra megválasztására, amelyre a dolgozat alapoz (be- és kimeneti szótár, rendkívül kis méret). Az alapoktól tanított modellnek így mindent a desztillációs adatokból kell megtanulnia, ezért jóval nagyobb mennyiségű adatra van szüksége. A matematikai feladatokat magyarázó ügynök domainen egy 224 beszélgetésből álló, 1345 tanítóválaszos próbatanítás végén az 5,9 millió paraméteres tanulómodell az 54 tesztfeladatból egyet sem oldott meg helyesen, pedig mindig a leggyakoribb választ adva 4 is helyes lett volna. Ugyanekkora tanulómodellt egyre több tanítóválaszon tanítva a tesztadatokon mért CE-veszteség egyenletesen csökkent. Rendre 576, 1344, 3136 és 5383 tanítóválasszal a veszteség 2,96, 2,56, 2,18 és 1,86 volt, vagyis a tanítóadat minden megduplázása átlagosan 0,34-dal csökkentette a veszteséget, és a vizsgált adatmennyiségeknél ez a javulás még nem lassult le. A feladatpontosság ennyi adattal viszont végig 0,8 és 2,4% között maradt, ami kevesebb, mint a mindig a leggyakoribb választ adva elérhető 6,1%. Nagyobb adatmennyiségnél már a feladatpontosság is jól mutatja az adat szerepét. Ugyanaz a 16,4 millió paraméteres tanulómodell 10 epoch alatt 64 554 tanítóválaszon a tesztfeladatok 49,5%-át oldotta meg helyesen, a háromszor ennyi, 195 980 tanítóválaszon pedig a veszteségtől és a futtatástól függően 68–72%-át, miközben mindig a leggyakoribb választ adva kb. 4% érhető el. A két mérés tesztkészlete eltérő méretű, de mindkettő a tanítás során nem látott feladatcsaládokból áll.
+2.5.4 Az alapoktól tanítás adatigénye
+Az alapoktól tanítás azt jelenti, hogy a modell véletlenszerűen van inicializálva, nincs semmilyen előtudása sem a nyelvről, sem az adott domainről, szemben például a finomhangolás módszerével, ahol egy meglévő modell meglévő tudása van tovább erősítve, bővítve (lásd 3.1.3. fejezet). A finomhangolás viszont elveszi a lehetőséget a saját méret és architektúra megválasztására, amelyre a dolgozat alapoz (be- és kimeneti szótár, rendkívül kis méret). Az alapoktól tanított modellnek így mindent a desztillációs adatokból kell megtanulnia, ezért jóval nagyobb mennyiségű adatra van szüksége. A matematikai feladatokat magyarázó ügynök domainen egy 224 beszélgetésből álló, 1345 tanítóválaszos próbatanítás végén az 5,9 millió paraméteres tanulómodell az 54 tesztfeladatból egyet sem oldott meg helyesen, pedig mindig a leggyakoribb választ adva 4 is helyes lett volna. Ugyanekkora tanulómodellt egyre több tanítóválaszon tanítva a tesztadatokon mért CE-veszteség egyenletesen csökkent (2.1. ábra). Rendre 576, 1344, 3136 és 5383 tanítóválasszal a veszteség 2,96, 2,56, 2,18 és 1,86 volt, vagyis a tanítóadat minden megduplázása átlagosan 0,34-dal csökkentette a veszteséget, és a vizsgált adatmennyiségeknél ez a javulás még nem lassult le.
+![2.1. ábra](../grafikonok/11_math_tutor_data_curve.png)
+2.1. ábra. A tesztadatokon mért CE-veszteség a tanítóválaszok számának függvényében
+A feladatpontosság ennyi adattal viszont végig 0,8 és 2,4% között maradt, ami kevesebb, mint a mindig a leggyakoribb választ adva elérhető 6,1%. Nagyobb adatmennyiségnél már a feladatpontosság is jól mutatja az adat szerepét. Ugyanaz a 16,4 millió paraméteres tanulómodell 10 epoch alatt 64 554 tanítóválaszon a tesztfeladatok 49,5%-át oldotta meg helyesen, a háromszor ennyi, 195 980 tanítóválaszon pedig a veszteségtől és a futtatástól függően 68–72%-át, miközben mindig a leggyakoribb választ adva kb. 4% érhető el. A két mérés tesztkészlete eltérő méretű, de mindkettő a tanítás során nem látott feladatcsaládokból áll.
 
-2.4.5 Helyes formátum, helytelen válasz
-A strukturált domaineken félrevezető lehet a tanítás közben mért és a helyes előzménnyel mért pontosság. Például a szöveghangulat-elemző domainen meglehetősen gyorsan, pár száz példa alatt megjegyzi a modell a JSON-struktúrát. A saját előzménnyel mért és a feladatpontosságból viszont hamar kiderül, hogy míg a formátumot helyesen használja a modell, addig a mezők értékei nem feltétlenül helyesek. Sőt, nem csak a strukturált domaineken, de a matematikai feladatmegoldó ügynök domainen is előfordult a próbatanítás során, hogy a modell helyes formátumban, de a feladattól független, kitalált tárgyakkal és számokkal válaszolt. A szöveghangulat-elemző domainen ráadásul vannak címkék, amelyek alulreprezentáltak, ez a 2.1. ábrán látható tévesztési mátrixokból (confusion matrix) is kiderül.
-![2.1. ábra](../grafikonok/08b_reddit_confusion_matrices_reduced_input.png)
-2.1. ábra. Tévesztési mátrixok a szöveghangulat-elemző domainen
-A 2.1. ábrán egy Gemma 3 4B tanármodellből desztillált, 4,9 millió paraméteres tanulómodell mezőnkénti tévesztési mátrixai láthatók. A tanulómodell 489 984 Reddit-kommenten tanult 3 epochon keresztül. A sorok a tanármodell, az oszlopok a tanulómodell címkéit mutatják. A mátrixok a 10 016 tesztkommentből azt a 8210-et tartalmazzák, amelyre a tanulómodell feldolgozható JSON-választ adott. A ritka hangnemcímkék közül a "rude" (durva) címkét a tanulómodell 129 esetből csak 2-szer, a "friendly" (barátságos) címkét 56 esetből 16-szor találta el, a gyakori "neutral" (semleges) és "aggressive" (agresszív) címkéket viszont nagyrészt eltalálta. Összességében a modell az értékek 86%-át találta el, szemben a mindig a leggyakoribb címkét adó megoldás 64%-ával.
+2.5.5 Helyes formátum, helytelen válasz
+A strukturált domaineken félrevezető lehet a tanítás közben mért és a helyes előzménnyel mért pontosság. Például a szöveghangulat-elemző domainen meglehetősen gyorsan, pár száz példa alatt megjegyzi a modell a JSON-struktúrát. A saját előzménnyel mért és a feladatpontosságból viszont hamar kiderül, hogy míg a formátumot helyesen használja a modell, addig a mezők értékei nem feltétlenül helyesek. Sőt, nem csak a strukturált domaineken, de a matematikai feladatmegoldó ügynök domainen is előfordult a próbatanítás során, hogy a modell helyes formátumban, de a feladattól független, kitalált tárgyakkal és számokkal válaszolt. A szöveghangulat-elemző domainen ráadásul vannak címkék, amelyek alulreprezentáltak, ez a 2.2. ábrán látható tévesztési mátrixokból (confusion matrix) is kiderül.
+![2.2. ábra](../grafikonok/08b_reddit_confusion_matrices_reduced_input.png)
+2.2. ábra. Tévesztési mátrixok a szöveghangulat-elemző domainen
+A 2.2. ábrán egy Gemma 3 4B tanármodellből desztillált, 4,9 millió paraméteres tanulómodell mezőnkénti tévesztési mátrixai láthatók. A tanulómodell 489 984 Reddit-kommenten tanult 3 epochon keresztül. A sorok a tanármodell, az oszlopok a tanulómodell címkéit mutatják. A mátrixok a 10 016 tesztkommentből azt a 8210-et tartalmazzák, amelyre a tanulómodell feldolgozható JSON-választ adott. A ritka hangnemcímkék közül a "rude" (durva) címkét a tanulómodell 129 esetből csak 2-szer, a "friendly" (barátságos) címkét 56 esetből 16-szor találta el, a gyakori "neutral" (semleges) és "aggressive" (agresszív) címkéket viszont nagyrészt eltalálta. Összességében a modell az értékek 86%-át találta el, szemben a mindig a leggyakoribb címkét adó megoldás 64%-ával.
 
-2.4.6 A helyes és a saját előzménnyel mért pontosság eltérése
-A 2.4.5. alfejezetben is olvasható, hogy a modell gyakran megjegyez struktúrákat. Ez nem csak a JSON-formátumra, de az objektum kulcsaira és azok értékeire is vonatkozik. A helyes előzménnyel mért pontosságnál előfordulhat, hogy például a 2 tokenre bomló "harmful" (káros) szó ("harm" és "ful") első tokenjét nem találja el a modell, de ha megkapja az érték első tokenjét, ez alapján egyszerűen be tudja fejezni. Az első token döntési pont, a második csak befejezi a döntést. Ezért fontos a saját előzménnyel mért pontosság is, amely azt is mutatja, ha a modell hibája eszkalálódik [19], vagyis egy korai hiba a teljes modellválaszt elrontja.
+2.5.6 A helyes és a saját előzménnyel mért pontosság eltérése
+A 2.5.5. alfejezetben is olvasható, hogy a modell gyakran megjegyez struktúrákat. Ez nem csak a JSON-formátumra, de az objektum kulcsaira és azok értékeire is vonatkozik. A helyes előzménnyel mért pontosságnál előfordulhat, hogy például a 2 tokenre bomló "harmful" (káros) szó ("harm" és "ful") első tokenjét nem találja el a modell, de ha megkapja az érték első tokenjét, ez alapján egyszerűen be tudja fejezni. Az első token döntési pont, a második csak befejezi a döntést. Ezért fontos a saját előzménnyel mért pontosság is, amely azt is mutatja, ha a modell hibája eszkalálódik [19], vagyis egy korai hiba a teljes modellválaszt elrontja.
 
-2.4.7 Az LLM nem mindig a legjobb megoldás
-Fontos még megjegyezni, hogy a dolgozatban vizsgált domaineken nem feltétlenül egy LLM a legjobb megoldás. Például a szöveghangulat klasszifikálására egy klasszifikáló modell, mint például a BERT [11], valószínűleg jobban teljesítene. A dolgozatban viszont mégis LLM-mel vannak az ilyen problémák megoldva, ugyanis relatíve könnyebb kutatási felszínt biztosítanak, hiszen például a szöveghangulat-elemző domainen valódi Reddit-kommentek [26] vannak klasszifikálva, amelyek így nagyrészt mentesülnek a sablonok okozta problémáktól, amelyek részletesebben a 2.4.2. alfejezetben kerültek kifejtésre. Röviden tehát a könnyebben előállítható domainek és a kutatási szempontból megfelelő mennyiségű és minőségű adatok teszik indokolttá, hogy olyan domaineken is vizsgálja a dolgozat az LLM-eket, amelyekre más megoldások talán hatékonyabbak lennének. Az így leszűrt tanulságok más problémákra is alkalmazhatóak, és nagyban megegyeznek a szakirodalomban dokumentáltakkal.
+2.5.7 Az LLM nem mindig a legjobb megoldás
+Fontos még megjegyezni, hogy a dolgozatban vizsgált domaineken nem feltétlenül egy LLM a legjobb megoldás. Például a szöveghangulat klasszifikálására egy klasszifikáló modell, mint például a BERT [11], valószínűleg jobban teljesítene. A dolgozatban viszont mégis LLM-mel vannak az ilyen problémák megoldva, ugyanis relatíve könnyebb kutatási felszínt biztosítanak, hiszen például a szöveghangulat-elemző domainen valódi Reddit-kommentek [20] vannak klasszifikálva, amelyek így nagyrészt mentesülnek a sablonok okozta problémáktól, amelyek részletesebben a 2.5.2. alfejezetben kerültek kifejtésre. Röviden tehát a könnyebben előállítható domainek és a kutatási szempontból megfelelő mennyiségű és minőségű adatok teszik indokolttá, hogy olyan domaineken is vizsgálja a dolgozat az LLM-eket, amelyekre más megoldások talán hatékonyabbak lennének. Az így leszűrt tanulságok más problémákra is alkalmazhatóak, és nagyban megegyeznek a szakirodalomban dokumentáltakkal.
 
-2.5 Funkcionális és nem funkcionális követelmények - DRAFT, review before subbmitting
+2.6 Funkcionális és nem funkcionális követelmények - DRAFT, review before subbmitting
 A rendszerrel szemben támasztott követelmények két csoportra bonthatóak. A funkcionális követelmények azt írják le, hogy mit kell tudnia a rendszernek, a nem funkcionális követelmények pedig azt, hogy milyen minőségben és milyen korlátok között. A követelmények a keretrendszerre és a rá épülő két ügynökre vonatkoznak, teljesülésüket a 8. fejezet ellenőrzi.
 Funkcionális követelmények:
-F1 – Új domain külön modulként hozzáadható. A domain megadja a feladatokat, a kiértékelés módját, a tanármodellnek szóló utasítást, a kimeneti szótár tokenjeit és a megállást jelző tokent, ügynök esetén pedig a modellhámot is. (2.2.1)
+F1 – Új domain külön modulként hozzáadható. A domain megadja a feladatokat, a kiértékelés módját, a tanármodellnek szóló utasítást, a kimeneti szótár tokenjeit és a megállást jelző tokent, ügynök esetén pedig a modellhámot is. (2.3.1)
 Nem funkcionális követelmények:
 NF1 – Megbízhatóság: megszakításkor legfeljebb az utolsó mentés óta végzett munka vész el, a felhalmozott adatfájlok soha nem íródnak felül, és a keretrendszer elutasítja a nem egyező szótárral készült tanítóadatokat, illetve a nem egyező állapotból történő folytatást.
 
-2.6 Használati esetek - DRAFT, review before subbmitting
+2.7 Használati esetek - DRAFT, review before subbmitting
 A dolgozatban leírt rendszerek és azok eredményei többféle módon is felhasználhatóak.
 Használhatják kutatók különböző architektúrák szisztematikus tesztelésére desztillált adatokon, domainenként. Használhatják különböző desztillációs módszerek és tömörítő módszerek tesztelésére és összehasonlítására is.
 Használhatják fejlesztők, akik különböző vállalati, infrastrukturális vagy személyes feladatokra vagy problémákra keresnek egy hatékony, lokálisan futtatható megoldást.
@@ -219,13 +386,13 @@ Könnyen látható, hogy ezek a feladatkörök egyszerűen bővíthetőek és sk
 [17] I. Goodfellow, Y. Bengio, and A. Courville, Deep Learning. Cambridge, MA, USA: MIT Press, 2016. [Online]. Available: https://www.deeplearningbook.org
 [18] S. Yao et al., "ReAct: Synergizing reasoning and acting in language models," in Proc. 11th Int. Conf. Learn. Represent. (ICLR), 2023. [Online]. Available: https://arxiv.org/abs/2210.03629
 [19] S. Bengio, O. Vinyals, N. Jaitly, and N. Shazeer, "Scheduled sampling for sequence prediction with recurrent neural networks," in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 28, 2015. [Online]. Available: https://arxiv.org/abs/1506.03099
-[20] OpenAI, "Terms of use," Jan. 1, 2026. Accessed: Oct. 30, 2026. [Online]. Available: https://openai.com/policies/row-terms-of-use/
-[21] Google, "Apache License 2.0 (Gemma 4 license)," Google AI for Developers, Apr. 1, 2026. Accessed: Oct. 30, 2026. [Online]. Available: https://ai.google.dev/gemma/docs/gemma_4_license
-[22] R. Geirhos, J.-H. Jacobsen, C. Michaelis, R. Zemel, W. Brendel, M. Bethge, and F. A. Wichmann, "Shortcut learning in deep neural networks," Nat. Mach. Intell., vol. 2, no. 11, pp. 665–673, 2020, doi: 10.1038/s42256-020-00257-z.
-[23] A. Patel, S. Bhattamishra, and N. Goyal, "Are NLP models really able to solve simple math word problems?" in Proc. 2021 Conf. North Amer. Chapter Assoc. Comput. Linguistics: Human Lang. Technol. (NAACL-HLT), 2021, pp. 2080–2094, doi: 10.18653/v1/2021.naacl-main.168.
-[24] S.-Y. Miao, C.-C. Liang, and K.-Y. Su, "A diverse corpus for evaluating and developing English math word problem solvers," in Proc. 58th Annu. Meeting Assoc. Comput. Linguistics (ACL), 2020, pp. 975–984, doi: 10.18653/v1/2020.acl-main.92.
-[25] R. Koncel-Kedziorski, S. Roy, A. Amini, N. Kushman, and H. Hajishirzi, "MAWPS: A math word problem repository," in Proc. 2016 Conf. North Amer. Chapter Assoc. Comput. Linguistics: Human Lang. Technol. (NAACL-HLT), San Diego, CA, USA, 2016, pp. 1152–1157, doi: 10.18653/v1/N16-1136.
-[26] smagnan, "1 million Reddit comments from 40 subreddits," Kaggle dataset. Accessed: Oct. 31, 2026. [Online]. Available: https://www.kaggle.com/datasets/smagnan/1-million-reddit-comments-from-40-subreddits
+[20] smagnan, "1 million Reddit comments from 40 subreddits," Kaggle dataset. Accessed: Oct. 31, 2026. [Online]. Available: https://www.kaggle.com/datasets/smagnan/1-million-reddit-comments-from-40-subreddits
+[21] S.-Y. Miao, C.-C. Liang, and K.-Y. Su, "A diverse corpus for evaluating and developing English math word problem solvers," in Proc. 58th Annu. Meeting Assoc. Comput. Linguistics (ACL), 2020, pp. 975–984, doi: 10.18653/v1/2020.acl-main.92.
+[22] R. Koncel-Kedziorski, S. Roy, A. Amini, N. Kushman, and H. Hajishirzi, "MAWPS: A math word problem repository," in Proc. 2016 Conf. North Amer. Chapter Assoc. Comput. Linguistics: Human Lang. Technol. (NAACL-HLT), San Diego, CA, USA, 2016, pp. 1152–1157, doi: 10.18653/v1/N16-1136.
+[23] OpenAI, "Terms of use," Jan. 1, 2026. Accessed: Oct. 30, 2026. [Online]. Available: https://openai.com/policies/row-terms-of-use/
+[24] Google, "Apache License 2.0 (Gemma 4 license)," Google AI for Developers, Apr. 1, 2026. Accessed: Oct. 30, 2026. [Online]. Available: https://ai.google.dev/gemma/docs/gemma_4_license
+[25] R. Geirhos, J.-H. Jacobsen, C. Michaelis, R. Zemel, W. Brendel, M. Bethge, and F. A. Wichmann, "Shortcut learning in deep neural networks," Nat. Mach. Intell., vol. 2, no. 11, pp. 665–673, 2020, doi: 10.1038/s42256-020-00257-z.
+[26] A. Patel, S. Bhattamishra, and N. Goyal, "Are NLP models really able to solve simple math word problems?" in Proc. 2021 Conf. North Amer. Chapter Assoc. Comput. Linguistics: Human Lang. Technol. (NAACL-HLT), 2021, pp. 2080–2094, doi: 10.18653/v1/2021.naacl-main.168.
 [27] Y. Kim and A. M. Rush, "Sequence-level knowledge distillation," in Proc. 2016 Conf. Empirical Methods Natural Lang. Process. (EMNLP), Austin, TX, USA, 2016, pp. 1317–1327, doi: 10.18653/v1/D16-1139.
 [28] Gemma Team, "Gemma 2: Improving open language models at a practical size," 2024, arXiv:2408.00118. [Online]. Available: https://arxiv.org/abs/2408.00118
 [29] D. Guo et al., "DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning," Nature, vol. 645, pp. 633–638, 2025, doi: 10.1038/s41586-025-09422-z.
