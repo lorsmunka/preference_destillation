@@ -89,6 +89,12 @@ STATUS 2026-10-13 (pick up here)
             Seed spread at the last pass: KL 1.9 points / .005 error, CE 0.4 points / .010 error, so the
             error gap is 4-9x the seed spread; the accuracy gap points the same way but its size is less
             certain. Graph: thick = mean, thin = each seed.
+            SEED 3 DONE 2026-11-02 01:39 (paused 3 times while the user was away; resumed each time):
+            final task accuracy KL .697 vs CE .677 (+2.0 points), test error .4863 vs .5268 (-.041). KL ahead
+            at all 30 paired tests (10 passes x 3 seeds), on task accuracy and on test error alike. Mean of
+            3 seeds at the last pass: KL .705 (sd .012) vs CE .683 (sd .006); error .481 vs .524 (sd .005
+            both). Paired gap KL - CE: +2.2 points (sd 0.8, t 5.1, 2 df, p ~.04); error -.043 (sd .003,
+            t -22, p ~.002).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
