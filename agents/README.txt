@@ -11,3 +11,5 @@ To pick up a stopped agent: start a new agent with "read agents/agentN.txt and c
  8  interactive slideshow -> thesis_work/how_it_works.html                                DONE
 
 All agents stopped 2026-10-08 00:35 at the user's request. Scripts and drafts: agents/work/<task>/.
+ 9  thesis chapter 3 rewrite (2026-11-03): evidence, literature, two adversarial reviews  DONE
+    -> agents/work/chapter3_review_2026-11-03/ (the thesis text itself is not in the repo)
