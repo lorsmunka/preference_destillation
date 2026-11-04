@@ -95,6 +95,13 @@ STATUS 2026-10-13 (pick up here)
             3 seeds at the last pass: KL .705 (sd .012) vs CE .683 (sd .006); error .481 vs .524 (sd .005
             both). Paired gap KL - CE: +2.2 points (sd 0.8, t 5.1, 2 df, p ~.04); error -.043 (sd .003,
             t -22, p ~.002).
+            KL TO CE (KL share 1 -> 0 over the 10 passes; user 2026-11-02: "Should we do a kl to ce?") seeds 1-2
+            done 2026-11-04 23:18: last pass s1 .697 / .4983, s2 .704 / .4917 (mean .700 / .495) vs KL .710 /
+            .478 and CE .686 / .523. In between, closer to KL: level with KL on task accuracy up to pass 6, then
+            behind it at passes 7-10 in both seeds (last: -0.3, -1.5); test error worse than KL from pass 5 on,
+            the gap growing every pass (last +.018, +.016, ~3x KL's seed spread); better than CE at all 20 tests
+            on error, 19 of 20 on accuracy. So ending on CE costs here: no support for the 0.9 -> 0.1 default.
+            Seed 3 not started (needs ~13 h); the report waits for it (finished_seeds() == SEEDS).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it
