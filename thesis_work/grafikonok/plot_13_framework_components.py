@@ -60,7 +60,7 @@ box(COLUMNS[0], ROW_DATA, "Domain", "library/domain", "feladatok, utasítások,\
 box(COLUMNS[1], ROW_DATA, "Adatgenerálás", "library/data_gen", "a tanármodell generál\nvagy pontoz")
 box(COLUMNS[2], ROW_DATA, "Kötegfájlok", "batches/<domain>/", "bf16 logitok,\nujjlenyomat, metaadatok")
 box(COLUMNS[2], ROW_TRAINING, "Tanítás", "library/training", "KL + CE veszteség,\nepochonkénti kiértékelés")
-box(COLUMNS[1], ROW_TRAINING, "Futtatási könyvtár", "runs/<név>/", "info.json, naplók,\nellenőrzőpontok")
+box(COLUMNS[1], ROW_TRAINING, "Futtatás könyvtára", "runs/<név>/", "info.json, naplók,\nellenőrzőpontok")
 box(COLUMNS[0], ROW_TRAINING, "Elemzés", "library/tooling", "csoportok, összesítés,\nstatisztikai próbák")
 
 arrow((COLUMNS[0] + half, ROW_DATA), (COLUMNS[1] - half, ROW_DATA))
