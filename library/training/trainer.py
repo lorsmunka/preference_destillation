@@ -297,9 +297,19 @@ class Trainer:
 
     # ── evaluation ────────────────────────────────────────────────────
 
+    @staticmethod
+    def _release_cached_memory():
+        """Hand the card's cached memory back between training and a test. The test decodes long replies
+        with a key/value cache; kept reserved, that memory left the next training batches short of room
+        on a 12 GB card (coding agent, 2026-11-05: 2.3 s per batch before the first test, 5-8 s after)."""
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
     def eval_epoch(self, epoch: int) -> Tuple[float, float, float, float]:
         self.model.eval()
+        self._release_cached_memory()
         results = self.evaluator.evaluate_batches(verbose=True)
+        self._release_cached_memory()
 
         self.logger.log_eval_epoch(
             epoch, results['avg_loss'], results['teacher_forced_accuracy'],
@@ -320,7 +330,9 @@ class Trainer:
     def _run_mini_eval(self, batch_count: int, epoch: int, current_batch: int):
         print(f"\n--- Mini-eval on test batches 1-{batch_count} ---")
         self.model.eval()
+        self._release_cached_memory()
         results = self.evaluator.evaluate_batches(batch_count)
+        self._release_cached_memory()
 
         self.logger.log_mini_eval(
             epoch, current_batch, results['teacher_forced_accuracy'],
