@@ -8,9 +8,12 @@ so they are read as a pair. Tested after every pass on every test record (max_te
 4 test projects the students never see). Task accuracy here = the student's scope covers exactly
 Gemma's lines (strict: an extra or a missing line counts as wrong).
 
-    python experiments/code_agent_ce_vs_kl.py        # trains what is missing (one after the other), then reports
-    python experiments/code_agent_ce_vs_kl.py kl     # one student per process: the two train side by side on one card
+    python experiments/code_agent_ce_vs_kl.py        # kl, then ce (one after the other), then the report
+    python experiments/code_agent_ce_vs_kl.py kl     # one student only
     python experiments/code_agent_ce_vs_kl.py ce
+
+Not side by side on the 4070: alone a student trains at 2.3 s per batch in ~5 GB; two together filled the
+card and slowed to 8 and 22 s per batch (timed 2026-11-05).
 """
 
 import sys
