@@ -176,12 +176,14 @@ change where the student looks?</p>
     (random weights) is the floor of this search over 768 heads.</p></div>
   <div class="fig wide"><div class="tag">FIG 3B</div><h3>Which depth of Gemma each student layer resembles</h3><div id="f3b"></div>
     <p class="cap">Rows: student layers; columns: Gemma's 48 layers (▲ = a full-attention layer, the others see 1,024 tokens back). Cell: the
-    student layer's heads' mean best correlation with a head of that Gemma layer.</p></div>
+    student layer's heads' mean best correlation with a head of that Gemma layer. Caution: the dark full-attention columns are mostly position (recency): with position taken out the gap nearly closes (FIG 3F).</p></div>
   <div class="fig wide"><div class="tag">FIG 3C</div><h3>Gemma layer by layer</h3><div id="f3c"></div>
     <p class="cap">Mean over the 16 heads of each layer. Outside view: weight on the instruction header, &lt;bos&gt; and chat template
     (the students never see them); the other measures are over the student's text.</p></div>
   <div class="fig wide"><div class="tag">FIG 3D</div><h3>Gemma's 768 heads</h3><div id="f3d"></div>
     <p class="cap">Rows: layers 1-48, columns: heads 1-16.</p></div>
+  <div class="fig wide"><div class="tag">FIG 3F</div><h3>How much of the likeness is position? (adversarial check)</h3><div id="f3f"></div>
+    <p class="cap">Grey: Gemma likeness as in FIG 3A. Coloured: the same after taking out each head's position-only pattern (its mean weight at each look-back distance), so only what depends on the tokens themselves is compared. Dashed: the untrained student with position taken out.</p></div>
   <div class="fig"><div class="tag">FIG 3E</div><h3>Specialist heads: Gemma vs the students</h3><div id="f3e"></div>
     <p class="cap">The strongest single head for each role (max over heads), size m students.</p></div>
 </div>
@@ -350,11 +352,12 @@ document.getElementById("subtitle").textContent =
   `(rented RTX A6000; never the local 4-bit copy). No student was ever trained on attention.`;
 const tiles = document.getElementById("tiles");
 const meanLike = keys => keys.reduce((a, k) => a + DATA.likeness[k].mean, 0) / keys.length;
+const CT = DATA.content, meanContent = keys => keys.reduce((a, k) => a + CT[k].residual, 0) / keys.length;
 [[fmt(C["other loss, same seed"].mean, 2) + " vs " + fmt(C["same loss, other seed"].mean, 2),
   "Same seed, other loss vs same loss, other seed (matched-head correlation): the seed shapes attention more than the loss"],
  [fmt(C["other loss, other seed"].mean, 2), `Other loss, other seed, vs seed noise alone ${fmt(C["same loss, other seed"].mean, 2)}: the loss moves attention by ${fmt(100 * BS["same minus other loss"].median / (C["other loss, same seed"].mean - C["same loss, other seed"].mean), 0)}% of what the seed does`],
- [fmt(meanLike(["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"]), 2) + " / " + fmt(meanLike(["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"]), 2),
-  `Gemma likeness, KL / CE (untrained: ${fmt(DATA.likeness["math-untrained-m"].mean, 2)}): KL slightly ahead in all 3 seeds (+${fmt(BS["kl minus ce likeness, mean"].median, 3)}, 95% ${fmt(BS["kl minus ce likeness, mean"].low, 3)}–${fmt(BS["kl minus ce likeness, mean"].high, 3)})`],
+ [fmt(meanContent(["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"]), 2) + " / " + fmt(meanContent(["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"]), 2),
+  `Gemma likeness with position removed, KL / CE (untrained: ${fmt(CT["math-untrained-m"].residual, 2)}): only a little of Gemma's token-level attention reaches the students, and no more with KL than with CE`],
  [fmt(DATA.code_metrics.gemma["target lines when writing a line number"].best * 100, 0) + "% vs " +
   fmt(Math.max(...Object.entries(DATA.code_metrics).filter(([k]) => k !== "gemma").map(([, v]) => v["target lines when writing a line number"].best)) * 100, 0) + "%",
   "Coding agent: Gemma's best head on the target lines while writing line numbers, vs the best student head"]]
@@ -639,6 +642,12 @@ const mapGrid = el("div", { style: "display:flex;gap:18px;flex-wrap:wrap" }, f3d
   heatmap(box, { matrix: DATA.gemma_maps[metric], rows: gemmaCols.map((l, i) => DATA.gemma_full_layers.includes(i) ? "▲" + l : (i === 0 ? l : "")), cols: Array.from({ length: 16 }, (_, i) => i % 4 === 0 ? String(i + 1) : ""),
     min: 0, max: hi, cell: 9, cellH: 7, rowW: 28, colH: 14, tipFn: (i, j, v) => `Gemma layer ${i + 1}${DATA.gemma_full_layers.includes(i) ? " (full)" : ""} head ${j + 1}<br>${metric}: <b>${fmt(v)}</b>` });
 });
+const f3f = document.getElementById("f3f");
+const contentKeys = likeKeys.filter(k => CT[k]);
+dotRows(f3f, { lo: 0, hi: 0.45, width: 700, labelW: 120, rowH: 22, xLabel: "best correlation with a Gemma head", refs: [{ v: CT["math-untrained-m"].residual, label: "untrained, position removed" }],
+  rows: contentKeys.map(k => ({ label: short(k), points: [
+    { v: CT[k].real, color: css("--untrained"), r: 4, tip: `${short(k)} with position: <b>${fmt(CT[k].real)}</b>` },
+    { v: CT[k].residual, color: lossColor(k), r: 6, tip: `${short(k)} position removed: <b>${fmt(CT[k].residual)}</b> (full layers ${fmt(CT[k]["residual full"])}, sliding ${fmt(CT[k]["residual sliding"])})` }] })) });
 const f3e = document.getElementById("f3e");
 const specRows = [["best previous-token head", "previous token"], ["best copy head", "copy"], ["best number head", "number lookup"]];
 dotRows(f3e, { lo: 0, hi: 1, width: 470, labelW: 120, rowH: 28, digits: 2,
@@ -648,11 +657,12 @@ dotRows(f3e, { lo: 0, hi: 1, width: 470, labelW: 120, rowH: 28, digits: 2,
     { v: ms.gemma[metric], color: css("--gemma"), r: 7, tip: `Gemma: <b>${fmt(ms.gemma[metric])}</b>` }] })) });
 legend(f3e, [["KL m", css("--kl")], ["CE m", css("--ce")], ["Gemma", css("--gemma")]]);
 const kl3 = meanLike(["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"]), ce3 = meanLike(["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"]);
-fact("facts-gemma", `Gemma likeness (mean best correlation with a Gemma head): KL <b>${fmt(kl3)}</b>, CE <b>${fmt(ce3)}</b>, KL→CE <b>${fmt(meanLike(["math-kl-to-ce-m-s1", "math-kl-to-ce-m-s2"]))}</b>; untrained <b>${fmt(DATA.likeness["math-untrained-m"].mean)}</b>. KL − CE by seed: ${[1, 2, 3].map(seed => `<b>${fmt(BS[`kl minus ce likeness, seed ${seed}`].median, 4)}</b> (${ci(`kl minus ce likeness, seed ${seed}`, 4)})`).join(", ")}: KL is a little more Gemma-like in every seed, about 2% of its likeness; seed 1's interval includes zero.`);
+fact("facts-gemma", `Gemma likeness (mean best correlation with a Gemma head): KL <b>${fmt(kl3)}</b>, CE <b>${fmt(ce3)}</b>, KL→CE <b>${fmt(meanLike(["math-kl-to-ce-m-s1", "math-kl-to-ce-m-s2"]))}</b>; untrained <b>${fmt(DATA.likeness["math-untrained-m"].mean)}</b>. KL − CE by seed: ${[1, 2, 3].map(seed => `<b>${fmt(BS[`kl minus ce likeness, seed ${seed}`].median, 4)}</b> (${ci(`kl minus ce likeness, seed ${seed}`, 4)})`).join(", ")}. Not robust: with position taken out KL − CE is ${[1, 2, 3].map(seed => fmt(CT[`math-kl-m-s${seed}`].residual - CT[`math-ce-m-s${seed}`].residual, 4)).join(", ")}, and compared on a window of the last tokens before the query the sign flips for seed 1 (adversarial check). Read it as no difference.`);
 const depthSplit = k => { const m = DATA.depth[k], full = DATA.gemma_full_layers;
   const mean = cols => m.reduce((a, row) => a + cols.reduce((b, j) => b + row[j], 0) / cols.length, 0) / m.length;
   return [mean(full), mean([...Array(48).keys()].filter(j => !full.includes(j)))]; };
-fact("facts-gemma", `The students resemble Gemma's sliding-window layers, not its full-attention ones (FIG 3B, mean best correlation, full vs sliding layers): ${["math-kl-m-s1", "math-ce-m-s1", "math-kl-m-s2", "math-size-l", "math-size-xs"].map(k => `${short(k)} <b>${fmt(depthSplit(k)[0])}</b> vs <b>${fmt(depthSplit(k)[1])}</b>`).join(", ")}.`);
+fact("facts-gemma", `Most of the likeness is position (FIG 3F): with each head's position-only pattern taken out it falls from ${fmt(CT["math-kl-m-s1"].real)} to <b>${fmt(CT["math-kl-m-s1"].residual)}</b> (KL s1; CE s1 ${fmt(CT["math-ce-m-s1"].real)} → <b>${fmt(CT["math-ce-m-s1"].residual)}</b>), against <b>${fmt(CT["math-untrained-m"].residual)}</b> for the untrained student: about twice the floor, so the students do pick up some token-level attention like Gemma's, but most of what looked like likeness is shared recency.`);
+fact("facts-gemma", `The full-attention vs sliding gap of FIG 3B is position too: KL s1 ${fmt(CT["math-kl-m-s1"]["real full"])} vs ${fmt(CT["math-kl-m-s1"]["real sliding"])} with position, <b>${fmt(CT["math-kl-m-s1"]["residual full"])}</b> vs <b>${fmt(CT["math-kl-m-s1"]["residual sliding"])}</b> without (untrained ${fmt(CT["math-untrained-m"]["residual full"])} vs ${fmt(CT["math-untrained-m"]["residual sliding"])}). Gemma\'s sliding layers favour recent tokens, as the students do; there is no layer-type preference in what is looked at.`);
 fact("facts-gemma", `Gemma puts <b>${pct(gp["outside view"].reduce((a, b) => a + b) / 48)}</b> of its attention (mean over layers) outside the student's view: on &lt;bos&gt;, the instruction header and the chat template. Gemma has a sharp previous-token head (${fmt(ms.gemma["best previous-token head"], 2)} of its weight on the previous token); the best student head reaches ${fmt(Math.max(...["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3", "math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"].map(k => ms[k]["best previous-token head"])), 2)}. For number lookup it is the other way round: best student head ${fmt(Math.max(...["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"].map(k => ms[k]["best number head"])), 2)}, Gemma ${fmt(ms.gemma["best number head"], 2)} (Gemma's weight is split with its sinks).`);
 fact("facts-gemma", `Overlap is not used for Gemma likeness: a flat, untrained head overlaps broad Gemma heads well (untrained overlap ${fmt(DATA.likeness["math-untrained-m"].overlap)} vs KL s1 ${fmt(DATA.likeness["math-kl-m-s1"].overlap)}). Correlation asks whether the two favour the same tokens; a flat row correlates with nothing.`);
 
@@ -691,7 +701,7 @@ lineChart(f5b, { width: 520, height: 250, xLo: 1, xHi: 10, yLo: 0.2, yHi: 0.4, x
   series: [{ label: "KL", color: css("--kl"), points: P.map(p => [p.pass, p.kl_gemma]) }, { label: "CE", color: css("--ce"), points: P.map(p => [p.pass, p.ce_gemma]) }],
   refs: [{ v: DATA.likeness["math-untrained-m"].mean, label: "untrained" }] });
 legend(f5b, [["KL s1", css("--kl")], ["CE s1", css("--ce")]]);
-fact("facts-training", `KL s1 and CE s1 start from the same weights; after pass 1 their matched heads correlate <b>${fmt(P[0].kl_ce)}</b>, after pass 10 <b>${fmt(P[9].kl_ce)}</b> (overlap ${fmt(P[0].kl_ce_overlap)} → ${fmt(P[9].kl_ce_overlap)}): they move apart early, then grow back together.`);
+fact("facts-training", `KL s1 and CE s1 start from the same weights, but attention at the start is flat (entropy ${fmt(ms["math-untrained-m"].entropy)}), so there is no shared pattern to drift away from: the patterns form during pass 1, then the two converge, matched-head correlation <b>${fmt(P[0].kl_ce)}</b> after pass 1 → <b>${fmt(P[9].kl_ce)}</b> after pass 10 (overlap ${fmt(P[0].kl_ce_overlap)} → ${fmt(P[9].kl_ce_overlap)}; the same on both halves of the probes, so not noise).`);
 fact("facts-training", `Each student's pattern settles slowly: its correlation with its own final pattern is <b>${fmt(P[0].kl_final)}</b> after pass 1, <b>${fmt(P[4].kl_final)}</b> after pass 5 (KL; CE ${fmt(P[0].ce_final)}, ${fmt(P[4].ce_final)}). Gemma likeness rises from ${fmt(P[0].kl_gemma)} to ${fmt(P[9].kl_gemma)} (KL) and ${fmt(P[0].ce_gemma)} to ${fmt(P[9].ce_gemma)} (CE); number lookup ${fmt(P[0].kl_numbers)} → ${fmt(P[9].kl_numbers)}.`);
 
 // ── study 6 ──────────────────────────────────────────────────────────────────────────────────────────
@@ -707,10 +717,11 @@ lineChart(f6b, { width: 520, height: 250, xLo: 1, xHi: 48, yLo: 0, yHi: 0.7, xTi
     { label: "writing a line number", color: css("--accent"), points: DATA.code_gemma_layers["target lines when writing a line number"].map((v, i) => [i + 1, v, `layer ${i + 1}`]), dot: 2.5 }],
   refs: [{ v: bestStudent, label: "best student head", color: css("--kl") }] });
 legend(f6b, [["all reply positions", css("--gemma")], ["while writing a line number", css("--accent")]]);
+fact("facts-code", `The pilot-data students' attention over the project is the untrained student's to 3 decimals (target lines ${fmt(CM["code-size-xl"]["target lines"].mean)} vs ${fmt(CM["code-untrained-m"]["target lines"].mean)}, target file ${fmt(CM["code-size-xl"]["target file"].mean)} vs ${fmt(CM["code-untrained-m"]["target file"].mean)}): on 6,000-token inputs they learned no attention at all, so the only telling comparison is KL m on the full data, which looks at the request and its own reply but not at the target file.`);
 fact("facts-code", `Mean head lift: Gemma <b>${fmt(CM.gemma["target lift"].mean, 2)}</b> (best head <b>${fmt(CM.gemma["target lift"].best, 1)}</b>); students ${codeKeys.filter(k => k !== "gemma").map(k => `${short(k)} ${fmt(CM[k]["target lift"].mean, 2)}`).join(", ")}. A lift of 1 is an even spread.`);
 fact("facts-code", `While writing the line numbers, Gemma's best head puts <b>${pct(CM.gemma["target lines when writing a line number"].best, 0)}</b> of its attention on the target lines; the best student head <b>${pct(Math.max(...codeKeys.filter(k => k !== "gemma").map(k => CM[k]["target lines when writing a line number"].best)), 1)}</b>. The heads that find the lines sit in Gemma's full-attention layers, above all 30 and 36 (the sliding ones see only 1,024 tokens back, a sixth of a project).`);
 const RH = DATA.retrieval_heads;
-fact("facts-code", `Gemma's strongest line-finding heads (weight on the target lines while writing line numbers; in how many of the ${RH[0].probes} records the head's most-attended line is a target line): ${RH.filter(h => h.model === "gemma").map(h => `L${h.layer}H${h.head} <b>${pct(h.share, 0)}</b> (${h.hits}/${h.probes})`).join(", ")}. The best student heads: ${RH.filter(h => h.model !== "gemma").map(h => `${short(h.model)} L${h.layer}H${h.head} ${pct(h.share, 1)} (${h.hits}/${h.probes})`).join(", ")}.`);
+fact("facts-code", `Gemma's strongest line-finding heads (weight on the target lines while writing line numbers; records where the head's most-attended line is a target line; and, while it writes the file name, records where its most-attended line is in the target file): ${RH.filter(h => h.model === "gemma").map(h => `L${h.layer}H${h.head} <b>${pct(h.share, 0)}</b> (lines ${h.hits}/${h.probes}, file ${h.file_hits}/${h.probes})`).join(", ")}. The best student heads: ${RH.filter(h => h.model !== "gemma").map(h => `${short(h.model)} L${h.layer}H${h.head} ${pct(h.share, 1)} (lines ${h.hits}/${h.probes}, file ${h.file_hits}/${h.probes})`).join(", ")}. Gemma finds the file first, then the lines; Gemma\'s weight is read per line, so whether it reads the line-number labels or the code is not separated here.`);
 fact("facts-code", `KL m on the full data (8 of 10 passes) is the only student that looks at the request: <b>${pct(CM["code-kl-m"].message.mean, 1)}</b> on the message line (Gemma ${pct(CM.gemma.message.mean, 1)}, the pilot students ~${pct(CM["code-size-s"].message.mean, 1)}).`);
 
 // ── method ───────────────────────────────────────────────────────────────────────────────────────────
@@ -720,6 +731,7 @@ fact("facts-code", `KL m on the full data (8 of 10 passes) is the only student t
  `Gemma's attention on &lt;bos&gt;, the chat template and the instruction header is one "outside the student's view" column; for every comparison each row is renormalised over the student's text. Gemma's attention sinks inside the shared text (the end-of-input template tokens, spaces) remain, which lowers its share on content.`,
  `Overlap of two rows = Σ min(a, b) = 1 − total variation distance. Correlation = Pearson over the places a row can see. Both averaged over every reply position. Students' heads are matched one to one (Hungarian) for pairs of the same size; for Gemma, each student head takes its best Gemma head (a max over 768, so an untrained student gives the floor).`,
  `Seed study: 8 students of size m (KL ×3, CE ×3, KL→CE ×2). Permutation test: losses relabelled within each seed (72 relabellings), statistic = mean similarity of same-loss pairs − other-loss pairs, both across seeds. Exact p; the smallest possible is 1/72.`,
+ `Adversarial checks (2026-11-05): bootstrap over the probes; per reply type and per layer; Gemma's sink heads removed; a position-only control (each head's mean weight by look-back distance, FIG 3F); Gemma compared on a different record of the same type; split-half reliability of the pass-by-pass curves. They removed two claims: the full vs sliding layer preference (it is position) and an early drift apart of KL and CE (attention starts flat). The CE targets are Gemma's greedy tokens (its top word in 99.3% of math and 99.4% of code positions), so CE here is distillation on Gemma's argmax.`,
  `Caveats: one domain for the loss and seed study (the math tutor); size sweep on different data (10k problems; xl on the pilot) and with KD 0.9→0.1, so sizes compare with each other only; code students are pilot-data students (plus one full-data KL m, unfinished); the untrained student is built with seed 1 like the s1 runs, probably their exact start (not checked).`]
   .forEach(t => el("li", {}, document.getElementById("method-list")).innerHTML = t);
 </script>

@@ -15,6 +15,7 @@ A model-level number needs heads matched, since a head's index means nothing acr
 """
 
 import itertools
+import re
 import statistics
 from typing import Dict, List
 
@@ -22,7 +23,7 @@ import numpy as np
 import torch
 from scipy.optimize import linear_sum_assignment
 
-from attention_study import STUDENTS_DIR, TEACHER_PATH, Student, code_students, math_students
+from attention_study import STUDENTS_DIR, TEACHER_PATH, Student, code_students, math_students, scope_target_lines
 
 GEMMA = "gemma"
 GEMMA_LAYERS, GEMMA_HEADS = 48, 16
@@ -342,8 +343,80 @@ def compute(probes: List[dict]) -> dict:
                        for first in SEED_MODELS for second in SEED_MODELS if first != second}
     math["seed_study_whole_model"] = seed_study(mean_similarity)
     math["bootstrap"] = bootstrap_seed_study(probes, device)
+    math["content"] = content_likeness([student.key for student in math["students"]], probes, device)
     results["code"]["retrieval_heads"] = retrieval_heads(probes, results["code"])
     return results
+
+
+def content_likeness(keys: List[str], probes: List[dict], device: str) -> Dict[str, dict]:
+    """Gemma likeness with position taken out (the adversarial check, 2026-11-05): much of any two
+    heads' likeness is shared recency. Each head's position-only version gives every visible place the
+    head's mean weight at that look-back distance (over every reply position of the math probes); the
+    residual (real minus position-only) keeps only what depends on the tokens themselves. Returns per
+    student: the best-match correlation with Gemma's heads on real rows and on residual rows, overall and
+    for Gemma's full-attention vs sliding layers (mean over those layers of the best head in each)."""
+    math_probes = [index for index, probe in enumerate(probes) if probe["kind"] == "math"]
+    loaded = {key: load_rows(key) for key in keys + [GEMMA]}
+    longest = max(max(probes[index]["student_queries"]) for index in math_probes) + 1
+
+    def heads_view(key, index):
+        view = view_of(loaded[key][index])[0]
+        return view.reshape(-1, view.shape[2], view.shape[3]).to(device)
+
+    def distances(probe):
+        queries = torch.tensor(probe["student_queries"], device=device)
+        distance = queries[:, None] - torch.arange(probe["group_count"] - 1, device=device)[None, :]
+        return distance, distance >= 0
+
+    sums, counts = {}, torch.zeros(longest, device=device)
+    for index in math_probes:
+        distance, visible = distances(probes[index])
+        flat_distance = distance[visible]
+        counts.index_add_(0, flat_distance, torch.ones_like(flat_distance, dtype=torch.float32))
+        for key in keys + [GEMMA]:
+            weights = heads_view(key, index)[:, visible]
+            sums.setdefault(key, torch.zeros(weights.shape[0], longest, device=device)).index_add_(1, flat_distance, weights)
+    profiles = {key: total / counts.clamp(min=1)[None] for key, total in sums.items()}
+
+    def standardise(rows, visible):
+        mask = visible.float()[None]
+        centred = (rows - (rows * mask).sum(-1, keepdim=True) / mask.sum(-1, keepdim=True)) * mask
+        length = centred.norm(dim=-1, keepdim=True)
+        return torch.where(length > 1e-8, centred / length.clamp(min=1e-12), torch.zeros_like(centred))
+
+    totals = {key: {"real": 0, "residual": 0} for key in keys}
+    row_count = 0
+    for index in math_probes:
+        distance, visible = distances(probes[index])
+
+        def both(key):
+            real = heads_view(key, index)
+            position_only = profiles[key][:, distance.clamp(min=0)] * visible.float()[None]
+            position_only = position_only / position_only.sum(-1, keepdim=True).clamp(min=1e-12)
+            return (standardise(real, visible).reshape(real.shape[0], -1),
+                    standardise(real - position_only, visible).reshape(real.shape[0], -1))
+        gemma_real, gemma_residual = both(GEMMA)
+        for key in keys:
+            real, residual = both(key)
+            totals[key]["real"] = totals[key]["real"] + real @ gemma_real.T
+            totals[key]["residual"] = totals[key]["residual"] + residual @ gemma_residual.T
+        row_count += len(probes[index]["student_queries"])
+    full = GEMMA_FULL_LAYERS
+    sliding = [layer for layer in range(GEMMA_LAYERS) if layer not in full]
+
+    def best(matrix, layers=None):
+        if layers is None:
+            return float(matrix.max(1).mean())
+        return float(np.mean([matrix[:, layer * GEMMA_HEADS:(layer + 1) * GEMMA_HEADS].max(1).mean() for layer in layers]))
+
+    result = {}
+    for key in keys:
+        entry = {}
+        for name in ("real", "residual"):
+            matrix = (totals[key][name] / row_count).cpu().numpy()
+            entry.update({name: best(matrix), f"{name} full": best(matrix, full), f"{name} sliding": best(matrix, sliding)})
+        result[key] = entry
+    return result
 
 
 def bootstrap_seed_study(probes: List[dict], device: str, resamples: int = 1000) -> dict:
@@ -403,22 +476,35 @@ def retrieval_heads(probes: List[dict], code: dict, count: int = 10) -> List[dic
         chosen.append((key, *np.unravel_index(values.argmax(), values.shape)))
     loaded = {key: load_rows(key) for key in {key for key, _, _ in chosen}}
     hits = {head: 0 for head in chosen}
+    file_hits = {head: 0 for head in chosen}
     probe_count = 0
     for index, probe in enumerate(probes):
         if probe["kind"] != "code":
             continue
         rows = writing_digits(probe)
-        line_count = len(probe["sentence"].split("\n"))
-        target = [region == "target lines" for region in probe["group_regions"][:line_count]]
+        lines = probe["sentence"].split("\n")
+        target = [region == "target lines" for region in probe["group_regions"][:len(lines)]]
         if not rows or not any(target):
             continue
         probe_count += 1
+        # while writing the file name (after the "<scope>" line, before the first digit): which file is looked at?
+        file_of_line, current_file = [], None
+        for line in lines:
+            match = re.match(r'<file name="([^"]+)">', line)
+            current_file = match.group(1) if match else current_file
+            file_of_line.append(current_file)
+        target_files = set(scope_target_lines(probe["reply"]))
+        newline = next((row for row, token in enumerate(probe["reply_tokens"]) if "\n" in token or "Ċ" in token), None)
+        name_rows = list(range(newline + 1, rows[0])) if newline is not None and newline + 1 < rows[0] else []
         for head in chosen:
             key, layer, number = head
-            weights = view_of(loaded[key][index])[0][layer, number][rows, :line_count].mean(0)
-            hits[head] += bool(target[int(weights.argmax())])
+            head_rows = view_of(loaded[key][index])[0][layer, number]
+            hits[head] += bool(target[int(head_rows[rows, :len(lines)].mean(0).argmax())])
+            if name_rows:
+                file_hits[head] += file_of_line[int(head_rows[name_rows, :len(lines)].mean(0).argmax())] in target_files
     return [{"model": key, "layer": int(layer) + 1, "head": int(number) + 1,
-             "share": float(code["metrics"][key][metric][layer, number]), "hits": hits[(key, layer, number)], "probes": probe_count}
+             "share": float(code["metrics"][key][metric][layer, number]), "hits": hits[(key, layer, number)],
+             "file_hits": file_hits[(key, layer, number)], "probes": probe_count}
             for key, layer, number in chosen]
 
 

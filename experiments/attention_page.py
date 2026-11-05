@@ -220,6 +220,7 @@ def payload(results, probes) -> dict:
         "code_likeness": {key: float(values.mean()) for key, values in code["gemma_correlation"].items()},
         "explorer": explorer(results, probes), "model_sets": MODEL_SETS,
         "bootstrap": math["bootstrap"], "retrieval_heads": code["retrieval_heads"],
+        "content": math["content"],
     }
 
 
