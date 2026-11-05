@@ -15,6 +15,7 @@ A model-level number needs heads matched, since a head's index means nothing acr
 """
 
 import itertools
+import random
 import re
 import statistics
 from typing import Dict, List
@@ -37,8 +38,18 @@ SEED_MODELS = ["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3", "math-ce-m-s1", "
                "math-kl-to-ce-m-s1", "math-kl-to-ce-m-s2"]
 
 
+SENTIMENT_REGIONS = ["comment", "end of input", "reply so far"]
+SENTIMENT_ARM_MODELS = [f"sent-{arm}-s{seed}" for arm in ("pure-kl", "pure-ce", "kl-to-ce", "ce-to-kl", "flat-50") for seed in range(1, 11)]
+TOKEN_KINDS = ("math", "sentiment")   # kinds whose groups are the student's tokens (code: the project's lines)
+
+
+def regions_of(kind: str) -> List[str]:
+    return {"math": MATH_REGIONS, "code": CODE_REGIONS, "sentiment": SENTIMENT_REGIONS}[kind]
+
+
 def setting_of(key: str) -> str:
-    return key.split("-m-s")[0].replace("math-", "")
+    """The run's settings without its seed: math-kl-m-s2 -> math-kl-m, sent-pure-ce-s7 -> sent-pure-ce."""
+    return key.rsplit("-s", 1)[0]
 
 
 def seed_of(key: str) -> int:
@@ -90,9 +101,9 @@ def probe_masks(probe: dict):
     queries = probe["student_queries"]
     regions = probe["group_regions"][:width]
     masks = {}
-    for name in (MATH_REGIONS if probe["kind"] == "math" else CODE_REGIONS):
+    for name in regions_of(probe["kind"]):
         masks[name] = torch.tensor([region == name for region in regions], dtype=torch.float32)
-    if probe["kind"] == "math":
+    if probe["kind"] in TOKEN_KINDS:
         categories = probe["group_categories"][:width]
         for name in CATEGORIES:
             masks[name] = torch.tensor([category == name for category in categories], dtype=torch.float32)
@@ -125,7 +136,7 @@ def head_metrics(key: str, probes: List[dict], kind: str) -> Dict[str, np.ndarra
             if kind == "math" and name in MATH_REGIONS:
                 add(f"{name} [{probe['bucket']}]", (weights * mask).sum((2, 3)), rows)
         targets = probe["target_token_ids"]
-        if kind == "math":
+        if kind in TOKEN_KINDS:
             queries = torch.tensor(probe["student_queries"])
             positions = torch.arange(weights.shape[3])
             rows_index = torch.arange(rows)
@@ -233,14 +244,16 @@ def model_mean_overlap(keys: List[str], probes: List[dict], kind: str, device: s
     """Overlap of whole-model attention (every head and layer averaged), and Gemma's per-layer means,
     across models: needs no head matching, so any two models compare, whatever their sizes."""
     loaded = {key: load_rows(key) for key in keys}
-    names = list(keys) + [f"gemma layer {layer + 1}" for layer in range(GEMMA_LAYERS)] + list(PATTERNS)
+    first = next(index for index, probe in enumerate(probes) if probe["kind"] == kind)
+    gemma_layers = loaded[GEMMA][first].shape[0]
+    names = list(keys) + [f"gemma layer {layer + 1}" for layer in range(gemma_layers)] + list(PATTERNS)
     total, row_count = None, 0
     for index, probe in enumerate(probes):
         if probe["kind"] != kind:
             continue
         means = [view_of(loaded[key][index])[0].mean((0, 1)) for key in keys]
         gemma_view = view_of(loaded[GEMMA][index])[0]
-        means += [gemma_view[layer].mean(0) for layer in range(GEMMA_LAYERS)]
+        means += [gemma_view[layer].mean(0) for layer in range(gemma_layers)]
         means += list(pattern_rows(probe)[0])
         flat = torch.stack([mean.reshape(-1) for mean in means]).to(device)
         rows = means[0].shape[0]
@@ -281,30 +294,40 @@ def pair_kind(first: str, second: str) -> str:
     return "other loss, same seed" if same_seed else "other loss, other seed"
 
 
-def seed_study(similarity: Dict[tuple, float]) -> dict:
+def seed_study(similarity: Dict[tuple, float], models: List[str] = None, samples: int = 20000) -> dict:
     """Pairs of the size-m students by kind, and a permutation test: is a pair with the same loss more
     alike than a pair with another loss (both from different seeds)? The losses are shuffled within each
-    seed (seeds 1 and 2 have KL, CE and KL to CE, seed 3 KL and CE): 3! * 3! * 2! = 72 relabellings."""
+    seed (math: seeds 1 and 2 have KL, CE and KL to CE, seed 3 KL and CE: 3! * 3! * 2! = 72 relabellings, all
+    of them; sentiment: 5 schedules x 10 seeds, (5!)^10 relabellings, `samples` of them drawn at random)."""
+    models = models or SEED_MODELS
     pairs = [(first, second, pair_kind(first, second), similarity[(first, second)])
-             for first, second in itertools.combinations(SEED_MODELS, 2)]
+             for first, second in itertools.combinations(models, 2)]
     by_kind = {}
     for _, _, kind, value in pairs:
         by_kind.setdefault(kind, []).append(value)
 
     def statistic(settings):
         same, other = [], []
-        for first, second in itertools.combinations(SEED_MODELS, 2):
+        for first, second in itertools.combinations(models, 2):
             if seed_of(first) == seed_of(second):
                 continue
             (same if settings[first] == settings[second] else other).append(similarity[(first, second)])
         return statistics.mean(same) - statistics.mean(other)
 
-    observed = statistic({key: setting_of(key) for key in SEED_MODELS})
+    observed = statistic({key: setting_of(key) for key in models})
     blocks = {}
-    for key in SEED_MODELS:
+    for key in models:
         blocks.setdefault(seed_of(key), []).append(key)
+    total = 1
+    for block in blocks.values():
+        total *= len(list(itertools.permutations(block)))
+    if total <= samples:
+        orderings = itertools.product(*[list(itertools.permutations(block)) for block in blocks.values()])
+    else:
+        generator = random.Random(0)
+        orderings = ([generator.sample(block, len(block)) for block in blocks.values()] for _ in range(samples))
     statistics_seen = []
-    for orders in itertools.product(*[list(itertools.permutations(block)) for block in blocks.values()]):
+    for orders in orderings:
         relabelled = {}
         for block, order in zip(blocks.values(), orders):
             for original, shuffled in zip(block, order):
@@ -322,7 +345,7 @@ def seed_study(similarity: Dict[tuple, float]) -> dict:
 def compute(probes: List[dict]) -> dict:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     results = {}
-    for kind, students in (("math", [s for s in math_students()]), ("code", [s for s in code_students()])):
+    for kind, students in (("math", math_students()), ("code", code_students()), ("sentiment", sentiment_students())):
         keys = [student.key for student in students] + [GEMMA]
         print(f"{kind}: overlaps of {len(keys)} models ...")
         index = head_index(keys, probes, kind)
@@ -351,18 +374,33 @@ def compute(probes: List[dict]) -> dict:
     math["bootstrap"] = bootstrap_seed_study(probes, device)
     math["content"] = content_likeness([student.key for student in math["students"]], probes, device)
     results["code"]["retrieval_heads"] = retrieval_heads(probes, results["code"])
+    sentiment = results["sentiment"]
+    for name, matrix in (("overlap", sentiment["overlap"]), ("correlation", sentiment["correlation"])):
+        similarity = {}
+        for first, second in itertools.combinations(SENTIMENT_ARM_MODELS, 2):
+            similarity[(first, second)] = similarity[(second, first)] = matched_overlap(matrix, sentiment["index"], first, second)
+        sentiment[f"matched_{name}"] = similarity
+        sentiment[f"seed_study_{name}"] = seed_study(similarity, SENTIMENT_ARM_MODELS)
+    sentiment["data_models"] = [s.key for s in sentiment["students"] if s.key.startswith("sent-data")]
+    data_similarity = {}
+    for first, second in itertools.combinations(sentiment["data_models"], 2):
+        data_similarity[(first, second)] = data_similarity[(second, first)] = matched_overlap(
+            sentiment["correlation"], sentiment["index"], first, second)
+    sentiment["matched_data"] = data_similarity
+    sentiment["content"] = content_likeness([s.key for s in sentiment["students"]], probes, device, kind="sentiment")
     return results
 
 
-def content_likeness(keys: List[str], probes: List[dict], device: str) -> Dict[str, dict]:
+def content_likeness(keys: List[str], probes: List[dict], device: str, kind: str = "math") -> Dict[str, dict]:
     """Gemma likeness with position taken out (the adversarial check, 2026-11-05): much of any two
     heads' likeness is shared recency. Each head's position-only version gives every visible place the
     head's mean weight at that look-back distance (over every reply position of the math probes); the
     residual (real minus position-only) keeps only what depends on the tokens themselves. Returns per
     student: the best-match correlation with Gemma's heads on real rows and on residual rows, overall and
     for Gemma's full-attention vs sliding layers (mean over those layers of the best head in each)."""
-    math_probes = [index for index, probe in enumerate(probes) if probe["kind"] == "math"]
+    math_probes = [index for index, probe in enumerate(probes) if probe["kind"] == kind]
     loaded = {key: load_rows(key) for key in keys + [GEMMA]}
+    gemma_layers, gemma_heads = loaded[GEMMA][math_probes[0]].shape[:2]
     longest = max(max(probes[index]["student_queries"]) for index in math_probes) + 1
 
     def heads_view(key, index):
@@ -407,13 +445,13 @@ def content_likeness(keys: List[str], probes: List[dict], device: str) -> Dict[s
             totals[key]["real"] = totals[key]["real"] + real @ gemma_real.T
             totals[key]["residual"] = totals[key]["residual"] + residual @ gemma_residual.T
         row_count += len(probes[index]["student_queries"])
-    full = GEMMA_FULL_LAYERS
-    sliding = [layer for layer in range(GEMMA_LAYERS) if layer not in full]
+    full = [layer for layer in range(gemma_layers) if layer % 6 == 5]   # both Gemmas: every 6th layer is global
+    sliding = [layer for layer in range(gemma_layers) if layer not in full]
 
     def best(matrix, layers=None):
         if layers is None:
             return float(matrix.max(1).mean())
-        return float(np.mean([matrix[:, layer * GEMMA_HEADS:(layer + 1) * GEMMA_HEADS].max(1).mean() for layer in layers]))
+        return float(np.mean([matrix[:, layer * gemma_heads:(layer + 1) * gemma_heads].max(1).mean() for layer in layers]))
 
     result = {}
     for key in keys:

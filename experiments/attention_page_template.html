@@ -9,7 +9,7 @@
   color-scheme: light;
   --surface: #fcfcfb; --surface-2: #f3f2ef; --border: #dedcd5;
   --text: #0b0b0b; --text-2: #52514e; --muted: #7a7974;
-  --kl: #2a78d6; --ce: #eb6834; --ktc: #1baf7a; --gemma: #6250d6; --untrained: #8a8984; --accent: #e34948; --size: #c98500;
+  --kl: #2a78d6; --ce: #eb6834; --ktc: #1baf7a; --gemma: #6250d6; --untrained: #8a8984; --accent: #e34948; --size: #c98500; --ctk: #e87ba4; --flat: #008300;
   --hl: 42, 120, 214;
 }
 @media (prefers-color-scheme: dark) {
@@ -17,7 +17,7 @@
     color-scheme: dark;
     --surface: #1a1a19; --surface-2: #242422; --border: #3a3a37;
     --text: #f0efec; --text-2: #c3c2b7; --muted: #94938a;
-    --kl: #3987e5; --ce: #d95926; --ktc: #199e70; --gemma: #9085e9; --untrained: #94938a; --accent: #e66767; --size: #c98500;
+    --kl: #3987e5; --ce: #d95926; --ktc: #199e70; --gemma: #9085e9; --untrained: #94938a; --accent: #e66767; --size: #c98500; --ctk: #d55181; --flat: #008300;
     --hl: 57, 135, 229;
   }
 }
@@ -25,7 +25,7 @@
   color-scheme: dark;
   --surface: #1a1a19; --surface-2: #242422; --border: #3a3a37;
   --text: #f0efec; --text-2: #c3c2b7; --muted: #94938a;
-  --kl: #3987e5; --ce: #d95926; --ktc: #199e70; --gemma: #9085e9; --untrained: #94938a; --accent: #e66767; --size: #c98500;
+  --kl: #3987e5; --ce: #d95926; --ktc: #199e70; --gemma: #9085e9; --untrained: #94938a; --accent: #e66767; --size: #c98500; --ctk: #d55181; --flat: #008300;
   --hl: 57, 135, 229;
 }
 * { box-sizing: border-box; }
@@ -105,7 +105,7 @@ code { font-size: 13px; }
 <div class="tiles" id="tiles"></div>
 <nav>
   <a href="#explorer">Explorer</a><a href="#seed">1 · Seeds (the baseline)</a><a href="#loss">2 · KL vs CE</a>
-  <a href="#gemma">3 · Gemma</a><a href="#size">4 · Size</a><a href="#training">5 · Training</a><a href="#code">6 · Coding agent</a>
+  <a href="#gemma">3 · Gemma</a><a href="#size">4 · Size</a><a href="#training">5 · Training</a><a href="#code">6 · Coding agent</a><a href="#sentiment">7 · Sentiment</a>
   <a href="#method">Method</a>
 </nav>
 
@@ -223,6 +223,27 @@ its attention is on those lines?</p>
 </div>
 <ul class="facts" id="facts-code"></ul>
 
+<h2 id="sentiment">Study 7 · Sentiment (part 1): ten seeds, five schedules, four data sizes</h2>
+<p class="q">Question: with the data order fixed, so that seeds differ only in their start weights, is it still the seed that decides
+attention? And does more data, or the KL / CE schedule, change it?</p>
+<p>Part 1's students (48 wide, 3 layers, 1 head each; teacher Gemma 3 4B, bf16, its March 2026 prompt rebuilt exactly). They learned only the
+class prior (accuracy at the most common answer, code review X-C1). E-01: five schedules × 10 seeds on 2,048 comments, every seed reading
+the comments in the same order. Idea D: 256 to 2,048 comments, 5 seeds. 48 test comments; Gemma's instructions (before and after the comment)
+are outside the student's view.</p>
+<div class="figs">
+  <div class="fig"><div class="tag">FIG 7A</div><h3>Three kinds of pairs, 50 students</h3><div id="f7a"></div>
+    <p class="cap">Each dot a pair (225 same-schedule pairs, 100 same-seed pairs, 900 others); tick: the mean.</p></div>
+  <div class="fig"><div class="tag">FIG 7B</div><h3>Every pair (matched-head correlation)</h3><div id="f7b"></div>
+    <p class="cap">Rows and columns: the five schedules, seeds 1-10 inside each. The bright stripes parallel to the diagonal are pairs with the
+    same seed and another schedule.</p></div>
+  <div class="fig wide"><div class="tag">FIG 7C</div><h3>The five schedules, seed by seed</h3><div id="f7c"></div></div>
+  <div class="fig"><div class="tag">FIG 7D</div><h3>Data size</h3><div id="f7d"></div>
+    <p class="cap">Mean over the seeds (likeness = best correlation with a Gemma 3 head; position removed as in FIG 3F).</p></div>
+  <div class="fig"><div class="tag">FIG 7E</div><h3>Gemma 3 layer by layer</h3><div id="f7e"></div>
+    <p class="cap">Mean over the 8 heads of each of its 34 layers (▲ = full attention).</p></div>
+</div>
+<ul class="facts" id="facts-sentiment"></ul>
+
 <h2 id="method">Method and caveats</h2>
 <ul id="method-list"></ul>
 </main>
@@ -240,8 +261,11 @@ const short = key => ({ "math-kl-m-s1": "KL s1", "math-kl-m-s2": "KL s2", "math-
   "math-untrained-m": "untrained m", gemma: "Gemma", "math-size-xs": "xs", "math-size-s": "s", "math-size-m": "m",
   "math-size-l": "l", "math-size-s-ce": "s, CE", "math-size-xl-pilot": "xl (pilot)", "code-size-xs": "xs", "code-size-s": "s",
   "code-size-m": "m", "code-size-l": "l", "code-size-xl": "xl", "code-size-s-ce": "s, CE", "code-kl-m": "KL m (full data)",
-  "code-untrained-m": "untrained m" })[key] || key;
+  "code-untrained-m": "untrained m", "sent-untrained": "untrained" })[key]
+  || (key.startsWith("sent-") ? key.replace("sent-", "").replace("data", "").replace(/-s(\d+)$/, " s$1") : key);
 const lossOf = key => key === "gemma" ? "gemma" : key.includes("untrained") ? "untrained" : key.includes("kl-to-ce") ? "ktc"
+  : key.includes("ce-to-kl") ? "ctk" : key.includes("flat-50") ? "flat" : key.startsWith("sent-data") ? "size"
+  : key.startsWith("sent-pure-kl") ? "kl" : key.startsWith("sent-pure-ce") ? "ce"
   : key.includes("size") ? (key.endsWith("-ce") ? "ce" : "size") : (key.includes("-kl-") || key.startsWith("code-kl")) ? "kl"
   : key.includes("-ce-") ? "ce" : "size";
 const lossColor = key => css("--" + lossOf(key));
@@ -371,7 +395,7 @@ const probeSelect = document.getElementById("ex-probe"), setSelect = document.ge
 const colsSelect = document.getElementById("ex-cols"), fontSelect = document.getElementById("ex-font"), scaleSelect = document.getElementById("ex-scale");
 const slider = document.getElementById("ex-slider"), panelsBox = document.getElementById("ex-panels"), replyBox = document.getElementById("ex-reply");
 DATA.explorer.forEach((p, i) => el("option", { value: i }, probeSelect,
-  `${p.kind === "math" ? "Math tutor" : "Coding agent"} · ${p.bucket} · ${p.item} (${p.replyLength} tokens)`));
+  `${({ math: "Math tutor", code: "Coding agent", sentiment: "Sentiment" })[p.kind]} · ${p.bucket} · ${p.item} (${p.replyLength} tokens)`));
 const decoded = new Map();
 function rowsOf(model) {
   if (!decoded.has(model.data)) { const raw = atob(model.data), bytes = new Uint8Array(raw.length);
@@ -379,7 +403,7 @@ function rowsOf(model) {
   return decoded.get(model.data);
 }
 const current = { probe: 0, row: 0, data: null, panels: [], chips: [] };
-const layerChoice = {}, setChoice = { math: "Scaling (every size)", code: "Scaling (every size)" };
+const layerChoice = {}, setChoice = { math: "Scaling (every size)", code: "Scaling (every size)", sentiment: "Loss schedules (seed 1)" };
 const shown = t => JSON.stringify(t).slice(1, -1) || "␣";
 const escapeHtml = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 function defaultRow(p) { const digit = p.reply.findIndex(t => /\d/.test(t)); return digit >= 0 ? digit : 0; }
@@ -435,7 +459,7 @@ function buildReply() {
   replyBox.innerHTML = "";
   current.chips = p.reply.map((t, i) => { const b = el("button", {}, replyBox, shown(t)); b.onclick = () => setRow(i); return b; });
   slider.max = p.reply.length - 1;
-  document.getElementById("ex-info").textContent = p.kind === "math"
+  document.getElementById("ex-info").textContent = p.kind !== "code"
     ? `${p.labels.length} student tokens; the reply has ${p.reply.length} tokens. Tokens after the one being written are greyed out (the model cannot see them).`
     : `${p.lines.length} lines; the red bar marks the lines Gemma's scope names.`;
 }
@@ -457,7 +481,7 @@ function buildPanels() {
     select.value = layerChoice[`${key}|${p.kind}`] ?? model.layers;
     const entry = { key, model, select, note: el("div", { class: "note line" }, panel), top: el("div", { class: "top" }, panel), cells: [], query: -1 };
     select.onchange = () => { layerChoice[`${key}|${p.kind}`] = +select.value; updateRow(false); };
-    if (p.kind === "math") {
+    if (p.kind !== "code") {
       entry.box = el("div", { class: "text" }, panel); entry.box.style.fontSize = fontSelect.value + "px";
       for (let g = 0; g < G; g++) {
         const span = el("span", {}, entry.box, p.labels[g]); entry.cells.push(span);
@@ -498,17 +522,17 @@ function updateRow(first) {
     const model = entry.model, layer = layerOf(entry), bytes = rowsOf(model), offset = (layer * R + current.row) * G;
     const top = model.maxima[layer][current.row], scale = shared ? top / sharedTop : 1;
     entry.note.textContent = `strongest weight ${pct(top)}` + (model.outside ? ` · outside the student's view: ${pct(model.outside[layer][current.row])}` : "");
-    const visible = p.kind === "math" ? query + 1 : p.lines.length;
+    const visible = p.kind !== "code" ? query + 1 : p.lines.length;
     const ranked = [...Array(visible).keys()].map(g => [g, bytes[offset + g]]).sort((a, b) => b[1] - a[1]).slice(0, 5);
     entry.top.textContent = "looks most at: " + ranked.map(([g, v]) =>
-      `${p.kind === "math" ? "«" + shown(p.labels[g]) + "»" : p.labels[g]} ${pct(v / 255 * top)}`).join(" · ");
+      `${p.kind !== "code" ? "«" + shown(p.labels[g]) + "»" : p.labels[g]} ${pct(v / 255 * top)}`).join(" · ");
     const colour = css("--hl");
     entry.cells.forEach((cell, g) => {
       const rel = bytes[offset + g] / 255; cell._weight = rel * top;
-      if (p.kind === "math" && g > query) { cell.style.background = "transparent"; cell.style.opacity = 0.3; }
+      if (p.kind !== "code" && g > query) { cell.style.background = "transparent"; cell.style.opacity = 0.3; }
       else { cell.style.background = `rgba(${colour},${Math.pow(rel * scale, 0.6).toFixed(3)})`; cell.style.opacity = 1; }
     });
-    if (p.kind === "math") {
+    if (p.kind !== "code") {
       if (entry.query >= 0) entry.cells[entry.query].classList.remove("q");
       entry.cells[query].classList.add("q"); entry.query = query;
       requestAnimationFrame(() => keepInView(entry.box, entry.cells[query], first));
@@ -723,6 +747,56 @@ fact("facts-code", `While writing the line numbers, Gemma's best head puts <b>${
 const RH = DATA.retrieval_heads;
 fact("facts-code", `Gemma's strongest line-finding heads (weight on the target lines while writing line numbers; records where the head's most-attended line is a target line; and, while it writes the file name, records where its most-attended line is in the target file): ${RH.filter(h => h.model === "gemma").map(h => `L${h.layer}H${h.head} <b>${pct(h.share, 0)}</b> (lines ${h.hits}/${h.probes}, file ${h.file_hits}/${h.probes})`).join(", ")}. The best student heads: ${RH.filter(h => h.model !== "gemma").map(h => `${short(h.model)} L${h.layer}H${h.head} ${pct(h.share, 1)} (lines ${h.hits}/${h.probes}, file ${h.file_hits}/${h.probes})`).join(", ")}. Gemma finds the file first, then the lines; Gemma\'s weight is read per line, so whether it reads the line-number labels or the code is not separated here.`);
 fact("facts-code", `KL m on the full data (8 of 10 passes) is the only student that looks at the request: <b>${pct(CM["code-kl-m"].message.mean, 1)}</b> on the message line (Gemma ${pct(CM.gemma.message.mean, 1)}, the pilot students ~${pct(CM["code-size-s"].message.mean, 1)}).`);
+
+// ── study 7 ──────────────────────────────────────────────────────────────────────────────────────────
+const SE = DATA.sentiment, SN = SE.numbers;
+const f7a = document.getElementById("f7a");
+for (const [metric, lo, hi] of [["correlation", 0, 0.5], ["overlap", 0.4, 0.7]]) {
+  const block = el("div", { style: "display:inline-block;vertical-align:top;margin-right:8px" }, f7a);
+  el("div", { class: "note" }, block, metric);
+  dotRows(block, { lo, hi, width: 330, labelW: 140, refs: [],
+    rows: kinds.map(k => ({ label: k.replace("loss", "schedule"), mean: SE.seed[metric].summary[k].mean,
+      points: SE.seed[metric].pairs.filter(p => p[2] === k).map(p => ({ v: p[3], r: 2.5, opacity: 0.35, color: kindColor[k], tip: `${short(p[0])} – ${short(p[1])}: <b>${fmt(p[3])}</b>` })) })) });
+}
+const arms = [["pure-kl", "pure KL", "--kl"], ["pure-ce", "pure CE", "--ce"], ["kl-to-ce", "KL→CE", "--ktc"], ["ce-to-kl", "CE→KL", "--ctk"], ["flat-50", "flat 50/50", "--flat"]];
+const f7b = document.getElementById("f7b");
+heatmap(f7b, { matrix: SE.matrix, rows: SE.models.map((k, i) => i % 10 === 0 ? arms[i / 10][1] : ""), cols: SE.models.map(() => ""), min: 0, max: 0.45,
+  cell: 9, rowW: 70, colH: 4, tipFn: (i, j, v) => `${short(SE.models[i])} · ${short(SE.models[j])}: <b>${fmt(v)}</b>` });
+const f7c = document.getElementById("f7c");
+legend(f7c, arms.map(a => [a[1], css(a[2])]));
+const grid7c = el("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:6px 18px" }, f7c);
+[["content", "Gemma likeness, position removed"], ["likeness", "Gemma likeness"], ["entropy", "entropy (spread)"], ["comment", "weight on the comment"],
+ ["reply so far", "weight on the reply so far"], ["previous token", "previous token"]].forEach(([metric, title]) => {
+  const values = SE.models.map(k => SN[k][metric]).concat([SN["sent-untrained"][metric]]);
+  let lo = Math.min(...values), hi = Math.max(...values); const pad = (hi - lo) * 0.12 || 0.01; lo -= pad; hi += pad;
+  const box = el("div", {}, grid7c); el("div", { style: "font-size:12px;font-weight:600;color:var(--text)" }, box, title);
+  dotRows(box, { lo, hi, width: 290, labelW: 80, rowH: 20, digits: 3,
+    rows: [...arms.map(([arm, name, colour]) => { const keys = [...Array(10).keys()].map(i => `sent-${arm}-s${i + 1}`);
+      return { label: name, mean: keys.reduce((a, k) => a + SN[k][metric], 0) / 10, meanColor: css(colour),
+        points: keys.map(k => ({ v: SN[k][metric], r: 3.5, color: css(colour), tip: `${short(k)}: <b>${fmt(SN[k][metric])}</b>` })) }; }),
+      { label: "untrained", points: [{ v: SN["sent-untrained"][metric], color: css("--untrained"), tip: `untrained: <b>${fmt(SN["sent-untrained"][metric])}</b>` }] }] });
+});
+const sizes = [256, 512, 1024, 2048], sizeKeys7 = n => SE.data_models.filter(k => k.startsWith(`sent-data${n}-`));
+const sizeMean = (n, metric) => { const keys = sizeKeys7(n); return keys.reduce((a, k) => a + SN[k][metric], 0) / keys.length; };
+const f7d = document.getElementById("f7d");
+lineChart(f7d, { width: 520, height: 240, xLo: 200, xHi: 2600, yLo: 0, yHi: 0.9, logX: true, xTicks: sizes, xLabel: "training comments (log scale)",
+  series: [{ label: "Gemma likeness", color: css("--gemma"), points: sizes.map(n => [n, sizeMean(n, "likeness"), `${n} comments`]) },
+    { label: "position removed", color: css("--kl"), points: sizes.map(n => [n, sizeMean(n, "content"), `${n} comments`]) },
+    { label: "entropy", color: css("--untrained"), points: sizes.map(n => [n, sizeMean(n, "entropy"), `${n} comments`]), dash: "5 4" }] });
+legend(f7d, [["Gemma likeness", css("--gemma")], ["position removed", css("--kl")], ["entropy", css("--untrained")]]);
+const f7e = document.getElementById("f7e");
+lineChart(f7e, { width: 520, height: 240, xLo: 1, xHi: 34, yLo: 0, yHi: 1, xTicks: [1, 6, 12, 18, 24, 30, 34], xLabel: "Gemma 3 layer", marks: SE.full_layers.map(l => l + 1),
+  series: [["outside view", "--gemma"], ["reply so far", "--ce"], ["comment", "--kl"], ["entropy", "--untrained"]].map(([metric, colour]) =>
+    ({ label: metric, color: css(colour), points: SE.gemma_profile[metric].map((v, i) => [i + 1, v, `layer ${i + 1}`]), dot: 2.5 })) });
+legend(f7e, [["outside the student's view", css("--gemma")], ["reply so far", css("--ce")], ["the comment", css("--kl")], ["entropy", css("--untrained")]]);
+const SC = SE.seed.correlation.summary, SO = SE.seed.overlap.summary;
+const dataPairs = kind => SE.data_pairs.filter(([a, b]) => kind(a, b)).map(p => p[2]);
+const sizeOf = k => k.split("-s")[0], seedOf = k => k.split("-s").pop();
+const avg = list => list.reduce((a, v) => a + v, 0) / list.length;
+fact("facts-sentiment", `Matched-head correlation, 50 students: same schedule, other seed <b>${fmt(SC["same loss, other seed"].mean)}</b>; other schedule, same seed <b>${fmt(SC["other loss, same seed"].mean)}</b>; other schedule, other seed <b>${fmt(SC["other loss, other seed"].mean)}</b>. The data order is the same for every seed here, so the seed is the start weights alone: they double the likeness, the schedule adds nothing (same minus other schedule ${fmt(SE.seed.correlation.observed, 4)}, permutation test over ${SE.seed.correlation.permutations.toLocaleString()} random relabellings within seeds: p = <b>${fmt(SE.seed.correlation.p, 2)}</b>; overlap ${fmt(SE.seed.overlap.observed, 4)}, p = ${fmt(SE.seed.overlap.p, 3)}).`);
+fact("facts-sentiment", `Data size: within a size, seed against seed ${sizes.map(n => `${n}: ${fmt(avg(dataPairs((a, b) => sizeOf(a) === sizeOf(b) && sizeOf(a) === `sent-data${n}`)))}`).join(", ")}; another size with the same seed <b>${fmt(avg(dataPairs((a, b) => sizeOf(a) !== sizeOf(b) && seedOf(a) === seedOf(b))))}</b>, another size and seed ${fmt(avg(dataPairs((a, b) => sizeOf(a) !== sizeOf(b) && seedOf(a) !== seedOf(b))))}: the start weights matter more than an 8x change in the data.`);
+fact("facts-sentiment", `Gemma likeness (position removed) ${arms.map(([arm, name]) => `${name} ${fmt(avg([...Array(10).keys()].map(i => SN[`sent-${arm}-s${i + 1}`].content)))}`).join(", ")}; untrained ${fmt(SN["sent-untrained"].content)}. By data size: ${sizes.map(n => `${n} ${fmt(sizeMean(n, "content"))}`).join(", ")} (the 256-comment students attend most evenly: entropy ${fmt(sizeMean(256, "entropy"))} vs ${fmt(sizeMean(2048, "entropy"))}).`);
+fact("facts-sentiment", `Gemma 3 puts <b>${pct(SE.gemma["outside view"])}</b> of its attention outside the student's view, mostly on the instructions, which include the list of allowed labels it copies from; of the rest, <b>${pct(SE.gemma["reply so far"])}</b> is on its own JSON so far and ${pct(SE.gemma.comment)} on the comment. The students, which never see the label list, put ${pct(SN["sent-pure-kl-s1"].comment)} on the comment and ${pct(SN["sent-pure-kl-s1"]["reply so far"])} on their reply (pure KL s1).`);
 
 // ── method ───────────────────────────────────────────────────────────────────────────────────────────
 [`Probes: test records only (never trained on), seeded sample: 32 solutions, 32 explanations and 16 routing replies of the math tutor; 6 scope replies per coding-agent test project. Attention is read at every position that writes a reply token (teacher-forced: the context is Gemma's own reply so far).`,

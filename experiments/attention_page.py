@@ -36,7 +36,14 @@ def with_all(sets):
     return {**sets, "All": every} if len(sets) > 1 else sets
 
 
-MODEL_SETS = {"math": with_all(MATH_SETS), "code": CODE_SETS}
+SENTIMENT_SETS = {
+    "Loss schedules (seed 1)": ["gemma", "sent-pure-kl-s1", "sent-pure-ce-s1", "sent-kl-to-ce-s1", "sent-ce-to-kl-s1", "sent-flat-50-s1",
+                                "sent-untrained"],
+    "Seeds (pure KL)": ["gemma", "sent-pure-kl-s1", "sent-pure-kl-s2", "sent-pure-kl-s3", "sent-pure-kl-s4", "sent-pure-kl-s5"],
+    "Data scaling (seed 1)": ["gemma", "sent-data256-s1", "sent-data512-s1", "sent-data1024-s1", "sent-data2048-s1", "sent-untrained"],
+}
+MODEL_SETS = {"math": with_all(MATH_SETS), "code": CODE_SETS, "sentiment": with_all(SENTIMENT_SETS)}
+EXPLORER_SENTIMENT = {"comment": 6}
 LOSS_METRICS = ["previous token", "copy", "numbers when writing a number", "distance", "entropy", "message",
                 "newest task", "earlier conversation", "reply so far", "end of input"]
 
@@ -72,9 +79,9 @@ def encode_rows(view: torch.Tensor):
 def explorer(results, probes) -> List[dict]:
     """Writes runs/attention_study/explorer/probe_<index>.js for each chosen test record (every model's
     per-layer mean attention at each reply position) and returns the list the page shows."""
-    chosen, math_left, code_left = [], dict(EXPLORER_MATH), dict(EXPLORER_CODE_PER_PROJECT)
+    chosen, math_left, code_left, sentiment_left = [], dict(EXPLORER_MATH), dict(EXPLORER_CODE_PER_PROJECT), dict(EXPLORER_SENTIMENT)
     for index, probe in enumerate(probes):
-        left = math_left if probe["kind"] == "math" else code_left
+        left = {"math": math_left, "code": code_left, "sentiment": sentiment_left}[probe["kind"]]
         if left.get(probe["bucket"], 0) > 0 and len(probe["student_queries"]) <= 70:
             left[probe["bucket"]] -= 1
             chosen.append(index)
@@ -132,9 +139,38 @@ def matched_pairs(math, first, second):
     return same_head, same_layer
 
 
+def sentiment_payload(sentiment) -> dict:
+    """Study 7: the 10-seed baseline (data order fixed), the five schedules, the data-size sweep, Gemma 3."""
+    models = R.SENTIMENT_ARM_MODELS
+    seed = {}
+    for name in ("correlation", "overlap"):
+        study = sentiment[f"seed_study_{name}"]
+        seed[name] = {"summary": study["summary"], "p": study["p_value"], "permutations": study["permutations"],
+                      "observed": study["observed"], "pairs": [[a, b, kind, round(value, 4)] for a, b, kind, value in study["pairs"]]}
+    matrix = [[1.0 if a == b else round(sentiment["matched_correlation"][(a, b)], 3) for b in models] for a in models]
+    metric_names = ["entropy", "comment", "reply so far", "end of input", "previous token", "distance", "first token"]
+
+    def model_numbers(key):
+        values = {name: float(sentiment["metrics"][key][name].mean()) for name in metric_names if name in sentiment["metrics"][key]}
+        values["likeness"] = float(sentiment["gemma_correlation"][key].mean())
+        values["content"] = sentiment["content"][key]["residual"]
+        return values
+    data_models = sentiment["data_models"]
+    data_pairs = [[a, b, round(sentiment["matched_data"][(a, b)], 4)] for index, a in enumerate(data_models) for b in data_models[index + 1:]]
+    gemma = sentiment["metrics"][R.GEMMA]
+    return {"models": models, "matrix": matrix, "seed": seed,
+            "numbers": {key: model_numbers(key) for key in [s.key for s in sentiment["students"]]},
+            "data_models": data_models, "data_pairs": data_pairs,
+            "gemma_profile": {name: rounded(gemma[name].mean(1), 4) for name in ("outside view", "entropy", "comment", "reply so far",
+                                                                                  "previous token", "end of input")},
+            "gemma": {name: float(gemma[name].mean()) for name in ("outside view", "entropy", "comment", "reply so far", "end of input")},
+            "full_layers": [layer for layer in range(gemma["entropy"].shape[0]) if layer % 6 == 5]}
+
+
 def payload(results, probes) -> dict:
     math, code = results["math"], results["code"]
-    facts = run_facts(math["students"] + code["students"])
+    sentiment = results["sentiment"]
+    facts = run_facts(math["students"] + code["students"] + sentiment["students"])
     labels = {key: facts[key]["label"] for key in facts}
     labels[R.GEMMA] = "Gemma 4 12B (bf16)"
     seed = {}
@@ -221,6 +257,7 @@ def payload(results, probes) -> dict:
         "explorer": explorer(results, probes), "model_sets": MODEL_SETS,
         "bootstrap": math["bootstrap"], "retrieval_heads": code["retrieval_heads"],
         "content": math["content"],
+        "sentiment": sentiment_payload(sentiment),
     }
 
 
