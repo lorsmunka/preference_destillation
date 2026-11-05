@@ -63,13 +63,14 @@ def student_attention(model, input_ids: torch.Tensor, query_positions: Optional[
 class TeacherAttention:
     """Catches the attention weights of every text attention layer of a Hugging Face causal LM in one
     forward pass (forward hooks on the attention modules, whose eager forward returns
-    (output, weights)). Vision / audio towers are left out."""
+    (output, weights)). Vision / audio towers (e.g. Gemma 3's SigLIP encoder) are left out."""
 
     def __init__(self, model):
         self.model = model
-        self.layers = [module for module in model.modules()
+        self.layers = [module for name, module in model.named_modules()
                        if type(module).__name__.endswith("Attention") and hasattr(module, "q_proj")
-                       and not any(part in type(module).__name__ for part in ("Vision", "Audio"))]
+                       and not any(part in type(module).__name__ for part in ("Vision", "Audio", "Siglip"))
+                       and not any(part in name.lower() for part in ("vision", "audio"))]
         if not self.layers:
             raise ValueError(f"{type(model).__name__}: no attention modules with q_proj found")
 

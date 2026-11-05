@@ -23,7 +23,8 @@ import numpy as np
 import torch
 from scipy.optimize import linear_sum_assignment
 
-from attention_study import STUDENTS_DIR, TEACHER_PATH, Student, code_students, math_students, scope_target_lines
+from attention_study import (STUDENTS_DIR, TEACHER_PATHS, Student, code_students, math_students, scope_target_lines,
+                             sentiment_students)
 
 GEMMA = "gemma"
 GEMMA_LAYERS, GEMMA_HEADS = 48, 16
@@ -45,8 +46,13 @@ def seed_of(key: str) -> int:
 
 
 def load_rows(key: str) -> Dict[int, torch.Tensor]:
-    path = TEACHER_PATH if key == GEMMA else STUDENTS_DIR / f"{key}.pt"
-    return torch.load(path, mmap=True, weights_only=False)
+    if key == GEMMA:   # each kind's own teacher (Gemma 4 12B for the agents, Gemma 3 4B for sentiment)
+        merged = {}
+        for path in TEACHER_PATHS.values():
+            if path.exists():
+                merged.update(torch.load(path, mmap=True, weights_only=False))
+        return merged
+    return torch.load(STUDENTS_DIR / f"{key}.pt", mmap=True, weights_only=False)
 
 
 def view_of(rows: torch.Tensor):
