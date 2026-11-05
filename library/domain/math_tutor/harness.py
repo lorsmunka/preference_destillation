@@ -251,7 +251,8 @@ def transcript_records(item: Dict, transcript: List[Dict]) -> List[Dict]:
     solution is learned in the clean history (the side thread dropped); when a thread was open,
     the route to it is a record of its own. An off-topic route gives a route record
     (<out_of_scope>) and the message never enters the context, as in the harness. `answer` is the
-    code's answer, which task accuracy is measured against."""
+    code's answer (solve()); with `answer_correct` it records whether Gemma was right. Task accuracy
+    does not use it: the evaluator compares the student's answer with Gemma's reply (the target)."""
     conversation = Conversation()
     base = {"item_id": item["id"], "family": item["family"], "split": item["split"], "slice": item["slice"],
             "problem_shape": item["problem_shape"], "teacher": "forced"}
