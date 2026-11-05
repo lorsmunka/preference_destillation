@@ -103,7 +103,8 @@ STATUS 2026-10-13 (pick up here)
             on error, 19 of 20 on accuracy. So ending on CE costs here: no support for the 0.9 -> 0.1 default.
             Seed 3 not started (needs ~13 h); the report waits for it (finished_seeds() == SEEDS).
   CODE AGENT KL VS CE (experiments/code_agent_ce_vs_kl.py, user 2026-11-05: "start the coding ones"):
-            KL m paused 2026-11-05 19:37 at pass 9, batch 124 (resume = rerun the script); CE not started.
+            KL m done (10 passes; task accuracy .0025 at the last pass). CE m paused 2026-11-06 00:19 at
+            pass 3, batch 1 (STOP file in place: delete it, then rerun the script to resume); then the report.
             Task accuracy ~0 at every pass (best .0025, baseline .005); test error lowest at pass 2 (2.81),
             then rising to 3.03 at pass 8 (overfits the 16 training projects). Passes ~40 min with the
             card's cache released around each test (d185a55).
