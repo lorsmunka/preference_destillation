@@ -102,6 +102,25 @@ STATUS 2026-10-13 (pick up here)
             the gap growing every pass (last +.018, +.016, ~3x KL's seed spread); better than CE at all 20 tests
             on error, 19 of 20 on accuracy. So ending on CE costs here: no support for the 0.9 -> 0.1 default.
             Seed 3 not started (needs ~13 h); the report waits for it (finished_seeds() == SEEDS).
+  CODE AGENT KL VS CE (experiments/code_agent_ce_vs_kl.py, user 2026-11-05: "start the coding ones"):
+            KL m paused 2026-11-05 19:37 at pass 9, batch 124 (resume = rerun the script); CE not started.
+            Task accuracy ~0 at every pass (best .0025, baseline .005); test error lowest at pass 2 (2.81),
+            then rising to 3.03 at pass 8 (overfits the 16 training projects). Passes ~40 min with the
+            card's cache released around each test (d185a55).
+  ATTENTION STUDY 2026-11-05 (user: "visualize how KL-s, CE-s, scaling changes how the model attends ...
+            also Gemma"; "baseline: same settings, different seeds"; Gemma bf16 on a rented card, never the
+            local 4-bit one): experiments/attention_study.py (probes, students, teacher, report) + attention_
+            report.py / attention_page.py; page runs/attention_study/attention_study.html (local, ~7 MB),
+            numbers in experiments/results/attention_models.csv + attention_seed_pairs.csv. Gemma: RTX A6000
+            pod uiv7jvp9w96gc2 (EU-SE-1, $0.59/h), 104 probes in 139 s, ~8 min in all (~$0.08), deleted.
+            Math tutor, size m, matched-head correlation: same loss / other seed .386, other loss / same seed
+            .598, other loss / other seed .382 (permutation within seeds p = .11): the seed (start weights +
+            data order) shapes attention, the loss does not, beyond seed noise. Same seed: 92-100% of matched
+            heads are the very same head. Gemma likeness (best correlation with one of its 768 heads): KL .320,
+            CE .313, untrained .043; the students match Gemma's sliding-window layers (~.23), not its
+            full-attention ones (~.14). Coding agent: every student spreads evenly over the project (lift
+            ~1.0); Gemma's full-attention layers 24/30/36/42 have heads with up to 67% on the target lines
+            while it writes the line numbers (best student head 5%).
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it

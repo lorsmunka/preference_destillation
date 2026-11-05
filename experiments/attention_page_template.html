@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Where Students Look</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface: #fcfcfb; --surface-2: #f3f2ef; --border: #dedcd5;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #7a7974;
+  --kl: #2a78d6; --ce: #eb6834; --ktc: #1baf7a; --gemma: #6250d6; --untrained: #8a8984; --accent: #e34948; --size: #c98500;
+  --hl: 42, 120, 214;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface: #1a1a19; --surface-2: #242422; --border: #3a3a37;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #94938a;
+    --kl: #3987e5; --ce: #d95926; --ktc: #199e70; --gemma: #9085e9; --untrained: #94938a; --accent: #e66767; --size: #c98500;
+    --hl: 57, 135, 229;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #1a1a19; --surface-2: #242422; --border: #3a3a37;
+  --text: #f0efec; --text-2: #c3c2b7; --muted: #94938a;
+  --kl: #3987e5; --ce: #d95926; --ktc: #199e70; --gemma: #9085e9; --untrained: #94938a; --accent: #e66767; --size: #c98500;
+  --hl: 57, 135, 229;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--surface); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 80px; }
+h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 21px; margin: 48px 0 6px; padding-top: 12px; border-top: 1px solid var(--border); }
+h3 { font-size: 15px; margin: 0 0 4px; }
+p, li { color: var(--text-2); max-width: 900px; }
+.sub { color: var(--text-2); margin: 0 0 16px; }
+.q { font-weight: 600; color: var(--text); }
+nav { position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 0; z-index: 5;
+      display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; }
+nav a { color: var(--text-2); text-decoration: none; } nav a:hover { color: var(--text); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 16px 0; }
+.tile { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.tile .big { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.tile .what { font-size: 13px; color: var(--text-2); }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; margin-top: 12px; }
+.fig { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+.fig.wide { grid-column: 1 / -1; }
+.fig .tag { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
+.fig .cap { font-size: 13px; color: var(--text-2); margin: 6px 0 0; }
+.facts { font-size: 14px; }
+.facts b { color: var(--text); font-variant-numeric: tabular-nums; }
+svg text { fill: var(--text-2); font: 11px system-ui, sans-serif; }
+svg .axis line, svg .axis path { stroke: var(--border); }
+svg .grid { stroke: var(--border); stroke-dasharray: 2 3; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin: 4px 0; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px;
+  background: var(--c); vertical-align: -1px; }
+#tip { position: fixed; pointer-events: none; background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 8px; font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.18); display: none; z-index: 20; max-width: 360px; }
+select, button { font: inherit; font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 5px; padding: 3px 6px; }
+.controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.reply { display: flex; flex-wrap: wrap; gap: 3px; margin: 6px 0 10px; }
+.reply button { padding: 1px 5px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+.reply button.on { background: var(--text); color: var(--surface); }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 12px; }
+.panel { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.panel header { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px;
+  border-bottom: 1px solid var(--border); font-size: 13px; }
+.panel header b { font-weight: 650; }
+.panel .note { font-size: 12px; color: var(--muted); padding: 2px 8px; }
+.text { position: relative; padding: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; line-height: 1.7; white-space: pre-wrap;
+  word-break: break-word; max-height: 420px; overflow-y: auto; }
+.text span { border-radius: 2px; }
+.text .q { outline: 2px solid var(--accent); }
+.lines { position: relative; font-family: ui-monospace, Consolas, monospace; font-size: 11px; line-height: 1.35; max-height: 420px; overflow-y: auto; padding: 4px 0; }
+.lines div { white-space: pre; padding: 0 8px; border-left: 3px solid transparent; }
+.lines div.target { border-left-color: var(--accent); }
+table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--text-2); font-weight: 600; }
+code { font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Where the students look</h1>
+<p class="sub" id="subtitle"></p>
+<div class="tiles" id="tiles"></div>
+<nav>
+  <a href="#explorer">Explorer</a><a href="#seed">1 · Seeds (the baseline)</a><a href="#loss">2 · KL vs CE</a>
+  <a href="#gemma">3 · Gemma</a><a href="#size">4 · Size</a><a href="#training">5 · Training</a><a href="#code">6 · Coding agent</a>
+  <a href="#method">Method</a>
+</nav>
+
+<h2 id="explorer">Explorer: one reply, token by token</h2>
+<p>Pick a test record and a reply token: every panel shades the text by where that model looks while it writes the token
+(the shade is relative to the panel's strongest weight; hover a token for its weight). Gemma's panel is renormalised over the
+student's text; the share it puts on its instruction header and chat template, which the students never see, is shown above the text.</p>
+<div class="controls"><label>Record <select id="ex-probe"></select></label>
+  <label>Shade <select id="ex-scale"><option value="shared">one scale for all panels</option><option value="panel">relative to each panel</option></select></label>
+  <span id="ex-info" class="note"></span></div>
+<div class="reply" id="ex-reply"></div>
+<div class="panels" id="ex-panels"></div>
+
+<h2 id="seed">Study 1 · The baseline: how different are two seeds of the same student?</h2>
+<p class="q">Question: before asking what KL, CE or size change, how much do two trainings with identical settings differ? Only a
+difference larger than that is a real effect of a setting.</p>
+<p>Size m, 10 passes, full math data. A seed fixes both the start weights and the order of the data, and the same seed is used for every loss,
+so KL s1 and CE s1 start from the same weights and see the same batches: they differ only in what they learn from.</p>
+<div class="figs">
+  <div class="fig"><div class="tag">FIG 1A</div><h3>Matched-head similarity of every pair (correlation)</h3><div id="f1a"></div>
+    <p class="cap">Each cell: the heads of the two students matched one to one (Hungarian), then the mean correlation of the matched
+    heads' attention. Bright blocks off the diagonal are pairs sharing a seed.</p></div>
+  <div class="fig"><div class="tag">FIG 1B</div><h3>Three kinds of pairs</h3><div id="f1b"></div>
+    <p class="cap">Each dot is a pair of students; the tick is the mean. Left: correlation; right: overlap (share of attention on the same
+    tokens). The dashed line: an untrained student (random weights) against the trained ones.</p></div>
+  <div class="fig"><div class="tag">FIG 1C</div><h3>Do the matched heads keep their place?</h3><div id="f1c"></div>
+    <p class="cap">Of the matched head pairs: the share that is the very same head (same layer and index), and the share in the same layer.
+    Dashed: chance (1 in 24 heads, 1 in 6 layers).</p></div>
+  <div class="fig wide"><div class="tag">FIG 1D</div><h3>Head roles: the same seed gives the same map</h3><div id="f1d"></div>
+    <p class="cap">Every cell is one head (rows: layers 1-6, columns: heads 1-4, in their own index). Two losses with seed 1, two with seed 2. Colour from low to high (the blue ramp; hover for values): previous token 0-0.3, copy 0-0.2, numbers 0-0.8, message 0-0.45, distance 0-120 tokens.</p></div>
+</div>
+<ul class="facts" id="facts-seed"></ul>
+
+<h2 id="loss">Study 2 · What does the loss change (KL, CE, KL to CE)?</h2>
+<p class="q">Question: given the seed baseline, does learning Gemma's whole next-word list (KL) instead of its written word (CE)
+change where the student looks?</p>
+<div class="figs">
+  <div class="fig wide"><div class="tag">FIG 2A</div><h3>Attention measures by loss (each dot a seed)</h3><div id="f2a"></div>
+    <p class="cap">Mean over all 24 heads and every reply position. Copy: weight on earlier copies of the token about to be written.
+    Distance: how far back, in tokens. Entropy: spread, as a share of the most spread possible.</p></div>
+  <div class="fig wide"><div class="tag">FIG 2B</div><h3>KL minus CE, seed by seed</h3><div id="f2b"></div>
+    <p class="cap">The same seed = the same start and data order, so each difference is a paired one. Scale: the difference in units of the
+    spread between the three KL seeds.</p></div>
+  <div class="fig wide"><div class="tag">FIG 2C</div><h3>Where the reply looks, by reply type</h3><div id="f2c"></div>
+    <p class="cap">Share of attention on each part of the input (mean over heads). Gemma: renormalised over the student's text.</p></div>
+</div>
+<ul class="facts" id="facts-loss"></ul>
+
+<h2 id="gemma">Study 3 · Gemma: where does the teacher look, and do the students end up like it?</h2>
+<p class="q">Question: nothing in training touches attention. Do the students still come to look where Gemma looks?</p>
+<div class="figs">
+  <div class="fig wide"><div class="tag">FIG 3A</div><h3>Gemma likeness of every student</h3><div id="f3a"></div>
+    <p class="cap">For each student head, its best correlation with any of Gemma's 768 heads; dots: heads, bar: the mean. An untrained student
+    (random weights) is the floor of this search over 768 heads.</p></div>
+  <div class="fig wide"><div class="tag">FIG 3B</div><h3>Which depth of Gemma each student layer resembles</h3><div id="f3b"></div>
+    <p class="cap">Rows: student layers; columns: Gemma's 48 layers (▲ = a full-attention layer, the others see 1,024 tokens back). Cell: the
+    student layer's heads' mean best correlation with a head of that Gemma layer.</p></div>
+  <div class="fig wide"><div class="tag">FIG 3C</div><h3>Gemma layer by layer</h3><div id="f3c"></div>
+    <p class="cap">Mean over the 16 heads of each layer. Outside view: weight on the instruction header, &lt;bos&gt; and chat template
+    (the students never see them); the other measures are over the student's text.</p></div>
+  <div class="fig wide"><div class="tag">FIG 3D</div><h3>Gemma's 768 heads</h3><div id="f3d"></div>
+    <p class="cap">Rows: layers 1-48, columns: heads 1-16.</p></div>
+  <div class="fig"><div class="tag">FIG 3E</div><h3>Specialist heads: Gemma vs the students</h3><div id="f3e"></div>
+    <p class="cap">The strongest single head for each role (max over heads), size m students.</p></div>
+</div>
+<ul class="facts" id="facts-gemma"></ul>
+
+<h2 id="size">Study 4 · Size</h2>
+<p class="q">Question: does a bigger student look more like Gemma, or differently?</p>
+<p>The size sweep was trained before the main runs: KD with the KL share sliding 0.9 to 0.1, 10 passes, the first 10,000 problems
+(xs to l), and xl on the small pilot data. So sizes compare with each other, not with the main KL / CE students.</p>
+<div class="figs">
+  <div class="fig"><div class="tag">FIG 4A</div><h3>Gemma likeness by size</h3><div id="f4a"></div>
+    <p class="cap">x: parameters (log scale). Grey: the size sweep; blue and orange: the main KL / CE students (size m, full data).</p></div>
+  <div class="fig"><div class="tag">FIG 4B</div><h3>Attention measures by size</h3><div id="f4b"></div></div>
+</div>
+<ul class="facts" id="facts-size"></ul>
+
+<h2 id="training">Study 5 · Training: when do the patterns form?</h2>
+<p class="q">Question: KL s1 and CE s1 start from the same weights. Do they drift apart, and when is the final pattern in place?</p>
+<div class="figs">
+  <div class="fig"><div class="tag">FIG 5A</div><h3>Similarity after every pass</h3><div id="f5a"></div>
+    <p class="cap">Matched-head correlation: each pass with the student's own final pattern, and KL with CE after the same pass.</p></div>
+  <div class="fig"><div class="tag">FIG 5B</div><h3>Gemma likeness and number lookup, pass by pass</h3><div id="f5b"></div></div>
+</div>
+<ul class="facts" id="facts-training"></ul>
+
+<h2 id="code">Study 6 · The coding agent: do they look at the lines they name?</h2>
+<p class="q">Question: when the model writes its scope ("computer.py 45-50") after reading the whole project (~6,000 tokens), how much of
+its attention is on those lines?</p>
+<p>Students: the pilot size sweep (KD, small pilot data), CE at s, and KL m on the full data after 8 of 10 passes. 24 test scope replies,
+6 per test project. Lift = the target lines' share of attention over what an even spread over the tokens would give them (1 = no focus).</p>
+<div class="figs">
+  <div class="fig"><div class="tag">FIG 6A</div><h3>Focus on the target lines</h3><div id="f6a"></div>
+    <p class="cap">Bars: the mean head; dots: the strongest head. Lift, all reply positions.</p></div>
+  <div class="fig"><div class="tag">FIG 6B</div><h3>Gemma's layers find the lines</h3><div id="f6b"></div>
+    <p class="cap">Per Gemma layer, its strongest head's share of attention on the target lines (▲ = full-attention layer). Dashed: the
+    strongest student head.</p></div>
+</div>
+<ul class="facts" id="facts-code"></ul>
+
+<h2 id="method">Method and caveats</h2>
+<ul id="method-list"></ul>
+</main>
+<div id="tip"></div>
+<script>
+const DATA = /*__DATA__*/null;
+const NS = "http://www.w3.org/2000/svg";
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const isDark = () => css("--surface").toLowerCase() === "#1a1a19";
+const fmt = (v, d = 3) => (v === null || v === undefined || Number.isNaN(v)) ? "–" : Number(v).toFixed(d);
+const pct = (v, d = 1) => (100 * v).toFixed(d) + "%";
+const label = key => DATA.labels[key] || key;
+const short = key => ({ "math-kl-m-s1": "KL s1", "math-kl-m-s2": "KL s2", "math-kl-m-s3": "KL s3", "math-ce-m-s1": "CE s1",
+  "math-ce-m-s2": "CE s2", "math-ce-m-s3": "CE s3", "math-kl-to-ce-m-s1": "KL→CE s1", "math-kl-to-ce-m-s2": "KL→CE s2",
+  "math-untrained-m": "untrained m", gemma: "Gemma", "math-size-xs": "xs", "math-size-s": "s", "math-size-m": "m",
+  "math-size-l": "l", "math-size-s-ce": "s, CE", "math-size-xl-pilot": "xl (pilot)", "code-size-xs": "xs", "code-size-s": "s",
+  "code-size-m": "m", "code-size-l": "l", "code-size-xl": "xl", "code-size-s-ce": "s, CE", "code-kl-m": "KL m (full data)",
+  "code-untrained-m": "untrained m" })[key] || key;
+const lossOf = key => key === "gemma" ? "gemma" : key.includes("untrained") ? "untrained" : key.includes("kl-to-ce") ? "ktc"
+  : key.includes("size") ? (key.endsWith("-ce") ? "ce" : "size") : (key.includes("-kl-") || key.startsWith("code-kl")) ? "kl"
+  : key.includes("-ce-") ? "ce" : "size";
+const lossColor = key => css("--" + lossOf(key));
+
+function el(tag, attrs = {}, parent = null, text = null) {
+  const node = ["svg", "g", "rect", "line", "text", "circle", "path", "polyline", "polygon"].includes(tag)
+    ? document.createElementNS(NS, tag) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  if (text !== null) node.textContent = text;
+  if (parent) parent.appendChild(node);
+  return node;
+}
+const tip = document.getElementById("tip");
+function hover(node, html) {
+  node.addEventListener("mousemove", e => { tip.innerHTML = html; tip.style.display = "block";
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 370) + "px"; tip.style.top = (e.clientY + 14) + "px"; });
+  node.addEventListener("mouseleave", () => tip.style.display = "none");
+}
+const RAMP = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"];
+function hexToRgb(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function ramp(t) {
+  const steps = isDark() ? [...RAMP].reverse() : RAMP;
+  t = Math.max(0, Math.min(1, t)) * (steps.length - 1);
+  const i = Math.min(Math.floor(t), steps.length - 2), f = t - i;
+  const a = hexToRgb(steps[i]), b = hexToRgb(steps[i + 1]);
+  return `rgb(${a.map((x, k) => Math.round(x + (b[k] - x) * f)).join(",")})`;
+}
+function inkOn(t) { return (isDark() ? t < 0.55 : t > 0.55) ? "#ffffff" : "#0b0b0b"; }
+
+function heatmap(parent, { matrix, rows, cols, min = 0, max = 1, cell = 22, cellH = null, annotate = false, digits = 2,
+  tipFn = null, rowW = 70, colH = 40, colEvery = 1, markCols = [], rotate = false }) {
+  cellH = cellH || cell;
+  const w = rowW + cols.length * cell + 10, h = colH + rows.length * cellH + 6;
+  const svg = el("svg", { width: w, height: h }, parent);
+  rows.forEach((r, i) => el("text", { x: rowW - 6, y: colH + i * cellH + cellH / 2 + 4, "text-anchor": "end" }, svg, r));
+  cols.forEach((c, j) => { if (j % colEvery === 0 || markCols.includes(j)) {
+    const x = rowW + j * cell + cell / 2, y = colH - 6, text = markCols.includes(j) ? "▲" + c : (j % colEvery === 0 ? c : "");
+    el("text", rotate ? { x, y, "text-anchor": "start", transform: `rotate(-35 ${x} ${y})` } : { x, y, "text-anchor": "middle" }, svg, text); } });
+  matrix.forEach((row, i) => row.forEach((v, j) => {
+    const t = (v - min) / (max - min);
+    const r = el("rect", { x: rowW + j * cell, y: colH + i * cellH, width: cell - 1, height: cellH - 1, rx: 2, fill: ramp(t) }, svg);
+    hover(r, tipFn ? tipFn(i, j, v) : `${rows[i]} · ${cols[j]}: <b>${fmt(v, digits)}</b>`);
+    if (annotate) el("text", { x: rowW + j * cell + cell / 2, y: colH + i * cellH + cellH / 2 + 4, "text-anchor": "middle",
+      style: `fill:${inkOn(t)};font-size:10px` }, svg, fmt(v, digits));
+  }));
+  return svg;
+}
+function axisX(svg, x0, x1, y, scale, ticks, fmtTick = v => v) {
+  el("line", { x1: x0, x2: x1, y1: y, y2: y, stroke: css("--border") }, svg);
+  ticks.forEach(t => { const x = scale(t); el("line", { x1: x, x2: x, y1: y, y2: y + 4, stroke: css("--border") }, svg);
+    el("text", { x, y: y + 16, "text-anchor": "middle" }, svg, fmtTick(t)); });
+}
+function niceTicks(lo, hi, n = 5) {
+  const step = Math.pow(10, Math.floor(Math.log10((hi - lo) / n))); const err = (hi - lo) / n / step;
+  const s = step * (err >= 7.5 ? 10 : err >= 3.5 ? 5 : err >= 1.5 ? 2 : 1);
+  const out = []; for (let v = Math.ceil(lo / s) * s; v <= hi + 1e-9; v += s) out.push(+v.toFixed(10)); return out;
+}
+// rows: [{label, points: [{v, color, tip}], mean, meanColor}], refs: [{v, label}]
+function dotRows(parent, { rows, lo, hi, width = 520, rowH = 30, labelW = 150, refs = [], digits = 3, xLabel = "" }) {
+  const h = rows.length * rowH + 40, svg = el("svg", { width, height: h }, parent);
+  const x = v => labelW + (v - lo) / (hi - lo) * (width - labelW - 20);
+  niceTicks(lo, hi).forEach(t => el("line", { x1: x(t), x2: x(t), y1: 4, y2: rows.length * rowH + 6, class: "grid" }, svg));
+  refs.forEach(r => { el("line", { x1: x(r.v), x2: x(r.v), y1: 0, y2: rows.length * rowH + 6, stroke: css("--muted"), "stroke-dasharray": "5 4" }, svg);
+    el("text", { x: x(r.v) + 4, y: 10, style: "font-size:10px" }, svg, r.label); });
+  rows.forEach((row, i) => {
+    const y = 14 + i * rowH;
+    el("text", { x: labelW - 8, y: y + 4, "text-anchor": "end" }, svg, row.label);
+    if (row.mean !== undefined) el("line", { x1: x(row.mean), x2: x(row.mean), y1: y - 9, y2: y + 9, stroke: row.meanColor || css("--text"), "stroke-width": 2.5 }, svg);
+    row.points.forEach(p => { const c = el("circle", { cx: x(p.v), cy: y, r: p.r || 5, fill: p.color, stroke: css("--surface-2"), "stroke-width": 1.5, opacity: p.opacity || 0.9 }, svg);
+      hover(c, p.tip || fmt(p.v, digits)); });
+  });
+  axisX(svg, labelW, width - 20, rows.length * rowH + 8, x, niceTicks(lo, hi), v => v);
+  if (xLabel) el("text", { x: (labelW + width) / 2, y: h - 2, "text-anchor": "middle" }, svg, xLabel);
+  return svg;
+}
+// series: [{label, color, points: [[x, y]], dash}], marks: x positions to tick
+function lineChart(parent, { series, width = 520, height = 240, xLo, xHi, yLo, yHi, xTicks, xLabel = "", yLabel = "", marks = [], refs = [], logX = false, labels = [] }) {
+  const svg = el("svg", { width, height }, parent), L = 46, R = 14, T = 10, B = 36;
+  const tx = v => logX ? Math.log10(v) : v;
+  const x = v => L + (tx(v) - tx(xLo)) / (tx(xHi) - tx(xLo)) * (width - L - R), y = v => T + (1 - (v - yLo) / (yHi - yLo)) * (height - T - B);
+  niceTicks(yLo, yHi, 4).forEach(t => { el("line", { x1: L, x2: width - R, y1: y(t), y2: y(t), class: "grid" }, svg);
+    el("text", { x: L - 6, y: y(t) + 4, "text-anchor": "end" }, svg, t); });
+  marks.forEach(m => el("text", { x: x(m), y: height - B + 28, "text-anchor": "middle", style: "font-size:9px" }, svg, "▲"));
+  axisX(svg, L, width - R, height - B, x, xTicks || niceTicks(xLo, xHi), v => v);
+  refs.forEach(r => { el("line", { x1: L, x2: width - R, y1: y(r.v), y2: y(r.v), stroke: r.color || css("--muted"), "stroke-dasharray": "5 4" }, svg);
+    el("text", { x: width - R - 2, y: y(r.v) - 4, "text-anchor": "end", style: "font-size:10px" }, svg, r.label); });
+  series.forEach(s => {
+    el("polyline", { points: s.points.map(p => `${x(p[0])},${y(p[1])}`).join(" "), fill: "none", stroke: s.color, "stroke-width": 2,
+      "stroke-dasharray": s.dash || "" }, svg);
+    s.points.forEach(p => { const c = el("circle", { cx: x(p[0]), cy: y(p[1]), r: s.dot || 3.5, fill: s.color }, svg);
+      hover(c, `${s.label} · ${p[2] || p[0]}: <b>${fmt(p[1])}</b>`); });
+  });
+  labels.forEach(l => el("text", { x: x(l[0]) + 6, y: y(l[1]) - 6, style: "font-size:10px" }, svg, l[2]));
+  if (xLabel) el("text", { x: (L + width - R) / 2, y: height - 2, "text-anchor": "middle" }, svg, xLabel);
+  if (yLabel) el("text", { x: 12, y: T + (height - T - B) / 2, transform: `rotate(-90 12 ${T + (height - T - B) / 2})`, "text-anchor": "middle" }, svg, yLabel);
+  return svg;
+}
+function legend(parent, items) { const box = el("div", { class: "legend" }, parent);
+  items.forEach(([text, color]) => { const s = el("span", {}, box, text); s.style.setProperty("--c", color); }); return box; }
+function fact(list, html) { el("li", {}, document.getElementById(list)).innerHTML = html; }
+
+// ── header ───────────────────────────────────────────────────────────────────────────────────────────
+const S = DATA.seed, C = S.correlation.summary, O = S.overlap.summary;
+document.getElementById("subtitle").textContent =
+  `${DATA.date} · ${DATA.probe_counts.math} math tutor test replies (${DATA.probe_counts.math_rows} reply positions) and ` +
+  `${DATA.probe_counts.code} coding-agent scope replies (${DATA.probe_counts.code_rows}) · 41 students · Gemma 4 12B in bf16 ` +
+  `(rented RTX A6000; never the local 4-bit copy). No student was ever trained on attention.`;
+const tiles = document.getElementById("tiles");
+const meanLike = keys => keys.reduce((a, k) => a + DATA.likeness[k].mean, 0) / keys.length;
+[[fmt(C["other loss, same seed"].mean, 2) + " vs " + fmt(C["same loss, other seed"].mean, 2),
+  "Same seed, other loss vs same loss, other seed (matched-head correlation): the seed shapes attention more than the loss"],
+ [fmt(C["other loss, other seed"].mean, 2), `Other loss and other seed: no lower than seed noise alone (${fmt(C["same loss, other seed"].mean, 2)}); permutation p = ${fmt(S.correlation.p, 2)}`],
+ [fmt(meanLike(["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"]), 2) + " / " + fmt(meanLike(["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"]), 2),
+  `Gemma likeness, KL / CE (untrained: ${fmt(DATA.likeness["math-untrained-m"].mean, 2)}): both learn some of Gemma's patterns, equally`],
+ [fmt(DATA.code_metrics.gemma["target lines when writing a line number"].best * 100, 0) + "% vs " +
+  fmt(Math.max(...Object.entries(DATA.code_metrics).filter(([k]) => k !== "gemma").map(([, v]) => v["target lines when writing a line number"].best)) * 100, 0) + "%",
+  "Coding agent: Gemma's best head on the target lines while writing line numbers, vs the best student head"]]
+  .forEach(([big, what]) => { const t = el("div", { class: "tile" }, tiles); el("div", { class: "big" }, t, big); el("div", { class: "what" }, t, what); });
+
+// ── explorer ─────────────────────────────────────────────────────────────────────────────────────────
+const probeSelect = document.getElementById("ex-probe");
+DATA.explorer.forEach((p, i) => el("option", { value: i }, probeSelect, `${p.kind === "math" ? "Math tutor" : "Coding agent"} · ${p.bucket} · ${p.item}`));
+const decoded = new Map();
+function rowsOf(model) {
+  if (!decoded.has(model.data)) { const raw = atob(model.data), bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i); decoded.set(model.data, bytes); }
+  return decoded.get(model.data);
+}
+let current = { probe: 0, row: 0 };
+const layerChoice = {};
+function defaultRow(p) { const digit = p.reply.findIndex(t => /\d/.test(t)); return digit >= 0 ? digit : 0; }
+function renderExplorer() {
+  const p = DATA.explorer[current.probe];
+  document.getElementById("ex-info").textContent = p.kind === "math"
+    ? `${p.labels.length} student tokens; reply of ${p.reply.length} tokens` : `${p.lines.length} lines; the red bar marks the lines Gemma's scope names`;
+  const reply = document.getElementById("ex-reply"); reply.innerHTML = "";
+  el("span", { class: "note" }, reply, "Writing:");
+  p.reply.forEach((t, i) => { const b = el("button", { class: i === current.row ? "on" : "" }, reply, JSON.stringify(t).slice(1, -1) || "␣");
+    b.onclick = () => { current.row = i; renderExplorer(); }; });
+  const panels = document.getElementById("ex-panels"); panels.innerHTML = "";
+  const G = p.labels.length, R = p.reply.length, query = p.queries[current.row];
+  const layerOf = (key, model) => layerChoice[`${key}|${p.kind}`] ?? model.layers;
+  const shared = document.getElementById("ex-scale").value === "shared";
+  const sharedTop = Math.max(...Object.entries(p.models).map(([key, model]) => model.maxima[layerOf(key, model)][current.row]));
+  for (const [key, model] of Object.entries(p.models)) {
+    const panel = el("div", { class: "panel" }, panels), head = el("header", {}, panel);
+    const title = el("b", {}, head, short(key)); title.style.color = lossColor(key);
+    const select = el("select", {}, head);
+    el("option", { value: model.layers }, select, "all layers");
+    for (let l = 0; l < model.layers; l++) el("option", { value: l }, select,
+      `layer ${l + 1}` + (key === "gemma" && DATA.gemma_full_layers.includes(l) ? " (full)" : ""));
+    const choiceKey = `${key}|${p.kind}`; select.value = layerChoice[choiceKey] ?? model.layers;
+    select.onchange = () => { layerChoice[choiceKey] = +select.value; renderExplorer(); };
+    const layer = +select.value, bytes = rowsOf(model), offset = (layer * R + current.row) * G, top = model.maxima[layer][current.row];
+    const scale = shared ? top / sharedTop : 1;   // shade = weight / the strongest weight shown (this panel's, or all panels')
+    const note = el("div", { class: "note" }, panel, `strongest weight ${pct(top)}` +
+      (model.outside ? ` · outside the student's view: ${pct(model.outside[layer][current.row])}` : ""));
+    if (p.kind === "math") {
+      const box = el("div", { class: "text" }, panel); let querySpan = null;
+      for (let g = 0; g < G; g++) {
+        const rel = bytes[offset + g] / 255, span = el("span", {}, box, p.labels[g]);
+        if (g <= query) span.style.background = `rgba(${css("--hl")},${Math.pow(rel * scale, 0.6).toFixed(3)})`; else span.style.opacity = 0.35;
+        if (g === query) { span.classList.add("q"); querySpan = span; }
+        hover(span, `${JSON.stringify(p.labels[g])} · ${p.regions[g]}<br>weight <b>${pct(rel * top, 2)}</b>`);
+      }
+      requestAnimationFrame(() => { box.scrollTop = Math.max(0, querySpan.offsetTop - box.clientHeight + 60); });
+    } else {
+      const box = el("div", { class: "lines" }, panel); let best = null, bestValue = -1;
+      p.lines.forEach((line, g) => {
+        const rel = bytes[offset + g] / 255, row = el("div", { class: p.regions[g] === "target lines" ? "target" : "" }, box, line || " ");
+        row.style.background = `rgba(${css("--hl")},${Math.pow(rel * scale, 0.6).toFixed(3)})`;
+        hover(row, `${p.regions[g]}<br>weight <b>${pct(rel * top, 2)}</b>`);
+        if (rel > bestValue) { bestValue = rel; best = row; }
+      });
+      const tail = el("div", { class: "note" }, panel);
+      let replyMass = 0, endMass = 0;
+      for (let g = p.lines.length; g < G; g++) { const w = bytes[offset + g] / 255 * top; if (p.regions[g] === "end of input") endMass += w; else replyMass += w; }
+      tail.textContent = `on the reply so far: ${pct(replyMass)} · end of input: ${pct(endMass)}`;
+      requestAnimationFrame(() => { const target = box.querySelector(".target") || best;
+        box.scrollTop = Math.max(0, target.offsetTop - box.clientHeight / 2); });
+    }
+  }
+}
+document.getElementById("ex-scale").onchange = renderExplorer;
+probeSelect.onchange = () => { current.probe = +probeSelect.value; current.row = defaultRow(DATA.explorer[current.probe]); renderExplorer(); };
+current.row = defaultRow(DATA.explorer[0]);
+renderExplorer();
+
+// ── study 1 ──────────────────────────────────────────────────────────────────────────────────────────
+const seedLabels = DATA.seed_models.map(short);
+heatmap(document.getElementById("f1a"), { matrix: S.correlation.matrix, rows: seedLabels, cols: seedLabels, min: 0.3, max: 0.7,
+  cell: 46, annotate: true, digits: 2, rowW: 70, colH: 56, rotate: true,
+  tipFn: (i, j, v) => `${seedLabels[i]} · ${seedLabels[j]}: <b>${fmt(v)}</b> correlation<br>overlap ${fmt(S.overlap.matrix[i][j])}` });
+const kinds = ["same loss, other seed", "other loss, same seed", "other loss, other seed"];
+const kindColor = { "same loss, other seed": css("--kl"), "other loss, same seed": css("--ce"), "other loss, other seed": css("--ktc") };
+const f1b = document.getElementById("f1b");
+for (const [metric, lo, hi, ref] of [["correlation", 0, 0.7, 1], ["overlap", 0.3, 0.7, 0]]) {
+  const block = el("div", { style: "display:inline-block;vertical-align:top;margin-right:8px" }, f1b);
+  el("div", { class: "note" }, block, metric);
+  const refValue = Object.values(DATA.untrained).reduce((a, v) => a + v[ref], 0) / Object.keys(DATA.untrained).length;
+  dotRows(block, { lo, hi, width: 330, labelW: 140, refs: [{ v: refValue, label: "untrained" }],
+    rows: kinds.map(k => ({ label: k, mean: S[metric].summary[k].mean,
+      points: S[metric].pairs.filter(p => p[2] === k).map(p => ({ v: p[3], color: kindColor[k], tip: `${short(p[0])} – ${short(p[1])}: <b>${fmt(p[3])}</b>` })) })) });
+}
+const f1c = document.getElementById("f1c");
+const idRows = Object.entries(S.identity).map(([pair, [head, layer]]) => { const [a, b] = pair.split("|");
+  return { label: `${short(a)} – ${short(b)}`, sameSeed: a.slice(-2) === b.slice(-2), head, layer }; });
+dotRows(f1c, { lo: 0, hi: 1, width: 520, labelW: 120, digits: 2, refs: [{ v: 1 / 24, label: "1/24" }, { v: 1 / 6, label: "1/6" }],
+  rows: idRows.map(r => ({ label: r.label, points: [
+    { v: r.layer, color: css("--ce"), r: 6, tip: `${r.label}: same layer <b>${pct(r.layer, 0)}</b>` },
+    { v: r.head, color: css("--kl"), r: 4, tip: `${r.label}: same head <b>${pct(r.head, 0)}</b>` }] })) });
+legend(f1c, [["same head (layer and index)", css("--kl")], ["same layer", css("--ce")]]);
+const f1d = document.getElementById("f1d");
+const roleMetrics = [["previous token", 0, 0.3], ["copy", 0, 0.2], ["numbers when writing a number", 0, 0.8], ["message", 0, 0.45], ["distance", 0, 120]];
+const roleModels = ["math-kl-m-s1", "math-ce-m-s1", "math-kl-m-s2", "math-ce-m-s2", "math-untrained-m"];
+const roleTable = el("div", { style: "display:grid;grid-template-columns:repeat(6,auto);gap:4px 14px;align-items:center" }, f1d);
+el("div", {}, roleTable, "");
+roleModels.forEach(k => { const d = el("div", { style: "font-size:12px;font-weight:650" }, roleTable, short(k)); d.style.color = lossColor(k); });
+roleMetrics.forEach(([metric, lo, hi]) => {
+  el("div", { style: "font-size:12px;color:var(--text-2);max-width:130px" }, roleTable, metric + (metric === "distance" ? " (tokens)" : ""));
+  roleModels.forEach(k => { const cellBox = el("div", {}, roleTable);
+    heatmap(cellBox, { matrix: DATA.head_maps[k][metric], rows: ["", "", "", "", "", ""], cols: ["", "", "", ""], min: lo, max: hi, cell: 15, rowW: 2, colH: 2,
+      digits: metric === "distance" ? 0 : 3, tipFn: (i, j, v) => `${short(k)} layer ${i + 1} head ${j + 1}<br>${metric}: <b>${fmt(v, metric === "distance" ? 1 : 3)}</b>` }); });
+});
+const sameSeedHeads = idRows.filter(r => r.sameSeed), otherSeedHeads = idRows.filter(r => !r.sameSeed);
+fact("facts-seed", `Matched-head correlation: same loss, other seed <b>${fmt(C["same loss, other seed"].mean)}</b> (${fmt(C["same loss, other seed"].min)}–${fmt(C["same loss, other seed"].max)}, ${C["same loss, other seed"].n} pairs); other loss, same seed <b>${fmt(C["other loss, same seed"].mean)}</b> (${fmt(C["other loss, same seed"].min)}–${fmt(C["other loss, same seed"].max)}); other loss, other seed <b>${fmt(C["other loss, other seed"].mean)}</b> (${fmt(C["other loss, other seed"].min)}–${fmt(C["other loss, other seed"].max)}).`);
+fact("facts-seed", `The same with overlap (share of attention on the same tokens): <b>${fmt(O["same loss, other seed"].mean)}</b>, <b>${fmt(O["other loss, same seed"].mean)}</b>, <b>${fmt(O["other loss, other seed"].mean)}</b>. An untrained student against the trained ones: correlation <b>${fmt(Object.values(DATA.untrained).reduce((a, v) => a + v[1], 0) / 8)}</b>, overlap <b>${fmt(Object.values(DATA.untrained).reduce((a, v) => a + v[0], 0) / 8)}</b> (the overlap a pattern-free, evenly spread head gets).`);
+fact("facts-seed", `Is a pair with the same loss more alike than a pair with another loss (both from different seeds)? Difference <b>${fmt(S.correlation.observed, 4)}</b> (correlation), permutation test over the ${S.correlation.permutations} relabellings of the losses within each seed: p = <b>${fmt(S.correlation.p, 3)}</b>; overlap ${fmt(S.overlap.observed, 4)}, p = ${fmt(S.overlap.p, 3)}; whole-model attention (every head averaged, no matching) ${fmt(S.whole.observed, 4)}, p = ${fmt(S.whole.p, 3)}. Even where it reaches p &lt; .05 the effect is about 1% of the gap between seeds.`);
+fact("facts-seed", `With the same seed, the matched heads are the very same heads: <b>${sameSeedHeads.map(r => pct(r.head, 0)).join(", ")}</b> (KL–CE, seeds 1-3). With another seed: <b>${otherSeedHeads.map(r => pct(r.head, 0)).join(", ")}</b> the same head, but <b>${otherSeedHeads.map(r => pct(r.layer, 0)).join(", ")}</b> in the same layer (chance 17%): a role tends to appear at the same depth whatever the seed.`);
+
+// ── study 2 ──────────────────────────────────────────────────────────────────────────────────────────
+const losses = [["kl", "KL", ["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"]], ["ce", "CE", ["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"]],
+  ["ktc", "KL→CE", ["math-kl-to-ce-m-s1", "math-kl-to-ce-m-s2"]]];
+const f2a = document.getElementById("f2a");
+legend(f2a, [["KL", css("--kl")], ["CE", css("--ce")], ["KL→CE", css("--ktc")], ["Gemma (renormalised)", css("--gemma")], ["untrained", css("--untrained")]]);
+const grid2a = el("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:6px 18px" }, f2a);
+const ms = DATA.model_summary;
+DATA.loss_metrics.forEach(metric => {
+  const all = [...losses.flatMap(l => l[2]), "gemma", "math-untrained-m"].map(k => ms[k][metric]);
+  let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.12 || 0.01; lo -= pad; hi += pad;
+  const box = el("div", {}, grid2a); el("div", { style: "font-size:12px;font-weight:600;color:var(--text)" }, box, metric);
+  dotRows(box, { lo, hi, width: 290, labelW: 70, rowH: 20, digits: 3,
+    rows: [...losses.map(([id, name, keys]) => ({ label: name, mean: keys.reduce((a, k) => a + ms[k][metric], 0) / keys.length, meanColor: css("--" + id),
+      points: keys.map(k => ({ v: ms[k][metric], color: css("--" + id), tip: `${short(k)}: <b>${fmt(ms[k][metric])}</b>` })) })),
+      { label: "Gemma", points: [{ v: ms.gemma[metric], color: css("--gemma"), tip: `Gemma: <b>${fmt(ms.gemma[metric])}</b>` }] },
+      { label: "untrained", points: [{ v: ms["math-untrained-m"][metric], color: css("--untrained"), tip: `untrained: <b>${fmt(ms["math-untrained-m"][metric])}</b>` }] }] });
+});
+const f2b = document.getElementById("f2b");
+const diffRows = DATA.loss_metrics.map(metric => {
+  const kl = [1, 2, 3].map(s => ms[`math-kl-m-s${s}`][metric]), ce = [1, 2, 3].map(s => ms[`math-ce-m-s${s}`][metric]);
+  const mean = kl.reduce((a, b) => a + b) / 3, sd = Math.sqrt(kl.reduce((a, b) => a + (b - mean) ** 2, 0) / 2) || 1e-9;
+  return { label: metric, points: kl.map((v, i) => ({ v: (v - ce[i]) / sd, color: css("--kl"), tip: `seed ${i + 1}: KL ${fmt(v)} − CE ${fmt(ce[i])} = <b>${fmt(v - ce[i], 4)}</b> (${fmt((v - ce[i]) / sd, 2)} seed spreads)` })) };
+});
+dotRows(f2b, { lo: -4, hi: 4, width: 640, labelW: 200, rowH: 22, refs: [{ v: 0, label: "no difference" }], xLabel: "KL − CE, in units of the KL seeds' standard deviation", rows: diffRows });
+const f2c = document.getElementById("f2c");
+const regionNames = ["message", "newest task", "earlier conversation", "end of input", "reply so far"];
+const regionColors = [css("--kl"), css("--ktc"), css("--untrained"), css("--gemma"), css("--ce")];
+legend(f2c, regionNames.map((r, i) => [r, regionColors[i]]));
+const stackModels = ["math-kl-m-s1", "math-ce-m-s1", "math-kl-to-ce-m-s1", "math-untrained-m", "gemma"];
+const stackSvg = el("svg", { width: 640, height: 3 * (stackModels.length * 20 + 30) + 10 }, f2c);
+["solve", "explain", "route"].forEach((bucket, b) => {
+  const y0 = b * (stackModels.length * 20 + 30) + 14;
+  el("text", { x: 0, y: y0, style: "font-weight:600" }, stackSvg, { solve: "writing a solution", explain: "writing an explanation", route: "choosing the route (the opening tag)" }[bucket]);
+  stackModels.forEach((k, i) => {
+    const y = y0 + 8 + i * 20; el("text", { x: 118, y: y + 12, "text-anchor": "end" }, stackSvg, short(k));
+    let x = 124; const total = regionNames.reduce((a, r) => a + (DATA.regions[k][`${r} [${bucket}]`] || 0), 0);
+    regionNames.forEach((r, j) => { const v = (DATA.regions[k][`${r} [${bucket}]`] || 0) / total, w = v * 500;
+      const rect = el("rect", { x, y, width: Math.max(w - 2, 0), height: 16, rx: 2, fill: regionColors[j] }, stackSvg);
+      hover(rect, `${short(k)} · ${bucket}<br>${r}: <b>${pct(v)}</b>`); x += w; });
+  });
+});
+const dm = m => { const kl = [1, 2, 3].map(s => ms[`math-kl-m-s${s}`][m]), ce = [1, 2, 3].map(s => ms[`math-ce-m-s${s}`][m]);
+  return kl.map((v, i) => v - ce[i]); };
+fact("facts-loss", `KL − CE by seed, copy: <b>${dm("copy").map(v => fmt(v, 4)).join(", ")}</b>; numbers when writing a number: <b>${dm("numbers when writing a number").map(v => fmt(v, 4)).join(", ")}</b>; look-back distance: <b>${dm("distance").map(v => fmt(v, 2)).join(", ")}</b> tokens; entropy: <b>${dm("entropy").map(v => fmt(v, 4)).join(", ")}</b>.`);
+fact("facts-loss", `For scale, the trained students against the untrained one: copy ${fmt(ms["math-kl-m-s1"].copy)} vs ${fmt(ms["math-untrained-m"].copy)}, numbers when writing a number ${fmt(ms["math-kl-m-s1"]["numbers when writing a number"])} vs ${fmt(ms["math-untrained-m"]["numbers when writing a number"])}, entropy ${fmt(ms["math-kl-m-s1"].entropy)} vs ${fmt(ms["math-untrained-m"].entropy)}: training changes attention a lot, the loss hardly at all.`);
+
+// ── study 3 ──────────────────────────────────────────────────────────────────────────────────────────
+const likeKeys = ["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3", "math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3", "math-kl-to-ce-m-s1",
+  "math-kl-to-ce-m-s2", "math-size-xs", "math-size-s", "math-size-m", "math-size-l", "math-size-s-ce", "math-size-xl-pilot", "math-untrained-m"];
+const f3a = document.getElementById("f3a");
+dotRows(f3a, { lo: -0.05, hi: 0.9, width: 700, labelW: 120, rowH: 22, xLabel: "best correlation with a Gemma head",
+  rows: likeKeys.map(k => ({ label: short(k), mean: DATA.likeness[k].mean, meanColor: lossColor(k),
+    points: DATA.likeness[k].heads.map((v, h) => ({ v, r: 2.5, opacity: 0.45, color: lossColor(k), tip: `${short(k)} head ${h + 1}: <b>${fmt(v)}</b>` })) })) });
+const f3b = document.getElementById("f3b");
+const gemmaCols = Array.from({ length: 48 }, (_, i) => String(i + 1));
+for (const k of ["math-kl-m-s1", "math-ce-m-s1", "math-kl-m-s2", "math-size-l", "math-size-xs"]) {
+  const m = DATA.depth[k]; el("div", { class: "note", style: "margin-top:6px" }, f3b, short(k));
+  heatmap(f3b, { matrix: m, rows: m.map((_, i) => `layer ${i + 1}`), cols: gemmaCols, min: 0, max: 0.55, cell: 15, rowW: 60, colH: 18, colEvery: 48,
+    markCols: DATA.gemma_full_layers, tipFn: (i, j, v) => `${short(k)} layer ${i + 1} · Gemma layer ${j + 1}${DATA.gemma_full_layers.includes(j) ? " (full)" : ""}: <b>${fmt(v)}</b>` });
+}
+const f3c = document.getElementById("f3c");
+const profileGrid = el("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:4px 16px" }, f3c);
+const gp = DATA.gemma_profile;
+[["outside view", "outside the student's view"], ["entropy", "entropy (spread)"], ["previous token", "previous token"], ["self", "itself"],
+ ["copy", "copy"], ["numbers when writing a number", "numbers when writing a number"], ["message", "the pupil's message"], ["distance", "look-back distance (tokens)"]]
+  .forEach(([metric, title]) => { const box = el("div", {}, profileGrid); el("div", { style: "font-size:12px;font-weight:600;color:var(--text)" }, box, title);
+    const vals = gp[metric], hi = Math.max(...vals, ms["math-kl-m-s1"][metric] || 0) * 1.1;
+    lineChart(box, { width: 360, height: 150, xLo: 1, xHi: 48, yLo: 0, yHi: +hi.toPrecision(2), xTicks: [1, 12, 24, 36, 48], marks: DATA.gemma_full_layers.map(l => l + 1),
+      series: [{ label: "Gemma layer", color: css("--gemma"), points: vals.map((v, i) => [i + 1, v, `layer ${i + 1}`]), dot: 2.5 }],
+      refs: metric === "outside view" ? [] : [{ v: ms["math-kl-m-s1"][metric], label: "KL s1 (mean head)", color: css("--kl") }] }); });
+const f3d = document.getElementById("f3d");
+const mapGrid = el("div", { style: "display:flex;gap:18px;flex-wrap:wrap" }, f3d);
+[["outside view", 1], ["previous token", 0.9], ["self", 1], ["copy", 0.4], ["numbers when writing a number", 0.7], ["message", 0.35]].forEach(([metric, hi]) => {
+  const box = el("div", {}, mapGrid); el("div", { style: "font-size:12px;font-weight:600;color:var(--text)" }, box, metric);
+  heatmap(box, { matrix: DATA.gemma_maps[metric], rows: gemmaCols.map((l, i) => DATA.gemma_full_layers.includes(i) ? "▲" + l : (i === 0 ? l : "")), cols: Array.from({ length: 16 }, (_, i) => i % 4 === 0 ? String(i + 1) : ""),
+    min: 0, max: hi, cell: 9, cellH: 7, rowW: 28, colH: 14, tipFn: (i, j, v) => `Gemma layer ${i + 1}${DATA.gemma_full_layers.includes(i) ? " (full)" : ""} head ${j + 1}<br>${metric}: <b>${fmt(v)}</b>` });
+});
+const f3e = document.getElementById("f3e");
+const specRows = [["best previous-token head", "previous token"], ["best copy head", "copy"], ["best number head", "number lookup"]];
+dotRows(f3e, { lo: 0, hi: 1, width: 470, labelW: 120, rowH: 28, digits: 2,
+  rows: specRows.map(([metric, name]) => ({ label: name, points: [
+    ...["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"].map(k => ({ v: ms[k][metric], color: css("--kl"), tip: `${short(k)}: <b>${fmt(ms[k][metric])}</b>` })),
+    ...["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"].map(k => ({ v: ms[k][metric], color: css("--ce"), tip: `${short(k)}: <b>${fmt(ms[k][metric])}</b>` })),
+    { v: ms.gemma[metric], color: css("--gemma"), r: 7, tip: `Gemma: <b>${fmt(ms.gemma[metric])}</b>` }] })) });
+legend(f3e, [["KL m", css("--kl")], ["CE m", css("--ce")], ["Gemma", css("--gemma")]]);
+const kl3 = meanLike(["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"]), ce3 = meanLike(["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"]);
+fact("facts-gemma", `Gemma likeness (mean best correlation with a Gemma head): KL <b>${fmt(kl3)}</b>, CE <b>${fmt(ce3)}</b>, KL→CE <b>${fmt(meanLike(["math-kl-to-ce-m-s1", "math-kl-to-ce-m-s2"]))}</b>; untrained <b>${fmt(DATA.likeness["math-untrained-m"].mean)}</b>. KL − CE by seed: ${[1, 2, 3].map(s => fmt(DATA.likeness[`math-kl-m-s${s}`].mean - DATA.likeness[`math-ce-m-s${s}`].mean, 4)).join(", ")}.`);
+const depthSplit = k => { const m = DATA.depth[k], full = DATA.gemma_full_layers;
+  const mean = cols => m.reduce((a, row) => a + cols.reduce((b, j) => b + row[j], 0) / cols.length, 0) / m.length;
+  return [mean(full), mean([...Array(48).keys()].filter(j => !full.includes(j)))]; };
+fact("facts-gemma", `The students resemble Gemma's sliding-window layers, not its full-attention ones (FIG 3B, mean best correlation, full vs sliding layers): ${["math-kl-m-s1", "math-ce-m-s1", "math-kl-m-s2", "math-size-l", "math-size-xs"].map(k => `${short(k)} <b>${fmt(depthSplit(k)[0])}</b> vs <b>${fmt(depthSplit(k)[1])}</b>`).join(", ")}.`);
+fact("facts-gemma", `Gemma puts <b>${pct(gp["outside view"].reduce((a, b) => a + b) / 48)}</b> of its attention (mean over layers) outside the student's view: on &lt;bos&gt;, the instruction header and the chat template. Gemma has a sharp previous-token head (${fmt(ms.gemma["best previous-token head"], 2)} of its weight on the previous token); the best student head reaches ${fmt(Math.max(...["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3", "math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3"].map(k => ms[k]["best previous-token head"])), 2)}. For number lookup it is the other way round: best student head ${fmt(Math.max(...["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"].map(k => ms[k]["best number head"])), 2)}, Gemma ${fmt(ms.gemma["best number head"], 2)} (Gemma's weight is split with its sinks).`);
+fact("facts-gemma", `Overlap is not used for Gemma likeness: a flat, untrained head overlaps broad Gemma heads well (untrained overlap ${fmt(DATA.likeness["math-untrained-m"].overlap)} vs KL s1 ${fmt(DATA.likeness["math-kl-m-s1"].overlap)}). Correlation asks whether the two favour the same tokens; a flat row correlates with nothing.`);
+
+// ── study 4 ──────────────────────────────────────────────────────────────────────────────────────────
+const sizeKeys = ["math-size-xs", "math-size-s", "math-size-m", "math-size-l", "math-size-xl-pilot"];
+const f4a = document.getElementById("f4a");
+const pt = k => [DATA.facts[k].params, DATA.likeness[k].mean, short(k)];
+lineChart(f4a, { width: 520, height: 260, xLo: 2, xHi: 120, yLo: 0, yHi: 0.4, logX: true, xTicks: [2, 5, 10, 20, 50, 100], xLabel: "parameters (millions, log scale)",
+  yLabel: "Gemma likeness",
+  series: [{ label: "size sweep (KD)", color: css("--untrained"), points: sizeKeys.map(pt) },
+    { label: "KL m (full data)", color: css("--kl"), points: ["math-kl-m-s1", "math-kl-m-s2", "math-kl-m-s3"].map(pt), dash: "1 0" },
+    { label: "CE", color: css("--ce"), points: ["math-ce-m-s1", "math-ce-m-s2", "math-ce-m-s3", "math-size-s-ce"].map(pt) }],
+  labels: sizeKeys.map(pt).concat([pt("math-size-s-ce")]),
+  refs: [{ v: DATA.likeness["math-untrained-m"].mean, label: "untrained m" }] });
+const f4b = document.getElementById("f4b");
+const table = el("table", {}, f4b), headRow = el("tr", {}, table);
+["", "params (M)", "task acc.", "Gemma likeness", "entropy", "copy", "numbers", "distance"].forEach(h => el("th", {}, headRow, h));
+[...sizeKeys, "math-size-s-ce", "math-kl-m-s1", "math-ce-m-s1", "math-untrained-m"].forEach(k => {
+  const tr = el("tr", {}, table), f = DATA.facts[k];
+  [short(k), f.params ? fmt(f.params, 1) : "–", f.task_accuracy !== undefined && f.task_accuracy !== null ? pct(f.task_accuracy) : "–", fmt(DATA.likeness[k].mean),
+   fmt(ms[k].entropy), fmt(ms[k].copy), fmt(ms[k]["numbers when writing a number"]), fmt(ms[k].distance, 1)]
+    .forEach(v => el("td", {}, tr, v));
+});
+fact("facts-size", `Gemma likeness by size (KD sweep): ${sizeKeys.map(k => `${short(k)} <b>${fmt(DATA.likeness[k].mean)}</b>`).join(", ")}. The xl student (pilot data) attends almost evenly (entropy ${fmt(ms["math-size-xl-pilot"].entropy)}), like an untrained one: it never formed patterns on the small pilot data.`);
+fact("facts-size", `Size l, with more and more specialised heads, has the lowest mean likeness among the trained sizes: each of its heads is narrower, and no single Gemma head matches a narrow head as well as a broad one.`);
+
+// ── study 5 ──────────────────────────────────────────────────────────────────────────────────────────
+const P = DATA.passes, f5a = document.getElementById("f5a");
+lineChart(f5a, { width: 520, height: 250, xLo: 1, xHi: 10, yLo: 0.3, yHi: 1, xTicks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], xLabel: "pass",
+  series: [{ label: "KL vs its final", color: css("--kl"), points: P.map(p => [p.pass, p.kl_final]) },
+    { label: "CE vs its final", color: css("--ce"), points: P.map(p => [p.pass, p.ce_final]) },
+    { label: "KL vs CE (same pass)", color: css("--ktc"), points: P.map(p => [p.pass, p.kl_ce]), dash: "6 4" }] });
+legend(f5a, [["KL vs its final pattern", css("--kl")], ["CE vs its final pattern", css("--ce")], ["KL vs CE after the same pass", css("--ktc")]]);
+const f5b = document.getElementById("f5b");
+lineChart(f5b, { width: 520, height: 250, xLo: 1, xHi: 10, yLo: 0.2, yHi: 0.4, xTicks: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], xLabel: "pass", yLabel: "Gemma likeness",
+  series: [{ label: "KL", color: css("--kl"), points: P.map(p => [p.pass, p.kl_gemma]) }, { label: "CE", color: css("--ce"), points: P.map(p => [p.pass, p.ce_gemma]) }],
+  refs: [{ v: DATA.likeness["math-untrained-m"].mean, label: "untrained" }] });
+legend(f5b, [["KL s1", css("--kl")], ["CE s1", css("--ce")]]);
+fact("facts-training", `KL s1 and CE s1 start from the same weights; after pass 1 their matched heads correlate <b>${fmt(P[0].kl_ce)}</b>, after pass 10 <b>${fmt(P[9].kl_ce)}</b> (overlap ${fmt(P[0].kl_ce_overlap)} → ${fmt(P[9].kl_ce_overlap)}): they move apart early, then grow back together.`);
+fact("facts-training", `Each student's pattern settles slowly: its correlation with its own final pattern is <b>${fmt(P[0].kl_final)}</b> after pass 1, <b>${fmt(P[4].kl_final)}</b> after pass 5 (KL; CE ${fmt(P[0].ce_final)}, ${fmt(P[4].ce_final)}). Gemma likeness rises from ${fmt(P[0].kl_gemma)} to ${fmt(P[9].kl_gemma)} (KL) and ${fmt(P[0].ce_gemma)} to ${fmt(P[9].ce_gemma)} (CE); number lookup ${fmt(P[0].kl_numbers)} → ${fmt(P[9].kl_numbers)}.`);
+
+// ── study 6 ──────────────────────────────────────────────────────────────────────────────────────────
+const codeKeys = ["code-size-xs", "code-size-s", "code-size-m", "code-size-l", "code-size-xl", "code-size-s-ce", "code-kl-m", "code-untrained-m", "gemma"];
+const CM = DATA.code_metrics, f6a = document.getElementById("f6a");
+dotRows(f6a, { lo: 0, hi: Math.ceil(Math.max(...codeKeys.map(k => CM[k]["target lift"].best)) + 1), width: 520, labelW: 130, rowH: 24, digits: 2,
+  refs: [{ v: 1, label: "even spread" }], xLabel: "lift of the target lines",
+  rows: codeKeys.map(k => ({ label: short(k), mean: CM[k]["target lift"].mean, meanColor: lossColor(k),
+    points: [{ v: CM[k]["target lift"].best, color: lossColor(k), tip: `${short(k)}: mean head ${fmt(CM[k]["target lift"].mean, 2)}, best head <b>${fmt(CM[k]["target lift"].best, 2)}</b>` }] })) });
+const f6b = document.getElementById("f6b"), bestStudent = Math.max(...codeKeys.filter(k => k !== "gemma").map(k => CM[k]["target lines"].best));
+lineChart(f6b, { width: 520, height: 250, xLo: 1, xHi: 48, yLo: 0, yHi: 0.7, xTicks: [1, 12, 24, 36, 48], xLabel: "Gemma layer", marks: DATA.gemma_full_layers.map(l => l + 1),
+  series: [{ label: "all reply positions", color: css("--gemma"), points: DATA.code_gemma_layers["target lines"].map((v, i) => [i + 1, v, `layer ${i + 1}`]), dot: 2.5 },
+    { label: "writing a line number", color: css("--accent"), points: DATA.code_gemma_layers["target lines when writing a line number"].map((v, i) => [i + 1, v, `layer ${i + 1}`]), dot: 2.5 }],
+  refs: [{ v: bestStudent, label: "best student head", color: css("--kl") }] });
+legend(f6b, [["all reply positions", css("--gemma")], ["while writing a line number", css("--accent")]]);
+fact("facts-code", `Mean head lift: Gemma <b>${fmt(CM.gemma["target lift"].mean, 2)}</b> (best head <b>${fmt(CM.gemma["target lift"].best, 1)}</b>); students ${codeKeys.filter(k => k !== "gemma").map(k => `${short(k)} ${fmt(CM[k]["target lift"].mean, 2)}`).join(", ")}. A lift of 1 is an even spread.`);
+fact("facts-code", `While writing the line numbers, Gemma's best head puts <b>${pct(CM.gemma["target lines when writing a line number"].best, 0)}</b> of its attention on the target lines; the best student head <b>${pct(Math.max(...codeKeys.filter(k => k !== "gemma").map(k => CM[k]["target lines when writing a line number"].best)), 1)}</b>. The heads that find the lines sit in Gemma's full-attention layers (the sliding ones see only 1,024 tokens back, a sixth of a project).`);
+fact("facts-code", `KL m on the full data (8 of 10 passes) is the only student that looks at the request: <b>${pct(CM["code-kl-m"].message.mean, 1)}</b> on the message line (Gemma ${pct(CM.gemma.message.mean, 1)}, the pilot students ~${pct(CM["code-size-s"].message.mean, 1)}).`);
+
+// ── method ───────────────────────────────────────────────────────────────────────────────────────────
+[`Probes: test records only (never trained on), seeded sample: 32 solutions, 32 explanations and 16 routing replies of the math tutor; 6 scope replies per coding-agent test project. Attention is read at every position that writes a reply token (teacher-forced: the context is Gemma's own reply so far).`,
+ `Students: the attention weights their forward pass really uses (recomputed in eval mode; the logits rebuilt from them equal the model's own, tests/test_attention.py). Checkpoints: the final pass, and every pass for KL s1 / CE s1.`,
+ `Gemma 4 12B-it in bf16 (23.9 GB checkpoint), eager attention, on a rented RTX A6000 (8 minutes, about $0.08); the local 4-bit copy was not used. Gemma reads exactly its training-time prompt (chat template + instruction header + the conversation) and its own reply. Its tokens were mapped onto the student's by character position (0 mismatches on the conversations).`,
+ `Gemma's attention on &lt;bos&gt;, the chat template and the instruction header is one "outside the student's view" column; for every comparison each row is renormalised over the student's text. Gemma's attention sinks inside the shared text (the end-of-input template tokens, spaces) remain, which lowers its share on content.`,
+ `Overlap of two rows = Σ min(a, b) = 1 − total variation distance. Correlation = Pearson over the places a row can see. Both averaged over every reply position. Students' heads are matched one to one (Hungarian) for pairs of the same size; for Gemma, each student head takes its best Gemma head (a max over 768, so an untrained student gives the floor).`,
+ `Seed study: 8 students of size m (KL ×3, CE ×3, KL→CE ×2). Permutation test: losses relabelled within each seed (72 relabellings), statistic = mean similarity of same-loss pairs − other-loss pairs, both across seeds. Exact p; the smallest possible is 1/72.`,
+ `Caveats: one domain for the loss and seed study (the math tutor); size sweep on different data (10k problems; xl on the pilot) and with KD 0.9→0.1, so sizes compare with each other only; code students are pilot-data students (plus one full-data KL m, unfinished); the untrained student is built with seed 1 like the s1 runs, probably their exact start (not checked).`]
+  .forEach(t => el("li", {}, document.getElementById("method-list")).innerHTML = t);
+</script>
+</body>
+</html>
