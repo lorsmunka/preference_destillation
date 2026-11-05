@@ -62,6 +62,13 @@ svg .grid { stroke: var(--border); stroke-dasharray: 2 3; }
 select, button { font: inherit; font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--border);
   border-radius: 5px; padding: 3px 6px; }
 .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+.explorer-wide { width: min(1900px, calc(100vw - 32px)); margin-left: calc(50% - min(950px, calc(50vw - 16px))); }
+.panel .note.line, .panel .top { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 20px; line-height: 20px; }
+.panel header { height: 40px; white-space: nowrap; overflow: hidden; }
+.panel header .note { overflow: hidden; text-overflow: ellipsis; }
+.stepper .where { display: inline-block; width: 46ch; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+.reply { min-height: 26px; }
+.text { overflow-anchor: none; }
 .stepper { display: flex; align-items: center; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
 .stepper button { min-width: 38px; font-size: 15px; padding: 3px 10px; }
 .stepper input[type=range] { flex: 1 1 320px; min-width: 200px; accent-color: var(--kl); }
@@ -110,10 +117,11 @@ never see, is shown above the text.</p>
 <div class="controls">
   <label>Record <select id="ex-probe"></select></label>
   <label>Models <select id="ex-set"></select></label>
-  <label>Panels per row <select id="ex-cols"><option>1</option><option selected>2</option><option>3</option></select></label>
-  <label>Text <select id="ex-font"><option value="12">small</option><option value="14" selected>medium</option><option value="17">large</option></select></label>
+  <label>Panels per row <select id="ex-cols"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></label>
+  <label>Text <select id="ex-font"><option value="12">small</option><option value="13" selected>medium</option><option value="15">medium-large</option><option value="17">large</option></select></label>
   <label>Shade <select id="ex-scale"><option value="shared">one scale for all panels</option><option value="panel">relative to each panel</option></select></label>
 </div>
+<div class="explorer-wide">
 <div class="stepper">
   <button id="ex-back4" title="4 tokens back (shift + left arrow)">&laquo; 4</button><button id="ex-back" title="previous token (left arrow)">&lsaquo;</button>
   <input type="range" id="ex-slider" min="0" max="0" value="0">
@@ -123,6 +131,7 @@ never see, is shown above the text.</p>
 <div class="reply" id="ex-reply"></div>
 <p class="note" id="ex-info"></p>
 <div class="panels" id="ex-panels"></div>
+</div>
 
 <h2 id="seed">Study 1 · The baseline: how different are two seeds of the same student?</h2>
 <p class="q">Question: before asking what KL, CE or size change, how much do two trainings with identical settings differ? Only a
@@ -352,11 +361,12 @@ const meanLike = keys => keys.reduce((a, k) => a + DATA.likeness[k].mean, 0) / k
   .forEach(([big, what]) => { const t = el("div", { class: "tile" }, tiles); el("div", { class: "big" }, t, big); el("div", { class: "what" }, t, what); });
 
 // ── explorer ─────────────────────────────────────────────────────────────────────────────────────────
-// Each record's numbers live in explorer/probe_<index>.js, loaded when the record is picked.
+// Each record's numbers live in explorer/probe_<index>.js, loaded when the record is picked. The panels are
+// built once per record / model set / layout; moving to another token only recolours them (no layout shift).
 window.EXPLORER = window.EXPLORER || {};
 const probeSelect = document.getElementById("ex-probe"), setSelect = document.getElementById("ex-set");
 const colsSelect = document.getElementById("ex-cols"), fontSelect = document.getElementById("ex-font"), scaleSelect = document.getElementById("ex-scale");
-const slider = document.getElementById("ex-slider"), panelsBox = document.getElementById("ex-panels");
+const slider = document.getElementById("ex-slider"), panelsBox = document.getElementById("ex-panels"), replyBox = document.getElementById("ex-reply");
 DATA.explorer.forEach((p, i) => el("option", { value: i }, probeSelect,
   `${p.kind === "math" ? "Math tutor" : "Coding agent"} · ${p.bucket} · ${p.item} (${p.replyLength} tokens)`));
 const decoded = new Map();
@@ -365,11 +375,17 @@ function rowsOf(model) {
     for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i); decoded.set(model.data, bytes); }
   return decoded.get(model.data);
 }
-const current = { probe: 0, row: 0, data: null };
+const current = { probe: 0, row: 0, data: null, panels: [], chips: [] };
 const layerChoice = {}, setChoice = { math: "Scaling (every size)", code: "Scaling (every size)" };
 const shown = t => JSON.stringify(t).slice(1, -1) || "␣";
 const escapeHtml = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 function defaultRow(p) { const digit = p.reply.findIndex(t => /\d/.test(t)); return digit >= 0 ? digit : 0; }
+// one tooltip handler per node, reading the node's current weight
+function liveHover(node, describe) {
+  node.addEventListener("mousemove", e => { tip.innerHTML = describe(); tip.style.display = "block";
+    tip.style.left = Math.min(e.clientX + 14, innerWidth - 370) + "px"; tip.style.top = (e.clientY + 14) + "px"; });
+  node.addEventListener("mouseleave", () => tip.style.display = "none");
+}
 function loadProbe(i, done) {
   const meta = DATA.explorer[i];
   if (window.EXPLORER[meta.index]) { done(window.EXPLORER[meta.index]); return; }
@@ -384,10 +400,16 @@ function pickProbe(i) {
   loadProbe(i, data => {
     current.data = data; current.row = defaultRow(data);
     setSelect.innerHTML = ""; Object.keys(DATA.model_sets[data.kind]).forEach(name => el("option", { value: name }, setSelect, name));
-    setSelect.value = setChoice[data.kind]; renderExplorer();
+    setSelect.value = setChoice[data.kind];
+    buildReply(); buildPanels(); updateRow(true);
   });
 }
-function setRow(row) { if (!current.data) return; current.row = Math.max(0, Math.min(current.data.reply.length - 1, row)); renderExplorer(); }
+function setRow(row) {
+  if (!current.data) return;
+  const next = Math.max(0, Math.min(current.data.reply.length - 1, row));
+  if (next === current.row) return;
+  current.row = next; updateRow(false);
+}
 document.getElementById("ex-back4").onclick = () => setRow(current.row - 4);
 document.getElementById("ex-back").onclick = () => setRow(current.row - 1);
 document.getElementById("ex-next").onclick = () => setRow(current.row + 1);
@@ -395,76 +417,107 @@ document.getElementById("ex-next4").onclick = () => setRow(current.row + 4);
 slider.oninput = () => setRow(+slider.value);
 document.addEventListener("keydown", e => {
   if (["SELECT", "INPUT", "TEXTAREA"].includes(e.target.tagName) || !current.data) return;
-  const section = document.getElementById("ex-panels").getBoundingClientRect();
+  const section = panelsBox.getBoundingClientRect();
   if (section.bottom < 0 || document.getElementById("explorer").getBoundingClientRect().top > innerHeight) return;   // only while the explorer is on screen
   if (e.key === "ArrowLeft") { setRow(current.row - (e.shiftKey ? 4 : 1)); e.preventDefault(); }
   if (e.key === "ArrowRight") { setRow(current.row + (e.shiftKey ? 4 : 1)); e.preventDefault(); }
 });
 probeSelect.onchange = () => pickProbe(+probeSelect.value);
-setSelect.onchange = () => { setChoice[current.data.kind] = setSelect.value; renderExplorer(); };
-[colsSelect, fontSelect, scaleSelect].forEach(control => control.onchange = renderExplorer);
+setSelect.onchange = () => { setChoice[current.data.kind] = setSelect.value; buildPanels(); updateRow(true); };
+[colsSelect, fontSelect].forEach(control => control.onchange = () => { buildPanels(); updateRow(true); });
+scaleSelect.onchange = () => updateRow(false);
 
-function renderExplorer() {
-  const p = current.data; if (!p) return;
-  const G = p.labels.length, R = p.reply.length, query = p.queries[current.row];
-  slider.max = R - 1; slider.value = current.row;
-  const before = p.reply.slice(Math.max(0, current.row - 4), current.row).map(shown).join("");
-  const after = p.reply.slice(current.row + 1, current.row + 5).map(shown).join("");
-  document.getElementById("ex-where").innerHTML = `${current.row + 1} / ${R}   <span style="color:var(--muted)">${escapeHtml(before)}</span>` +
-    `<b style="outline:2px solid var(--accent);padding:0 2px">${escapeHtml(shown(p.reply[current.row]))}</b><span style="color:var(--muted)">${escapeHtml(after)}</span>`;
+function buildReply() {
+  const p = current.data;
+  replyBox.innerHTML = "";
+  current.chips = p.reply.map((t, i) => { const b = el("button", {}, replyBox, shown(t)); b.onclick = () => setRow(i); return b; });
+  slider.max = p.reply.length - 1;
   document.getElementById("ex-info").textContent = p.kind === "math"
-    ? `${G} student tokens; the reply has ${R} tokens. Tokens after the one being written are greyed out (the model cannot see them).`
+    ? `${p.labels.length} student tokens; the reply has ${p.reply.length} tokens. Tokens after the one being written are greyed out (the model cannot see them).`
     : `${p.lines.length} lines; the red bar marks the lines Gemma's scope names.`;
-  const reply = document.getElementById("ex-reply"); reply.innerHTML = "";
-  p.reply.forEach((t, i) => { const b = el("button", { class: i === current.row ? "on" : "" }, reply, shown(t)); b.onclick = () => setRow(i); });
-  const cols = innerWidth < 760 ? 1 : +colsSelect.value;
-  panelsBox.innerHTML = ""; panelsBox.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+}
+
+function buildPanels() {
+  const p = current.data; if (!p) return;
+  const G = p.labels.length;
+  panelsBox.innerHTML = ""; current.panels = [];
+  panelsBox.style.gridTemplateColumns = `repeat(${innerWidth < 760 ? 1 : +colsSelect.value}, minmax(0, 1fr))`;
   const keys = DATA.model_sets[p.kind][setSelect.value] || Object.keys(p.models);
-  const layerOf = (key, model) => layerChoice[`${key}|${p.kind}`] ?? model.layers;
-  const shared = scaleSelect.value === "shared";
-  const sharedTop = Math.max(...keys.map(key => p.models[key].maxima[layerOf(key, p.models[key])][current.row]));
   for (const key of keys) {
     const model = p.models[key], panel = el("div", { class: "panel" }, panelsBox), head = el("header", {}, panel);
     const title = el("b", {}, head, short(key)); title.style.color = lossColor(key);
     const facts = DATA.facts[key];
-    if (facts && facts.params) el("span", { class: "note" }, head, `${fmt(facts.params, 1)}M · ${facts.layers} layers × ${facts.heads} heads`);
+    el("span", { class: "note" }, head, facts && facts.params ? `${fmt(facts.params, 1)}M · ${facts.layers} layers × ${facts.heads} heads` : "");
     const select = el("select", {}, head);
     el("option", { value: model.layers }, select, "all layers");
     for (let l = 0; l < model.layers; l++) el("option", { value: l }, select, `layer ${l + 1}` + (key === "gemma" && DATA.gemma_full_layers.includes(l) ? " (full)" : ""));
-    select.value = layerOf(key, model);
-    select.onchange = () => { layerChoice[`${key}|${p.kind}`] = +select.value; renderExplorer(); };
-    const layer = +select.value, bytes = rowsOf(model), offset = (layer * R + current.row) * G, top = model.maxima[layer][current.row];
-    const scale = shared ? top / sharedTop : 1;   // shade = weight / the strongest weight shown (all panels', or this panel's)
-    el("div", { class: "note" }, panel, `strongest weight ${pct(top)}` + (model.outside ? ` · outside the student's view: ${pct(model.outside[layer][current.row])}` : ""));
-    const visible = [...Array(p.kind === "math" ? query + 1 : p.lines.length).keys()];
-    const ranked = visible.map(g => [g, bytes[offset + g]]).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    el("div", { class: "top" }, panel, "looks most at: " + ranked.map(([g, v]) =>
-      `${p.kind === "math" ? "«" + shown(p.labels[g]) + "»" : p.labels[g]} ${pct(v / 255 * top)}`).join(" · "));
-    const alpha = rel => Math.pow(rel * scale, 0.6).toFixed(3);
+    select.value = layerChoice[`${key}|${p.kind}`] ?? model.layers;
+    const entry = { key, model, select, note: el("div", { class: "note line" }, panel), top: el("div", { class: "top" }, panel), cells: [], query: -1 };
+    select.onchange = () => { layerChoice[`${key}|${p.kind}`] = +select.value; updateRow(false); };
     if (p.kind === "math") {
-      const box = el("div", { class: "text" }, panel); box.style.fontSize = fontSelect.value + "px"; let querySpan = null;
+      entry.box = el("div", { class: "text" }, panel); entry.box.style.fontSize = fontSelect.value + "px";
       for (let g = 0; g < G; g++) {
-        const rel = bytes[offset + g] / 255, span = el("span", {}, box, p.labels[g]);
-        if (g <= query) span.style.background = `rgba(${css("--hl")},${alpha(rel)})`; else span.style.opacity = 0.3;
-        if (g === query) { span.classList.add("q"); querySpan = span; }
-        hover(span, `${escapeHtml(JSON.stringify(p.labels[g]))} · ${p.regions[g]}<br>weight <b>${pct(rel * top, 2)}</b>`);
+        const span = el("span", {}, entry.box, p.labels[g]); entry.cells.push(span);
+        liveHover(span, () => `${escapeHtml(JSON.stringify(p.labels[g]))} · ${p.regions[g]}<br>weight <b>${pct(span._weight || 0, 2)}</b>`);
       }
-      requestAnimationFrame(() => { box.scrollTop = Math.max(0, querySpan.offsetTop - box.clientHeight + 90); });
     } else {
-      const box = el("div", { class: "lines" }, panel); box.style.fontSize = fontSelect.value + "px"; let best = null, bestValue = -1;
+      entry.box = el("div", { class: "lines" }, panel); entry.box.style.fontSize = fontSelect.value + "px";
       p.lines.forEach((line, g) => {
-        const rel = bytes[offset + g] / 255, row = el("div", { class: p.regions[g] === "target lines" ? "target" : "" }, box, line || " ");
-        row.style.background = `rgba(${css("--hl")},${alpha(rel)})`;
-        hover(row, `${escapeHtml(p.labels[g])} · ${p.regions[g]}<br>weight <b>${pct(rel * top, 2)}</b>`);
-        if (rel > bestValue) { bestValue = rel; best = row; }
+        const row = el("div", { class: p.regions[g] === "target lines" ? "target" : "" }, entry.box, line || " "); entry.cells.push(row);
+        liveHover(row, () => `${escapeHtml(p.labels[g])} · ${p.regions[g]}<br>weight <b>${pct(row._weight || 0, 2)}</b>`);
       });
+      entry.tail = el("div", { class: "note line" }, panel);
+    }
+    current.panels.push(entry);
+  }
+}
+
+function keepInView(box, node, centre) {
+  const top = node.offsetTop, bottom = top + node.offsetHeight, margin = 60;
+  if (centre) { box.scrollTop = Math.max(0, top - box.clientHeight / 2); return; }
+  if (top < box.scrollTop + margin) box.scrollTop = Math.max(0, top - margin);
+  else if (bottom > box.scrollTop + box.clientHeight - margin) box.scrollTop = bottom - box.clientHeight + margin;
+}
+
+function updateRow(first) {
+  const p = current.data; if (!p) return;
+  const G = p.labels.length, R = p.reply.length, query = p.queries[current.row];
+  slider.value = current.row;
+  current.chips.forEach((chip, i) => chip.classList.toggle("on", i === current.row));
+  const before = p.reply.slice(Math.max(0, current.row - 4), current.row).map(shown).join("");
+  const after = p.reply.slice(current.row + 1, current.row + 5).map(shown).join("");
+  document.getElementById("ex-where").innerHTML = `${String(current.row + 1).padStart(3)} / ${R}   <span style="color:var(--muted)">${escapeHtml(before)}</span>` +
+    `<b style="outline:2px solid var(--accent);padding:0 2px">${escapeHtml(shown(p.reply[current.row]))}</b><span style="color:var(--muted)">${escapeHtml(after)}</span>`;
+  const layerOf = entry => +entry.select.value;
+  const sharedTop = Math.max(...current.panels.map(entry => entry.model.maxima[layerOf(entry)][current.row]));
+  const shared = scaleSelect.value === "shared";
+  for (const entry of current.panels) {
+    const model = entry.model, layer = layerOf(entry), bytes = rowsOf(model), offset = (layer * R + current.row) * G;
+    const top = model.maxima[layer][current.row], scale = shared ? top / sharedTop : 1;
+    entry.note.textContent = `strongest weight ${pct(top)}` + (model.outside ? ` · outside the student's view: ${pct(model.outside[layer][current.row])}` : "");
+    const visible = p.kind === "math" ? query + 1 : p.lines.length;
+    const ranked = [...Array(visible).keys()].map(g => [g, bytes[offset + g]]).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    entry.top.textContent = "looks most at: " + ranked.map(([g, v]) =>
+      `${p.kind === "math" ? "«" + shown(p.labels[g]) + "»" : p.labels[g]} ${pct(v / 255 * top)}`).join(" · ");
+    const colour = css("--hl");
+    entry.cells.forEach((cell, g) => {
+      const rel = bytes[offset + g] / 255; cell._weight = rel * top;
+      if (p.kind === "math" && g > query) { cell.style.background = "transparent"; cell.style.opacity = 0.3; }
+      else { cell.style.background = `rgba(${colour},${Math.pow(rel * scale, 0.6).toFixed(3)})`; cell.style.opacity = 1; }
+    });
+    if (p.kind === "math") {
+      if (entry.query >= 0) entry.cells[entry.query].classList.remove("q");
+      entry.cells[query].classList.add("q"); entry.query = query;
+      requestAnimationFrame(() => keepInView(entry.box, entry.cells[query], first));
+    } else {
       let replyMass = 0, endMass = 0;
       for (let g = p.lines.length; g < G; g++) { const w = bytes[offset + g] / 255 * top; if (p.regions[g] === "end of input") endMass += w; else replyMass += w; }
-      el("div", { class: "note" }, panel, `on the reply so far: ${pct(replyMass)} · end of input: ${pct(endMass)}`);
-      requestAnimationFrame(() => { const target = box.querySelector(".target") || best; box.scrollTop = Math.max(0, target.offsetTop - box.clientHeight / 2); });
+      entry.tail.textContent = `on the reply so far: ${pct(replyMass)} · end of input: ${pct(endMass)}`;
+      if (first) requestAnimationFrame(() => { const target = entry.box.querySelector(".target") || entry.cells[0]; keepInView(entry.box, target, true); });
     }
   }
 }
+window.addEventListener("resize", () => { if (current.data) panelsBox.style.gridTemplateColumns = `repeat(${innerWidth < 760 ? 1 : +colsSelect.value}, minmax(0, 1fr))`; });
 pickProbe(0);
 
 // ── study 1 ──────────────────────────────────────────────────────────────────────────────────────────
