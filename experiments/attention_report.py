@@ -341,7 +341,85 @@ def compute(probes: List[dict]) -> dict:
     mean_similarity = {(first, second): float(math["mean_overlap"][names.index(first), names.index(second)])
                        for first in SEED_MODELS for second in SEED_MODELS if first != second}
     math["seed_study_whole_model"] = seed_study(mean_similarity)
+    math["bootstrap"] = bootstrap_seed_study(probes, device)
+    results["code"]["retrieval_heads"] = retrieval_heads(probes, results["code"])
     return results
+
+
+def bootstrap_seed_study(probes: List[dict], device: str, resamples: int = 1000) -> dict:
+    """95% intervals over the probes (resampled with replacement, the head matching redone each time):
+    the three pair kinds, same loss minus other loss (both across seeds), and KL minus CE Gemma likeness
+    per seed. The probes are the sample here; the permutation test treats the students as the sample."""
+    keys = SEED_MODELS + [GEMMA]
+    loaded = {key: load_rows(key) for key in keys}
+    contributions, row_counts = [], []
+    for index, probe in enumerate(probes):
+        if probe["kind"] != "math":
+            continue
+        valid = valid_places(probe)
+        parts = [standardised(view_of(loaded[key][index])[0], valid) for key in keys]
+        flat = torch.cat([part.reshape(-1, part.shape[2] * part.shape[3]) for part in parts]).to(device)
+        students = sum(part.shape[0] * part.shape[1] for part in parts[:-1])
+        contributions.append((flat[:students] @ flat.T).cpu().numpy())
+        row_counts.append(parts[0].shape[2])
+    contributions, row_counts = np.stack(contributions), np.array(row_counts)
+    heads = 24
+    offsets = {key: number * heads for number, key in enumerate(SEED_MODELS)}
+    gemma_start = len(SEED_MODELS) * heads
+    generator = np.random.default_rng(0)
+    samples = {"same loss, other seed": [], "other loss, same seed": [], "other loss, other seed": [], "same minus other loss": [],
+               "kl minus ce likeness, seed 1": [], "kl minus ce likeness, seed 2": [], "kl minus ce likeness, seed 3": [],
+               "kl minus ce likeness, mean": []}
+    for _ in range(resamples):
+        chosen = generator.integers(0, len(row_counts), len(row_counts))
+        matrix = contributions[chosen].sum(0) / row_counts[chosen].sum()
+        by_kind = {}
+        for first, second in itertools.combinations(SEED_MODELS, 2):
+            block = matrix[offsets[first]:offsets[first] + heads, offsets[second]:offsets[second] + heads]
+            rows, columns = linear_sum_assignment(-block)
+            by_kind.setdefault(pair_kind(first, second), []).append(block[rows, columns].mean())
+        for kind, values in by_kind.items():
+            samples[kind].append(np.mean(values))
+        samples["same minus other loss"].append(np.mean(by_kind["same loss, other seed"]) - np.mean(by_kind["other loss, other seed"]))
+        likeness = {key: matrix[offsets[key]:offsets[key] + heads, gemma_start:].max(1).mean() for key in SEED_MODELS}
+        differences = [likeness[f"math-kl-m-s{seed}"] - likeness[f"math-ce-m-s{seed}"] for seed in (1, 2, 3)]
+        for seed, difference in zip((1, 2, 3), differences):
+            samples[f"kl minus ce likeness, seed {seed}"].append(difference)
+        samples["kl minus ce likeness, mean"].append(np.mean(differences))
+    return {name: {"low": float(np.percentile(values, 2.5)), "high": float(np.percentile(values, 97.5)),
+                   "median": float(np.median(values))} for name, values in samples.items()}
+
+
+def retrieval_heads(probes: List[dict], code: dict, count: int = 10) -> List[dict]:
+    """Gemma's heads with the most weight on the target lines while writing line numbers, the best head of
+    two students for comparison, and in how many probes each head's most-attended line (its weight over
+    the line-number rows, averaged) lies inside the target lines."""
+    metric = "target lines when writing a line number"
+    gemma_values = code["metrics"][GEMMA][metric]
+    order = np.argsort(gemma_values.ravel())[::-1][:count]
+    chosen = [(GEMMA, *np.unravel_index(position, gemma_values.shape)) for position in order]
+    for key in ("code-kl-m", "code-size-xl"):
+        values = code["metrics"][key][metric]
+        chosen.append((key, *np.unravel_index(values.argmax(), values.shape)))
+    loaded = {key: load_rows(key) for key in {key for key, _, _ in chosen}}
+    hits = {head: 0 for head in chosen}
+    probe_count = 0
+    for index, probe in enumerate(probes):
+        if probe["kind"] != "code":
+            continue
+        rows = writing_digits(probe)
+        line_count = len(probe["sentence"].split("\n"))
+        target = [region == "target lines" for region in probe["group_regions"][:line_count]]
+        if not rows or not any(target):
+            continue
+        probe_count += 1
+        for head in chosen:
+            key, layer, number = head
+            weights = view_of(loaded[key][index])[0][layer, number][rows, :line_count].mean(0)
+            hits[head] += bool(target[int(weights.argmax())])
+    return [{"model": key, "layer": int(layer) + 1, "head": int(number) + 1,
+             "share": float(code["metrics"][key][metric][layer, number]), "hits": hits[(key, layer, number)], "probes": probe_count}
+            for key, layer, number in chosen]
 
 
 # ── the report step ──────────────────────────────────────────────────────────────────────────────────

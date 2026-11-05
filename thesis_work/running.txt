@@ -114,13 +114,15 @@ STATUS 2026-10-13 (pick up here)
             numbers in experiments/results/attention_models.csv + attention_seed_pairs.csv. Gemma: RTX A6000
             pod uiv7jvp9w96gc2 (EU-SE-1, $0.59/h), 104 probes in 139 s, ~8 min in all (~$0.08), deleted.
             Math tutor, size m, matched-head correlation: same loss / other seed .386, other loss / same seed
-            .598, other loss / other seed .382 (permutation within seeds p = .11): the seed (start weights +
-            data order) shapes attention, the loss does not, beyond seed noise. Same seed: 92-100% of matched
+            .598, other loss / other seed .382: the seed (start weights + data order) shapes attention; the
+            loss leaves a small, consistent mark (same minus other loss .0036, 95% over the probes
+            .0028-.0042; ~2% of the seed gap .21; over the 8 students, permutation p = .11). Same seed: 92-100% of matched
             heads are the very same head. Gemma likeness (best correlation with one of its 768 heads): KL .320,
-            CE .313, untrained .043; the students match Gemma's sliding-window layers (~.23), not its
+            CE .313 (KL ahead in 3/3 seeds, +.007, 95% .006-.008), untrained .043; the students match Gemma's sliding-window layers (~.23), not its
             full-attention ones (~.14). Coding agent: every student spreads evenly over the project (lift
-            ~1.0); Gemma's full-attention layers 24/30/36/42 have heads with up to 67% on the target lines
-            while it writes the line numbers (best student head 5%).
+            ~1.0); Gemma's full-attention layers (top 10 heads all in 30 and 36) put up to 67% on the target
+            lines while it writes the line numbers, landing on a target line in up to 23/23 records (best
+            student head 5%, 3/23). Robustness (bootstrap, per reply type, per layer, sinks removed): holds.
   DIRECTION 2026-10-20 (user): make BOTH agents work end to end locally (the math tutor and a coding
             agent), then buy GPU time and do the large runs on the cloud ("if we have everything set up
             I'm buying GPU time"). The local new2 pass (below) is PAUSED: not now; the cloud data replaces it

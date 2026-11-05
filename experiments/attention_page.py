@@ -16,13 +16,27 @@ import attention_report as R
 from attention_study import STUDY_DIR
 
 PAGE_PATH = STUDY_DIR / "attention_study.html"
-EXPLORER_MATH = {"solve": 3, "explain": 2, "route": 1}
-EXPLORER_CODE = 2
-EXPLORER_MODELS = {
-    "math": ["gemma", "math-kl-m-s1", "math-ce-m-s1", "math-kl-to-ce-m-s1", "math-kl-m-s2", "math-size-xs", "math-size-l",
-             "math-untrained-m"],
-    "code": ["gemma", "code-kl-m", "code-size-xl", "code-size-s", "code-size-s-ce", "code-untrained-m"],
+EXPLORER_DIR = STUDY_DIR / "explorer"   # one script per record, loaded when the record is picked
+EXPLORER_MATH = {"solve": 6, "explain": 5, "route": 3}
+EXPLORER_CODE_PER_PROJECT = {"shop": 2, "todo": 2, "spreadsheet": 1, "travel_site": 1}
+MATH_SETS = {
+    "Scaling (every size)": ["gemma", "math-size-xs", "math-size-s", "math-size-m", "math-size-l", "math-size-xl-pilot",
+                             "math-size-s-ce", "math-kl-m-s1"],
+    "Losses and seeds": ["gemma", "math-kl-m-s1", "math-ce-m-s1", "math-kl-to-ce-m-s1", "math-kl-m-s2", "math-ce-m-s2",
+                         "math-untrained-m"],
 }
+CODE_SETS = {
+    "Scaling (every size)": ["gemma", "code-size-xs", "code-size-s", "code-size-m", "code-size-l", "code-size-xl",
+                             "code-size-s-ce", "code-kl-m", "code-untrained-m"],
+}
+
+
+def with_all(sets):
+    every = list(dict.fromkeys(key for keys in sets.values() for key in keys))
+    return {**sets, "All": every} if len(sets) > 1 else sets
+
+
+MODEL_SETS = {"math": with_all(MATH_SETS), "code": CODE_SETS}
 LOSS_METRICS = ["previous token", "copy", "numbers when writing a number", "distance", "entropy", "message",
                 "newest task", "earlier conversation", "reply so far", "end of input"]
 
@@ -56,18 +70,15 @@ def encode_rows(view: torch.Tensor):
 
 
 def explorer(results, probes) -> List[dict]:
-    chosen = []
-    remaining = dict(EXPLORER_MATH)
+    """Writes runs/attention_study/explorer/probe_<index>.js for each chosen test record (every model's
+    per-layer mean attention at each reply position) and returns the list the page shows."""
+    chosen, math_left, code_left = [], dict(EXPLORER_MATH), dict(EXPLORER_CODE_PER_PROJECT)
     for index, probe in enumerate(probes):
-        if probe["kind"] == "math" and remaining.get(probe["bucket"], 0) > 0 and len(probe["student_queries"]) <= 60:
-            remaining[probe["bucket"]] -= 1
+        left = math_left if probe["kind"] == "math" else code_left
+        if left.get(probe["bucket"], 0) > 0 and len(probe["student_queries"]) <= 70:
+            left[probe["bucket"]] -= 1
             chosen.append(index)
-    code_seen = set()
-    for index, probe in enumerate(probes):
-        if probe["kind"] == "code" and len(code_seen) < EXPLORER_CODE and probe["bucket"] not in code_seen \
-                and (probe["bucket"] == "travel_site" or not code_seen):
-            code_seen.add(probe["bucket"])
-            chosen.append(index)
+    EXPLORER_DIR.mkdir(parents=True, exist_ok=True)
     entries = []
     for index in chosen:
         probe = probes[index]
@@ -78,8 +89,9 @@ def explorer(results, probes) -> List[dict]:
                  "reply": [token.replace("▁", " ") for token in probe["reply_tokens"]],
                  "queries": probe["student_queries"], "models": {}}
         if probe["kind"] == "code":
-            entry["lines"] = [line[:90] for line in probe["sentence"].split("\n")]
-        for key in EXPLORER_MODELS[probe["kind"]]:
+            entry["lines"] = [line[:110] for line in probe["sentence"].split("\n")]
+        every_model = list(dict.fromkeys(key for keys in MODEL_SETS[probe["kind"]].values() for key in keys))
+        for key in every_model:
             view, outside = R.view_of(R.load_rows(key)[index])
             stacked = torch.cat([view.mean(1), view.mean((0, 1))[None]])
             data, maxima = encode_rows(stacked)
@@ -87,7 +99,11 @@ def explorer(results, probes) -> List[dict]:
             if key == R.GEMMA:
                 model["outside"] = rounded(torch.cat([outside.mean(1), outside.mean((0, 1))[None]]), 3)
             entry["models"][key] = model
-        entries.append(entry)
+        path = EXPLORER_DIR / f"probe_{index}.js"
+        path.write_text(f"(window.EXPLORER = window.EXPLORER || {{}})[{index}] = "
+                        + json.dumps(entry, separators=(",", ":")) + ";\n", encoding="utf-8")
+        entries.append({"index": index, "kind": probe["kind"], "bucket": probe["bucket"], "item": probe["item_id"],
+                        "replyLength": len(probe["reply_tokens"]), "file": f"explorer/{path.name}"})
     return entries
 
 
@@ -202,7 +218,8 @@ def payload(results, probes) -> dict:
         "passes": passes, "regions": regions, "model_summary": model_summary,
         "code_metrics": code_metrics, "code_gemma_layers": code_gemma_layers, "code_gemma_layers_mean": code_gemma_layers_mean,
         "code_likeness": {key: float(values.mean()) for key, values in code["gemma_correlation"].items()},
-        "explorer": explorer(results, probes),
+        "explorer": explorer(results, probes), "model_sets": MODEL_SETS,
+        "bootstrap": math["bootstrap"], "retrieval_heads": code["retrieval_heads"],
     }
 
 
