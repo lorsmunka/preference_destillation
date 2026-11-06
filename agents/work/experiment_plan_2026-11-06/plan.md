@@ -7,7 +7,7 @@ chapter 9 claim) against cost. Numbers on timing come from thesis_work/running.t
 - **Local GPU** (RTX 4070, 12 GB): only while the user is present; pause with the STOP file when they leave, resume
   by rerunning the same script. Realistic local time until the freeze: ~30-34 GPU hours. Two students side by side
   each run ~0.86 s/batch instead of ~0.70 (keep both windows visible: hidden windows slow ~35-50%).
-- **Rented GPU**: may run unattended. Credit left ~$23 (running.txt, 2026-10-28; check the balance before booking).
+- **Rented GPU**: may run unattended. Credit **$27** (user, 2026-11-06: "I don't mind using it").
   Gemma itself is measured only in bf16 on a rented card, never the local 4-bit copy.
 - Single numbers = the final pass; KL vs CE = seed-matched pairs; task accuracy = agreement with Gemma's answer.
 - The test set is the fixed tail of the batch folder, so `max_training_examples` subsets keep the same test.
@@ -27,14 +27,27 @@ chapter 9 claim) against cost. Numbers on timing come from thesis_work/running.t
 | 9 | **Paraphrase test**: Gemma bf16 answers the test rewordings (rented), then the student; agreement with Gemma's answers. | Generalization to reworded problems | ~$1 rented + ~0.5 h local | Low |
 | 10 | **Size l (53.7M) on the full data**: needs the 265 GB of math data uploaded to a rented volume and ~13 h of an A100 (~$25-30 with the volume). | Size at full data, large end | over the credit | Only if money is added |
 
+## Using the $27 (update, 2026-11-06)
+The local card only runs while the user is present; a rented card runs through the night. So the money is best
+spent moving the long math runs off the local card:
+- **#4 on a rented card** (~$1), as planned.
+- **#6 and #7 on one rented card, side by side, unattended.** A 48 GB card such as an RTX A6000 (~$0.59/h when last
+  seen) holds both. Needs the math batches on a network volume in the pod's data center: 265 GB to upload from home
+  (~1.5-2 h at the ~47 MB/s seen on the download), the volume ~$0.7/day. Estimate ~$8-12 for ~16 h of card time,
+  but **time one pass first** and price from the live catalog before committing.
+- **#10 (size l on the full data) only if the timed pass says it fits** what is left after #4 + #6/#7 + the volume
+  (~$12-15). If not, skip it: size l on the first-loop data already exists (table 9.2 candidate).
+- Delete the volume and every pod when done (the cloud scripts stop themselves; test that first).
+
 ## Suggested order
-- **Nov 6 (today):** #1 (40 min) → #2 (15 min) → #3 (~1 h). Book #4 on a rented card in parallel (unattended).
-- **Nov 6 evening → Nov 7:** #5, both runs side by side (~9 h of presence; pause overnight, resume in the morning).
-- **Nov 7 → Nov 8:** #6 and #7 side by side (~16 h of presence over two days).
-- **Nov 8:** #8 if there is a free hour; #9 only if #4 went smoothly and credit is left.
+- **Nov 6 (today):** local #1 (40 min) → #2 (15 min) → #3 (~1 h). Start the upload for the rented runs; book #4.
+- **Nov 6 night → Nov 7:** rented #6 + #7 side by side (unattended). Local #5, both runs side by side, while the
+  user is present (~9 h; pause overnight).
+- **Nov 7 → Nov 8:** local #8 (~1 h); rented #10 if it fits the remaining credit; #9 if credit is left.
 - **Nov 9 noon:** data freeze. Every run that has not finished is reported with the passes it has, or left out.
 
-Budget check: local ≈ 0.7 + 0.3 + 1 + 9 + 16 + 1 ≈ 28 h of ~30-34 available; rented ≈ $1.5-2 of ~$23.
+Budget check: local ≈ 0.7 + 0.3 + 1 + 9 + 1 ≈ 12 h of ~30-34 available (room for re-runs); rented ≈ $1 (#4) +
+$8-12 (#6/#7) + ~$3 (volume) = ~$12-16 of $27, the rest for #10 or #9.
 
 ## Deliverables per experiment
 A results CSV through `experiments/_common.write_rows` (never open a results file with "w"), the run directories,
