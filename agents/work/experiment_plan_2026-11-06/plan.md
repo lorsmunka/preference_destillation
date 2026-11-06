@@ -31,6 +31,17 @@ sections 5-7); read that report first. Timing figures come from thesis_work/runn
 | 7 | **Coding agent with half the projects**: KL m on 8 of the 16 training projects, 3 passes. | whether fewer projects means earlier overfitting | ~1 h local | Low |
 | - | Size sweep on the full data | | tens of GPU hours | Not before the deadline |
 
+## Approved by the user (2026-11-06)
+All seven, with two notes:
+- **#4 on a rented card if it comes out cheap.** Best paired with #5: one upload of the math batches (265 GB,
+  ~1.5-2 h; #4 alone would need only the first ~65k records' files plus the test tail, ~96 GB) and one card running
+  #4's three runs and #5 side by side overnight. Rough guess ~$8-10 of card time at ~$0.59/h plus ~$3 of volume.
+  Time one pass and price from the live catalog first; if it does not come out cheap, run #4 locally (~6-8 h).
+- **#5 stays on the math tutor.** The user asked about KL → CE on the coding agent instead: not worth it now. The
+  coding student learns only in passes 1-2 and overfits after, so a schedule that moves toward CE over 10 passes
+  would mostly act during the overfitting; KL vs CE there is already answered (KL lower test CE at 4/4 passes).
+  Math seed 3 is what takes the schedule claim from 2 seeds to 3.
+
 ## Suggested order
 - **Nov 6 (today):** #1 (CPU, <3 h in all) and #2 (GPU while the user is here, else CPU). Book #3 on a rented card.
 - **Nov 6 evening → Nov 7:** #4 locally (~6 h of presence). Decide #5: local (~13 h of presence over Nov 7-8) or
