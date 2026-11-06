@@ -1,0 +1,33 @@
+math copy: mean head 0.0426, best head 0.3611
+math distance: mean head 40.8342, best head 102.2695
+math earlier conversation: mean head 0.2039, best head 0.5861
+math earlier conversation [explain]: mean head 0.2803, best head 0.7958
+math earlier conversation [route]: mean head 0.3876, best head 0.9371
+math earlier conversation [solve]: mean head 0.1401, best head 0.4619
+math end of input: mean head 0.1537, best head 0.9998
+math end of input [explain]: mean head 0.1385, best head 0.9997
+math end of input [route]: mean head 0.3545, best head 0.9996
+math end of input [solve]: mean head 0.1591, best head 0.9999
+math entropy: mean head 0.5172, best head 0.8668
+math first token: mean head 0.0019, best head 0.0268
+math markup: mean head 0.1246, best head 0.4802
+math message: mean head 0.1189, best head 0.3212
+math message [explain]: mean head 0.0749, best head 0.2390
+math message [route]: mean head 0.0710, best head 0.3947
+math message [solve]: mean head 0.1538, best head 0.4629
+math newest task: mean head 0.0477, best head 0.2164
+math newest task [explain]: mean head 0.0631, best head 0.2461
+math newest task [route]: mean head 0.0413, best head 0.3511
+math newest task [solve]: mean head 0.0363, best head 0.2075
+math number: mean head 0.1137, best head 0.3363
+math numbers when writing a number: mean head 0.1778, best head 0.6427
+math outside view: mean head 0.4449, best head 0.9585
+math previous token: mean head 0.0913, best head 0.8488
+math reply so far: mean head 0.4758, best head 0.9544
+math reply so far [explain]: mean head 0.4432, best head 0.9584
+math reply so far [route]: mean head 0.1456, best head 0.6370
+math reply so far [solve]: mean head 0.5107, best head 0.9643
+math self: mean head 0.1250, best head 0.9494
+math space: mean head 0.2836, best head 0.9999
+math word: mean head 0.4780, best head 0.7981
+math even-spread shares: {'message': 0.2202, 'newest task': 0.1609, 'earlier conversation': 0.4643, 'end of input': 0.007, 'reply so far': 0.1476, 'number': 0.1387, 'word': 0.5733, 'markup': 0.139, 'space': 0.149}

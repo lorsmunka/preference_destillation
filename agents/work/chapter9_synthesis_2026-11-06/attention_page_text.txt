@@ -1,0 +1,126 @@
+
+Where Students Look
+Where the students look
+  Explorer1 · Seeds (the baseline)2 · KL vs CE
+  3 · Gemma4 · Size5 · Training6 · Coding agent7 · Sentiment
+  Method
+Explorer: one reply, token by token
+Pick a test record, a set of models and a reply token: every panel shades the text by where that model looks while it writes
+the token (hover a token for its weight). Move with the buttons, the slider or the arrow keys (shift + arrow: 4 tokens). Gemma's
+panel is renormalised over the student's text; the share it puts on its instruction header and chat template, which the students
+never see, is shown above the text.
+  Record 
+  Models 
+  Panels per row 1234
+  Text smallmediummedium-largelarge
+  Shade one scale for all panelsrelative to each panel
+  « 4‹
+  ›4 »
+Study 1 · The baseline: how different are two seeds of the same student?
+Question: before asking what KL, CE or size change, how much do two trainings with identical settings differ? Only a
+difference larger than that is a real effect of a setting.
+Size m, 10 passes, full math data. A seed fixes both the start weights and the order of the data, and the same seed is used for every loss,
+so KL s1 and CE s1 start from the same weights and see the same batches: they differ only in what they learn from.
+  FIG 1A
+Matched-head similarity of every pair (correlation)
+    Each cell: the heads of the two students matched one to one (Hungarian), then the mean correlation of the matched
+    heads' attention. Bright blocks off the diagonal are pairs sharing a seed.
+  FIG 1B
+Three kinds of pairs
+    Each dot is a pair of students; the tick is the mean. Left: correlation; right: overlap (share of attention on the same
+    tokens). The dashed line: an untrained student (random weights) against the trained ones.
+  FIG 1C
+Do the matched heads keep their place?
+    Of the matched head pairs: the share that is the very same head (same layer and index), and the share in the same layer.
+    Dashed: chance (1 in 24 heads, 1 in 6 layers).
+  FIG 1D
+Head roles: the same seed gives the same map
+    Every cell is one head (rows: layers 1-6, columns: heads 1-4, in their own index). Two losses with seed 1, two with seed 2. Colour from low to high (the blue ramp; hover for values): previous token 0-0.3, copy 0-0.2, numbers 0-0.8, message 0-0.45, distance 0-120 tokens.
+Study 2 · What does the loss change (KL, CE, KL to CE)?
+Question: given the seed baseline, does learning Gemma's whole next-word list (KL) instead of its written word (CE)
+change where the student looks?
+  FIG 2A
+Attention measures by loss (each dot a seed)
+    Mean over all 24 heads and every reply position. Copy: weight on earlier copies of the token about to be written.
+    Distance: how far back, in tokens. Entropy: spread, as a share of the most spread possible.
+  FIG 2B
+KL minus CE, seed by seed
+    The same seed = the same start and data order, so each difference is a paired one. Scale: the difference in units of the
+    spread between the three KL seeds.
+  FIG 2C
+Where the reply looks, by reply type
+    Share of attention on each part of the input (mean over heads). Gemma: renormalised over the student's text.
+Study 3 · Gemma: where does the teacher look, and do the students end up like it?
+Question: nothing in training touches attention. Do the students still come to look where Gemma looks?
+  FIG 3A
+Gemma likeness of every student
+    For each student head, its best correlation with any of Gemma's 768 heads; dots: heads, bar: the mean. An untrained student
+    (random weights) is the floor of this search over 768 heads.
+  FIG 3B
+Which depth of Gemma each student layer resembles
+    Rows: student layers; columns: Gemma's 48 layers (▲ = a full-attention layer, the others see 1,024 tokens back). Cell: the
+    student layer's heads' mean best correlation with a head of that Gemma layer. Caution: the dark full-attention columns are mostly position (recency): with position taken out the gap nearly closes (FIG 3F).
+  FIG 3C
+Gemma layer by layer
+    Mean over the 16 heads of each layer. Outside view: weight on the instruction header, <bos> and chat template
+    (the students never see them); the other measures are over the student's text.
+  FIG 3D
+Gemma's 768 heads
+    Rows: layers 1-48, columns: heads 1-16.
+  FIG 3F
+How much of the likeness is position? (adversarial check)
+    Grey: Gemma likeness as in FIG 3A. Coloured: the same after taking out each head's position-only pattern (its mean weight at each look-back distance), so only what depends on the tokens themselves is compared. Dashed: the untrained student with position taken out.
+  FIG 3E
+Specialist heads: Gemma vs the students
+    The strongest single head for each role (max over heads), size m students.
+Study 4 · Size
+Question: does a bigger student look more like Gemma, or differently?
+The size sweep was trained before the main runs: KD with the KL share sliding 0.9 to 0.1, 10 passes, the first 10,000 problems
+(xs to l), and xl on the small pilot data. So sizes compare with each other, not with the main KL / CE students.
+  FIG 4A
+Gemma likeness by size
+    x: parameters (log scale). Grey: the size sweep; blue and orange: the main KL / CE students (size m, full data).
+  FIG 4B
+Attention measures by size
+Study 5 · Training: when do the patterns form?
+Question: KL s1 and CE s1 start from the same weights. Do they drift apart, and when is the final pattern in place?
+  FIG 5A
+Similarity after every pass
+    Matched-head correlation: each pass with the student's own final pattern, and KL with CE after the same pass.
+  FIG 5B
+Gemma likeness and number lookup, pass by pass
+Study 6 · The coding agent: do they look at the lines they name?
+Question: when the model writes its scope ("computer.py 45-50") after reading the whole project (~6,000 tokens), how much of
+its attention is on those lines?
+Students: the pilot size sweep (KD, small pilot data), CE at s, and KL m on the full data after 8 of 10 passes. 24 test scope replies,
+6 per test project. Lift = the target lines' share of attention over what an even spread over the tokens would give them (1 = no focus).
+  FIG 6A
+Focus on the target lines
+    Bars: the mean head; dots: the strongest head. Lift, all reply positions.
+  FIG 6B
+Gemma's layers find the lines
+    Per Gemma layer, its strongest head's share of attention on the target lines (▲ = full-attention layer). Dashed: the
+    strongest student head.
+Study 7 · Sentiment (part 1): ten seeds, five schedules, four data sizes
+Question: with the data order fixed, so that seeds differ only in their start weights, is it still the seed that decides
+attention? And does more data, or the KL / CE schedule, change it?
+Part 1's students (48 wide, 3 layers, 1 head each; teacher Gemma 3 4B, bf16, its March 2026 prompt rebuilt exactly). They learned only the
+class prior (accuracy at the most common answer, code review X-C1). E-01: five schedules × 10 seeds on 2,048 comments, every seed reading
+the comments in the same order. Idea D: 256 to 2,048 comments, 5 seeds. 48 test comments; Gemma's instructions (before and after the comment)
+are outside the student's view.
+  FIG 7A
+Three kinds of pairs, 50 students
+    Each dot a pair (225 same-schedule pairs, 100 same-seed pairs, 900 others); tick: the mean.
+  FIG 7B
+Every pair (matched-head correlation)
+    Rows and columns: the five schedules, seeds 1-10 inside each. The bright stripes parallel to the diagonal are pairs with the
+    same seed and another schedule.
+  FIG 7C
+The five schedules, seed by seed
+  FIG 7D
+Data size
+    Mean over the seeds (likeness = best correlation with a Gemma 3 head; position removed as in FIG 3F).
+  FIG 7E
+Gemma 3 layer by layer
+    Mean over the 8 heads of each of its 34 layers (▲ = full attention).
+Method and caveats
