@@ -547,6 +547,10 @@ Az ügynököknél a tanulómodellt a modellhámmal együtt kellett kipróbálni
 
 10. A MEGVALÓSÍTÁS ELEMZÉSE, ALKALMAZÁSA, TOVÁBBFEJLESZTÉSI LEHETŐSÉGEK
 
+A keretrendszer a desztilláció teljes folyamatát lefedi a domain megadásától az adatgeneráláson és a tanításon át a kiértékelésig. A rendszerrel öt domainen is végtől véggi tesztelve volt. Például a matematikai ügynöknél a módszer jól működött, a tanulómodell a végeredményt tartalmazó tesztválaszok 70,5%-ában ugyanarra a végeredményre jutott, mint a tanár. A keretrendszer tehát a desztillációt megbízhatóan végrehajtja és méri. A módszer korlátai a rögzített szótárból, a tanár hibáinak átvételéből, a tanítóadat méretéből és betanításhoz szükséges számítási igényből adódnak. További korlátok a nagy fájlok, például a matematikai ügynök tanítóadata 265 GB volt, mert minden tokennél a teljes csökkentett szótár logitjai mentésre kerülnek. Ezt a x.x pontban említett módszerekkel a későbbiekben tovább csökkenthetjük.
+Az elkészült tanulómodellek saját gépen, internetkapcsolat nélkül is futtathatók. A matematikai ügynök 16,5M paraméteres tanulómodelljének mentett súlyai például 65,9 MB-ot foglalnak (lásd 6.5), és egy RTX 4070-en kb. 1 másodperc alatt válaszol (lásd 8.4).
+A legközvetlenebb továbbfejlesztés a több tanítóadat, hiszen a matematikai ügynöknél a tesztveszteség a tanítóválaszok számának minden duplázásával még egyenletesen csökkent (lásd 2.5.4). Az adat tárolási igénye csökkenthető, ha tokenenként csak a legvalószínűbb tokenek logitjai kerülnek mentésre (lásd 2.3.2). A tanulómodell oldalán kipróbálható a Muon optimalizáló az AdamW helyett, a háromértékű (ternáris, csak −1, 0 és +1 súlyú) tanulómodellek desztillálása, illetve a domainhez szabott architektúrák, amelyekhez a saját tanulómodell-interfész (lásd 7.3) már adott. A tanár eloszlása mellett a figyelemmintázatai is átadhatók lennének (attention distillation). Erősebb tanármodellel a tanulómodell felső korlátja is emelhető (lásd 2.5.3), a kódügynök pedig a keresés és a magyarázat mellett a kód módosítására is kiterjeszthető.
+
 11. ÖSSZEFOGLALÁS (magyarul)
 
 12. SUMMARY (angolul)
