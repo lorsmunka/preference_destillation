@@ -558,19 +558,21 @@ MODEL_COLUMNS = ["model", "domain", "label", "gemma_likeness_correlation", "gemm
                  "previous_token", "copy", "numbers_when_writing_a_number", "distance_tokens", "message", "reply_so_far",
                  "outside_view", "target_lift", "target_lines_when_writing_a_line_number"]
 PAIR_COLUMNS = ["pair", "kind", "matched_correlation", "matched_overlap"]
+TEACHER_LABELS = {"math": "Gemma 4 12B (bf16)", "code": "Gemma 4 12B (bf16)", "sentiment": "Gemma 3 4B (bf16)"}
 
 
 def summary_rows(results) -> List[dict]:
     rows = []
     for kind, result in results.items():
         labels = {student.key: student.label for student in result["students"]}
-        labels[GEMMA] = "Gemma 4 12B (bf16)"
+        labels[GEMMA] = TEACHER_LABELS[kind]
         for key in result["keys"]:
             metrics = result["metrics"][key]
 
             def mean(name):
                 return round(float(metrics[name].mean()), 4) if name in metrics else ""
-            rows.append({"model": key, "domain": kind, "label": labels[key],
+            # the teacher has one row per kind (one shared "gemma" key let the last kind overwrite the others)
+            rows.append({"model": f"{GEMMA}-{kind}" if key == GEMMA else key, "domain": kind, "label": labels[key],
                          "gemma_likeness_correlation": round(float(result["gemma_correlation"][key].mean()), 4) if key != GEMMA else "",
                          "gemma_likeness_overlap": round(float(result["gemma_overlap"][key].mean()), 4) if key != GEMMA else "",
                          "entropy": mean("entropy"), "previous_token": mean("previous token"), "copy": mean("copy"),
