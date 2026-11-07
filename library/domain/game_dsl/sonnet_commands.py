@@ -186,7 +186,8 @@ def parse_answers(text: str) -> Dict[str, str]:
     return answers
 
 
-def collect() -> None:
+def collect(writer: str = "sonnet") -> None:
+    """`writer`: the model the agents ran on (sonnet; haiku for tasks_147-151, a cost test on 2026-11-07)."""
     done = load_done()
     problems = {}
     for line in open(OUTPUT / "problems.jsonl", encoding="utf-8"):
@@ -207,7 +208,7 @@ def collect() -> None:
                 problem = problems[problem_id]
                 style = style_of(problem)
                 command = check_command(problem, style, answers[problem_id])
-                record = {"id": problem_id, "style": style, "command": command, "attempts": 1, "writer": "sonnet",
+                record = {"id": problem_id, "style": style, "command": command, "attempts": 1, "writer": writer,
                           "target_crc": target_crc(problem)}
                 if command is None:
                     record["last_reply"] = answers[problem_id][:300]
@@ -223,6 +224,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "tasks":
         write_tasks(int(sys.argv[2]) if len(sys.argv) > 2 else 300)
     elif len(sys.argv) > 1 and sys.argv[1] == "collect":
-        collect()
+        collect(sys.argv[2] if len(sys.argv) > 2 else "sonnet")
     else:
         print(__doc__)
