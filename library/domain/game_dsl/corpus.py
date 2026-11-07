@@ -13,6 +13,7 @@ from collections import Counter
 from . import FENCE, PACKAGE
 from .commands import load_done
 from .problems import OUTPUT, student_input
+from .sonnet_commands import target_crc
 
 CORPUS = PACKAGE / "corpus.jsonl"
 SEED = 0
@@ -26,6 +27,8 @@ def records():
         command = commands.get(problem["id"])
         if command is None or command["command"] is None:
             continue
+        if "target_crc" in command and command["target_crc"] != target_crc(problem):
+            continue        # written for an older problems.jsonl
         shown = problem if command["style"] in ("terse", "detailed") else {**problem, "named_blocks": {}}
         found.append({"text": student_input(shown, command["command"]),
                       "target": f"{FENCE}\n{problem['target']}\n{FENCE}", "teacher": "forced",

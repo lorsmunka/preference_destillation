@@ -17,6 +17,8 @@ from library.domain.game_dsl.language import defined_ids, hollow, parse_fragment
 from library.domain.game_dsl.manual import load_reference
 from library.domain.game_dsl.problems import insert_candidates, make_edit, make_insert, student_input
 from library.domain.game_dsl.versions import game_names, make_version
+from library.domain.game_dsl.commands import check_command
+from library.domain.game_dsl.sonnet_commands import parse_answers, task_text
 
 BALL = ('Window {\n size(8, 8)\n Entity { id("ball") startPosition(400, 400) color("4ade80") Type { circle(20) }\n'
         '  Movement { speed(4) AutoMove { direction(1, 1) } }\n'
@@ -108,6 +110,20 @@ class VersionsAndProblemsTest(unittest.TestCase):
         edit = make_edit(GAME, root, node, [root], "t|e0", random_generator, ["coin", "hurt"])
         self.assertIsNotNone(edit)
         self.assertNotEqual(edit["before"], edit["target"])
+
+    def test_sonnet_task_and_answers(self):
+        root = parse_program(GAME)
+        entity_cut = next(candidate for candidate in insert_candidates(root) if candidate[0] == "entity"
+                          and candidate[1][-1].children[candidate[2]].child("id").first_string() == "rock")
+        problem = {**make_insert(GAME, root, entity_cut, "t|i0"), "game": "t"}
+        text = task_text(3, problem, "terse")
+        self.assertTrue(text.startswith("===== TASK 3 | id=t|i0 | /insert | style=terse\n"))
+        self.assertIn("#names: #rock (new: not in NAMES), #hero", text)
+        self.assertIn("#names: none", task_text(3, problem, "loose"))
+        answers = parse_answers("3\tt|i0\t/insert a falling #rock that hurts #hero\n4\tbroken line\n")
+        self.assertEqual(answers, {"t|i0": "/insert a falling #rock that hurts #hero"})
+        self.assertEqual(check_command(problem, "terse", answers["t|i0"]), answers["t|i0"])
+        self.assertIsNone(check_command(problem, "terse", "/insert Entity { id(\"rock\") }"))
 
 
 @unittest.skipUnless(CHECKER.exists() and HAVE_HUMAN, "the app's compiler is not built")

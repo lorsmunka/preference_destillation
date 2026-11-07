@@ -30,11 +30,15 @@ COMMAND  /insert ... or /edit ...
    order) x ~30; `/insert` cuts at every level (~40% Entity, 30% event, 30% action list, some Window items);
    `/edit` pairs from rule-based changes (speed, size, colour, shape, movement kind, an action added or removed,
    an event added), where the target is always the real block and the "before" is the changed one.
-3. **Gemma** (rented card, bf16): (a) words each problem's command in a mix of styles: terse `#name` ~50%, loose
-   plain English ~25%, detailed ~15%, empty (autocomplete, /insert only) ~10%; (b) scores the real block given
-   the short input + command (teacher-forced) = the teacher data; (c) on the test problems also writes its own
-   answer, the reference the student is compared with.
-4. **Students** (local 4070): output vocabulary, corpus, KL + CE at a few sizes; report compile rate, clean rate,
+3. **Commands** (Claude Sonnet agents, `sonnet_commands.py`; decided 2026-11-07 after a 60-problem test: 60/60
+   pass the command check vs Gemma's 53/60, and they say what the code does instead of reading the syntax back):
+   each problem's command in a mix of styles: terse `#name` ~50%, loose plain English ~25%, detailed ~15%, empty
+   (autocomplete, /insert only) ~10%. ~2k Sonnet tokens per command. Pilot: 300 (281 asked + 19 empty).
+4. **Gemma** (rented card, bf16; redesign 2026-11-07): Gemma WRITES each block from prompt + short input + command,
+   keeping its probabilities while it writes (no separate scoring pass); the app's compiler + checks drop the bad
+   ones; the student learns Gemma's blocks. Also measured: how often Gemma's block equals the real one (AST, exact
+   and with names / numbers ignored). The same prompt for the training blocks and the test reference answers.
+5. **Students** (local 4070): output vocabulary, corpus, KL + CE at a few sizes; report compile rate, clean rate,
    match with the real block, all next to Gemma's own answers.
 
 ## Splits
@@ -62,6 +66,9 @@ median 7 repeats, a plain wall 1,750x); 45% of the test targets are shapes never
 4. 10 versions per game instead of 30, each shape capped at ~20 problems.
 Then the price test (~1 h): commands, scoring with the full manual / reference_card.md / nothing, Gemma's own
 answers on test problems from the short input.
+Price test v2 (Gemma writes; ~30 min): reference_card.md / full manual / the manual read once and shared by the
+batch (must give identical output) / a moving card (the user's idea, 2026-11-07: only the card lines the problem
+needs, chosen from what the model sees, never from the real block); compile + clean rate and cost per arm.
 
 ## Files
 
