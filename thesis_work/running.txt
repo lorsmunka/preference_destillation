@@ -1,10 +1,12 @@
 STATUS 2026-10-13 (pick up here)
   TRACKER 2026-11-07 (what must land before turn-in; user: "done by 11-09 night, or 11-10 morning")
     item                               state                                   next / needs
-    #5 math KL->CE seed 3 (local GPU)  pass 1 of 10, ~1.5 h/pass, from 01:18    pause when the user leaves; ~13.5 h left
-    #4 math data curve 6k/20k/65k      upload 24 of 102 GB (home ~5 MB/s)      finish upload, verify sizes + sha256, test
-                                       volume klhiijtesk EU-RO-1, upload pod    self-stop, then cloud_math_data_curve.sh on a
-                                       k0gucvam8egnyt ($0.14/h)                 ~$0.89/h card (~5 h, cap 9 h); download runs
+    #5 math KL->CE seed 3 (local GPU)  PAUSED 04:03 (user asleep): pass 3,       resume: rerun `experiments/math_ce_vs_kl.py kl-to-ce 3`
+                                       batch 1884; ~70 min/pass                  (its ExitListener clears STOP); ~8 h left
+    #4 math data curve 6k/20k/65k      upload STOPPED 04:03 at 1,517 files /     new CPU pod on the volume; resend files whose size
+                                       63 of 102 GB; volume klhiijtesk EU-RO-1  differs (the last one is partial) + the rest
+                                       kept ($0.031/h); upload pod deleted      (~2.5 h), sha256 all, test the self-stop, then
+                                                                                cloud_math_data_curve.sh on a ~$0.89/h card (~5 h)
     #3 Gemma 4 bf16 reference          DONE (vocab share, Gemma's answers)      students' agreement on the 900: report step, CPU ~1 h
     #1 coding student failure          pass 2 (a),(b) saved; (c) + pass 10 cut  rerun alone, CPU ~2 h (user's go: memory guard)
                                        by the low-memory guard
@@ -19,7 +21,20 @@ STATUS 2026-10-13 (pick up here)
                                        nothing .19; top guess = real .923/.910/.860,
                                        CE .49/.62/.97; answers manual 5.8 s (14/16
                                        parse), card 1.6 s (11/16)
-    money: $26 credit at 01:00 (user may add $100). Delete every pod and volume when done.
+    GAME AGENT REDESIGN (user 2026-11-07 04:00: "Gemma never writes the training blocks ... that would be kind of
+            the point, the whole thesis"): Gemma WRITES each block (keeping its probabilities while writing), the
+            app's compiler + checks filter, the student learns Gemma's blocks; compared with Gemma's answers. Same
+            prompt (card or manual) for writing and for the reference answers (user: mixing prompts = two teachers).
+            Commands: Sonnet agents from the real blocks (pilot 300 first; user's $100 plan), terse edits from the
+            rules. TOMORROW FIRST: price test v2 (~30 min, ~$1.5): Gemma writes ~200 blocks with card and with manual
+            at batch 16-32, a read-once manual (prefix reuse, must give identical output), compiler + checks at home.
+            Target ~200k checked blocks (math-sized) if read-once works (~$75 on several cards), else ~80-100k (card);
+            more games for variety (~1 day of Claude agents). Tell the game session (preference-destillation-e4 or
+            the game one) about the switch.
+            RISK: no slack. Games 11-07 -> commands 11-07 night -> Gemma 11-08 (4 cards) -> students 11-08 night -> harness
+            numbers 11-09 night. A day's slip in the games moves everything past 11-10 morning.
+    money: ~$22 credit at 04:00 (user will add $100). Billing now: only the volume ($0.031/h). Delete every pod
+            and volume when done.
   CLOUD 2026-10-25 (user: math tutor first, "10k, train a simple neural net, if it works great, if not we
             later make more examples"; cloud runs may go unattended, the prepaid credit caps the spend):
             RunPod pod 0dinvacw6k48sj (A100 SXM 80 GB, $1.79/h, EUR-IS-1) + network volume ghqjx77s5o
