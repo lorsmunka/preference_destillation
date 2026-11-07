@@ -12,8 +12,13 @@ STATUS 2026-10-13 (pick up here)
     #6 math attention per pass s2-s3   not started (CSV bug fixed e3414df)      CPU ~1 h, 11-08
     #7 coding agent on 8 projects      on hold: user "I let the coding agent go" (2026-11-07); ask before running
     coding agent CE m                  final: stopped after pass 4               nothing
-    GAME AGENT (game_dsl, Flutter)     price test RUNNING (pod poaejs4dgzf56p,  card vs manual vs nothing -> then the Gemma
-                                       RTX PRO 6000 $2.49/h, ~25 min)           pass (~13 h, ~$35), students, harness numbers
+    GAME AGENT (game_dsl, Flutter)     price test DONE (RTX PRO 6000, ~35 min,  full pass ~17 h / ~$43 on one PRO 6000 (commands
+                                       pod deleted; runs/game_price_test/):     6.4 h + scoring with the card 7.8 h + Gemma's answers
+                                       commands .44 s, 86% kept first try;      on the 1,813 test problems with the manual 2.9 h);
+                                       scoring s/record manual 4.34 / card .54 / then students, harness numbers. Waits for the user's go.
+                                       nothing .19; top guess = real .923/.910/.860,
+                                       CE .49/.62/.97; answers manual 5.8 s (14/16
+                                       parse), card 1.6 s (11/16)
     money: $26 credit at 01:00 (user may add $100). Delete every pod and volume when done.
   CLOUD 2026-10-25 (user: math tutor first, "10k, train a simple neural net, if it works great, if not we
             later make more examples"; cloud runs may go unattended, the prepaid credit caps the spend):
