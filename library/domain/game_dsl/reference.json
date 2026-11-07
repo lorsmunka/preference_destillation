@@ -1,0 +1,908 @@
+{
+ "placements": [
+  [
+   "actions",
+   "applyimpulse"
+  ],
+  [
+   "actions",
+   "bounceback"
+  ],
+  [
+   "actions",
+   "broadcast"
+  ],
+  [
+   "actions",
+   "burst"
+  ],
+  [
+   "actions",
+   "changevar"
+  ],
+  [
+   "actions",
+   "clearfullboxes"
+  ],
+  [
+   "actions",
+   "clearfullcolumns"
+  ],
+  [
+   "actions",
+   "clearfullrows"
+  ],
+  [
+   "actions",
+   "delay"
+  ],
+  [
+   "actions",
+   "deletecollider"
+  ],
+  [
+   "actions",
+   "deleteentity"
+  ],
+  [
+   "actions",
+   "flash"
+  ],
+  [
+   "actions",
+   "gameover"
+  ],
+  [
+   "actions",
+   "gridstep"
+  ],
+  [
+   "actions",
+   "lock"
+  ],
+  [
+   "actions",
+   "loopcount"
+  ],
+  [
+   "actions",
+   "nextlevel"
+  ],
+  [
+   "actions",
+   "ramp"
+  ],
+  [
+   "actions",
+   "randomaction"
+  ],
+  [
+   "actions",
+   "restart"
+  ],
+  [
+   "actions",
+   "retarget"
+  ],
+  [
+   "actions",
+   "rotate"
+  ],
+  [
+   "actions",
+   "setcolor"
+  ],
+  [
+   "actions",
+   "setdirection"
+  ],
+  [
+   "actions",
+   "setenable"
+  ],
+  [
+   "actions",
+   "setopacity"
+  ],
+  [
+   "actions",
+   "setposition"
+  ],
+  [
+   "actions",
+   "setscale"
+  ],
+  [
+   "actions",
+   "settext"
+  ],
+  [
+   "actions",
+   "setvelocity"
+  ],
+  [
+   "actions",
+   "setvisible"
+  ],
+  [
+   "actions",
+   "shake"
+  ],
+  [
+   "actions",
+   "slide"
+  ],
+  [
+   "actions",
+   "slideall"
+  ],
+  [
+   "actions",
+   "sound"
+  ],
+  [
+   "actions",
+   "spawn"
+  ],
+  [
+   "actions",
+   "spawnatempty"
+  ],
+  [
+   "actions",
+   "spawnhere"
+  ],
+  [
+   "actions",
+   "updatebar"
+  ],
+  [
+   "actions",
+   "updatespeed"
+  ],
+  [
+   "actions",
+   "whenbar"
+  ],
+  [
+   "actions",
+   "whenvar"
+  ],
+  [
+   "automove",
+   "direction"
+  ],
+  [
+   "bar",
+   "initial"
+  ],
+  [
+   "bar",
+   "onvalue"
+  ],
+  [
+   "control",
+   "movementcontrol"
+  ],
+  [
+   "delay",
+   "actions"
+  ],
+  [
+   "entity",
+   "color"
+  ],
+  [
+   "entity",
+   "door"
+  ],
+  [
+   "entity",
+   "events"
+  ],
+  [
+   "entity",
+   "facing"
+  ],
+  [
+   "entity",
+   "gravity"
+  ],
+  [
+   "entity",
+   "hostile"
+  ],
+  [
+   "entity",
+   "id"
+  ],
+  [
+   "entity",
+   "key"
+  ],
+  [
+   "entity",
+   "movement"
+  ],
+  [
+   "entity",
+   "oneway"
+  ],
+  [
+   "entity",
+   "pushable"
+  ],
+  [
+   "entity",
+   "solid"
+  ],
+  [
+   "entity",
+   "startposition"
+  ],
+  [
+   "entity",
+   "template"
+  ],
+  [
+   "entity",
+   "type"
+  ],
+  [
+   "entity",
+   "var"
+  ],
+  [
+   "events",
+   "oncollision"
+  ],
+  [
+   "events",
+   "onelapsedtime"
+  ],
+  [
+   "events",
+   "ongridblocked"
+  ],
+  [
+   "events",
+   "ongridstep"
+  ],
+  [
+   "events",
+   "onsignal"
+  ],
+  [
+   "events",
+   "onswipe"
+  ],
+  [
+   "events",
+   "ontapped"
+  ],
+  [
+   "events",
+   "sequence"
+  ],
+  [
+   "gridmove",
+   "direction"
+  ],
+  [
+   "hostilepatrol",
+   "dwell"
+  ],
+  [
+   "hostilepatrol",
+   "waypoint"
+  ],
+  [
+   "level",
+   "dpad"
+  ],
+  [
+   "level",
+   "entity"
+  ],
+  [
+   "level",
+   "goal"
+  ],
+  [
+   "level",
+   "hostilepatrol"
+  ],
+  [
+   "level",
+   "joystick"
+  ],
+  [
+   "level",
+   "paddle"
+  ],
+  [
+   "level",
+   "wallbox"
+  ],
+  [
+   "level",
+   "wave"
+  ],
+  [
+   "movement",
+   "automove"
+  ],
+  [
+   "movement",
+   "chase"
+  ],
+  [
+   "movement",
+   "control"
+  ],
+  [
+   "movement",
+   "gridmove"
+  ],
+  [
+   "movement",
+   "path"
+  ],
+  [
+   "movement",
+   "speed"
+  ],
+  [
+   "oncollision",
+   "actions"
+  ],
+  [
+   "onelapsedtime",
+   "actions"
+  ],
+  [
+   "onelapsedtime",
+   "repeatcount"
+  ],
+  [
+   "ongridblocked",
+   "actions"
+  ],
+  [
+   "ongridstep",
+   "actions"
+  ],
+  [
+   "onsignal",
+   "actions"
+  ],
+  [
+   "onswipe",
+   "actions"
+  ],
+  [
+   "ontapped",
+   "actions"
+  ],
+  [
+   "onvalue",
+   "actions"
+  ],
+  [
+   "path",
+   "dwell"
+  ],
+  [
+   "path",
+   "waypoint"
+  ],
+  [
+   "phase",
+   "actions"
+  ],
+  [
+   "randomaction",
+   "actions"
+  ],
+  [
+   "sequence",
+   "phase"
+  ],
+  [
+   "type",
+   "circle"
+  ],
+  [
+   "type",
+   "cross"
+  ],
+  [
+   "type",
+   "diamond"
+  ],
+  [
+   "type",
+   "polygon"
+  ],
+  [
+   "type",
+   "rectangle"
+  ],
+  [
+   "type",
+   "ring"
+  ],
+  [
+   "type",
+   "star"
+  ],
+  [
+   "type",
+   "tetromino"
+  ],
+  [
+   "type",
+   "text"
+  ],
+  [
+   "type",
+   "triangle"
+  ],
+  [
+   "wave",
+   "actions"
+  ],
+  [
+   "whenbar",
+   "actions"
+  ],
+  [
+   "whenvar",
+   "actions"
+  ],
+  [
+   "window",
+   "background"
+  ],
+  [
+   "window",
+   "bar"
+  ],
+  [
+   "window",
+   "camerafollow"
+  ],
+  [
+   "window",
+   "dpad"
+  ],
+  [
+   "window",
+   "entity"
+  ],
+  [
+   "window",
+   "goal"
+  ],
+  [
+   "window",
+   "gravity"
+  ],
+  [
+   "window",
+   "hostilepatrol"
+  ],
+  [
+   "window",
+   "joystick"
+  ],
+  [
+   "window",
+   "level"
+  ],
+  [
+   "window",
+   "lives"
+  ],
+  [
+   "window",
+   "music"
+  ],
+  [
+   "window",
+   "paddle"
+  ],
+  [
+   "window",
+   "size"
+  ],
+  [
+   "window",
+   "wallbox"
+  ],
+  [
+   "window",
+   "wave"
+  ],
+  [
+   "window",
+   "winat"
+  ],
+  [
+   "window",
+   "worldsize"
+  ]
+ ],
+ "arities": {
+  "actions": [
+   0
+  ],
+  "applyimpulse": [
+   2,
+   3
+  ],
+  "automove": [
+   0
+  ],
+  "background": [
+   1
+  ],
+  "bar": [
+   0,
+   1
+  ],
+  "bounceback": [
+   0,
+   1
+  ],
+  "broadcast": [
+   1
+  ],
+  "burst": [
+   2,
+   3
+  ],
+  "camerafollow": [
+   1
+  ],
+  "changevar": [
+   2
+  ],
+  "chase": [
+   1,
+   2
+  ],
+  "circle": [
+   1
+  ],
+  "clearfullboxes": [
+   7,
+   8
+  ],
+  "clearfullcolumns": [
+   6,
+   7
+  ],
+  "clearfullrows": [
+   6,
+   7
+  ],
+  "color": [
+   1
+  ],
+  "control": [
+   0
+  ],
+  "cross": [
+   2,
+   3
+  ],
+  "delay": [
+   1
+  ],
+  "deletecollider": [
+   0
+  ],
+  "deleteentity": [
+   0,
+   1
+  ],
+  "diamond": [
+   2
+  ],
+  "direction": [
+   2
+  ],
+  "door": [
+   1,
+   2
+  ],
+  "dpad": [
+   1,
+   2
+  ],
+  "dwell": [
+   1
+  ],
+  "entity": [
+   0
+  ],
+  "events": [
+   0
+  ],
+  "facing": [
+   1
+  ],
+  "flash": [
+   2,
+   3
+  ],
+  "gameover": [
+   1
+  ],
+  "goal": [
+   6
+  ],
+  "gravity": [
+   1
+  ],
+  "gridmove": [
+   1,
+   2
+  ],
+  "gridstep": [
+   2,
+   3
+  ],
+  "hostile": [
+   2,
+   3
+  ],
+  "hostilepatrol": [
+   5
+  ],
+  "id": [
+   1
+  ],
+  "initial": [
+   1
+  ],
+  "joystick": [
+   3
+  ],
+  "key": [
+   1,
+   2,
+   3
+  ],
+  "level": [
+   0
+  ],
+  "lives": [
+   2,
+   3
+  ],
+  "lock": [
+   1
+  ],
+  "loopcount": [
+   1
+  ],
+  "movement": [
+   0
+  ],
+  "movementcontrol": [
+   1
+  ],
+  "music": [
+   1
+  ],
+  "nextlevel": [
+   0
+  ],
+  "oncollision": [
+   0,
+   1
+  ],
+  "onelapsedtime": [
+   0,
+   1
+  ],
+  "oneway": [
+   1
+  ],
+  "ongridblocked": [
+   0
+  ],
+  "ongridstep": [
+   0
+  ],
+  "onsignal": [
+   1
+  ],
+  "onswipe": [
+   0,
+   1
+  ],
+  "ontapped": [
+   0,
+   1
+  ],
+  "onvalue": [
+   1
+  ],
+  "paddle": [
+   5
+  ],
+  "path": [
+   0
+  ],
+  "phase": [
+   2
+  ],
+  "polygon": [
+   2
+  ],
+  "pushable": [
+   1
+  ],
+  "ramp": [
+   4
+  ],
+  "randomaction": [
+   0
+  ],
+  "rectangle": [
+   2
+  ],
+  "repeatcount": [
+   1
+  ],
+  "restart": [
+   0
+  ],
+  "retarget": [
+   1
+  ],
+  "ring": [
+   1,
+   2
+  ],
+  "rotate": [
+   1
+  ],
+  "sequence": [
+   0
+  ],
+  "setcolor": [
+   1
+  ],
+  "setdirection": [
+   3
+  ],
+  "setenable": [
+   1,
+   2
+  ],
+  "setopacity": [
+   1,
+   2
+  ],
+  "setposition": [
+   3,
+   4
+  ],
+  "setscale": [
+   1,
+   2
+  ],
+  "settext": [
+   2
+  ],
+  "setvelocity": [
+   2,
+   3
+  ],
+  "setvisible": [
+   1,
+   2
+  ],
+  "shake": [
+   2
+  ],
+  "size": [
+   2
+  ],
+  "slide": [
+   2,
+   3,
+   4
+  ],
+  "slideall": [
+   4,
+   5,
+   6
+  ],
+  "solid": [
+   1
+  ],
+  "sound": [
+   1
+  ],
+  "spawn": [
+   3
+  ],
+  "spawnatempty": [
+   6
+  ],
+  "spawnhere": [
+   1,
+   3
+  ],
+  "speed": [
+   1
+  ],
+  "star": [
+   2,
+   3
+  ],
+  "startposition": [
+   2
+  ],
+  "template": [
+   1
+  ],
+  "tetromino": [
+   2
+  ],
+  "text": [
+   2
+  ],
+  "triangle": [
+   2
+  ],
+  "type": [
+   0
+  ],
+  "updatebar": [
+   1,
+   2
+  ],
+  "updatespeed": [
+   1
+  ],
+  "var": [
+   2
+  ],
+  "wallbox": [
+   4,
+   5,
+   6
+  ],
+  "wave": [
+   1,
+   2
+  ],
+  "waypoint": [
+   2
+  ],
+  "whenbar": [
+   3
+  ],
+  "whenvar": [
+   3
+  ],
+  "winat": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "window": [
+   0
+  ],
+  "worldsize": [
+   2
+  ]
+ }
+}

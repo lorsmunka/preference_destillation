@@ -63,3 +63,6 @@ library/domain/code_agent/items.jsonl
 thesis_work/new_thesis/notes_before_submitting.md
 thesis_work/new_thesis/thesis_preview.docx
 thesis_work/new_thesis/thesis_preview.pdf
+
+# game-language agent: derived problem files (rebuilt by problems.py)
+library/domain/game_dsl/problems/

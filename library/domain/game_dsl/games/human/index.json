@@ -1,0 +1,158 @@
+[
+ {
+  "slug": "last_light",
+  "name": "Last Light",
+  "description": "The flagship. A survivor-like across three nights: steer a lantern spirit with the joystick while its weapons fire on their own. Gems level you up: the night freezes while you tap the upgrade you want. Each night ends with a boss.",
+  "split": "train"
+ },
+ {
+  "slug": "sundown_herd",
+  "name": "Sundown Herd",
+  "description": "Five foals have wandered off across the valley. Ride out, find them by their sparkle and lead them home in a line behind you before the sun sets. After dusk the wolves come out: if one reaches you, the foals bolt.",
+  "split": "test"
+ },
+ {
+  "slug": "moonward",
+  "name": "Moonward",
+  "description": "A bouncing climb from a sunset meadow to the moon. The spark bounces by itself; hold it and slide to steer onto the next platform. Springs launch you, grey platforms crumble, and the night rises from below, faster and faster.",
+  "split": "train"
+ },
+ {
+  "slug": "meteor_run",
+  "name": "Meteor Run",
+  "description": "Drag a ship to dodge three escalating waves of meteors. 3 lives; ride out the whole storm to win.",
+  "split": "train"
+ },
+ {
+  "slug": "bubble_storm",
+  "name": "Bubble Storm",
+  "description": "Three sizes of bubbles rise from the bottom. Tap to pop (+1). Let one reach the top and it costs you (-1). Reach 30 to win, -10 to lose.",
+  "split": "train"
+ },
+ {
+  "slug": "reaction_test",
+  "name": "Reaction Test",
+  "description": "Wait for the prompt to flip to NOW, then tap -- ten clean taps win. Tap too early and it is a strike; three strikes out.",
+  "split": "test"
+ },
+ {
+  "slug": "lucky_slots",
+  "name": "Lucky Slots",
+  "description": "Bet a slot, then SPIN -- three balls drop. The gold jackpot ball in your slot is the big win, the silver one a smaller win; miss both and bust.",
+  "split": "train"
+ },
+ {
+  "slug": "dungeon_escape",
+  "name": "Dungeon Escape",
+  "description": "Three sequential dungeons -- drag your hero past chasing guards, grab the key to open the door, reach the exit. Clear all three.",
+  "split": "train"
+ },
+ {
+  "slug": "boss_duel",
+  "name": "Boss Duel",
+  "description": "Weave a puck into the boss to chip its HP while dodging its telegraphed, homing attacks. One-finger drag.",
+  "split": "train"
+ },
+ {
+  "slug": "minesweeper",
+  "name": "Minesweeper",
+  "description": "Three sequential 5x5 boards. Tap tiles to uncover their mine counts; clear 20 to advance. Clear all three boards to win.",
+  "split": "train"
+ },
+ {
+  "slug": "grid_run",
+  "name": "Grid Run",
+  "description": "Grid mode: three escalating mazes back-to-back. Steer the cell-stepping runner past the guards to each exit; clear all three to win.",
+  "split": "train"
+ },
+ {
+  "slug": "snake",
+  "name": "Snake",
+  "description": "Grid mode: classic snake. Steer the head to eat 8 foods -- it grows one segment per food. Bite your own tail and it is over.",
+  "split": "test"
+ },
+ {
+  "slug": "pac_man",
+  "name": "Pac-Man",
+  "description": "Grid mode: steer Pac through a maze, eat all 34 dots, dodge three ghosts. Power pellets turn the ghosts scared. 3 lives.",
+  "split": "train"
+ },
+ {
+  "slug": "tower_defense",
+  "name": "Tower Defense",
+  "description": "Tap enemies marching a snaking path to your base. Grunts drop in one tap, brutes in three. Three escalating waves; hold the base or lose 5 lives.",
+  "split": "test"
+ },
+ {
+  "slug": "brick_breaker",
+  "name": "Brick Breaker",
+  "description": "Drag the paddle, bounce the ball, break the bricks. Stage 1 is soft bricks; stage 2 is stone (two hits each). Drop the ball and the run ends.",
+  "split": "test"
+ },
+ {
+  "slug": "grid_dungeon",
+  "name": "Grid Dungeon",
+  "description": "Grid mode crawl: three rooms with walls. Steer the hero, grab two keys to open the doors, scoop the gold, reach the exit. Two patrolling guards -- mind the marked danger lanes.",
+  "split": "train"
+ },
+ {
+  "slug": "plinko",
+  "name": "Plinko",
+  "description": "Tap the gold strip to drop a ball through a peg field. Five floor slots score 100/250/500/250/100 -- the middle is the jackpot. Hit 1500 to win.",
+  "split": "train"
+ },
+ {
+  "slug": "space_invaders",
+  "name": "Space Invaders",
+  "description": "A 5x6 formation marches sideways and steps down each pass. Drag the ship; it fires on its own. Clear every invader before any reach the bottom.",
+  "split": "train"
+ },
+ {
+  "slug": "pinball_lite",
+  "name": "Pinball-lite",
+  "description": "Two tap-flippers at the bottom kick the ball back into the bumper field. Three bumpers, gravity-driven ball, drop between the flippers and you lose a life.",
+  "split": "test"
+ },
+ {
+  "slug": "platformer",
+  "name": "Platformer",
+  "description": "Drag the hero left and right; tap LEFT or RIGHT pads to leap up-and-sideways. Gravity pulls you down; the orange ledges are one-way (jump through from below, land on from above). Reach the gold flag at the top.",
+  "split": "train"
+ },
+ {
+  "slug": "tetris",
+  "name": "Tetris",
+  "description": "Real Tetris on the engine: seven tetrominos drop into a 10x20 board; LEFT/RIGHT shift, ROTATE turns, DROP soft-drops. Clear 10 lines to win.",
+  "split": "train"
+ },
+ {
+  "slug": "sokoban",
+  "name": "Sokoban",
+  "description": "Grid-puzzle classic: push three brown boxes onto the gold target tiles. Boxes only move if the cell behind is empty; walls and other boxes cancel the push.",
+  "split": "test"
+ },
+ {
+  "slug": "2048",
+  "name": "2048",
+  "description": "Swipe LEFT/RIGHT/UP/DOWN to slide all tiles. Equal-value tiles merge into a doubled tile; a new tile drops on an empty cell after every swipe. Reach 128 to win.",
+  "split": "train"
+ },
+ {
+  "slug": "long_run",
+  "name": "Long Run",
+  "description": "Side-scroller: drag the runner up and down to dodge red barriers while the camera scrolls across a 5-screen-wide world. Reach the gold flag at the far east end.",
+  "split": "train"
+ },
+ {
+  "slug": "open_world",
+  "name": "Open World",
+  "description": "Top-down explorer: drag the hero anywhere on a 2x2 world. The camera follows in both axes. Pick up all five gold coins to win.",
+  "split": "test"
+ },
+ {
+  "slug": "star_forager",
+  "name": "Star Forager",
+  "description": "Joystick demo: fly a scout with the virtual analog stick, scoop all 8 gold orbs, and dodge two lane-sweeping drones. 3 lives.",
+  "split": "train"
+ }
+]
