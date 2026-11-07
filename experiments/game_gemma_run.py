@@ -104,25 +104,26 @@ def write():
 
 def prompts(skip_first=0):
     """For the second card (experiments/gemma_vllm_run.py): every input not written yet, after the first
-    `skip_first` of them in write()'s order (those stay with the first card), as the full teacher prompt with the
-    same token budget as write() -> vllm_prompts.jsonl (rebuilt each time)."""
+    `skip_first` lines of inputs.jsonl (those stay with the first card), as the full teacher prompt with the same
+    token budget as write() -> vllm_prompts.jsonl (rebuilt each time)."""
     from transformers import AutoTokenizer
     from library.shared.config import teacher_weights_path
     domain = GameDslDomain("card")
     tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path(TEACHER))
     written = {row["id"] for row in read_jsonl(WRITTEN)} | {row["id"] for row in read_jsonl(OUTPUT / "vllm_written.jsonl")
                                                             if row["reply"]}
-    todo = sorted([row for row in read_jsonl(INPUTS) if row["id"] not in written], key=lambda row: len(row["target"]))
+    todo = sorted([row for row in read_jsonl(INPUTS)[skip_first:] if row["id"] not in written],
+                  key=lambda row: len(row["target"]))
     rows = []
-    for row in todo[skip_first:]:
+    for row in todo:
         budget = min(domain.max_steps, int(len(tokenizer(row["target"], add_special_tokens=False)["input_ids"]) * 1.5) + 64)
         rows.append({"id": row["id"], "command": row["command"], "prompt": domain.teacher_prompt(row["text"]),
                      "budget": budget})
     path = OUTPUT / "vllm_prompts.jsonl"
     path.unlink(missing_ok=True)
     append_jsonl(path, rows)
-    print(f"{len(rows):,} prompts for the second card ({len(todo):,} not written, the first {skip_first:,} left "
-          f"to the first card) -> {path}")
+    print(f"{len(rows):,} prompts for the second card (the first {skip_first:,} inputs left to the first card) "
+          f"-> {path}")
 
 
 def check():
