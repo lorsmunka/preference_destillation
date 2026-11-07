@@ -1,4 +1,20 @@
 STATUS 2026-10-13 (pick up here)
+  TRACKER 2026-11-07 (what must land before turn-in; user: "done by 11-09 night, or 11-10 morning")
+    item                               state                                   next / needs
+    #5 math KL->CE seed 3 (local GPU)  pass 1 of 10, ~1.5 h/pass, from 01:18    pause when the user leaves; ~13.5 h left
+    #4 math data curve 6k/20k/65k      upload 24 of 102 GB (home ~5 MB/s)      finish upload, verify sizes + sha256, test
+                                       volume klhiijtesk EU-RO-1, upload pod    self-stop, then cloud_math_data_curve.sh on a
+                                       k0gucvam8egnyt ($0.14/h)                 ~$0.89/h card (~5 h, cap 9 h); download runs
+    #3 Gemma 4 bf16 reference          DONE (vocab share, Gemma's answers)      students' agreement on the 900: report step, CPU ~1 h
+    #1 coding student failure          pass 2 (a),(b) saved; (c) + pass 10 cut  rerun alone, CPU ~2 h (user's go: memory guard)
+                                       by the low-memory guard
+    #2 math end to end (8 students)    KL s1 898, CE s1 910 of 1,250; 6 to go   rerun after #1, CPU ~3.7 h (user's go)
+    #6 math attention per pass s2-s3   not started (CSV bug fixed e3414df)      CPU ~1 h, 11-08
+    #7 coding agent on 8 projects      on hold: user "I let the coding agent go" (2026-11-07); ask before running
+    coding agent CE m                  final: stopped after pass 4               nothing
+    GAME AGENT (game_dsl, Flutter)     price test RUNNING (pod poaejs4dgzf56p,  card vs manual vs nothing -> then the Gemma
+                                       RTX PRO 6000 $2.49/h, ~25 min)           pass (~13 h, ~$35), students, harness numbers
+    money: $26 credit at 01:00 (user may add $100). Delete every pod and volume when done.
   CLOUD 2026-10-25 (user: math tutor first, "10k, train a simple neural net, if it works great, if not we
             later make more examples"; cloud runs may go unattended, the prepaid credit caps the spend):
             RunPod pod 0dinvacw6k48sj (A100 SXM 80 GB, $1.79/h, EUR-IS-1) + network volume ghqjx77s5o
