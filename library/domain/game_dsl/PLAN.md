@@ -49,6 +49,20 @@ here.
 ~140 train games x ~30 versions x ~15 problems = ~60,000 problems. Gemma: commands + scoring ~8-12 h on an
 RTX PRO 6000 ($2.49/h), ~$20-30. Phase 1 = the same with ~5 versions per game, end to end, before scaling.
 
+## Next (decided 2026-11-07, not started: the user's usage was at 87%)
+
+Measured: the 54,331 train problems hold only 2,773 distinct block shapes (names, numbers, colours ignored;
+median 7 repeats, a plain wall 1,750x); 45% of the test targets are shapes never seen in train. So, in order:
+1. More games and shapes (the main lever for unseen games): a second round of agents, ~120 more games.
+2. More task types: `/fix` at the cursor like /edit (the block under the cursor broken by a rule: missing brace,
+   keyword in the wrong block, argument count, misspelling, random where it is fixed; the input adds the
+   compiler's or checker's message; the target is the real block); richer /edit kinds in both directions
+   (removals, movement swaps, retarget, wrap in a guard, add health, add effects).
+3. More ways of asking: 2-3 commands per problem in different styles (cheap; phrasing robustness only).
+4. 10 versions per game instead of 30, each shape capped at ~20 problems.
+Then the price test (~1 h): commands, scoring with the full manual / reference_card.md / nothing, Gemma's own
+answers on test problems from the short input.
+
 ## Files
 
 language.py (parser, checks, hollow), compiler.py (the app's compiler: qr_flutter/build/dsl_check/dsl_check.exe,
