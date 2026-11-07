@@ -102,6 +102,21 @@ STATUS 2026-10-13 (pick up here)
             the gap growing every pass (last +.018, +.016, ~3x KL's seed spread); better than CE at all 20 tests
             on error, 19 of 20 on accuracy. So ending on CE costs here: no support for the 0.9 -> 0.1 default.
             Seed 3 not started (needs ~13 h); the report waits for it (finished_seeds() == SEEDS).
+            Seed 3 started 2026-11-07 01:18 on the local GPU (chapter 9 plan #5; ~1.5 h per pass).
+  CHAPTER 9 PLAN (agents/work/experiment_plan_2026-11-06/plan.md; user 2026-11-07: rented card yes, $26 left):
+    #3 Gemma 4 bf16 reference (experiments/gemma_reference.py; RTX A6000 $0.59/h, ~40 min, deleted):
+            share of Gemma's probability inside the output vocabulary, teacher-forced, 500 test records per
+            agent: math mean .9996 (5th pct .99985), coding .9989 (5th pct .99955); top word inside .9997
+            both. Gemma's own first-turn answers (math_generalization_check's 900 problems, the students'
+            request): test 299/300, held-out shapes 300/300, SVAMP 287/300. Files runs/gemma_reference/.
+            Students' agreement with Gemma on the 900: not run yet (report step, CPU).
+    #4 data curve (experiments/math_data_curve.py + cloud_math_data_curve.sh): upload of its 102 GB to
+            volume klhiijtesk (EU-RO-1) runs at ~4-6 MB/s (home uplink); killed by the low-memory guard
+            at 17 GB (2026-11-07 01:45).
+    #1 coding failure (experiments/code_agent_failure.py): pass 2 parts (a), (b) saved; killed by the
+            low-memory guard in (c). Pass 2 in the harness: right file .041 (a random file .091), places
+            hit 6/1,112, 40% of scopes copied verbatim from training (Gemma 7%); teacher-forced file-name
+            tokens 10% right (CE 9.8).
   CODE AGENT KL VS CE (experiments/code_agent_ce_vs_kl.py, user 2026-11-05: "start the coding ones"):
             KL m done (10 passes; task accuracy .0025 at the last pass). CE m stopped 2026-11-06 22:26 after
             its pass 4 test (user: "we are literally just wasting resources"): both best at pass 2, then overfit;
