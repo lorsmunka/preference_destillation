@@ -19,11 +19,13 @@ const FONT = "Times New Roman";
 const GREY = "7F7F7F";
 
 const lines = fs.readFileSync(SOURCE, "utf8").replace(/\r\n/g, "\n").split("\n");
+// A chapter title: "N. Title" (any case; the heading style prints it in capitals, guide 2.3), starting with a capital
+// and not ending in a colon, so a numbered step such as "2. lépés:" is not taken for a chapter.
 function isChapter(line) {
-  const match = line.match(/^\d+\. (.+)$/);
+  const match = line.match(/^\d{1,2}\. (.+)$/);
   if (!match) return false;
   const title = match[1].split("(")[0].trim();
-  return title.length >= 5 && title === title.toUpperCase() && /[A-ZÁÉÍÓÖŐÚÜŰ]{3,}/.test(title);
+  return title.length >= 5 && /^[A-ZÁÉÍÓÖŐÚÜŰ]/.test(title) && !title.endsWith(":");
 }
 const isSubsection = (line) => /^\d+\.\d+(\.\d+)? \S/.test(line);
 
