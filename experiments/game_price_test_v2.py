@@ -139,7 +139,8 @@ def run():
 def report():
     from library.domain.game_dsl.gemma_writes import check_written, summary as check_summary
     from library.domain.game_dsl.problems import OUTPUT as PROBLEMS
-    rows = read_jsonl(OUTPUT / "written.jsonl")
+    commands = {row["id"]: row["command"] for row in read_jsonl(OUTPUT / "sample.jsonl")}
+    rows = [{**row, "command": commands[row["id"]]} for row in read_jsonl(OUTPUT / "written.jsonl")]
     ids = {row["id"] for row in rows}
     problems = {}
     for line in open(PROBLEMS / "problems.jsonl", encoding="utf-8"):

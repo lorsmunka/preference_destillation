@@ -39,10 +39,30 @@ def block_of(reply: str) -> Optional[str]:
     return block if block.strip() else None
 
 
-def spliced_game(source: str, problem: Dict, block: str) -> str:
-    """The version's game with `block` in place of the real block (the problem's "cut")."""
+def own_name(code: str) -> Optional[str]:
+    """The id of the Entity (or the name of the Bar) a block defines, None for any other block."""
+    try:
+        nodes = parse_fragment(code)
+    except ValueError:
+        return None
+    if len(nodes) != 1:
+        return None
+    if nodes[0].key == "entity" and nodes[0].child("id"):
+        return nodes[0].child("id").first_string()
+    return nodes[0].first_string() if nodes[0].key == "bar" else None
+
+
+def spliced_game(source: str, problem: Dict, block: str, command: str = "") -> str:
+    """The version's game with `block` in place of the real block (the problem's "cut"). When the real block
+    defined a name the command did not give (#name) and Gemma chose another one, the rest of the game is renamed to
+    Gemma's name: the user never said what to call it, so that is not Gemma's mistake."""
     start, end = problem["cut"]
-    return source[:start] + block.rstrip("\n") + "\n" + source[end:].lstrip("\n")
+    before, after = source[:start], source[end:].lstrip("\n")
+    real, written = own_name(problem["target"]), own_name(block)
+    if real and written and real != written and f"#{real}" not in command:
+        pattern = re.compile(r'"' + re.escape(real) + r'(?=[":])')
+        before, after = pattern.sub('"' + written, before), pattern.sub('"' + written, after)
+    return before + block.rstrip("\n") + "\n" + after
 
 
 def tree(nodes: List[Node], keep_values: bool):
@@ -84,7 +104,7 @@ def check_written(rows: List[Dict], problems: Dict[str, Dict]) -> List[Dict]:
         block = block_of(row["reply"])
         checked.append({**row, "block": block, "task": problem["task"], "kind": problem["kind"]})
         if block is not None:
-            games[str(index)] = spliced_game(sources[version_of(row["id"])], problem, block)
+            games[str(index)] = spliced_game(sources[version_of(row["id"])], problem, block, row.get("command", ""))
     found = check_sources(games) if games else {}
     for index, row in enumerate(checked):
         if row["block"] is None:

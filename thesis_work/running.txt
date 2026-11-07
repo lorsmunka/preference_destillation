@@ -25,6 +25,11 @@ STATUS 2026-10-13 (pick up here)
             the point, the whole thesis"): Gemma WRITES each block (keeping its probabilities while writing), the
             app's compiler + checks filter, the student learns Gemma's blocks; compared with Gemma's answers. Same
             prompt (card or manual) for writing and for the reference answers (user: mixing prompts = two teachers).
+            PRICE TEST V2 DONE 2026-11-07 (RTX PRO 6000, ~25 min, pod deleted; runs/game_price_test_v2/): Gemma
+            wrote all 300 pilot blocks with the fixed card; 75% pass the compiler + checks (edits 94%, action
+            inserts 98%, entity/event inserts ~60%, window items 41%); same as the real block 25% (shape 47%);
+            write 1.44 s + score .57 s per block = ~$17 per 10,000 kept blocks; scoring's top guess = Gemma's own
+            token 99.6% (same prompt); 18% of blocks hold tokens outside the old vocabulary (rebuild from Gemma's).
             SONNET PILOT DONE 2026-11-07: 300 commands (281 by 5 Sonnet agents + 19 empty), 281/281 pass the
             check, y-up fixed, ~2.2k Sonnet tokens per command, ~4 min; problems/commands.jsonl (committed).
             Commands: Sonnet agents from the real blocks (pilot 300 first; user's $100 plan), terse edits from the
