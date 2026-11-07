@@ -25,6 +25,8 @@ STATUS 2026-10-13 (pick up here)
             the point, the whole thesis"): Gemma WRITES each block (keeping its probabilities while writing), the
             app's compiler + checks filter, the student learns Gemma's blocks; compared with Gemma's answers. Same
             prompt (card or manual) for writing and for the reference answers (user: mixing prompts = two teachers).
+            SONNET PILOT DONE 2026-11-07: 300 commands (281 by 5 Sonnet agents + 19 empty), 281/281 pass the
+            check, y-up fixed, ~2.2k Sonnet tokens per command, ~4 min; problems/commands.jsonl (committed).
             Commands: Sonnet agents from the real blocks (pilot 300 first; user's $100 plan), terse edits from the
             rules. TOMORROW FIRST: price test v2 (~30 min, ~$1.5): Gemma writes ~200 blocks with card and with manual
             at batch 16-32, a read-once manual (prefix reuse, must give identical output), compiler + checks at home.

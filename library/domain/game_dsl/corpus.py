@@ -1,5 +1,5 @@
-"""The corpus: one record per problem that has a usable command. text = the short input with the command (a loose
-or empty command has no named blocks: the app only fetches the code of #names); target = the real block in a code
+"""The corpus: one record per problem that has a usable command. text = the short input with the command (the
+code of the command's #names only, as the app fetches it; none for a loose or empty command); target = the real block in a code
 fence; Gemma scores it teacher-forced. Train records shuffled first, then test (the test set is the batch
 directory's tail; each record's split label wins anyway).
 
@@ -12,7 +12,7 @@ from collections import Counter
 
 from . import FENCE, PACKAGE
 from .commands import load_done
-from .problems import OUTPUT, student_input
+from .problems import OUTPUT, as_typed, student_input
 from .sonnet_commands import target_crc
 
 CORPUS = PACKAGE / "corpus.jsonl"
@@ -29,8 +29,7 @@ def records():
             continue
         if "target_crc" in command and command["target_crc"] != target_crc(problem):
             continue        # written for an older problems.jsonl
-        shown = problem if command["style"] in ("terse", "detailed") else {**problem, "named_blocks": {}}
-        found.append({"text": student_input(shown, command["command"]),
+        found.append({"text": student_input(as_typed(problem, command["command"]), command["command"]),
                       "target": f"{FENCE}\n{problem['target']}\n{FENCE}", "teacher": "forced",
                       "item_id": problem["id"], "split": problem["split"], "game": problem["game"],
                       "family": problem["family"], "origin": problem["origin"], "task": problem["task"],

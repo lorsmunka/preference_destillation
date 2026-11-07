@@ -208,6 +208,8 @@ def make_insert(source: str, root: Node, candidate, problem_id: str) -> Optional
     own_id = None
     if kind == "entity":
         own_id = parent.children[first].child("id").first_string()
+    elif parent.children[first].key == "bar":
+        own_id = parent.children[first].first_string()
     before = parent.children[first - 1] if first > 0 else None
     after = parent.children[last + 1] if last + 1 < len(parent.children) else None
     enclosing = next((node for node in reversed(path) if node.key in ("entity", "bar", "wave", "hostilepatrol")),
@@ -359,6 +361,13 @@ def student_input(problem: Dict, command: str) -> str:
         parts += [f"#{name}", code]
     parts.append(f"COMMAND {command}")
     return "\n".join(parts)
+
+
+def as_typed(problem: Dict, command: str) -> Dict:
+    """The problem as the app shows it once the command is typed: the app fetches the code of the #names in the
+    command only (so none for a loose or empty command)."""
+    typed = set(re.findall(r"#([A-Za-z_][A-Za-z0-9_]*)", command))
+    return {**problem, "named_blocks": {name: code for name, code in problem["named_blocks"].items() if name in typed}}
 
 
 # ---------- all of it ----------

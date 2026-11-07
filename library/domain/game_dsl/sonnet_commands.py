@@ -17,9 +17,10 @@ import re
 import sys
 import zlib
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .commands import COMMANDS, load_done, seen_text, style_of, check_command
+from .language import parse_fragment
 from .problems import OUTPUT
 
 TASKS = OUTPUT / "sonnet"
@@ -53,7 +54,7 @@ Every command:
 the code does (behaviour, not syntax);
 - has no code: no braces, no word directly followed by "(", no hex colours, no keyword written as code; colour names \
 ("dark red") are fine;
-- terse and detailed: # in front of every name on the task's "#names" line, and no other #names; loose: no # at all;
+- terse and detailed: mention the names that matter, each with # in front: the ones the code relies on (for /edit, only the ones the change involves). Only names on the task's "#names" line may get a #. loose: no # at all;
 - for /edit, says only what changes;
 - is specific enough that a programmer seeing the same context could write close to that code; terse and loose \
 need not give every number.
@@ -79,7 +80,20 @@ def names_line(problem: Dict, style: str) -> str:
     new = set(problem["new_names"])
     listed = [f"#{name}" + (" (new: not in NAMES)" if name in new else "")
               for name in dict.fromkeys(problem["new_names"] + problem["mentions"])]
+    own = edited_name(problem)
+    if own and own not in problem["mentions"]:
+        listed.append(f"#{own} (the block under the cursor)")
     return "#names: " + (", ".join(listed) if listed else "none")
+
+
+def edited_name(problem: Dict) -> Optional[str]:
+    """The id of the Entity (or the name of the Bar) an /edit rewrites, None for any other block."""
+    if problem["task"] != "edit":
+        return None
+    node = parse_fragment(problem["before"])[0]
+    if node.key == "entity" and node.child("id"):
+        return node.child("id").first_string()
+    return node.first_string() if node.key == "bar" else None
 
 
 def task_text(number: int, problem: Dict, style: str) -> str:

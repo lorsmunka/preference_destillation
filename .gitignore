@@ -65,4 +65,5 @@ thesis_work/new_thesis/thesis_preview.docx
 thesis_work/new_thesis/thesis_preview.pdf
 
 # game-language agent: derived problem files (rebuilt by problems.py)
-library/domain/game_dsl/problems/
+library/domain/game_dsl/problems/*
+!library/domain/game_dsl/problems/commands.jsonl
