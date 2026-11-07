@@ -102,12 +102,39 @@ def write():
               f"(budget {budget}), ~{hours_left:.1f} h left", flush=True)
 
 
+def prompts(skip_first=0):
+    """For the second card (experiments/gemma_vllm_run.py): every input not written yet, after the first
+    `skip_first` of them in write()'s order (those stay with the first card), as the full teacher prompt with the
+    same token budget as write() -> vllm_prompts.jsonl (rebuilt each time)."""
+    from transformers import AutoTokenizer
+    from library.shared.config import teacher_weights_path
+    domain = GameDslDomain("card")
+    tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path(TEACHER))
+    written = {row["id"] for row in read_jsonl(WRITTEN)} | {row["id"] for row in read_jsonl(OUTPUT / "vllm_written.jsonl")
+                                                            if row["reply"]}
+    todo = sorted([row for row in read_jsonl(INPUTS) if row["id"] not in written], key=lambda row: len(row["target"]))
+    rows = []
+    for row in todo[skip_first:]:
+        budget = min(domain.max_steps, int(len(tokenizer(row["target"], add_special_tokens=False)["input_ids"]) * 1.5) + 64)
+        rows.append({"id": row["id"], "command": row["command"], "prompt": domain.teacher_prompt(row["text"]),
+                     "budget": budget})
+    path = OUTPUT / "vllm_prompts.jsonl"
+    path.unlink(missing_ok=True)
+    append_jsonl(path, rows)
+    print(f"{len(rows):,} prompts for the second card ({len(todo):,} not written, the first {skip_first:,} left "
+          f"to the first card) -> {path}")
+
+
 def check():
     """At home (the app's compiler is a Windows program): every written block into its game, compiled and checked,
     CHECK_CHUNK games per compiler run; rebuilt from written.jsonl each time."""
     from library.domain.game_dsl.gemma_writes import BLOCKS, check_written, summary
     from library.domain.game_dsl.problems import OUTPUT as PROBLEMS
-    rows = read_jsonl(WRITTEN)
+    rows, seen = [], set()
+    for row in read_jsonl(WRITTEN) + [row for row in read_jsonl(OUTPUT / "vllm_written.jsonl") if row["reply"]]:
+        if row["id"] not in seen:        # both cards' replies (the first card's wins if both wrote one)
+            seen.add(row["id"])
+            rows.append(row)
     ids = {row["id"] for row in rows}
     problems = {}
     for line in open(PROBLEMS / "problems.jsonl", encoding="utf-8"):
@@ -143,4 +170,8 @@ def score():
 
 
 if __name__ == "__main__":
-    {"inputs": inputs, "write": write, "check": check, "score": score}[sys.argv[1] if len(sys.argv) > 1 else "check"]()
+    action = sys.argv[1] if len(sys.argv) > 1 else "check"
+    if action == "prompts":
+        prompts(int(sys.argv[2]) if len(sys.argv) > 2 else 0)
+    else:
+        {"inputs": inputs, "write": write, "check": check, "score": score}[action]()
