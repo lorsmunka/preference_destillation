@@ -62,13 +62,16 @@ the code does (behaviour, not syntax);
 need not give every number.
 
 Answers: append to {answers}, one line per task: <n><TAB><id><TAB><command> (the command on one line, no quotes \
-around it). Append every ~10 tasks (Bash: cat >> file <<'EOF' ... EOF); never rewrite the file. All tasks, in order.
+around it). Append after each part you read, all its tasks in one go (Bash: cat >> file <<'EOF' ... EOF; never \
+`cat >>` without the heredoc); never rewrite the file. All tasks, in order.
 """
 
+# few big reads and appends: each step re-reads the agent's whole conversation, so fewer steps cost fewer tokens
 AGENT_PROMPT = """Read the instructions at the top of {tasks} and do every task in it. The file is {size} KB: read it \
-in parts (Read with offset/limit, ~400 lines at a time). Do not run any code, touch any other file, or use git. When \
-done, reply with how many commands you wrote and any task whose instructions were impossible to follow (one line \
-each)."""
+in a few big parts (Read with offset/limit, ~800 lines at a time), and after each part append the answers to all the \
+tasks in it in one go (one heredoc; never `cat >>` without one). Do not run any code, touch any file other than the \
+answers file the instructions name, or use git. When done, reply with how many commands you wrote and any task \
+whose instructions were impossible to follow (one line each)."""
 
 
 def target_crc(problem: Dict) -> int:
