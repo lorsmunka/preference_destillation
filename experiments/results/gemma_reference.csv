@@ -1,0 +1,96 @@
+row,agent,what,value,count,note
+mass-math-mean share inside,math,mean share inside,0.9996,17661,"500 test records, 17661 positions"
+mass-math-median share inside,math,median share inside,1.0,17661,"500 test records, 17661 positions"
+mass-math-5th percentile share inside,math,5th percentile share inside,0.99985,17661,"500 test records, 17661 positions"
+mass-math-positions with < 90% inside,math,positions with < 90% inside,0.00074,17661,"500 test records, 17661 positions"
+"mass-math-record mean share, lowest",math,"record mean share, lowest",0.96402,17661,"500 test records, 17661 positions"
+mass-math-top word inside,math,top word inside,0.99972,17661,"500 test records, 17661 positions"
+mass-math-written word inside,math,written word inside,0.99983,17661,"500 test records, 17661 positions"
+"mass-math-mean share inside, explain",math,"mean share inside, explain",0.99916,17661,"500 test records, 17661 positions"
+"mass-math-mean share inside, route",math,"mean share inside, route",0.99992,17661,"500 test records, 17661 positions"
+"mass-math-mean share inside, solve",math,"mean share inside, solve",0.99997,17661,"500 test records, 17661 positions"
+mass-code-mean share inside,code,mean share inside,0.99891,15815,"500 test records, 15815 positions"
+mass-code-median share inside,code,median share inside,1.0,15815,"500 test records, 15815 positions"
+mass-code-5th percentile share inside,code,5th percentile share inside,0.99955,15815,"500 test records, 15815 positions"
+mass-code-positions with < 90% inside,code,positions with < 90% inside,0.00228,15815,"500 test records, 15815 positions"
+"mass-code-record mean share, lowest",code,"record mean share, lowest",0.96558,15815,"500 test records, 15815 positions"
+mass-code-top word inside,code,top word inside,0.99968,15815,"500 test records, 15815 positions"
+mass-code-written word inside,code,written word inside,1,15815,"500 test records, 15815 positions"
+"mass-code-mean share inside, explain",code,"mean share inside, explain",0.99838,15815,"500 test records, 15815 positions"
+"mass-code-mean share inside, find",code,"mean share inside, find",1.0,15815,"500 test records, 15815 positions"
+"mass-code-mean share inside, scope",code,"mean share inside, scope",0.99999,15815,"500 test records, 15815 positions"
+gemma-right-test,math,"Gemma right vs the true answer, test",0.9967,300,"first attempt, greedy, 120 tokens, no re-ask (the students' request)"
+gemma-right-heldout,math,"Gemma right vs the true answer, heldout",1,300,"first attempt, greedy, 120 tokens, no re-ask (the students' request)"
+gemma-right-svamp,math,"Gemma right vs the true answer, svamp",0.9567,300,"first attempt, greedy, 120 tokens, no re-ask (the students' request)"
+math-agent-kl-m-s1-test-agrees with Gemma's answer,math,"math-agent-kl-m-s1: agrees with Gemma's answer, test",0.7367,300,same request as Gemma's
+math-agent-kl-m-s1-test-right vs the true answer,math,"math-agent-kl-m-s1: right vs the true answer, test",0.74,300,same request as Gemma's
+math-agent-kl-m-s1-test-right where Gemma is right,math,"math-agent-kl-m-s1: right where Gemma is right, test",0.7391,299,same request as Gemma's
+math-agent-kl-m-s1-heldout-agrees with Gemma's answer,math,"math-agent-kl-m-s1: agrees with Gemma's answer, heldout",0.4267,300,same request as Gemma's
+math-agent-kl-m-s1-heldout-right vs the true answer,math,"math-agent-kl-m-s1: right vs the true answer, heldout",0.4267,300,same request as Gemma's
+math-agent-kl-m-s1-heldout-right where Gemma is right,math,"math-agent-kl-m-s1: right where Gemma is right, heldout",0.4267,300,same request as Gemma's
+math-agent-kl-m-s1-svamp-agrees with Gemma's answer,math,"math-agent-kl-m-s1: agrees with Gemma's answer, svamp",0.33,300,same request as Gemma's
+math-agent-kl-m-s1-svamp-right vs the true answer,math,"math-agent-kl-m-s1: right vs the true answer, svamp",0.33,300,same request as Gemma's
+math-agent-kl-m-s1-svamp-right where Gemma is right,math,"math-agent-kl-m-s1: right where Gemma is right, svamp",0.3415,287,same request as Gemma's
+math-agent-kl-m-s2-test-agrees with Gemma's answer,math,"math-agent-kl-m-s2: agrees with Gemma's answer, test",0.76,300,same request as Gemma's
+math-agent-kl-m-s2-test-right vs the true answer,math,"math-agent-kl-m-s2: right vs the true answer, test",0.7633,300,same request as Gemma's
+math-agent-kl-m-s2-test-right where Gemma is right,math,"math-agent-kl-m-s2: right where Gemma is right, test",0.7625,299,same request as Gemma's
+math-agent-kl-m-s2-heldout-agrees with Gemma's answer,math,"math-agent-kl-m-s2: agrees with Gemma's answer, heldout",0.43,300,same request as Gemma's
+math-agent-kl-m-s2-heldout-right vs the true answer,math,"math-agent-kl-m-s2: right vs the true answer, heldout",0.43,300,same request as Gemma's
+math-agent-kl-m-s2-heldout-right where Gemma is right,math,"math-agent-kl-m-s2: right where Gemma is right, heldout",0.43,300,same request as Gemma's
+math-agent-kl-m-s2-svamp-agrees with Gemma's answer,math,"math-agent-kl-m-s2: agrees with Gemma's answer, svamp",0.3433,300,same request as Gemma's
+math-agent-kl-m-s2-svamp-right vs the true answer,math,"math-agent-kl-m-s2: right vs the true answer, svamp",0.3433,300,same request as Gemma's
+math-agent-kl-m-s2-svamp-right where Gemma is right,math,"math-agent-kl-m-s2: right where Gemma is right, svamp",0.3589,287,same request as Gemma's
+math-agent-kl-m-s3-test-agrees with Gemma's answer,math,"math-agent-kl-m-s3: agrees with Gemma's answer, test",0.73,300,same request as Gemma's
+math-agent-kl-m-s3-test-right vs the true answer,math,"math-agent-kl-m-s3: right vs the true answer, test",0.7333,300,same request as Gemma's
+math-agent-kl-m-s3-test-right where Gemma is right,math,"math-agent-kl-m-s3: right where Gemma is right, test",0.7324,299,same request as Gemma's
+math-agent-kl-m-s3-heldout-agrees with Gemma's answer,math,"math-agent-kl-m-s3: agrees with Gemma's answer, heldout",0.4333,300,same request as Gemma's
+math-agent-kl-m-s3-heldout-right vs the true answer,math,"math-agent-kl-m-s3: right vs the true answer, heldout",0.4333,300,same request as Gemma's
+math-agent-kl-m-s3-heldout-right where Gemma is right,math,"math-agent-kl-m-s3: right where Gemma is right, heldout",0.4333,300,same request as Gemma's
+math-agent-kl-m-s3-svamp-agrees with Gemma's answer,math,"math-agent-kl-m-s3: agrees with Gemma's answer, svamp",0.3467,300,same request as Gemma's
+math-agent-kl-m-s3-svamp-right vs the true answer,math,"math-agent-kl-m-s3: right vs the true answer, svamp",0.3467,300,same request as Gemma's
+math-agent-kl-m-s3-svamp-right where Gemma is right,math,"math-agent-kl-m-s3: right where Gemma is right, svamp",0.3624,287,same request as Gemma's
+math-agent-ce-m-s1-test-agrees with Gemma's answer,math,"math-agent-ce-m-s1: agrees with Gemma's answer, test",0.7333,300,same request as Gemma's
+math-agent-ce-m-s1-test-right vs the true answer,math,"math-agent-ce-m-s1: right vs the true answer, test",0.73,300,same request as Gemma's
+math-agent-ce-m-s1-test-right where Gemma is right,math,"math-agent-ce-m-s1: right where Gemma is right, test",0.7324,299,same request as Gemma's
+math-agent-ce-m-s1-heldout-agrees with Gemma's answer,math,"math-agent-ce-m-s1: agrees with Gemma's answer, heldout",0.3867,300,same request as Gemma's
+math-agent-ce-m-s1-heldout-right vs the true answer,math,"math-agent-ce-m-s1: right vs the true answer, heldout",0.3867,300,same request as Gemma's
+math-agent-ce-m-s1-heldout-right where Gemma is right,math,"math-agent-ce-m-s1: right where Gemma is right, heldout",0.3867,300,same request as Gemma's
+math-agent-ce-m-s1-svamp-agrees with Gemma's answer,math,"math-agent-ce-m-s1: agrees with Gemma's answer, svamp",0.3033,300,same request as Gemma's
+math-agent-ce-m-s1-svamp-right vs the true answer,math,"math-agent-ce-m-s1: right vs the true answer, svamp",0.3033,300,same request as Gemma's
+math-agent-ce-m-s1-svamp-right where Gemma is right,math,"math-agent-ce-m-s1: right where Gemma is right, svamp",0.3171,287,same request as Gemma's
+math-agent-ce-m-s2-test-agrees with Gemma's answer,math,"math-agent-ce-m-s2: agrees with Gemma's answer, test",0.7267,300,same request as Gemma's
+math-agent-ce-m-s2-test-right vs the true answer,math,"math-agent-ce-m-s2: right vs the true answer, test",0.73,300,same request as Gemma's
+math-agent-ce-m-s2-test-right where Gemma is right,math,"math-agent-ce-m-s2: right where Gemma is right, test",0.7291,299,same request as Gemma's
+math-agent-ce-m-s2-heldout-agrees with Gemma's answer,math,"math-agent-ce-m-s2: agrees with Gemma's answer, heldout",0.41,300,same request as Gemma's
+math-agent-ce-m-s2-heldout-right vs the true answer,math,"math-agent-ce-m-s2: right vs the true answer, heldout",0.41,300,same request as Gemma's
+math-agent-ce-m-s2-heldout-right where Gemma is right,math,"math-agent-ce-m-s2: right where Gemma is right, heldout",0.41,300,same request as Gemma's
+math-agent-ce-m-s2-svamp-agrees with Gemma's answer,math,"math-agent-ce-m-s2: agrees with Gemma's answer, svamp",0.31,300,same request as Gemma's
+math-agent-ce-m-s2-svamp-right vs the true answer,math,"math-agent-ce-m-s2: right vs the true answer, svamp",0.3167,300,same request as Gemma's
+math-agent-ce-m-s2-svamp-right where Gemma is right,math,"math-agent-ce-m-s2: right where Gemma is right, svamp",0.324,287,same request as Gemma's
+math-agent-ce-m-s3-test-agrees with Gemma's answer,math,"math-agent-ce-m-s3: agrees with Gemma's answer, test",0.7233,300,same request as Gemma's
+math-agent-ce-m-s3-test-right vs the true answer,math,"math-agent-ce-m-s3: right vs the true answer, test",0.7267,300,same request as Gemma's
+math-agent-ce-m-s3-test-right where Gemma is right,math,"math-agent-ce-m-s3: right where Gemma is right, test",0.7258,299,same request as Gemma's
+math-agent-ce-m-s3-heldout-agrees with Gemma's answer,math,"math-agent-ce-m-s3: agrees with Gemma's answer, heldout",0.4067,300,same request as Gemma's
+math-agent-ce-m-s3-heldout-right vs the true answer,math,"math-agent-ce-m-s3: right vs the true answer, heldout",0.4067,300,same request as Gemma's
+math-agent-ce-m-s3-heldout-right where Gemma is right,math,"math-agent-ce-m-s3: right where Gemma is right, heldout",0.4067,300,same request as Gemma's
+math-agent-ce-m-s3-svamp-agrees with Gemma's answer,math,"math-agent-ce-m-s3: agrees with Gemma's answer, svamp",0.3267,300,same request as Gemma's
+math-agent-ce-m-s3-svamp-right vs the true answer,math,"math-agent-ce-m-s3: right vs the true answer, svamp",0.3267,300,same request as Gemma's
+math-agent-ce-m-s3-svamp-right where Gemma is right,math,"math-agent-ce-m-s3: right where Gemma is right, svamp",0.338,287,same request as Gemma's
+math-agent-kl-to-ce-m-s1-test-agrees with Gemma's answer,math,"math-agent-kl-to-ce-m-s1: agrees with Gemma's answer, test",0.74,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-test-right vs the true answer,math,"math-agent-kl-to-ce-m-s1: right vs the true answer, test",0.7367,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-test-right where Gemma is right,math,"math-agent-kl-to-ce-m-s1: right where Gemma is right, test",0.7391,299,same request as Gemma's
+math-agent-kl-to-ce-m-s1-heldout-agrees with Gemma's answer,math,"math-agent-kl-to-ce-m-s1: agrees with Gemma's answer, heldout",0.42,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-heldout-right vs the true answer,math,"math-agent-kl-to-ce-m-s1: right vs the true answer, heldout",0.42,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-heldout-right where Gemma is right,math,"math-agent-kl-to-ce-m-s1: right where Gemma is right, heldout",0.42,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-svamp-agrees with Gemma's answer,math,"math-agent-kl-to-ce-m-s1: agrees with Gemma's answer, svamp",0.32,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-svamp-right vs the true answer,math,"math-agent-kl-to-ce-m-s1: right vs the true answer, svamp",0.32,300,same request as Gemma's
+math-agent-kl-to-ce-m-s1-svamp-right where Gemma is right,math,"math-agent-kl-to-ce-m-s1: right where Gemma is right, svamp",0.3345,287,same request as Gemma's
+math-agent-kl-to-ce-m-s2-test-agrees with Gemma's answer,math,"math-agent-kl-to-ce-m-s2: agrees with Gemma's answer, test",0.7433,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-test-right vs the true answer,math,"math-agent-kl-to-ce-m-s2: right vs the true answer, test",0.7467,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-test-right where Gemma is right,math,"math-agent-kl-to-ce-m-s2: right where Gemma is right, test",0.7458,299,same request as Gemma's
+math-agent-kl-to-ce-m-s2-heldout-agrees with Gemma's answer,math,"math-agent-kl-to-ce-m-s2: agrees with Gemma's answer, heldout",0.4367,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-heldout-right vs the true answer,math,"math-agent-kl-to-ce-m-s2: right vs the true answer, heldout",0.4367,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-heldout-right where Gemma is right,math,"math-agent-kl-to-ce-m-s2: right where Gemma is right, heldout",0.4367,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-svamp-agrees with Gemma's answer,math,"math-agent-kl-to-ce-m-s2: agrees with Gemma's answer, svamp",0.32,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-svamp-right vs the true answer,math,"math-agent-kl-to-ce-m-s2: right vs the true answer, svamp",0.3233,300,same request as Gemma's
+math-agent-kl-to-ce-m-s2-svamp-right where Gemma is right,math,"math-agent-kl-to-ce-m-s2: right where Gemma is right, svamp",0.3345,287,same request as Gemma's

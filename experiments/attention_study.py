@@ -78,9 +78,10 @@ def math_students() -> List[Student]:
     students.append(Student("math-size-s-ce", "math-full-ce-s1", "math", "CE, s (10k problems)"))
     students.append(Student("math-size-xl-pilot", "math-full-pilot_nf4-kd-xl-s1", "math", "KD 0.9 to 0.1, xl (pilot data)"))
     for arm in ("kl", "ce"):
-        for epoch in range(9):   # pass 10 is the final student above
-            students.append(Student(f"math-{arm}-m-s1-pass{epoch + 1}", f"math-agent-{arm}-m-s1", "math",
-                                    f"{arm.upper()} m s1 after pass {epoch + 1}", epoch=epoch))
+        for seed in (1, 2, 3):   # seeds 2-3 added 2026-11-07 (chapter 9 plan #6: n=3 per pass)
+            for epoch in range(9):   # pass 10 is the final student above
+                students.append(Student(f"math-{arm}-m-s{seed}-pass{epoch + 1}", f"math-agent-{arm}-m-s{seed}", "math",
+                                        f"{arm.upper()} m s{seed} after pass {epoch + 1}", epoch=epoch))
     students.append(Student("math-untrained-m", None, "math", "untrained m (random weights)", like="math-agent-kl-m-s1"))
     return students
 
