@@ -16,6 +16,7 @@ import json
 import re
 import sys
 import zlib
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -25,6 +26,7 @@ from .problems import OUTPUT
 
 TASKS = OUTPUT / "sonnet"
 PER_FILE = 60
+SHAPE_CAP = 20      # problems per shape (shape_key) that get a command: variety over repeats
 
 INSTRUCTIONS = """You are writing training data for a code assistant inside the editor of a small game language (the app \
 "QR Game Studio"). A user types a one-line command at the cursor: /insert (new code at the cursor) or /edit (change the \
@@ -107,8 +109,22 @@ def task_text(number: int, problem: Dict, style: str) -> str:
     return "\n".join(parts) + "\n"
 
 
-def spread_over_games(problems: List[Dict], count: int) -> List[Dict]:
-    """`count` problems taken round-robin over the games (each game's own order seeded by the problem ids)."""
+def shape_key(problem: Dict):
+    """What a problem teaches, names, numbers and colours ignored: the task, the real block's shape and, for an
+    /edit, the kinds of change."""
+    from .gemma_writes import tree
+    try:
+        shape = tree(parse_fragment(problem["target"]), keep_values=False)
+    except ValueError:
+        shape = problem["target"]
+    return problem["task"], tuple(problem.get("mutations", ())), shape
+
+
+def spread_over_games(problems: List[Dict], count: int, taken: Dict = None) -> List[Dict]:
+    """`count` problems taken round-robin over the games (each game's own order seeded by the problem ids),
+    skipping a problem once SHAPE_CAP problems of its shape (shape_key) are taken; `taken` counts the shapes that
+    already have commands."""
+    shapes = Counter(taken or {})
     by_game = {}
     for problem in sorted(problems, key=lambda problem: zlib.crc32(("pick" + problem["id"]).encode())):
         by_game.setdefault(problem["game"], []).append(problem)
@@ -116,7 +132,11 @@ def spread_over_games(problems: List[Dict], count: int) -> List[Dict]:
     while len(picked) < count and any(round_index < len(group) for group in by_game.values()):
         for game in sorted(by_game):
             if round_index < len(by_game[game]) and len(picked) < count:
-                picked.append(by_game[game][round_index])
+                problem = by_game[game][round_index]
+                key = shape_key(problem)
+                if shapes[key] < SHAPE_CAP:
+                    shapes[key] += 1
+                    picked.append(problem)
         round_index += 1
     return picked
 
@@ -125,7 +145,8 @@ def write_tasks(count: int) -> List[Path]:
     done = load_done()
     problems = [json.loads(line) for line in open(OUTPUT / "problems.jsonl", encoding="utf-8")]
     todo = [problem for problem in problems if problem["id"] not in done]
-    picked = spread_over_games(todo, count)
+    taken = Counter(shape_key(problem) for problem in problems if problem["id"] in done)
+    picked = spread_over_games(todo, count, taken)
     with open(COMMANDS, "a", encoding="utf-8") as file:
         for problem in picked:
             if style_of(problem) == "empty":
