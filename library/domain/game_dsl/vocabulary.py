@@ -10,6 +10,7 @@ import json
 from collections import Counter
 
 from . import FENCE, OUTPUT_TOKENS
+from .gemma_writes import BLOCKS
 from .manual import sound_and_music_names
 from .problems import OUTPUT
 from .versions import PALETTE, WORDS
@@ -29,6 +30,9 @@ def vocabulary_texts():
     for line in open(OUTPUT / "problems.jsonl", encoding="utf-8"):
         problem = json.loads(line)
         texts.append(f"{FENCE}\n{problem['target']}\n{FENCE}")
+    if BLOCKS.exists():     # Gemma's kept blocks (the targets since 2026-11-07): 18% of them had a token outside
+        for line in open(BLOCKS, encoding="utf-8"):      # the vocabulary built from the real blocks alone
+            texts.append(f"{FENCE}\n{json.loads(line)['block']}\n{FENCE}")
     return texts
 
 

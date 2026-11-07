@@ -22,6 +22,7 @@ from .language import Node, parse_fragment
 from .problems import OUTPUT
 
 VERSIONS = OUTPUT / "versions.jsonl"
+BLOCKS = OUTPUT / "gemma_blocks.jsonl"     # the kept blocks of the full run (experiments/game_gemma_run.py check)
 HOLLOW = "hollow: "
 
 
