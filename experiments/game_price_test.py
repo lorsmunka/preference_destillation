@@ -67,7 +67,7 @@ def run():
     problems = read_jsonl(OUTPUT / "sample.jsonl")
     train = [p for p in problems if p["role"] == "train"]
     test = [p for p in problems if p["role"] == "test"]
-    domain = GameDslDomain()
+    domain = GameDslDomain("manual")   # each variant below swaps what stands in for the manual
     manual = domain.manual
     card = (PACKAGE / "reference_card.md").read_text(encoding="utf-8")
     handler = ModelHandler("google/gemma-4-12B-it", domain, load_in_4bit=False, chat_template=True)
