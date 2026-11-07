@@ -175,11 +175,14 @@ def write_tasks(count: int) -> List[Path]:
 
 
 def parse_answers(text: str) -> Dict[str, str]:
+    """<n> TAB <id> TAB <command> lines -> {id: command}; a later line for the same id wins. Some agents put the
+    verb in a column of its own (<n> <id> /insert <command>): that column is dropped."""
     answers = {}
     for line in text.splitlines():
         parts = line.rstrip("\r").split("\t")
         if len(parts) >= 3 and parts[1].strip():
-            answers[parts[1].strip()] = "\t".join(parts[2:]).strip()
+            command = re.sub(r"^(/insert|/edit)\t+(?=/insert|/edit)", "", "\t".join(parts[2:]).strip())
+            answers[parts[1].strip()] = command.replace("\t", " ")
     return answers
 
 
