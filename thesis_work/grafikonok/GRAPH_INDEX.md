@@ -19,4 +19,4 @@ A script tobbnyire chart-only PNG-ket general. A 06a-c abrakban a modellmeret is
 15. `08_reddit_confusion_matrices.png` - Confusion matrices: Sentiment category mistakes for the 5M-scale run.
 16. `09_postgen_topk_metrics.png` - Post generation top-k: Free-form generation top-k tradeoff.
 17. `10_domain_data_cost.png` - Domain data cost: Why post generation is much more expensive to compile.
-18. `14_math_agent_kl_ce.png` - Thesis figure 9.1: math tutor 16.5M student on the full data, task accuracy and test CE loss per pass, KL vs CE (3 seeds) and KL -> CE (2 seeds); `plot_14_math_agent_kl_ce.py`.
+18. `14_math_agent_kl_ce.png` - Thesis figure 9.1: math tutor 16.5M student on the full data, task accuracy and test CE loss per pass, KL vs CE and KL -> CE (3 seeds each); `plot_14_math_agent_kl_ce.py`.

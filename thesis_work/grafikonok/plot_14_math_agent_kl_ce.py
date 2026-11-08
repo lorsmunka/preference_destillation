@@ -1,7 +1,7 @@
 """Thesis figure 9.1 (chapter 9): the math tutor's 16.5M student on the full data, per pass: task accuracy
-(agreement with Gemma's answer) and the test CE loss, pure KL vs pure CE (3 seeds each) and KL -> CE (2 seeds).
+(agreement with Gemma's answer) and the test CE loss, pure KL vs pure CE (3 seeds each) and KL -> CE (3 seeds).
 Thick line = mean of the seeds, thin lines = each seed.
-Data: experiments/results/math_agent.csv (KL, CE) and runs/math-agent-kl-to-ce-m-s{1,2}/logs/training.jsonl.
+Data: experiments/results/math_agent.csv (KL, CE) and runs/math-agent-kl-to-ce-m-s{1,2,3}/logs/training.jsonl.
 Run: python thesis_work/grafikonok/plot_14_math_agent_kl_ce.py (redraws the PNG next to this file)."""
 import csv
 import json
@@ -14,7 +14,7 @@ import matplotlib.ticker
 
 ROOT = Path(r"D:\preference_destillation")
 CSV_PATH = ROOT / "experiments" / "results" / "math_agent.csv"
-KL_TO_CE_RUNS = [ROOT / "runs" / f"math-agent-kl-to-ce-m-s{seed}" / "logs" / "training.jsonl" for seed in (1, 2)]
+KL_TO_CE_RUNS = [ROOT / "runs" / f"math-agent-kl-to-ce-m-s{seed}" / "logs" / "training.jsonl" for seed in (1, 2, 3)]
 OUTPUT = ROOT / "thesis_work" / "grafikonok" / "14_math_agent_kl_ce.png"
 
 SURFACE = "#fcfcfb"
@@ -26,6 +26,8 @@ ARMS = [("kl", "KL", "#2a78d6", "-"), ("ce", "CE", "#eb6834", "-"), ("kl_to_ce",
 curves = {"kl": {}, "ce": {}, "kl_to_ce": {}}   # arm -> seed -> [(pass, task accuracy, test loss)]
 with open(CSV_PATH, encoding="utf-8") as file:
     for row in csv.DictReader(file):
+        if row["arm"] not in curves:   # the CSV now also has "kl-to-ce" rows; KL -> CE is read from its runs below
+            continue
         curves[row["arm"]].setdefault(row["seed"], []).append(
             (int(row["pass"]), float(row["task_accuracy"]), float(row["test_error"])))
 for seed, path in enumerate(KL_TO_CE_RUNS, start=1):
