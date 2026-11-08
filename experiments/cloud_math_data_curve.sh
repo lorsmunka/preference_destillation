@@ -49,10 +49,14 @@ mkdir -p batches/math_tutor_full_v1
 [ -L $BATCHES ] || ln -s /root/$BATCHES $BATCHES
 
 step "three students side by side"
+students=()
 for point in 06k 20k 65k; do
     python -u experiments/math_data_curve.py $point > /workspace/logs/data_curve_$point.log 2>&1 &
+    students+=($!)
 done
-wait
+# wait for the students only: a bare `wait` also waits for the money-cap timer above, so on 2026-11-07
+# the machine sat idle from the end of the students until the cap (stopped by hand after ~3 h)
+wait "${students[@]}"
 
 python - <<'EOF' || stop_machine "a student did not finish"
 import sys

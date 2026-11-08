@@ -2,17 +2,20 @@ STATUS 2026-10-13 (pick up here)
   TRACKER 2026-11-07 (what must land before turn-in; user: "done by 11-09 night, or 11-10 morning")
     item                               state                                   next / needs
     #5 math KL->CE seed 3 (local GPU)  RUNNING again 21:17 local 11-07 (window  pause when the user leaves (STOP file); resume: rerun
-                                       "#5 ..."), from pass 4 batch 1446         `experiments/math_ce_vs_kl.py kl-to-ce 3`; ~6.5 h left
-    #4 math data curve 6k/20k/65k      RUNNING on pod 48vgzn90dhdo3o (RTX PRO    when 65k is done the pod stops itself: download it (md5),
-                                       4500, $0.72/h, cap 11 h <= $7.9): 6k and  `math_data_curve.py report`, delete the pod. Volume
-                                       20k DONE + home (md5 = pod, 30 files);    klhiijtesk ($0.031/h) stays until the game agent's cloud
-                                       65k pass 9/10 at 20:17 UTC (~1 h left)    work is over.
+                                       "#5 ..."); pass 6 batch 4763 at 01:20     `experiments/math_ce_vs_kl.py kl-to-ce 3`; ~5 h left
+    #4 math data curve 6k/20k/65k      DONE 11-07 (65k finished 21:08 UTC); all  nothing. results/math_data_curve.csv; last pass, the same
+                                       3 runs home (md5 = pod), cloud logs in    8,415 test replies, task acc / test CE: 6k .032 / 1.676,
+                                       runs/_logs/data_curve_cloud/; pod deleted 20k .179 / 1.146, 65k .551 / .738, 196k s1-s3 .700 /
+                                       00:21 UTC 11-08. ~$5.7: the script's bare .481, .719 / .476, .697 / .486. Script fixed (waits for
+                                       `wait` also waited for the money-cap      the students' pids only). Volume klhiijtesk ($0.031/h)
+                                       timer, so the pod sat idle ~3.2 h (~$2.3) stays until the game agent's cloud work is over.
     #3 Gemma 4 bf16 reference          DONE 11-07 18:31 (report step too: 8     nothing; results/gemma_reference.csv
                                        students x 900 answers)
-    #1 coding student failure          RUNNING 21:17 local: CPU chain window    chain (scratchpad cpu_chain2.ps1, CUDA_VISIBLE_DEVICES=-1,
-    #2 math end to end (8 students)    (log runs/_logs/cpu_chain_2026-11-07.log) one at a time): #1 from scratch (~2-2.5 h) -> #2 (8
-    #6 math attention per pass s2-s3   rows DONE (36 students; attention_study   named students, resumes its files, ~3-4 h) -> #6 report
-                                       .py lists seeds 1-3 per pass)             (`attention_study.py report`, needs ~3.5 GB free)
+    #1 coding student failure          DONE 11-08 00:02 (passes 2 and 10, a-c)  results/code_agent_failure.csv (script not committed yet)
+    #2 math end to end (8 students)    RUNNING from 00:02 in the CPU chain       chain (scratchpad cpu_chain2.ps1, CUDA_VISIBLE_DEVICES=-1,
+                                       window: KL s1, s2 1,250 done, s3 469      log runs/_logs/cpu_chain_2026-11-07.log): #2 (~5 h left)
+    #6 math attention per pass s2-s3   rows DONE (36 students; attention_study   -> #6 report (`attention_study.py report`, ~3.5 GB free)
+                                       .py lists seeds 1-3 per pass)
     #7 coding agent on 8 projects      on hold: user "I let the coding agent go" (2026-11-07); ask before running
     coding agent CE m                  final: stopped after pass 4               nothing
     GAME AGENT (game_dsl, Flutter)     price test DONE (RTX PRO 6000, ~35 min,  full pass ~17 h / ~$43 on one PRO 6000 (commands
