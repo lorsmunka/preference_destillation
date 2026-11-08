@@ -55,14 +55,22 @@ function image(relativePath) {
 function table(rows) {
   const cells = rows.filter((row, index) => index !== 1).map((row) => row.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim()));
   const columns = cells[0].length;
-  const lengths = Array.from({ length: columns }, (_, column) => Math.max(4, ...cells.map((row) => (row[column] || "").length)));
+  // A section row has only its first cell filled: it spans the whole table in bold and does not size the columns.
+  const isSection = (row, rowIndex) => rowIndex > 0 && row[0] !== "" && row.slice(1).every((cell) => cell === "");
+  const sized = cells.filter((row, rowIndex) => !isSection(row, rowIndex));
+  const lengths = Array.from({ length: columns }, (_, column) => Math.max(4, ...sized.map((row) => (row[column] || "").length)));
   const total = lengths.reduce((sum, value) => sum + value, 0);
   const widths = lengths.map((value) => Math.floor(TEXT_WIDTH * value / total));
   widths[widths.length - 1] += TEXT_WIDTH - widths.reduce((sum, value) => sum + value, 0);
   const border = { style: BorderStyle.SINGLE, size: 4, color: "808080" };
   return new Table({
     width: { size: TEXT_WIDTH, type: WidthType.DXA }, columnWidths: widths,
-    rows: cells.map((row, rowIndex) => new TableRow({ tableHeader: rowIndex === 0, children: row.map((cell, column) => new TableCell({
+    rows: cells.map((row, rowIndex) => isSection(row, rowIndex) ? new TableRow({ children: [new TableCell({
+      columnSpan: columns, width: { size: TEXT_WIDTH, type: WidthType.DXA },
+      borders: { top: border, bottom: border, left: border, right: border },
+      margins: { top: 40, bottom: 40, left: 80, right: 80 },
+      children: [new Paragraph({ spacing: { line: 240, after: 0 }, children: inlineRuns(row[0], { size: 20, bold: true }) })],
+    })] }) : new TableRow({ tableHeader: rowIndex === 0, children: row.map((cell, column) => new TableCell({
       width: { size: widths[column], type: WidthType.DXA },
       borders: { top: border, bottom: border, left: border, right: border },
       shading: rowIndex === 0 ? { type: ShadingType.CLEAR, fill: "E7E6E6", color: "auto" } : undefined,
