@@ -89,6 +89,8 @@ the app (qr_flutter web/game_agent/v1, ONNX on-device, downloaded on first use; 
    different shapes.
 4. A training unit just for colours and shapes: colour words to hex (pinkish, light red, dark teal, ...) and shape
    words to shapes and sizes, so "a pinkish, light red circle character" gives exactly that.
+5. Naming, taught well: "create a hero" gives the new block the id "hero"; when "hero" already exists in the game,
+   the next free "hero_2", "hero_3", ... (hero_n). The same for every new name the command implies.
 
 ## Files
 
