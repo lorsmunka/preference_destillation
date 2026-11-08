@@ -36,6 +36,9 @@ ARMS = {
     "math": {"pure-kl": (1.0, 1.0), "pure-ce": (0.0, 0.0), "kl-to-ce": (1.0, 0.0), "ce-to-kl": (0.0, 1.0)},
 }
 GATE_BASELINE = 0.626      # reddit: always giving the commonest label (E-01's majority baseline)
+# math: 4 passes instead of the reference's 10 (user, 2026-11-08: the 10-pass runs would take ~3.4-6 h on the rented
+# cards, over the budget; all 12 math runs use 4, so they compare with each other, not with the old 10-pass runs)
+PASSES = {"math": 4}
 
 
 def reference_settings(domain_key):
@@ -68,8 +71,10 @@ def build_runs(domain_key, gate=False):
             changed = dict(settings, run_name=run_name(domain_key, arm, seed), domain=domain,
                            experiment=f"kl-ce-30k-{domain_key}", kl_ratio_start=start, kl_ratio_end=end,
                            max_training_examples=EXAMPLES, shuffle_seed=seed,
+                           epoch_count=PASSES.get(domain_key, settings["epoch_count"]),
                            description=f"KL vs CE at 30k examples: {domain_key}, {arm} ({start}->{end}), seed {seed}; "
-                                       f"settings of {REFERENCE[domain_key]}")
+                                       f"settings of {REFERENCE[domain_key]}"
+                                       + (f", {PASSES[domain_key]} passes" if domain_key in PASSES else ""))
             runs.append((seed, TrainingRun(**changed)))
     return runs
 
