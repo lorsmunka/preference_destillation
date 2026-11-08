@@ -70,6 +70,26 @@ Price test v2 (Gemma writes; ~30 min): reference_card.md / full manual / the man
 batch (must give identical output) / a moving card (the user's idea, 2026-11-07: only the card lines the problem
 needs, chosen from what the model sees, never from the real block); compile + clean rate and cost per arm.
 
+## v1 as it shipped (2026-11-08)
+
+Student game-agent-kd-m-s1 (9.85M parameters, KL 0.9 -> 0.1, 10 passes) on 39,274 train examples: Gemma's checked
+blocks for 54,450 commands (Sonnet 9,394, gpt-oss-120b 40,882 on rented cards, 3,876 bare /insert). On the 1,323
+test problems: 90.9% of its blocks compile and pass the app's checks, 62.5% have Gemma's block's shape, 28.2% its
+exact tree; it writes valid code but follows the command only loosely ("twice as big" made it smaller). Shipped in
+the app (qr_flutter web/game_agent/v1, ONNX on-device, downloaded on first use; export_onnx.py).
+
+## v2: the user's notes for the better model (2026-11-08)
+
+1. Many ways of asking: with or without the verb words ("create", "add", "make", none), different sentence
+   structures, sometimes common spelling mistakes; more examples in all.
+2. Blocks from the user's point of view, not only the game's own blocks cut out: "here is a game, what could I
+   possibly want to add or change here?" (new features, tweaks, characters the game does not have yet). A more
+   faithful and richer set than re-adding blocks the game already has.
+3. Stress-test the common asks: "add sounds" (every sound name, every place a sound goes); new characters of
+   different shapes.
+4. A training unit just for colours and shapes: colour words to hex (pinkish, light red, dark teal, ...) and shape
+   words to shapes and sizes, so "a pinkish, light red circle character" gives exactly that.
+
 ## Files
 
 language.py (parser, checks, hollow), compiler.py (the app's compiler: qr_flutter/build/dsl_check/dsl_check.exe,
