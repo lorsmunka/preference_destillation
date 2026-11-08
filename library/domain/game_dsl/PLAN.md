@@ -95,6 +95,10 @@ the app (qr_flutter web/game_agent/v1, ONNX on-device, downloaded on first use; 
    OnCollision with #wall"): the model should know each construct's template (where it goes, its arguments, a
    sensible default body). v1 never learned these: Sonnet's instructions and the gpt-oss filter
    (open_commands.reads_code) kept keyword names out of every command, so a share of v2's commands should use them.
+7. Bigger asks: whole levels and groups of blocks, by description or by likeness ("create a level with lava and
+   moving platforms", "create a level that is like level 2 but harder", "add three enemies that patrol the top").
+   v1 never cut a Level block (problems.insert_candidates: entities, events, action lists and window items only),
+   so this is a new task kind; its targets are long (many blocks), which may need the larger student.
 
 ## Files
 
