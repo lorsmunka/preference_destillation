@@ -91,6 +91,10 @@ the app (qr_flutter web/game_agent/v1, ONNX on-device, downloaded on first use; 
    words to shapes and sizes, so "a pinkish, light red circle character" gives exactly that.
 5. Naming, taught well: "create a hero" gives the new block the id "hero"; when "hero" already exists in the game,
    the next free "hero_2", "hero_3", ... (hero_n). The same for every new name the command implies.
+6. Commands that name the language's own constructs ("add an OnValue", "add a Wave", "add a timer", "add an
+   OnCollision with #wall"): the model should know each construct's template (where it goes, its arguments, a
+   sensible default body). v1 never learned these: Sonnet's instructions and the gpt-oss filter
+   (open_commands.reads_code) kept keyword names out of every command, so a share of v2's commands should use them.
 
 ## Files
 
