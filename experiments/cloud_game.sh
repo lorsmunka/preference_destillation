@@ -3,7 +3,7 @@
 # the check at home between them (the app's compiler is a Windows program):
 #   bash experiments/cloud_game.sh write 7    pass 1: Gemma writes every block (~4.2 h for 10,378); the card then
 #                                             waits for the check at home (the cap still runs)
-#   bash experiments/cloud_game.sh score 3    pass 2: the kept blocks scored (~1.2 h), after corpus.jsonl and
+#   PYTHON=/workspace/venv/bin/python bash experiments/cloud_game.sh score 9    pass 2: the kept blocks scored (0.56 s each: ~6.3 h for 40,597), after corpus.jsonl and
 #                                             output_tokens.json are uploaded; the machine then stops
 # The machine stops itself after <hours> whatever happens (the money cap; a new step replaces the old cap), on a
 # failure, and after pass 2. Everything lives on the pod's persistent disk (/workspace), which a stop keeps.
@@ -40,7 +40,7 @@ stop_machine() {
 echo $! > "$CAP_PID"
 
 step "$STEP (money cap $MAX_HOURS h)"
-python -u experiments/game_gemma_run.py "$STEP" || stop_machine "$STEP failed"
+"${PYTHON:-python}" -u experiments/game_gemma_run.py "$STEP" || stop_machine "$STEP failed"
 step "$STEP done"
 [ "$STEP" = score ] && stop_machine "done"
 exit 0
