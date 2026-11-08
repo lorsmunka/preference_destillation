@@ -8,6 +8,7 @@
 
 HOST=${1:?host}
 PORT=${2:?port}
+STREAMS=${3:-4}
 SOURCE=batches/math_tutor_full_v1/google_gemma-4-12B-it
 TARGET=/workspace/batches/math_tutor_full_v1_30k/google_gemma-4-12B-it
 SSH="ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=30 -c aes128-gcm@openssh.com -p $PORT root@$HOST"
@@ -29,10 +30,19 @@ for pass_number in $(seq 1 50); do
     done
     echo "== pass $pass_number $(date '+%H:%M'): ${#PENDING[@]} files to send"
     [ ${#PENDING[@]} -eq 0 ] && { echo "UPLOAD_DONE"; exit 0; }
-    for ((start = 0; start < ${#PENDING[@]}; start += 20)); do
-        scp -q -o ConnectTimeout=30 -o ServerAliveInterval=30 -c aes128-gcm@openssh.com -P "$PORT" \
-            "${PENDING[@]:start:20}" "root@$HOST:$TARGET/" || echo "scp failed at $start, retried next pass"
-        echo "  sent $((start + 20 < ${#PENDING[@]} ? start + 20 : ${#PENDING[@]}))/${#PENDING[@]} $(date '+%H:%M')"
+    # STREAMS connections at once (one connection was the limit, not the line: the user, 2026-11-08), each taking
+    # every STREAMS-th file
+    for ((stream = 0; stream < STREAMS; stream++)); do
+        (
+            share=()
+            for ((index = stream; index < ${#PENDING[@]}; index += STREAMS)); do share+=("${PENDING[index]}"); done
+            for ((start = 0; start < ${#share[@]}; start += 10)); do
+                scp -q -o ConnectTimeout=30 -o ServerAliveInterval=30 -c aes128-gcm@openssh.com -P "$PORT" \
+                    "${share[@]:start:10}" "root@$HOST:$TARGET/" || echo "  stream $stream: scp failed, retried next pass"
+            done
+            echo "  stream $stream done $(date '+%H:%M')"
+        ) &
     done
+    wait
 done
 echo "UPLOAD_NOT_DONE after 50 passes"
