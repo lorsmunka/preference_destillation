@@ -18,10 +18,10 @@ PANELS = [
     ("reddit", "Szöveghangulat-elemzés (Gemma 3 4B)"),
     ("math_v1", "Matematikai szöveges feladatok, első verzió (Gemma 3 4B)"),
     ("post_generation", "Posztgenerálás (Gemma 3 4B)"),
-    ("tutor_solution", "Matematikai ügynök, megoldás (Gemma 4 12B)"),
-    ("tutor_explanation", "Matematikai ügynök, magyarázat (Gemma 4 12B)"),
-    ("code_scope", "Kódkereső ügynök, 1. lépés: a kódrészlet kijelölése (Gemma 4 12B)"),
-    ("code_explanation", "Kódkereső ügynök, 2. lépés: magyarázat (Gemma 4 12B)"),
+    ("tutor_solution", "Matematikai feladatmegoldó ügynök, megoldás (Gemma 4 12B)"),
+    ("tutor_explanation", "Matematikai feladatmegoldó ügynök, magyarázat (Gemma 4 12B)"),
+    ("code_scope", "Kódügynök, 1. lépés: a kódrészlet kijelölése (Gemma 4 12B)"),
+    ("code_explanation", "Kódügynök, 2. lépés: magyarázat (Gemma 4 12B)"),
 ]
 SURFACE = "#fcfcfb"
 TEXT_PRIMARY = "#0b0b0b"
