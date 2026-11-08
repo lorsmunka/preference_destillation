@@ -550,10 +550,21 @@ Az ügynököknél a tanulómodellt a modellhámmal együtt kellett kipróbálni
 
 9. Eredmények és értékelésük
 
+9.1 A KL- és a CE-veszteség összehasonlítása
 KL, CE, domainkénti konkluzi (az entrópia mit josól, ajánlás)
+
+9.2 A tanulómodell mérete és a tanítóadat mennyisége - PENDING
 Skálázás, a kis modellek sokszor elegek
-A tultanulás a ifgyelem mintából is megállíapíható
+
+9.3 A matematikai ügynök működése - PENDING
 A kis modellek képesek ügynökként viselkedni
+
+9.4 A kódügynök túltanulása - PENDING
+
+9.5 A figyelem vizsgálata
+A tultanulás a ifgyelem mintából is megállíapíható
+
+9.6 Sebesség és erőforrásigény - PENDING
 Actual GPU speedup emasures
 
 10. A keretrendszer értékelése, alkalmazása és továbbfejlesztése
