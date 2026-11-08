@@ -76,4 +76,8 @@ def build_runs(domain_key, gate=False):
 
 if __name__ == "__main__":
     key = sys.argv[1] if len(sys.argv) > 1 else "reddit"
-    sys.exit(0 if seeded_run_training(build_runs(key, gate=len(sys.argv) > 2 and sys.argv[2] == "gate")) else 1)
+    chosen = sys.argv[2] if len(sys.argv) > 2 else None      # "gate", or one run's name (one process per run)
+    runs = build_runs(key, gate=chosen == "gate")
+    if chosen and chosen != "gate":
+        runs = [(seed, run) for seed, run in runs if run.run_name == chosen]
+    sys.exit(0 if seeded_run_training(runs) else 1)
