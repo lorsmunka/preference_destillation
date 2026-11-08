@@ -1,0 +1,18 @@
+key,model,arm,seed,history,compared_with,conversations,turns,route_agreement,answer_turns,answer_agreement,turn_agreement,conversation_agreement,conversation_answer_agreement,first_turn_answer_agreement,follow_up_answer_agreement,solution_check_pass,explanation_check_pass,retried_share,seconds_per_conversation
+math-agent-kl-m-s1/gold,math-agent-kl-m-s1,kl,1,gold,Gemma's reply,1250,7209,0.991,3151,0.7103,0.8668,0.4656,0.4816,0.7688,0.6718,0.9261,0.9849,0.0592,2.97
+math-agent-kl-m-s1/own,math-agent-kl-m-s1,kl,1,own,Gemma's reply,1250,7209,0.9914,3151,0.5957,0.8172,0.4696,0.4824,0.7688,0.4819,0.9055,0.9841,0.0695,2.97
+math-agent-kl-m-s2/gold,math-agent-kl-m-s2,kl,2,gold,Gemma's reply,1250,7209,0.9908,3151,0.7299,0.8746,0.4992,0.5224,0.7808,0.6965,0.9184,0.9754,0.0687,2.27
+math-agent-kl-m-s2/own,math-agent-kl-m-s2,kl,2,own,Gemma's reply,1250,7209,0.9904,3151,0.6233,0.8279,0.5,0.5208,0.7808,0.5197,0.8982,0.9738,0.0811,2.27
+math-agent-kl-m-s3/gold,math-agent-kl-m-s3,kl,3,gold,Gemma's reply,1250,7209,0.991,3151,0.7071,0.865,0.4648,0.4816,0.756,0.6749,0.9168,0.9793,0.0684,2.29
+math-agent-kl-m-s3/own,math-agent-kl-m-s3,kl,3,own,Gemma's reply,1250,7209,0.9906,3151,0.5792,0.8089,0.456,0.4704,0.756,0.4629,0.8867,0.9783,0.082,2.29
+math-agent-ce-m-s1/gold,math-agent-ce-m-s1,ce,1,gold,Gemma's reply,1250,7209,0.9904,3151,0.6931,0.8586,0.4424,0.4632,0.7496,0.656,0.9204,0.9984,0.0505,2.97
+math-agent-ce-m-s1/own,math-agent-ce-m-s1,ce,1,own,Gemma's reply,1250,7209,0.9899,3151,0.5814,0.8091,0.4464,0.4616,0.7496,0.4708,0.9027,0.9971,0.0596,2.97
+math-agent-ce-m-s2/gold,math-agent-ce-m-s2,ce,2,gold,Gemma's reply,1250,7209,0.9883,3151,0.6972,0.8581,0.4496,0.472,0.74,0.6691,0.9229,0.9973,0.0498,2.16
+math-agent-ce-m-s2/own,math-agent-ce-m-s2,ce,2,own,Gemma's reply,1250,7209,0.9889,3151,0.5693,0.8026,0.444,0.4624,0.74,0.4571,0.8961,0.9979,0.0603,2.16
+math-agent-ce-m-s3/gold,math-agent-ce-m-s3,ce,3,gold,Gemma's reply,1250,7209,0.9892,3151,0.6899,0.8562,0.428,0.4496,0.7536,0.6481,0.923,0.9973,0.0538,2.43
+math-agent-ce-m-s3/own,math-agent-ce-m-s3,ce,3,own,Gemma's reply,1250,7209,0.9897,3151,0.5697,0.8039,0.4288,0.4464,0.7536,0.4487,0.8934,0.9984,0.0662,2.43
+math-agent-kl-to-ce-m-s1/gold,math-agent-kl-to-ce-m-s1,kl-to-ce,1,gold,Gemma's reply,1250,7209,0.9902,3151,0.7058,0.8639,0.4608,0.4784,0.756,0.6728,0.9184,0.9981,0.049,2.08
+math-agent-kl-to-ce-m-s1/own,math-agent-kl-to-ce-m-s1,kl-to-ce,1,own,Gemma's reply,1250,7209,0.9902,3151,0.5887,0.8127,0.4544,0.4728,0.756,0.4787,0.8972,0.9981,0.0591,2.08
+math-agent-kl-to-ce-m-s2/gold,math-agent-kl-to-ce-m-s2,kl-to-ce,2,gold,Gemma's reply,1250,7209,0.9893,3151,0.7125,0.8659,0.4624,0.4856,0.764,0.6786,0.9288,0.9973,0.048,3.1
+math-agent-kl-to-ce-m-s2/own,math-agent-kl-to-ce-m-s2,kl-to-ce,2,own,Gemma's reply,1250,7209,0.9888,3151,0.5922,0.8129,0.4608,0.4816,0.764,0.4792,0.903,0.9971,0.0592,3.1
+gemma/own,gemma-4-12B-it,teacher,,own,"pupil script's route, solve()'s answer",1250,7209,0.9847,3104,0.9758,0.9746,0.888,0.9616,0.9968,0.9617,,,,
