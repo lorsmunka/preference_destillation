@@ -541,7 +541,7 @@ A tanármodell kimenetét ellenőrizni kellett, mielőtt egy órákig vagy napok
 A felhőben felügyelet nélkül futó szkriptek önálló leállását a fizetős futtatások előtt egy eldobható gépen ténylegesen is ki kellett próbálni. Az első változatnál a szolgáltató parancssori eszköze elutasította a gép saját kulcsát, így a gép leállás helyett tovább futott volna, a javított változat viszont már működött.
 
 8.3 A tanulómodellek vizsgálata
-A modellek ellenőrzése két lábon állt, a manuális és az automatizált teljesítmény mérésén. A tesztadatokon mért mutatók (lásd 7.6) a teljes tesztkészletet összegzik, a kimenetek kézi vizsgálata pedig manuális kontrollt adott, lehetővé téve a modell jobb megértését és a hibák forrásának könnyebb felkutatását. Sokszor ezek a manuális kísérletek adtak valódi értelmet a mért százaléknak (lásd 2.5.5).
+A modellek ellenőrzése fő oszlopon nyugszik, manuális és automatizált tesztelésen. A tesztadatokon mért mutatók (lásd 7.6) a teljes tesztkészletet összegzik, a kimenetek kézi vizsgálata pedig manuális kontrollt adott, lehetővé téve a modell jobb megértését és a hibák forrásának könnyebb felkutatását. Sokszor ezek a manuális kísérletek adtak valódi értelmet a mért százaléknak (lásd 2.5.5).
 Az első, szöveghangulat-elemző tanulómodellekhez két terminálos eszköz készült. A kiértékelő egy vagy az összes elmentett ellenőrzőpontot lefuttatta egy kiválasztott köteg példáin, és példánként kiírta a tanulómodell saját előzménnyel generált válaszát, a tanár válaszát és a helyes előzménnyel jósolt tokeneket, a tanáréval egyezőket zölddel, az eltérőket pirossal. Így tokenről tokenre látszott, hol tér el a tanulómodell a tanártól, és ez hogyan változik az ellenőrzőpontok között. A 6.1 alfejezetben említett tokenizálási hibát is ennek a tokenenkénti vizsgálós módszernek köszönhetően sikerült megjavítani. A másik eszköz kézzel beírt, új kommenteken futtatta egymás mellett a tanár- és a tanulómodellt, így a tanulómodell a tesztkészleten kívüli bemeneteken is kipróbálható volt.
 A teljes tanítások előtt rövid próbatanítások futottak. Egy 10 kötegen futó, 30 perces próba után a modell már helyes JSON-t generált, egy 100 kötegen futó, 3 órás próba végén pedig egy 10 kötegből álló teszten a saját előzménnyel mért tokenpontosság átlagosan 87,69%, a helyes előzménnyel mért 98,97% volt. A tanár és a tanuló eloszlásának összevetése (top-k egyezés, átfedés, átlagos rang) eleinte egy külön, utólagos eszközzel készült, amely a modellt újra betöltve futtatta le újra a teszteket, később ezek a mutatók a kiértékelés részévé váltak (lásd 7.6). Ezek tovább segítik a modell működésének megértését.
 
@@ -550,22 +550,40 @@ Az ügynököknél a tanulómodellt a modellhámmal együtt kellett kipróbálni
 
 9. Eredmények és értékelésük
 
-9.1 A KL- és a CE-veszteség összehasonlítása
-KL, CE, domainkénti konkluzi (az entrópia mit josól, ajánlás)
+9.1 A KL- és a CE-veszteség összehasonlítása és vegyítése
+A dolgozat álltal vizsgált egyik legérdkesebb kérdés, a különböző veszteségek, és ezennek vegyítése desztillálás során. A szakiradalom alapvetően KL veszteséget javasolja (forrás, maybe rewording), de a tisztán CE-vel való tanítás, a x.x-ben kifejtettek alapján is egy gyakran hazsnált desztillációs módszer. A két veszteség vegyítése, sőt a veszteségeknek ütemezett vegyítése is vizságlt már (források, reworing if needed).
+Az allábbiakban ismertetésre kerül a mért hatékonyság és entrópia kötötti összefüggés domainenként, melyet az x.x táblázat foglal össze. (eleht ez jobb több táblázatra, ha több leírás van, mert másképp lettek mérve).
 
-9.2 A tanulómodell mérete és a tanítóadat mennyisége - PENDING
+Ahogy az x.x táblazatról leolvashatüó, éles, alacsony entrópiájú domaineket (példul szöveghangulat elemzés) a CE és KL vezsteségek használata között viszonylag kevés különbség mérhető (sőt am lehet ez jobb lenne, ha a figuret rkanánk be és nem is a tbálázatot). Ez abból is adódik, hogy ha a model stuktúrált domianeken nem "vacillál" több töken között, hanem viszonylag nagy magabiztosságal választ egy övetkező tökent, így matematikailag is szinte azonos jelentést hordos a KL és CE veszteség. A CE-vel tanított modellek réáadásul jobban tleejseítenek az 3) top k metirkába.
+
+Magas entrópájú domaineken, mint például a postgenerálás, vagy részben a szabad szöveges magyarázás miatt a matematiki fladatmegoldó ügynök és kodkereső és magyarázó ügynök, viszotn mérhetően jobban telejsítenek KL veszteséggel, melynek eredméynet az x.x ábra / táblázat mutatja be. Ráadásul a KL divergencia a két eloszlást is közeleb hozza egymáshoz, amelynek köszönhtően a csak KL-el tanított modellek 1) és 2) top k metrikái például x domainen jobban telejsít.
+
+A két veszteség ütemezett vegyítése pedig úgy tűnik, hogy sok esetben "mindkét világ legjava" (best of both words). Például hangualt elemztés domiannél 10 véletlen maggal a veszteség ütemezett vegítésével tanított modell szrezte a legmagasabb pontszámot. Míg a matematikai domain első verzióján tanított 10 model a legmagasabb feladatpontosságot érte el, mindezt jelentősen kisebb szórással. Ráadásul az ilyen vegyítéssel tanított modellek mind 3 mért top k metrikán a közelebb húztak a jobbik véglethez. Ezt az alábbi táblázat mutatja be.
+
+Ezen eredmények alapján tehát éles domaineken a KL veszteség akár elhagyható is lehet, amennyiben a minimilás telejsítményromlás mellett jelentősen könnyebb csak egy mésik modell kiementi szövegén tanítni egy tanulómodellt. Puhább, vagy szabadzsöveges generálásnál a KL vezsteségre is szükség van, és ammennyiben különösen fontos, hogy a tanármodel és a tanulomodel leg valószínűbb következő tökenje, érdemes lehet egy CE veszteség komponenat is hozzáadni, ráadsul ha mindhárom top k metirkqa fotnus számunkra, szintén a vegyítsé jelenthet jó megoldsát.
+
+Fontos kikötés: a dolgozat csak a KL-ből CE-be vezető vegyítést vizsgálta koszinus ütemezéssel, vagyis a CE-ből KL-be történi vegyítést is érdemes lehet vizsgálni. Egy másik kikötés, hogy a két vezsteség nem ugyan akkora számokat adnak vissza, tehát egy 0.5-ös arányú vegyítás nem feltétlenül fogja azt jelenti, hogy a két vezsteség egyenlőan hat a modellre, ezért érdemes kísérletezni kisebb, olcsóbban tanítható modelleken mielőtt egy arány mellett elköteleződünk.
+
+9.2 A csökkentett szótár
+Szótáron belül maradó valószínűség, csökkentett és teljes szótár, paramétermegtakarítás
+
+9.3 A tanulómodell mérete és a tanítóadat mennyisége - PENDING
 Skálázás, a kis modellek sokszor elegek
 
-9.3 A matematikai ügynök működése - PENDING
+9.4 A matematikai ügynök működése - PENDING
 A kis modellek képesek ügynökként viselkedni
 
-9.4 A kódügynök túltanulása - PENDING
+9.5 A kódügynök túltanulása - PENDING
+Nő a tesztveszteség, csökken a tanítóveszteség, hol hibázik a modell
 
-9.5 A figyelem vizsgálata
+9.6 A figyelem vizsgálata
 A tultanulás a ifgyelem mintából is megállíapíható
 
-9.6 Sebesség és erőforrásigény - PENDING
+9.7 Sebesség és erőforrásigény - PENDING
 Actual GPU speedup emasures
+
+9.8 Összevetés hasonló rendszerekkel
+Méret, előtanítás és szótár a hasonló rendszerekhez képest
 
 10. A keretrendszer értékelése, alkalmazása és továbbfejlesztése
 
