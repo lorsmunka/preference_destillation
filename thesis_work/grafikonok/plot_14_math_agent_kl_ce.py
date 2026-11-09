@@ -1,6 +1,6 @@
 """Thesis figure 9.1 (chapter 9): the math tutor's 16.5M student on the full data, per pass: task accuracy
 (agreement with Gemma's answer) and the test CE loss, pure KL vs pure CE (3 seeds each) and KL -> CE (3 seeds).
-Thick line = mean of the seeds, thin lines = each seed.
+Each line = the mean of the 3 seeds (the user, 2026-11-09: averages only).
 Data: experiments/results/math_agent.csv (KL, CE) and runs/math-agent-kl-to-ce-m-s{1,2,3}/logs/training.jsonl.
 Run: python thesis_work/grafikonok/plot_14_math_agent_kl_ce.py (redraws the PNG next to this file)."""
 import csv
@@ -43,12 +43,9 @@ for arm, label, color, style in ARMS:
     seeds = [sorted(points) for points in curves[arm].values()]
     passes = [point[0] for point in seeds[0]]
     for column, axis, scale in ((1, accuracy_axis, 100), (2, loss_axis, 1)):
-        for points in seeds:
-            axis.plot(passes, [point[column] * scale for point in points], color=color, linewidth=0.8,
-                      linestyle=style, alpha=0.35, zorder=1)
         mean = [sum(points[index][column] for points in seeds) / len(seeds) * scale for index in range(len(passes))]
         axis.plot(passes, mean, color=color, linewidth=2, linestyle=style, zorder=2,
-                  label=f"{label} ({len(seeds)} véletlenmag)" if axis is accuracy_axis else None)
+                  label=f"{label} ({len(seeds)} véletlenmag átlaga)" if axis is accuracy_axis else None)
 
 comma = matplotlib.ticker.FuncFormatter(lambda value, _position: f"{value:g}".replace(".", ","))
 for axis, title in ((accuracy_axis, "Feladatpontosság (%)"), (loss_axis, "CE-veszteség a tesztadatokon")):
