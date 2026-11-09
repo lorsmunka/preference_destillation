@@ -133,10 +133,15 @@ def build_corpus(path=CORPUS_V2, count=None):
     test = [record for record in found if record["split"] == "test"]
     random.Random(SEED).shuffle(train)
     random.Random(SEED).shuffle(test)
+    train = train[:count]
+    # by length: the scoring pass pads every group of records to its longest, so similar lengths cost less (the
+    # student's run shuffles the batch files again, shuffle_seed)
+    train.sort(key=lambda record: len(record["text"]) + len(record["target"]))
+    test.sort(key=lambda record: len(record["text"]) + len(record["target"]))
     with open(path, "w", encoding="utf-8") as file:   # derived file, rebuilt each time
-        for record in train[:count] + test:
+        for record in train + test:
             file.write(json.dumps(record, ensure_ascii=False) + "\n")
-    print(f"{len(train[:count]):,} train + {len(test):,} test records -> {path}")
+    print(f"{len(train):,} train + {len(test):,} test records -> {path}")
     print(dict(Counter((record["split"], record["unit"]) for record in found)))
 
 

@@ -333,7 +333,11 @@ class ModelHandler:
         with torch.no_grad():
             logits = self.model(input_ids=input_ids, attention_mask=attention_mask, position_ids=position_ids,
                                 logits_to_keep=keep).logits
-            reduced = logits[:, :, reduced_ids].float().cpu()
+            reduced = logits[:, :, reduced_ids].float()
+            # the top token per position on the card (2026-11-09: the Python max over every row cost ~25% of a
+            # scoring pass); the same index as before, ties to the first
+            top_indices = reduced.argmax(dim=-1).cpu()
+            reduced = reduced.cpu()
 
         results = []
         for row, (text, target, ids) in enumerate(zip(texts, targets, target_ids)):
@@ -342,7 +346,7 @@ class ModelHandler:
             steps, agree = [], 0
             for j, token_id in enumerate(ids):
                 logit_vector = reduced[row, offset + j].tolist()
-                predicted = int(max(range(len(logit_vector)), key=logit_vector.__getitem__))
+                predicted = int(top_indices[row, offset + j])
                 token = self.tokenizer.convert_ids_to_tokens([token_id])[0]
                 agree += token_list[predicted] == token
                 steps.append({"token": token, "logits": logit_vector, "predicted_token_index": predicted})
