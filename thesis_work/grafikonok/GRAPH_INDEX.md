@@ -20,3 +20,4 @@ A script tobbnyire chart-only PNG-ket general. A 06a-c abrakban a modellmeret is
 16. `09_postgen_topk_metrics.png` - Post generation top-k: Free-form generation top-k tradeoff.
 17. `10_domain_data_cost.png` - Domain data cost: Why post generation is much more expensive to compile.
 18. `14_math_agent_kl_ce.png` - Thesis figure 9.1: math tutor 16.5M student on the full data, task accuracy and test CE loss per pass, KL vs CE and KL -> CE (3 seeds each); `plot_14_math_agent_kl_ce.py`.
+19. `15_math_data_curve.png` - Thesis figure 9.2: math tutor data curve on one test set, the same 16.5M KL student (seed 1, 10 passes) on 6k / 20k / 65k / 195,980 replies, task accuracy and test CE; `plot_15_math_data_curve.py`.
