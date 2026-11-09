@@ -1,6 +1,7 @@
 """Thesis figure 9.2 (chapter 9, section 9.3): the math tutor's data curve on one test set. The same 16.5M student
 (KL, settings of math-agent-kl-m-s1, seed 1, 10 passes) trained on 6 000, 20 000, 65 000 and all 195 980 replies;
-last pass: task accuracy (agreement with Gemma's answer) and the test CE loss. One series per panel, so no legend.
+last pass: task accuracy (agreement with Gemma's answer) and the test CE loss. One series per panel, so no legend;
+every point is labelled because the thesis has no table for these values.
 Data: experiments/results/math_data_curve.csv (pass 10).
 Run: python thesis_work/grafikonok/plot_15_math_data_curve.py (redraws the PNG next to this file)."""
 import csv
@@ -38,9 +39,12 @@ for axis, column, title in ((accuracy_axis, 0, "Feladatpontosság (%)"), (loss_a
     values = [points[count][column] for count in replies]
     axis.plot(replies, values, color=SERIES, linewidth=2, marker="o", markersize=6,
               markeredgecolor=SURFACE, markeredgewidth=2, zorder=2)
-    # direct labels on the first and last point only, placed clear of the axes' tick labels
-    offsets = [((0, 9), "center"), ((0, 9), "center")] if column == 0 else [((10, 2), "left"), ((-8, -13), "right")]
-    for (count, value), (offset, align) in zip(((replies[0], values[0]), (replies[-1], values[-1])), offsets):
+    # every point labelled: the table that held these values was removed (user, 2026-11-09)
+    for index, (count, value) in enumerate(zip(replies, values)):
+        if column == 0:
+            offset, align = [((10, -3), "left"), ((-6, 7), "right"), ((0, 9), "center"), ((0, 9), "center")][index]
+        else:
+            offset, align = ((9, 3), "left") if index < len(replies) - 1 else ((-8, -13), "right")
         text = f"{value:.1f}%" if column == 0 else f"{value:.3f}"
         axis.annotate(text.replace(".", ","), (count, value), textcoords="offset points",
                       xytext=offset, ha=align, fontsize=8.5, color=TEXT_SECONDARY)
