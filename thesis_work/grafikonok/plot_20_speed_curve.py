@@ -1,7 +1,8 @@
 """Thesis figure (chapter 9, section 9.6): the math tutor's reply time against model size on four machines. The four
 students of the size sweep (2.7M / 6.1M / 16.4M / 53.7M, 2 / 4 / 6 / 8 layers) as one line per machine, Gemma 4 12B
 as its own point on the two GPUs (bf16 on the A100, 4-bit NF4 on the RTX 4070: it fits there only so). Both axes
-logarithmic. Median time per reply (input text to reply text, batch 1, greedy), 80 test replies x 3 timed rounds after
+logarithmic; the time gridlines double at each step (25, 50, ..., 6400), so equal gaps mean equal ratios (user,
+2026-11-09: with 20 / 50 / 100 / 200 ticks the gap 20-50 looked wider than 1000-2000). Median time per reply (input text to reply text, batch 1, greedy), 80 test replies x 3 timed rounds after
 an untimed warm-up pass. Data: experiments/results/speed.csv (experiments/speed_benchmark.py, speed_merge.py).
 Run: python thesis_work/grafikonok/plot_20_speed_curve.py (redraws the PNG next to this file)."""
 import csv
@@ -41,7 +42,7 @@ def find(hardware, device, model, kind="math"):
 
 
 def milliseconds(value):
-    return f"{value:,.0f}".replace(",", " ") + " ms" if value < 10000 else f"{value / 1000:.1f} s".replace(".", ",")
+    return f"{value:.0f} ms" if value < 10000 else f"{value / 1000:.1f} s".replace(".", ",")
 
 
 plt.rcParams.update({"font.family": "Arial", "font.size": 9})
@@ -67,16 +68,18 @@ for hardware, device, label, color, style in MACHINES:
 axis.set_xscale("log")
 axis.set_yscale("log")
 axis.set_xlim(1.6e6, 4e10)
-axis.set_ylim(15, 12000)
+axis.set_ylim(18, 12000)
 size_ticks = [2.7e6, 6.1e6, 16.4e6, 53.7e6, 12e9]
 axis.set_xticks(size_ticks)
 axis.set_xticklabels(["2,7M", "6,1M", "16,4M", "53,7M", "12B"])
 axis.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
-axis.set_yticks([20, 50, 100, 200, 500, 1000, 2000, 5000, 10000])
-axis.set_yticklabels(["20", "50", "100", "200", "500", "1000", "2000", "5000", "10 000"])
+time_ticks = [25, 50, 100, 200, 400, 800, 1600, 3200, 6400]
+axis.set_yticks(time_ticks)
+axis.set_yticklabels([str(tick) for tick in time_ticks])
 axis.yaxis.set_minor_locator(matplotlib.ticker.NullLocator())
-axis.set_title("Válaszidő (ms, medián)", color=TEXT_PRIMARY, fontsize=9, loc="left")
-axis.set_xlabel("Paraméterek száma", color=TEXT_SECONDARY, fontsize=9)
+axis.set_title("Válaszidő (ms, medián, logaritmikus skála, rácsvonalanként kétszeres)", color=TEXT_PRIMARY,
+               fontsize=9, loc="left")
+axis.set_xlabel("Paraméterek száma (logaritmikus skála)", color=TEXT_SECONDARY, fontsize=9)
 for spine in ("top", "right", "left"):
     axis.spines[spine].set_visible(False)
 axis.spines["bottom"].set_color(GRID)
