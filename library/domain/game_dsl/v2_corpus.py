@@ -18,28 +18,38 @@ from collections import Counter
 from typing import Dict, List
 
 from . import CORPUS_V2, FENCE, OUTPUT_TOKENS_V2
-from .asks import (FULL_FOLDER, HOLLOW, UNITS, append_jsonl, block_of, failed_checks, load_games, read_jsonl,
-                   repaired, spliced)
+from .asks import (FULL2_FOLDER, FULL3_FOLDER, FULL_FOLDER, HOLLOW, UNITS, append_jsonl, block_of, failed_checks,
+                   load_games, read_jsonl, repaired, spliced)
 
-CHECKED = FULL_FOLDER / "checked.jsonl"
-BLOCKS = FULL_FOLDER / "blocks.jsonl"
+FOLDERS = (FULL_FOLDER, FULL2_FOLDER, FULL3_FOLDER)     # the three writing passes (rounds 1, 2, 3)
 CHUNK = 1000        # spliced games per compiler run
 SEED = 0
 
 
-def replies() -> Dict[str, Dict]:
+def replies(folder) -> Dict[str, Dict]:
     found = {}
-    for path in sorted(FULL_FOLDER.glob("written_*.jsonl")):
+    for path in sorted(folder.glob("written_*.jsonl")):
         for row in read_jsonl(path):
             if row.get("reply") and row["id"] not in found:
                 found[row["id"]] = row
     return found
 
 
+def all_blocks() -> List[Dict]:
+    return [row for folder in FOLDERS for row in read_jsonl(folder / "blocks.jsonl")]
+
+
 def check():
+    for folder in FOLDERS:
+        if (folder / "asks.jsonl").exists():
+            check_folder(folder)
+
+
+def check_folder(folder):
     from .check import check_sources
-    asks = read_jsonl(FULL_FOLDER / "asks.jsonl")
-    written = replies()
+    checked_path, blocks_path = folder / "checked.jsonl", folder / "blocks.jsonl"
+    asks = read_jsonl(folder / "asks.jsonl")
+    written = replies(folder)
     asks = [ask for ask in asks if ask["id"] in written]
     by_id = {ask["id"]: ask for ask in asks}
     games = {game.version_id: game for game in load_games(ids={ask["version"] for ask in asks})}
@@ -75,10 +85,10 @@ def check():
             row["follows"] = not row["failed"]
         rows += chunk
         print(f"checked {len(rows):,}/{len(asks):,}", flush=True)
-    for path in (CHECKED, BLOCKS):
+    for path in (checked_path, blocks_path):
         path.unlink(missing_ok=True)        # derived from the replies
-    append_jsonl(CHECKED, rows)
-    append_jsonl(BLOCKS, [{"id": row["id"], "block": row["block"], "repairs": row["repairs"]}
+    append_jsonl(checked_path, rows)
+    append_jsonl(blocks_path, [{"id": row["id"], "block": row["block"], "repairs": row["repairs"]}
                           for row in rows if row["kept"] and row["follows"]])
     print(f"{'unit':<14}{'split':>6}{'asks':>7}{'kept':>7}{'follows':>9}{'both':>7}")
     for unit in UNITS:
@@ -89,7 +99,7 @@ def check():
                 share = lambda test: f"{sum(map(test, unit_rows)) / count:.0%}"
                 print(f"{unit:<14}{split:>6}{count:>7}{share(lambda row: row['kept']):>7}"
                       f"{share(lambda row: row['follows']):>9}{share(lambda row: row['kept'] and row['follows']):>7}")
-    print(f"{sum(row['kept'] and row['follows'] for row in rows):,} targets -> {BLOCKS}")
+    print(f"{sum(row['kept'] and row['follows'] for row in rows):,} targets -> {blocks_path}")
 
 
 def vocabulary():
@@ -98,7 +108,7 @@ def vocabulary():
     from .vocabulary import vocabulary_texts
     tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path("google/gemma-4-12B-it"))
     counts = Counter()
-    for text in vocabulary_texts() + [f"{FENCE}\n{row['block']}\n{FENCE}" for row in read_jsonl(BLOCKS)]:
+    for text in vocabulary_texts() + [f"{FENCE}\n{row['block']}\n{FENCE}" for row in all_blocks()]:
         counts.update(tokenizer.tokenize(text))
     tokens = [token for token, _ in counts.most_common()]
     OUTPUT_TOKENS_V2.write_text(json.dumps({"tokens": tokens}, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -106,9 +116,9 @@ def vocabulary():
 
 
 def records() -> List[Dict]:
-    asks = {ask["id"]: ask for ask in read_jsonl(FULL_FOLDER / "asks.jsonl")}
+    asks = {ask["id"]: ask for folder in FOLDERS for ask in read_jsonl(folder / "asks.jsonl")}
     found = []
-    for row in read_jsonl(BLOCKS):
+    for row in all_blocks():
         ask = asks[row["id"]]
         found.append({"text": ask["text"], "target": f"{FENCE}\n{row['block']}\n{FENCE}", "teacher": "forced",
                       "item_id": ask["id"], "split": ask["split"], "game": ask["version"].rsplit("|", 1)[0],
