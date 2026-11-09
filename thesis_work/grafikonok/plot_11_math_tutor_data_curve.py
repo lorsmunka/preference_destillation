@@ -43,12 +43,12 @@ axis.scatter(replies, loss, s=64, color=SERIES, edgecolor=SURFACE, linewidth=2, 
 
 axis.set_xscale("log", base=2)
 axis.set_xticks(replies)
-axis.set_xticklabels([f"{count:,}".replace(",", " ") for count in replies])
+axis.set_xticklabels([f"{count:,}".replace(",", " ") if count >= 10000 else str(count) for count in replies])   # thesis style: a space only from 5 digits
 axis.minorticks_off()
 axis.set_xlim(400, 8000)
 axis.set_ylim(1.6, 3.2)
 axis.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda value, _position: f"{value:.1f}".replace(".", ",")))
-axis.set_xlabel("Tanítóválaszok száma (logaritmikus skála)", color=TEXT_SECONDARY)
+axis.set_xlabel("Tanítópéldák száma (logaritmikus skála)", color=TEXT_SECONDARY)
 axis.set_ylabel("CE-veszteség a tesztadatokon", color=TEXT_SECONDARY)
 
 for spine in ("top", "right", "left"):

@@ -51,7 +51,7 @@ for axis, column, title in ((accuracy_axis, 0, "Feladatpontosság (%)"), (loss_a
     axis.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
     axis.set_facecolor(SURFACE)
     axis.set_title(title, color=TEXT_PRIMARY, fontsize=10, loc="left")
-    axis.set_xlabel("Tanítóválaszok száma (logaritmikus skála)", color=TEXT_SECONDARY, fontsize=9)
+    axis.set_xlabel("Tanítópéldák száma (logaritmikus skála)", color=TEXT_SECONDARY, fontsize=9)
     for spine in ("top", "right", "left"):
         axis.spines[spine].set_visible(False)
     axis.spines["bottom"].set_color(GRID)
