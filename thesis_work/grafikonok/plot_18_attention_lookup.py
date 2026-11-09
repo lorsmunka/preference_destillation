@@ -49,7 +49,7 @@ math_values = [float(math_metrics["math-untrained-m"][math_name].max()), sum(tra
                float(math_metrics["gemma"][math_name].max())]
 
 FIGURES = [
-    ("18a_code_attention.png", "A célsorokra jutó figyelem sorszám írásakor", code_values,
+    ("18a_code_attention.png", "A keresett sorokra jutó figyelem sorszám írásakor", code_values,
      ["Tanítatlan tanulómodell", "Tanulómodell, 10 epoch", "Gemma 4 12B"]),
     ("18b_math_attention.png", "A számokra jutó figyelem szám írásakor", math_values,
      ["Tanítatlan tanulómodell", "Tanulómodell, 10 epoch", "Gemma 4 12B"]),
