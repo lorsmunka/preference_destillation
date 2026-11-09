@@ -105,6 +105,40 @@ the app (qr_flutter web/game_agent/v1, ONNX on-device, downloaded on first use; 
    victory" (the words left to the model). v1's commands nearly always named the block (#knight) and spelled the
    change out.
 
+## v2's corpus: the draft (2026-11-09)
+
+Asks from the user's point of view (asks.py, wording.py): a whole game version (nothing cut out), the cursor at a
+place a user could type, an ask, and Gemma writes the block (there is no real one). The input is built exactly as
+the app builds it (live.py), so training and use match (v1's problems matched it on 74% / 90%). Units by rule, each
+with an "expect" checked at home next to the compiler (does the block do what was asked: the colour, the shape, the
+id, the keyword, bigger, faster, the text...): colour_shape, character, naming, construct, sound, edit (casual,
+"this"), text, level; plus open asks without a rule check (hand-written or written by a model). Every ask goes
+through wording.casual: please, a question, no capital, typos.
+
+Gemma's prompt for v2 is "card2": the card + conventions (the naming rule; "this" = the block under the cursor; a
+text is a text Entity; a new Level is a whole level with its own ids; no ";"; typos). Two slips are mended by rule
+instead of dropping the block: ";" between actions, and a new Entity's id renamed to the naming rule's.
+
+First test (A40, vLLM, 499 asks; runs/game_v2/test = the first prompt, test_b = with all the conventions). Usable
+= compiles, passes the checks and does what was asked:
+
+| unit | first prompt | card2 |
+|---|---|---|
+| colour_shape | 35% | 55% |
+| character | 25% | 52% |
+| naming | 68% | 78% |
+| construct | 75% | 65% |
+| sound | 78% | 78% |
+| edit (casual) | 68% | 72% |
+| text | 12% | 82% |
+| level | 25% | 35% |
+| open, hand-written | 52% | 78% |
+| open, written by Gemma | 55% | 55% |
+
+Gemma as the writer of open asks: plausible ideas, but at /insert places half its asks change something else ("make
+the goalie faster"). What Gemma misses most: "huge" / "tiny", dark and light shades, levels that copy another
+level's ids.
+
 ## Files
 
 language.py (parser, checks, hollow), compiler.py (the app's compiler: qr_flutter/build/dsl_check/dsl_check.exe,
