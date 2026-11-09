@@ -8,14 +8,16 @@
     python experiments/game_v2_run.py student s10
 """
 
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 TEACHER = "google/gemma-4-12B-it"
-PASSES = 6
+PASSES = int(os.environ.get("V2_PASSES", 5))     # the user's choice (2026-11-09): 5 passes
 SEED = 1
+TAG = os.environ.get("V2_TAG", f"s{SEED}")         # the run names' end ("smoke" for the end-to-end test)
 # the user's sizes (2026-11-09): ~5M, 10M, 15M, 20M, 30M parameters (hidden width, layers, heads, learning rate)
 SIZES = {"s5": (192, 6, 4, 0.0012), "s10": (256, 6, 4, 0.001), "s15": (320, 7, 5, 0.0009),
          "s20": (384, 8, 6, 0.0008), "s30": (448, 10, 7, 0.0007)}
@@ -46,7 +48,7 @@ def student(size):
         build_input_vocabulary(domain, TEACHER)
     hidden_dim, num_layers, num_heads, learning_rate = SIZES[size]
     run = TrainingRun(
-        run_name=f"game-agent-v2-{size}-s{SEED}", domain=domain, teacher_model=TEACHER, experiment="game-agent-v2",
+        run_name=f"game-agent-v2-{size}-{TAG}", domain=domain, teacher_model=TEACHER, experiment="game-agent-v2",
         hidden_dim=hidden_dim, num_layers=num_layers, num_heads=num_heads, learning_rate=learning_rate,
         dropout=0.1, epoch_count=PASSES, batch_size=32, lr_warmup_ratio=0.1, max_training_examples=None,
         shuffle_seed=SEED, kl_ratio_start=0.9, kl_ratio_end=0.1,

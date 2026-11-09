@@ -106,9 +106,12 @@ def vocabulary():
     from transformers import AutoTokenizer
     from library.shared.config import teacher_weights_path
     from .vocabulary import vocabulary_texts
+    from .asks import versions_path
     tokenizer = AutoTokenizer.from_pretrained(teacher_weights_path("google/gemma-4-12B-it"))
     counts = Counter()
-    for text in vocabulary_texts() + [f"{FENCE}\n{row['block']}\n{FENCE}" for row in all_blocks()]:
+    new_games = [json.loads(line)["source"] for round_number in (2, 3) if versions_path(round_number).exists()
+                 for line in open(versions_path(round_number), encoding="utf-8")]
+    for text in vocabulary_texts() + new_games + [f"{FENCE}\n{row['block']}\n{FENCE}" for row in all_blocks()]:
         counts.update(tokenizer.tokenize(text))
     tokens = [token for token, _ in counts.most_common()]
     OUTPUT_TOKENS_V2.write_text(json.dumps({"tokens": tokens}, ensure_ascii=False) + "\n", encoding="utf-8")

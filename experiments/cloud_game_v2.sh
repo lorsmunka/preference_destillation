@@ -17,6 +17,7 @@
 NAME=${1:?card name}
 SIZES=${2:-}
 MAX_HOURS=${MAX_HOURS:-11}
+PY=${PYTHON:-python}      # the writing cards score from a venv (torch 2.8, transformers 5.17): vLLM brought its own torch
 . /etc/rp_environment 2>/dev/null
 export HF_HOME=/root/hf
 LOG=/workspace/logs/v2_$NAME.log
@@ -28,7 +29,14 @@ exec >> "$LOG" 2>&1
 step() { echo "== $1 $(date -u '+%Y-%m-%d %H:%M:%S')"; }
 stop_machine() {
     step "$1: stopping the machine"
+    [ -n "$BACKUP_PID" ] && { step "waiting for the backup push"; wait "$BACKUP_PID"; }
     [ -n "$DRY_RUN" ] && { echo "(dry run: no podStop)"; exit; }
+    if [ -n "$SMOKE" ]; then     # the end-to-end test: only check that the API takes this card's key
+        curl -s -m 30 -H "Content-Type: application/json" -H "Authorization: Bearer $RUNPOD_API_KEY" \
+             https://api.runpod.io/graphql -d '{"query": "query { myself { id } }"}'
+        echo; echo "(smoke test: the key works if an id is printed above; no podStop)"
+        exit
+    fi
     for attempt in 1 2 3 4 5; do
         reply=$(curl -s -m 30 -H "Content-Type: application/json" -H "Authorization: Bearer $RUNPOD_API_KEY" \
                 https://api.runpod.io/graphql \
@@ -45,9 +53,9 @@ on_card() { $SSH -p "$(card_field "$1" 3)" "root@$(card_field "$1" 2)" "$2"; }
 
 step "setup ($NAME, sizes: ${SIZES:-none})"
 if [ -z "$DRY_RUN" ]; then
-    pip install --break-system-packages -q 'transformers==5.17.0' accelerate matplotlib tqdm pandas protobuf \
+    [ -n "$PYTHON" ] || pip install --break-system-packages -q 'transformers==5.17.0' accelerate matplotlib tqdm pandas protobuf \
         || stop_machine "pip failed"
-    python -c "from huggingface_hub import snapshot_download; print(snapshot_download('google/gemma-4-12B-it'))" \
+    "$PY" -c "from huggingface_hub import snapshot_download; print(snapshot_download('google/gemma-4-12B-it'))" \
         || stop_machine "the Gemma download failed"
 fi
 step "waiting for GO"
@@ -59,12 +67,20 @@ if [ -n "$DRY_RUN" ]; then
     mkdir -p "$BATCHES" && for i in 0 1 2; do echo "$NAME $i" > "$BATCHES/batch_$i.npz"; done
     echo '{"status": "completed"}' > "$BATCHES/info.json"
 else
-    python -u experiments/game_v2_run.py score 0 8 || python -u experiments/game_v2_run.py score 0 8 \
+    "$PY" -u experiments/game_v2_run.py score 0 8 || "$PY" -u experiments/game_v2_run.py score 0 8 \
         || stop_machine "the scoring failed twice"
 fi
 grep -q '"status": "completed"' "$BATCHES/info.json" || stop_machine "the scoring did not complete"
 touch /workspace/SCORE_DONE
 step "scoring done: $(ls "$BATCHES" | grep -c npz) batch files"
+
+# the backup: this card's share to the game-v2 network volume (the keeper pod), in the background; every stop waits
+# for it, so no share exists on one card's disk alone
+read -r receiver_ip receiver_port < /workspace/receiver.txt
+( tar -C "$BATCHES" -cf - . | $SSH -p "$receiver_port" "root@$receiver_ip" \
+      "mkdir -p /vol/game_v2_batches/$NAME && tar -C /vol/game_v2_batches/$NAME -xf -" \
+  && step "this card's share is backed up on the volume" || step "the backup push FAILED (the share stays on this disk)" ) &
+BACKUP_PID=$!
 
 if [ -z "$SIZES" ]; then
     # a scorer: wait until every trainer has copied this card's batches (or 3 h), then stop
@@ -115,7 +131,7 @@ step "$index batch files merged"
 
 step "the input vocabulary (once, before the students)"
 if [ -z "$DRY_RUN" ]; then
-    python -c "import sys; sys.path.insert(0, '.'); from library.domain.game_dsl import GameDslV2Domain; \
+    "$PY" -c "import sys; sys.path.insert(0, '.'); from library.domain.game_dsl import GameDslV2Domain; \
 from library.shared.build_input_vocabulary import build_input_vocabulary; \
 build_input_vocabulary(GameDslV2Domain(), 'google/gemma-4-12B-it')" || stop_machine "the input vocabulary failed"
 fi
@@ -123,10 +139,10 @@ step "training: $SIZES"
 pids=""
 for size in $SIZES; do
     if [ -n "$DRY_RUN" ]; then
-        (mkdir -p "/workspace/pd/runs/game-agent-v2-$size-s1" \
-            && ls -l "$BATCHES" > "/workspace/pd/runs/game-agent-v2-$size-s1/merged.txt") &
+        (mkdir -p "/workspace/pd/runs/game-agent-v2-$size-${V2_TAG:-s1}" \
+            && ls -l "$BATCHES" > "/workspace/pd/runs/game-agent-v2-$size-${V2_TAG:-s1}/merged.txt") &
     else
-        python -u experiments/game_v2_run.py student "$size" > "/workspace/logs/student_$size.log" 2>&1 &
+        "$PY" -u experiments/game_v2_run.py student "$size" > "/workspace/logs/student_$size.log" 2>&1 &
     fi
     pids="$pids $!"
 done
@@ -135,7 +151,7 @@ step "training done"
 
 read -r receiver_ip receiver_port < /workspace/receiver.txt
 for size in $SIZES; do
-    run=game-agent-v2-$size-s1
+    run=game-agent-v2-$size-${V2_TAG:-s1}
     tar -C /workspace/pd/runs -cf - "$run" | $SSH -p "$receiver_port" "root@$receiver_ip" \
         "mkdir -p /vol/game_v2_students && tar -C /vol/game_v2_students -xf -" \
         && step "$run pushed to the receiver" || step "pushing $run failed (it stays on this card's disk)"
