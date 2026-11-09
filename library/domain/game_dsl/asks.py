@@ -741,12 +741,12 @@ def window_size(game: Game) -> Tuple[float, float]:
 
 # ---------- making the asks ----------
 
-def load_games(split: Optional[str] = None, originals_only: bool = False) -> List[Game]:
+def load_games(split: Optional[str] = None, originals_only: bool = False, ids: Optional[set] = None) -> List[Game]:
     games = []
     with open(PROBLEMS / "versions.jsonl", encoding="utf-8") as file:
         for line in file:
             record = json.loads(line)
-            if (split and record["split"] != split) or (originals_only and not record["id"].endswith("|v0")):
+            if (split and record["split"] != split) or (originals_only and not record["id"].endswith("|v0"))                     or (ids is not None and record["id"] not in ids):
                 continue
             games.append(Game(record["id"], record["source"], record["split"]))
     return games
@@ -822,6 +822,57 @@ def test(per_unit: int = 50, folder: Path = OUTPUT / "test"):
                                              "prompt": domain.teacher_prompt(ask["text"]), "budget": budget(ask)}
                                             for ask in asks])
     print(f"{len(asks)} asks -> {folder}")
+
+
+# ---------- the full v2 corpus (the user chose ~50k asks, 2026-11-09) ----------
+
+FULL_FOLDER = OUTPUT / "full"
+# rule asks per unit on the train games (+ ~2.5k open asks from the subagents, open_collect); the test games get
+# TEST_PER_UNIT of each
+FULL_COUNTS = {"colour_shape": 6000, "character": 6000, "naming": 4000, "construct": 9000, "sound": 5000,
+               "edit": 10000, "text": 3500, "level": 2000, "open": 1000}
+TEST_PER_UNIT = 150
+
+
+def build_rule_asks(folder: Path = FULL_FOLDER):
+    """The rule asks of the full corpus -> rule_asks.jsonl (refused when it exists: Gemma's replies are keyed to
+    its ids)."""
+    path = folder / "rule_asks.jsonl"
+    if path.exists():
+        print(f"{path} exists: Gemma's replies are keyed to its asks; use another folder")
+        return
+    random_generator = random.Random(2026_11_12)
+    asks, seen = [], set()
+    for split, counts in (("train", FULL_COUNTS), ("test", {unit: TEST_PER_UNIT for unit in FULL_COUNTS})):
+        games = load_games(split)
+        for unit, count in counts.items():
+            made, tries = 0, 0
+            while made < count and tries < count * 20:
+                tries += 1
+                ask = make_ask(random_generator.choice(games), unit, random_generator)
+                if ask is None or ask["id"] in seen:
+                    continue
+                seen.add(ask["id"])
+                asks.append(ask)
+                made += 1
+            print(f"{split} {unit}: {made:,}", flush=True)
+    append_jsonl(path, asks)
+    print(f"{len(asks):,} rule asks -> {path}")
+
+
+def build_prompts(folder: Path = FULL_FOLDER):
+    """Every ask (the rule asks + the subagents' open asks) -> asks.jsonl and prompts.jsonl (Gemma's card2 prompt;
+    rebuilt each time, the ids stay)."""
+    asks = read_jsonl(folder / "rule_asks.jsonl") + open_collect()
+    domain = GameDslDomain("card2")
+    for name in ("asks.jsonl", "prompts.jsonl"):
+        (folder / name).unlink(missing_ok=True)      # derived from rule_asks.jsonl and the answers
+    append_jsonl(folder / "asks.jsonl", asks)
+    append_jsonl(folder / "prompts.jsonl", [{"id": ask["id"], "command": command_line(ask["task"], ask["said"]),
+                                             "prompt": domain.teacher_prompt(ask["text"]), "budget": budget(ask)}
+                                            for ask in asks])
+    counts = Counter((ask["split"], ask["unit"]) for ask in asks)
+    print(f"{len(asks):,} asks -> {folder}: {dict(sorted(counts.items()))}")
 
 
 # ---------- Gemma as the writer of the open asks (tried in the first test: it is already on the card) ----------
@@ -906,6 +957,138 @@ def writer_asks(folder: Path, written_name: str = "vllm_written.jsonl"):
     append_jsonl(path, [{"id": ask["id"], "command": command_line(ask["task"], ask["said"]),
                          "prompt": domain.teacher_prompt(ask["text"]), "budget": budget(ask)} for ask in asks])
     print(f"{len(asks)} asks written by Gemma -> {path}")
+
+
+# ---------- open asks written by Claude subagents (the user's choice, 2026-11-09) ----------
+
+OPEN_FOLDER = OUTPUT / "open"
+PLACES_PER_FILE = 40
+ASKS_PER_PLACE = 4
+# where the open asks go: new things where an Entity may go, new events and actions, changes to entities and events
+PLACE_KINDS = {"entity_place": 0.35, "events": 0.15, "actions": 0.15, "entity": 0.25, "event": 0.10}
+
+OPEN_INSTRUCTIONS = """You are writing training data for a code assistant inside the editor of QR Game Studio, an app \
+with a small game language. A user puts the cursor somewhere in their game, types an ask, and the assistant writes \
+the code: /insert writes new code at the cursor, /edit rewrites the block under the cursor.
+
+Each place below shows what the assistant sees: WINDOW (window size in units of 100 px, background, gravity, ...), \
+NAMES (one line per entity / group / bar / signal: its kind, shape, movement and events), CURSOR (where the cursor \
+is), BLOCK (the block under or around the cursor; <cursor> marks the spot). The game itself is not shown.
+
+For each place, write {asks} different asks a person making this game might type there, from their point of view: \
+"here is my game; what would I want to add or change right here?" New features, tweaks, characters, enemies, \
+pickups, sounds, effects, texts, rules, difficulty: things the game does not have yet, not the blocks it already \
+has.
+- /insert places: the ask must be about new code AT the cursor. CURSOR says where: at the top level or inside a \
+Level, a new thing (an entity, a group, a bar, a wave, a whole new level when the game has Levels); inside an \
+Events block, a new event of the entity in BLOCK ("when it hits the wall ..."); inside an Actions block, more \
+actions for that moment ("also shake the screen"). Never a change to something elsewhere in the game.
+- /edit places: change the block under the cursor. Point at it the way people do: "this", "it", "this knight", \
+"the ball", sometimes #id.
+- Vary the wording a lot across the asks: with or without a verb ("add", "create", "make", "put", none at all), \
+short and casual ("boss here pls"), detailed (how many, how fast, what colour, what happens), a question ("can you \
+make ..."), mostly lower case, now and then a typo. About one ask in five names a construct of the language \
+("add an OnValue at 10", "add a timer", "add a Wave", "add an OnCollision with #wall").
+- Ask only for what this language can do: shapes (rectangle, circle, triangle, star, diamond, ring, polygon, cross, \
+text, emoji text), colours, sizes, positions, movement (automatic, player controlled, paths, chasing, grid steps), \
+collisions, taps, swipes, timers, signals, bars and counters (score, lives, time), win and lose, sounds and music, \
+particles, shake, flash, spawning copies, levels. No images, no online play, no menus or settings screens.
+- Never write code, braces, brackets after a word, or hex colours; colour names are fine.
+- A #name only for a name in NAMES.
+
+Answers: append to {answers}, one line per ask: <place number><TAB><ask> (no quotes around it, no verb like /insert \
+in front). Append after each part you read, all its places in one go (Bash: cat >> file <<'EOF' ... EOF; never \
+`cat >>` without the heredoc); never rewrite the file.
+"""
+
+OPEN_AGENT_PROMPT = """Read the instructions at the top of {tasks} and do every place in it ({places} places, \
+{asks} asks each). The file is {size} KB: read it in a few big parts (Read with offset/limit, ~600 lines at a time), \
+and after each part append the answers for all its places in one go (one heredoc). Do not run any code, touch any \
+file other than the answers file the instructions name, or use git. When done, reply with how many asks you wrote \
+and any place whose instructions were impossible to follow (one line each)."""
+
+
+def place_spots(game: Game, kind: str) -> List[Spot]:
+    if kind == "entity_place":
+        return game.entity_spots(game.insert_spots())
+    if kind in ("events", "actions"):
+        return [spot for spot in game.insert_spots() if spot.kind == kind]
+    return [spot for spot in game.edit_spots() if spot.kind == kind]
+
+
+def open_tasks(files: int = 14, test_files: int = 2, folder: Path = OPEN_FOLDER):
+    """Task files for the subagents: PLACES_PER_FILE places each, from random versions (train files from train
+    games, the last test_files from the held-out games) -> tasks_NN.txt + places.jsonl."""
+    if (folder / "places.jsonl").exists():
+        print(f"{folder / 'places.jsonl'} exists: its answers may be on the way; use another folder")
+        return
+    random_generator = random.Random(2026_11_11)
+    by_split = {"train": load_games("train"), "test": load_games("test")}
+    places = []
+    for file_index in range(files + test_files):
+        split = "train" if file_index < files else "test"
+        answers = (folder / f"tasks_{file_index:02d}_answers.tsv").resolve().as_posix()
+        lines = [OPEN_INSTRUCTIONS.format(asks=ASKS_PER_PLACE, answers=answers)]
+        made = 0
+        while made < PLACES_PER_FILE:
+            game = random_generator.choice(by_split[split])
+            kind = random_generator.choices(list(PLACE_KINDS), list(PLACE_KINDS.values()))[0]
+            spots = place_spots(game, kind)
+            if not spots:
+                continue
+            spot = random_generator.choice(spots)
+            task = "edit" if kind in ("entity", "event") else "insert"
+            ask = {"task": task, "said": "", "offset": spot.offset, "indent": spot.indent}
+            try:
+                text, *_ = student_text(game, ask)
+            except (ValueError, TypeError):
+                continue
+            number = len(places) + 1
+            seen = text.rsplit("\nCOMMAND", 1)[0]
+            lines.append(f"===== PLACE {number} | /{task}\n{seen}\n")
+            places.append({"number": number, "file": file_index, "version": game.version_id, "split": split,
+                           "task": task, "offset": spot.offset, "indent": spot.indent, "kind": kind})
+            made += 1
+        (folder / f"tasks_{file_index:02d}.txt").parent.mkdir(parents=True, exist_ok=True)
+        with open(folder / f"tasks_{file_index:02d}.txt", "x", encoding="utf-8") as file:
+            file.write("\n".join(lines))
+    append_jsonl(folder / "places.jsonl", places)
+    print(f"{len(places)} places in {files + test_files} files -> {folder}")
+
+
+def open_collect(folder: Path = OPEN_FOLDER) -> List[Dict]:
+    """The subagents' answers -> asks of unit "open" (no rule check), with their inputs."""
+    places = {place["number"]: place for place in read_jsonl(folder / "places.jsonl")}
+    games = {game.version_id: game for game in load_games(ids={place["version"] for place in places.values()})}
+    asks, dropped = [], Counter()
+    for path in sorted(folder.glob("tasks_*_answers.tsv")):
+        for line in open(path, encoding="utf-8"):
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) < 2 or not parts[0].strip().isdigit() or int(parts[0]) not in places:
+                dropped["format"] += 1
+                continue
+            place = places[int(parts[0])]
+            said = re.sub(r"^/(insert|edit)\s*", "", " ".join(parts[1:]).strip().strip('"')).strip()
+            if not said or len(said) > 300 or re.search(r"[{}]|\w\(|\b[0-9a-fA-F]{6}\b", said):
+                dropped["code or empty"] += 1
+                continue
+            if re.search(r"\.\.\.\s*no\b|\bi mean\b|\bno wait\b", said):     # an agent's self-correction mid-ask
+                dropped["self-correction"] += 1
+                continue
+            game = games[place["version"]]
+            if any(name not in game.names | {"lives", "score"} for name in re.findall(r"#(\w+)", said)):
+                dropped["unknown #name"] += 1
+                continue
+            ask = {"version": place["version"], "split": place["split"], "unit": "open", "task": place["task"],
+                   "said": said, "offset": place["offset"], "indent": place["indent"], "spot": place["kind"],
+                   "expect": {}, "cursor_label": "", "writer": "claude-subagent"}
+            text, start, end, indent = student_text(game, ask)
+            ask.update({"text": text, "start": start, "end": end, "indent": indent,
+                        "before": game.source[start:end] if place["task"] == "edit" else None,
+                        "id": f"{place['version']}|open|{zlib.crc32((said + str(place['offset'])).encode()) % 10**8}"})
+            asks.append(ask)
+    print(f"{len(asks):,} open asks from the subagents; dropped {dict(dropped)}")
+    return asks
 
 
 def without_semicolons(block: str) -> str:
@@ -995,5 +1178,13 @@ if __name__ == "__main__":
         print(f"{OUTPUT / folder_name} already has Gemma's replies to its asks: name another folder")
     elif action == "writer_asks":
         writer_asks(OUTPUT / (sys.argv[2] if len(sys.argv) > 2 else "test"))
+    elif action == "build":
+        build_rule_asks()
+    elif action == "prompts":
+        build_prompts()
+    elif action == "open_tasks":
+        open_tasks()
+    elif action == "open_collect":
+        open_collect()
     elif action == "check":
         check(Path(sys.argv[2]) if len(sys.argv) > 2 else OUTPUT / "test")

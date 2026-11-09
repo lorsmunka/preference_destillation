@@ -653,7 +653,7 @@ Egy kísérlet azt is megmutatta, hogy a matematikai feladatmegoldó ügynökné
 
 Az egyik legkomplexebb desztilláció a matematikia ügynök, aki válaszol, magyaráz és a kontextusát is menedzseli. A desztilláció összeségben sikeresnek mondható, a model KL veszteséget használva, saját előzménnyel 99.1%-ban helyesen menedzseli a kontextusát (99.1%-ban egyezik Gemma utvonal választásával), továbbá 76.9%-ban meg is egyezik az első kérdésnél a válasza Gemma-éval. A répülő kérdéseknél ez az arány már csak 48.8%, de ez több adattal, a fent bemutaott grafikonok alapján még tovább javítahtó. Egy részletesebb összefoglaló a 9.5 táblázatban megtekitnhető, veszteségenként bonta.
 
-9.5. táblázat. A matematikai feladatmegoldó ügynök a modellhámmal, teljes beszélgetésekben, a Gemma válaszaihoz mérve, 1250 tesztbeszélgetés, 7209 tesztpélda, ebből 3151 végeredménnyel, 3 véletlenmag átlaga
+9.5. táblázat. A matematikai feladatmegoldó ügynök 16,5M paraméteres tanulómodellje a modellhámmal, teljes beszélgetésekben, a Gemma válaszaihoz mérve, 1250 tesztbeszélgetés, 7209 tesztpélda, ebből 3151 végeredménnyel, 3 véletlenmag átlaga
 
 |                                                    | KL, helyes előzménnyel | KL, saját előzménnyel | CE, saját előzménnyel |
 | -------------------------------------------------- | ---------------------- | --------------------- | --------------------- |
@@ -669,7 +669,7 @@ Az egyik legkomplexebb desztilláció a matematikia ügynök, aki válaszol, mag
 
 A 9.6 pedig a model generalizálását mutatja meg. A 3 oszlopban láthatjuk a model a tanulomodelek telejsítményét különböző tezstfeladatokon. A KL veszteséggel tanÍTOTT MODEL A TESZTFELADOK eredményein 74,2%-BAN mutatott Gemma-val egyezést, a tanításból kihagyott feladatcsoportokon 43%-ban, a SVAMP példáin, melyeket a model nem látott, 34%-ban tudott helyesen megoldani.
 
-9.6. táblázat. Egyezés a Gemma végeredményével az első kérdésnél, feladattípusonként 300 feladaton, újrakérdezés nélkül, a SVAMP [26] feladatgyűjteményen
+9.6. táblázat. A 16,5M paraméteres tanulómodellek egyezése a Gemma végeredményével az első kérdésnél, feladattípusonként 300 feladaton, újrakérdezés nélkül, a SVAMP [26] feladatgyűjteményen
 
 |                                                     | Tesztfeladatok | Tanításból kihagyott feladattípusok | SVAMP |
 | --------------------------------------------------- | -------------- | ----------------------------------- | ----- |
@@ -677,41 +677,33 @@ A 9.6 pedig a model generalizálását mutatja meg. A 3 oszlopban láthatjuk a m
 | CE (3 véletlenmag)                                  | 72,8%          | 40,1%                               | 31,3% |
 | A Gemma 4 12B pontossága a helyes megoldáshoz mérve | 99,7%          | 100%                                | 95,7% |
 
-9.5 A kódügynök túltanulása - PENDING
-Nő a tesztveszteség, csökken a tanítóveszteség, hol hibázik a modell
+9.5 A figyelem vizsgálata
+
+A kódügynök tanulómodellje nem általánosított, hanem a tanítóprojektekre tanult rá, a 10. epoch után a kijelöléseiben megnevezett fájlok 55,5%-a csak a tanítóprojektekben létezik. Ezt a 9.5. ábra mutatja be, a tanítóadaton mért CE-veszteség végig csökkent, a tesztprojekteken mért viszont a 2. epochban volt a legkisebb, ezt követően nőni kezdett.
 
 ![9.5. ábra](../grafikonok/17_code_agent_overfit.png)
 9.5. ábra. A kódügynök 12,0M paraméteres tanulómodelljének CE-vesztesége epochonként a tanítóadaton és a tesztprojekteken (KL, 1 véletlenmag)
 
-9.7. táblázat. A kódügynök tanulómodellje és a Gemma a modellhámban, 800 tesztkérésen (a fájlokra vonatkozó sorok a kijelölésekben megnevezett összes fájlra számolva)
+Érdekes módon ez a modell figyelmén (attention) is látszik. A dogozatban használt desztillációs módszer a figyelmet nem tanítja, a tanulómodell csak a tanár kimenetét látja, ezért azt, hogy hova figyeljen, magától kell megtanulnia. A vizsgálathoz minden figyelemfejnél (a Gemmánál 768, a tanulómodellnél 24) mérésre került, hogy a tesztválaszok írásakor a figyelem mekkora része jut arra, amit a modellnek a bemenetből kellene kikeresnie, és modellenként az a figyelemfej lett összehasonlítva, amelyik erre juttatja a legnagyobb részt. Más néven ez a model kereső figyelemfeje (lookup head), bár ez a desztillált modellnél tulzó kifejezés. A 9.6. ábra azt mutatja, hogy a sorszámok írásakor a figyelem mekkora része jut a keresett sorokra, a 9.7. ábra pedig egy példán mutatja meg ugyanezt. A Gemma kereső figyelemfeje a figyelem 66,9%-át a keresett sorokra fordítja, és a fájlnév írásakor a 23 tesztkérés mindegyikénél a helyes fájlra figyel leginkább. A tanulómodell kereső feje ezzel szemben csak 4,8%-ban figyel a helyes fájlra, ami alig több a tanítatlan, véletlen súlyú modell 4,1%-ánál. A figyelme tehát szétoszlik a teljes projekten, nem a keresett részre koncentrál, és ez a 10 epoch alatt végig így maradt.
 
-|                                                                       | Tanulómodell, 2. epoch | Tanulómodell, 10. epoch | Gemma 4 12B |
-| --------------------------------------------------------------------- | ---------------------- | ----------------------- | ----------- |
-| A kijelölés használható                                               | 33,6%                  | 40,5%                   | 100%        |
-| A kijelölésben szerepel a helyes fájl (véletlen választással 9,1%)    | 4,1%                   | 14,4%                   | 99,4%       |
-| A kijelölés pontosan a valódi helyeket adja                           | 0%                     | 0,3%                    | 46,5%       |
-| A megnevezett fájl csak a tanítóprojektekben létezik                  | 42,8%                  | 55,5%                   | 0%          |
-| A megnevezett fájl kitalált                                           | 16,8%                  | 2,0%                    | 0%          |
-| Ugyanaz a kérés a projekt másik változatán ugyanazt a kijelölést adja | 60,6%                  | 36,4%                   | –           |
-| Ugyanaz a kérés egy másik projekten ugyanazt a kijelölést adja        | 20,5%                  | 7,9%                    | –           |
+![9.6. ábra](../grafikonok/18a_code_attention.png)
+9.6. ábra. A keresett sorokra jutó figyelem a sorszámok írásakor, a kereső figyelemfejnél, a kódügynök 12,0M paraméteres tanulómodelljénél (KL, 1 véletlenmag), a Gemma 23 tesztválaszán
 
-9.8. táblázat. A kódügynök tanulómodelljének helyes előzménnyel mért tokenpontossága a válasz részei szerint, a 10. epochban
+![9.7. ábra](../grafikonok/19a_code_attention_snippet.png)
+9.7. ábra. A figyelem egy tesztkérésnél ("Which lines hold the code that places an order?") a sorszám írásakor, a kereső figyelemfejnél, közös színskálán (a piros sáv a keresett sorokat jelöli)
 
-| Válaszrész                                        | Tokenpontosság |
-| ------------------------------------------------- | -------------- |
-| Kijelölés, fájlnév                                | 14,6%          |
-| Kijelölés, sorszámok                              | 36,0%          |
-| Kijelölés, egyéb (tagek, kiterjesztés, írásjelek) | 98,1%          |
-| Magyarázat                                        | 49,7%          |
-| A keresett kód megtalálásának jelzése (<found/>)  | 99,7%          |
+A matematikai feladatmegoldó ügynöknél, ahol a desztilláció sikeres volt, a tanulómodell figyelme a Gemmáéhoz hasonlóan a megfelelő részekre koncentrál (9.8. ábra, egy példán a 9.9. ábra). Szám írásakor a tanulómodell kereső feje a figyelem 82,6%-át a szövegben szereplő számokra fordítja, a Gemmáé 64,3%-át, a tanítatlan modellé csak 14,5%-át.
 
-9.6 A figyelem vizsgálata
-A tultanulás a ifgyelem mintából is megállíapíható
+![9.8. ábra](../grafikonok/18b_math_attention.png)
+9.8. ábra. A számokra jutó figyelem számok írásakor, a kereső figyelemfejnél, a matematikai feladatmegoldó ügynök 16,5M paraméteres tanulómodelljénél (KL, 3 véletlenmag átlaga), a Gemma 80 tesztválaszán
 
-9.7 Sebesség és erőforrásigény - PENDING
+![9.9. ábra](../grafikonok/19b_math_attention_snippet.png)
+9.9. ábra. A figyelem egy tesztbeszélgetésben a "35" második számjegyének írásakor, a kereső figyelemfejnél, közös színskálán (a keretezett token a most írt token, a beszélgetés eleje levágva)
+
+9.6 Sebesség és erőforrásigény - PENDING
 Actual GPU speedup emasures
 
-9.8 Összevetés hasonló rendszerekkel
+9.7 Összevetés hasonló rendszerekkel
 Méret, előtanítás és szótár a hasonló rendszerekhez képest
 
 10. A keretrendszer értékelése, alkalmazása és továbbfejlesztése

@@ -117,3 +117,31 @@ class GameDslDomain(Domain):
     def structural_validity(self, output: str) -> bool:
         output = output.strip()
         return output.startswith(FENCE) and output.endswith(FENCE) and output.count(FENCE) == 2
+
+
+OUTPUT_TOKENS_V2 = PACKAGE / "output_tokens_v2.json"
+CORPUS_V2 = PACKAGE / "corpus_v2.jsonl"
+
+
+class GameDslV2Domain(GameDslDomain):
+    """v2 (2026-11-09, PLAN.md "v2's corpus"): asks from the user's point of view (asks.py), Gemma's "card2" prompt,
+    and its own output vocabulary, corpus and batches folder (v1's stay as they are)."""
+    name = "game_dsl_v2"
+
+    def __init__(self):
+        super().__init__("card2")
+
+    @property
+    def example_tokens(self) -> List[str]:
+        if self._example_tokens is None:
+            self._example_tokens = json.load(open(OUTPUT_TOKENS_V2, encoding="utf-8"))["tokens"] \
+                if OUTPUT_TOKENS_V2.exists() else []
+        return self._example_tokens
+
+    @property
+    def corpus_path(self) -> str:
+        return str(CORPUS_V2)
+
+    def build_corpus(self, count: Optional[int] = None) -> None:
+        from .v2_corpus import build_corpus
+        build_corpus(count=count)
