@@ -1,4 +1,4 @@
-"""Thesis figures 9.6 and 9.7 (chapter 9, section 9.5): where the best attention head looks while the model writes the
+"""Thesis figures 9.6 and 9.8 (chapter 9, section 9.5): where the best attention head looks while the model writes the
 part of the reply that has to be looked up in the input. Three bars each, on the same 0-100% scale:
 the untrained student (random weights, the even spread), the trained student and Gemma 4 12B (bf16).
 
