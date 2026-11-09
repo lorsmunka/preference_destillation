@@ -18,10 +18,10 @@ from collections import Counter
 from typing import Dict, List
 
 from . import CORPUS_V2, FENCE, OUTPUT_TOKENS_V2
-from .asks import (FULL2_FOLDER, FULL3_FOLDER, FULL_FOLDER, HOLLOW, UNITS, append_jsonl, block_of, failed_checks,
+from .asks import (FULL2_FOLDER, FULL3_FOLDER, FULL4_FOLDER, FULL_FOLDER, HOLLOW, UNITS, append_jsonl, block_of, failed_checks,
                    load_games, read_jsonl, repaired, spliced)
 
-FOLDERS = (FULL_FOLDER, FULL2_FOLDER, FULL3_FOLDER)     # the three writing passes (rounds 1, 2, 3)
+FOLDERS = (FULL_FOLDER, FULL2_FOLDER, FULL3_FOLDER, FULL4_FOLDER)     # the writing passes (rounds 1-4)
 CHUNK = 1000        # spliced games per compiler run
 SEED = 0
 

@@ -1144,6 +1144,56 @@ def build_prompts_round3(folder: Path = FULL3_FOLDER):
     print(f"{len(asks):,} asks -> {folder}: {dict(sorted(counts.items()))}")
 
 
+# ---------- round 4 (the user, 2026-11-09 night: "+20-30% more examples", usage headroom) ----------
+
+FULL4_FOLDER = OUTPUT / "full4"
+OPEN4_FOLDER = OUTPUT / "open4"
+ROUND4_UNIT_COUNTS = {"colour_shape": 1000, "character": 1500, "naming": 700, "construct": 2200, "sound": 1200,
+                      "edit": 2800, "text": 700, "level": 600, "open": 300, "control": 1100, "button": 1100,
+                      "rules": 1600}
+ROUND4_PLAN = (("train", (2, 3), ROUND4_UNIT_COUNTS),
+               ("test", (2, 3), {unit: 40 for unit in ROUND4_UNIT_COUNTS}))
+
+
+def build_rule_asks_plan(folder: Path, plan, seed: int):
+    path = folder / "rule_asks.jsonl"
+    if path.exists():
+        print(f"{path} exists: Gemma's replies are keyed to its asks; use another folder")
+        return
+    known = {ask["id"] for earlier in (FULL_FOLDER, FULL2_FOLDER, FULL3_FOLDER)
+             for ask in read_jsonl(earlier / "rule_asks.jsonl")}
+    random_generator = random.Random(seed)
+    asks, seen = [], set(known)
+    for split, rounds, counts in plan:
+        games = load_games(split, rounds=rounds)
+        for unit, count in counts.items():
+            made, tries = 0, 0
+            while made < count and tries < count * 20:
+                tries += 1
+                ask = make_ask(random_generator.choice(games), unit, random_generator)
+                if ask is None or ask["id"] in seen:
+                    continue
+                seen.add(ask["id"])
+                asks.append(ask)
+                made += 1
+            print(f"{split} round {rounds} {unit}: {made:,}", flush=True)
+    append_jsonl(path, asks)
+    print(f"{len(asks):,} rule asks -> {path}")
+
+
+def build_prompts_round4(folder: Path = FULL4_FOLDER):
+    asks = read_jsonl(folder / "rule_asks.jsonl") + open_collect(OPEN4_FOLDER)
+    domain = GameDslDomain("card2")
+    for name in ("asks.jsonl", "prompts.jsonl"):
+        (folder / name).unlink(missing_ok=True)      # derived from rule_asks.jsonl and the answers
+    append_jsonl(folder / "asks.jsonl", asks)
+    append_jsonl(folder / "prompts.jsonl", [{"id": ask["id"], "command": command_line(ask["task"], ask["said"]),
+                                             "prompt": domain.teacher_prompt(ask["text"]), "budget": budget(ask)}
+                                            for ask in asks])
+    counts = Counter((ask["split"], ask["unit"]) for ask in asks)
+    print(f"{len(asks):,} asks -> {folder}: {dict(sorted(counts.items()))}")
+
+
 # ---------- rule asks reworded by Claude subagents (round 3, 2026-11-09: the templates' wording is narrow) ----------
 
 REWORD_FOLDER = OUTPUT / "reword"
@@ -1574,6 +1624,12 @@ if __name__ == "__main__":
         open_tasks(12, 2, OPEN2_FOLDER, rounds=(2,), seed=2026_11_14)
     elif action == "prompts2":
         build_prompts_round2()
+    elif action == "build4":
+        build_rule_asks_plan(FULL4_FOLDER, ROUND4_PLAN, 2026_11_18)
+    elif action == "open_tasks4":
+        open_tasks(14, 2, OPEN4_FOLDER, rounds=(2, 3), seed=2026_11_19)
+    elif action == "prompts4":
+        build_prompts_round4()
     elif action == "build3":
         build_rule_asks_round3()
     elif action == "prompts3":
