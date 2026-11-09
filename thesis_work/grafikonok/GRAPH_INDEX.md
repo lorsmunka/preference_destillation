@@ -22,3 +22,4 @@ A script tobbnyire chart-only PNG-ket general. A 06a-c abrakban a modellmeret is
 18. `14_math_agent_kl_ce.png` - Thesis figure 9.1: math tutor 16.5M student on the full data, task accuracy and test CE loss per pass, KL vs CE and KL -> CE (3 seeds each); `plot_14_math_agent_kl_ce.py`.
 19. `15_math_data_curve.png` - Thesis figure 9.2: math tutor data curve on one test set, the same 16.5M KL student (seed 1, 10 passes) on 6k / 20k / 65k / 195,980 replies, task accuracy and test CE; `plot_15_math_data_curve.py`.
 20. `16_sentiment_size.png` - Thesis figure 9.3: sentiment students of 7 sizes (5.3M-129.2M) on ~490k training examples, field-level task accuracy over valid JSON replies, one seed each; `plot_16_sentiment_size.py`.
+21. `17_code_agent_overfit.png` - Thesis figure 9.5: coding agent student (12.0M, KL, one seed), CE loss per pass on its training data vs on the test projects (lowest at pass 2, then rising); `plot_17_code_agent_overfit.py`.
