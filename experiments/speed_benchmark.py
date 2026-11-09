@@ -20,6 +20,7 @@ the card has >= 11 GB. On the CPU only the students are timed.
 
     python experiments/speed_benchmark.py            # this machine's GPU (if any) and its CPU
     python experiments/speed_benchmark.py --no-cpu   # GPU only (rented cards: their CPUs are not the question)
+    python experiments/speed_benchmark.py --students # students only (a rerun after a disturbed run; teachers kept)
 
 Results: experiments/results/speed_replies.csv (every timed reply) and speed.csv (per hardware / device / model /
 kind: median and quartiles of the time per reply, tokens per second, peak GPU memory)."""
@@ -179,7 +180,7 @@ def main():
             else:
                 print(f"  {run_name}: not on this machine, skipped")
 
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and "--students" not in sys.argv[1:]:
         memory = gpu_memory_gb()
         for model_name, kinds in TEACHERS.items():
             if model_name.endswith("12B-it"):

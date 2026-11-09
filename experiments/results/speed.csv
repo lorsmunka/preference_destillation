@@ -1,0 +1,35 @@
+key,hardware,device,model,precision,parameters,kind,replies,median_ms,p25_ms,p75_ms,mean_reply_tokens,tokens_per_second,peak_memory_gb,threads,measured_at
+NVIDIA GeForce RTX 4070|cuda|math-agent-kl-m-s1|math,NVIDIA GeForce RTX 4070,cuda,math-agent-kl-m-s1,fp32,16456494,math,240,157.95,141.87,170.95,43.6,269.5,0.11,,2026-11-09 20:56
+NVIDIA GeForce RTX 4070|cuda|math-full-kd-xs-s1|math,NVIDIA GeForce RTX 4070,cuda,math-full-kd-xs-s1,fp32,2669678,math,240,63.58,55.26,69.49,42.6,638.5,0.05,,2026-11-09 20:45
+NVIDIA GeForce RTX 4070|cuda|math-full-kd-s1|math,NVIDIA GeForce RTX 4070,cuda,math-full-kd-s1,fp32,6106798,math,240,101.6,76.93,114.08,34.1,382.5,0.07,,2026-11-09 20:45
+NVIDIA GeForce RTX 4070|cuda|math-full-kd-m-s1|math,NVIDIA GeForce RTX 4070,cuda,math-full-kd-m-s1,fp32,16389422,math,240,147.87,114.36,160.68,36.7,271.6,0.11,,2026-11-09 20:46
+NVIDIA GeForce RTX 4070|cuda|math-full-kd-l-s1|math,NVIDIA GeForce RTX 4070,cuda,math-full-kd-l-s1,fp32,53732910,math,240,200.06,179.76,216.35,44.3,210.2,0.27,,2026-11-09 20:47
+NVIDIA GeForce RTX 4070|cuda|code-agent-kl-m-s1|code,NVIDIA GeForce RTX 4070,cuda,code-agent-kl-m-s1,fp32,11954943,code,72,93.23,86.32,102.73,17.6,184.8,0.53,,2026-11-09 20:47
+NVIDIA GeForce RTX 4070|cuda|kl-ce-30k-reddit-pure-kl-s1|sentiment,NVIDIA GeForce RTX 4070,cuda,kl-ce-30k-reddit-pure-kl-s1,fp32,3416397,sentiment,144,78.44,76.67,81.07,38.8,491.2,0.02,,2026-11-09 20:47
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|math-agent-kl-m-s1|math","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,math-agent-kl-m-s1,fp32,16456494,math,240,120.44,107.48,131.67,43.6,353.2,,16,2026-11-09 20:48
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|math-full-kd-xs-s1|math","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,math-full-kd-xs-s1,fp32,2669678,math,240,34.99,30.88,38.15,42.6,1166.5,,16,2026-11-09 20:48
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|math-full-kd-s1|math","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,math-full-kd-s1,fp32,6106798,math,240,61.75,48.04,69.11,34.1,612.9,,16,2026-11-09 20:49
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|math-full-kd-m-s1|math","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,math-full-kd-m-s1,fp32,16389422,math,240,110.64,94.59,126.83,36.7,339.9,,16,2026-11-09 20:49
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|math-full-kd-l-s1|math","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,math-full-kd-l-s1,fp32,53732910,math,240,691.56,616.13,772.1,44.3,61.6,,16,2026-11-09 20:53
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|code-agent-kl-m-s1|code","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,code-agent-kl-m-s1,fp32,11954943,code,72,928.52,879.63,1217.92,17.6,18.0,,16,2026-11-09 20:54
+"Intel64 Family 6 Model 183 Stepping 1, GenuineIntel|cpu|kl-ce-30k-reddit-pure-kl-s1|sentiment","Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",cpu,kl-ce-30k-reddit-pure-kl-s1,fp32,3416397,sentiment,144,36.09,34.89,36.87,38.8,1083.0,,16,2026-11-09 20:55
+NVIDIA GeForce RTX 4070|cuda|gemma-4-12B-it|math,NVIDIA GeForce RTX 4070,cuda,gemma-4-12B-it,nf4,6487883776,math,240,3745.82,2911.2,4324.66,34.3,9.0,7.63,,2026-11-09 20:21
+NVIDIA GeForce RTX 4070|cuda|gemma-4-12B-it|code,NVIDIA GeForce RTX 4070,cuda,gemma-4-12B-it,nf4,6487883776,code,72,6294.78,5603.26,7501.97,17.1,2.2,10.53,,2026-11-09 20:33
+NVIDIA GeForce RTX 4070|cuda|gemma-3-4b-it|sentiment,NVIDIA GeForce RTX 4070,cuda,gemma-3-4b-it,bf16,4300079472,sentiment,144,1736.5,1715.93,1790.82,39.0,22.1,8.05,,2026-11-09 20:39
+NVIDIA A100-SXM4-80GB|cuda|math-agent-kl-m-s1|math,NVIDIA A100-SXM4-80GB,cuda,math-agent-kl-m-s1,fp32,16456494,math,240,233.42,213.07,253.91,43.6,181.2,0.1,,2026-11-09 19:08
+NVIDIA A100-SXM4-80GB|cuda|math-full-kd-xs-s1|math,NVIDIA A100-SXM4-80GB,cuda,math-full-kd-xs-s1,fp32,2669678,math,240,93.26,81.4,103.63,42.6,434.1,0.04,,2026-11-09 19:08
+NVIDIA A100-SXM4-80GB|cuda|math-full-kd-s1|math,NVIDIA A100-SXM4-80GB,cuda,math-full-kd-s1,fp32,6106798,math,240,153.31,112.99,172.38,34.1,254.4,0.06,,2026-11-09 19:09
+NVIDIA A100-SXM4-80GB|cuda|math-full-kd-m-s1|math,NVIDIA A100-SXM4-80GB,cuda,math-full-kd-m-s1,fp32,16389422,math,240,220.51,166.6,236.91,36.7,183.4,0.1,,2026-11-09 19:10
+NVIDIA A100-SXM4-80GB|cuda|math-full-kd-l-s1|math,NVIDIA A100-SXM4-80GB,cuda,math-full-kd-l-s1,fp32,53732910,math,240,300.65,275.51,329.04,44.3,139.7,0.26,,2026-11-09 19:12
+NVIDIA A100-SXM4-80GB|cuda|code-agent-kl-m-s1|code,NVIDIA A100-SXM4-80GB,cuda,code-agent-kl-m-s1,fp32,11954943,code,72,126.09,118.51,133.76,17.6,138.4,0.52,,2026-11-09 19:12
+NVIDIA A100-SXM4-80GB|cuda|kl-ce-30k-reddit-pure-kl-s1|sentiment,NVIDIA A100-SXM4-80GB,cuda,kl-ce-30k-reddit-pure-kl-s1,fp32,3416397,sentiment,144,112.11,109.28,116.25,38.8,341.9,0.02,,2026-11-09 19:13
+NVIDIA A100-SXM4-80GB|cuda|gemma-4-12B-it|math,NVIDIA A100-SXM4-80GB,cuda,gemma-4-12B-it,bf16,11959730176,math,240,3244.81,2401.08,3673.46,34.9,12.3,22.66,,2026-11-09 19:30
+NVIDIA A100-SXM4-80GB|cuda|gemma-4-12B-it|code,NVIDIA A100-SXM4-80GB,cuda,gemma-4-12B-it,bf16,11959730176,code,72,2630.2,2417.4,3053.83,19.8,7.0,25.65,,2026-11-09 19:34
+NVIDIA A100-SXM4-80GB|cuda|gemma-3-4b-it|sentiment,NVIDIA A100-SXM4-80GB,cuda,gemma-3-4b-it,bf16,4300079472,sentiment,144,1883.09,1861.51,1911.48,39.0,20.6,8.04,,2026-11-09 19:41
+x86_64|cpu|math-agent-kl-m-s1|math,x86_64,cpu,math-agent-kl-m-s1,fp32,16456494,math,240,220.74,195.97,236.93,43.6,193.4,,4,2026-11-09 19:08
+x86_64|cpu|math-full-kd-xs-s1|math,x86_64,cpu,math-full-kd-xs-s1,fp32,2669678,math,240,27.63,24.22,30.39,42.6,1468.9,,4,2026-11-09 19:08
+x86_64|cpu|math-full-kd-s1|math,x86_64,cpu,math-full-kd-s1,fp32,6106798,math,240,54.72,47.31,62.63,34.1,657.7,,4,2026-11-09 19:08
+x86_64|cpu|math-full-kd-m-s1|math,x86_64,cpu,math-full-kd-m-s1,fp32,16389422,math,240,192.39,165.68,212.25,36.7,197.5,,4,2026-11-09 19:09
+x86_64|cpu|math-full-kd-l-s1|math,x86_64,cpu,math-full-kd-l-s1,fp32,53732910,math,240,613.09,551.46,684.28,44.3,68.6,,4,2026-11-09 19:13
+x86_64|cpu|code-agent-kl-m-s1|code,x86_64,cpu,code-agent-kl-m-s1,fp32,11954943,code,72,1363.19,1192.03,1692.33,17.6,12.5,,4,2026-11-09 19:15
+x86_64|cpu|kl-ce-30k-reddit-pure-kl-s1|sentiment,x86_64,cpu,kl-ce-30k-reddit-pure-kl-s1,fp32,3416397,sentiment,144,20.87,20.77,20.96,38.8,1864.4,,4,2026-11-09 19:15
