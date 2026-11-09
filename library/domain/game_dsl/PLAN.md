@@ -99,6 +99,11 @@ the app (qr_flutter web/game_agent/v1, ONNX on-device, downloaded on first use; 
    moving platforms", "create a level that is like level 2 but harder", "add three enemies that patrol the top").
    v1 never cut a Level block (problems.insert_candidates: entities, events, action lists and window items only),
    so this is a new task kind; its targets are long (many blocks), which may need the larger student.
+8. Edits said the way people point at things: "this" for the block under the cursor, no #name, short and casual,
+   in many variations: "edit this knight from red to blue", "change this from a square to a circle", "change the
+   text to whatever", "change to "winners"" (a quoted literal), "add text that reflects victory" / "text here for
+   victory" (the words left to the model). v1's commands nearly always named the block (#knight) and spelled the
+   change out.
 
 ## Files
 
