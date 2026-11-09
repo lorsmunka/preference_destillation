@@ -58,6 +58,8 @@ FRESH_NOUNS = ("hero", "enemy", "coin", "ghost", "boss", "wall", "platform", "ge
                "bird", "tree", "cloud", "heart", "bomb", "rocket", "ninja", "pirate", "pumpkin", "apple", "mushroom",
                "crystal", "shield", "sword", "flag", "portal", "spike", "ladder", "balloon", "button", "monster",
                "player", "target", "blob", "snake", "frog", "car", "ship", "asteroid", "lamp", "trap", "chest")
+NAMES_GIVEN = ("knight", "bob", "max", "luna", "rex", "zippy", "sparky", "hero", "tank", "pixel", "blinky", "rocky",
+               "nova", "bolt", "mochi", "ziggy", "buddy", "shadow", "pebble", "comet", "player2", "boss", "speedy")
 THING_NOUNS = ("character", "enemy", "thing", "monster", "guy", "coin", "pickup", "obstacle", "target", "blob",
                "friend", "bot", "player", "block", "creature")
 WORDS_TO_SAY = ("winners", "GAME OVER", "you win!", "nice!", "try again", "level up", "ouch", "boom", "ready?", "go!",
@@ -204,6 +206,10 @@ def thing_words(random_generator: random.Random, game: Game) -> Tuple[str, Dict]
              f"{colour}, {size} {shape} {noun}"]
     words = re.sub(r"\s+", " ", random_generator.choice(forms)).strip().strip(",").strip()
     name = noun if noun and re.search(rf"\b{noun}\b", words) else "thing" if words.startswith("thing") else shape
+    if random_generator.random() < 0.2:          # named by the user: "a red circle named knight" (2026-11-09)
+        name = random_generator.choice(NAMES_GIVEN)
+        words += random_generator.choice([f" named {name}", f" called {name}", f", name it {name}",
+                                          f" with the name {name}", f" ({name})"])
     expect = {"top": "entity", "shape": shape, "colour": colour_spec(colour), "new_id": True,
               "id": game.free_name(name)}
     if size:
@@ -236,7 +242,10 @@ def unit_character(game: Game, spot: Spot, random_generator: random.Random):
                   ("that disappears when tapped", {"has": ["ontapped"], "has_any": ["deleteentity", "setvisible"]}),
                   ("that just sits there", {"lacks": ["movement"]}),
                   ("that i can control", {"has_any": ["control", "gridmove"]}),
-                  ("that blinks every second", {"has": ["onelapsedtime"]})]
+                  ("that blinks every second", {"has": ["onelapsedtime"]}),
+                  ("controlled by dragging", {"has": ["control"]}),
+                  (", controlled by dragging it left and right", {"arg": ["movementcontrol", 0, 2]}),
+                  ("that i can drag up and down", {"arg": ["movementcontrol", 0, 1]})]
     if game.player:
         player = the_player(game, random_generator)
         behaviours += [(f"that chases {player}", {"chase": game.player}),
@@ -249,7 +258,7 @@ def unit_character(game: Game, spot: Spot, random_generator: random.Random):
                            {"has": ["ontapped", "updatebar"]}))
     clause, extra = random_generator.choice(behaviours)
     expect.update(extra)
-    return "insert", with_verb(words, random_generator) + " " + clause, expect
+    return "insert", (with_verb(words, random_generator) + " " + clause).replace(" , ", ", "), expect
 
 
 def unit_naming(game: Game, spot: Spot, random_generator: random.Random):
@@ -523,8 +532,103 @@ def unit_level(game: Game, spot: Spot, random_generator: random.Random):
     forms = ["add a new level", f"create a level like level {number} but harder", "another level with more enemies",
              f"level {len(game.levels) + 1}", "make a harder level", f"a level like level {number} but faster",
              "add an easy first level", "new level pls", "add a bonus level with lots of coins",
-             "create a level with moving platforms"]
+             "create a level with moving platforms", "create a level", "create a simple level",
+             "a simple level with a few platforms", f"copy level {number} but make it harder",
+             f"level {len(game.levels) + 1} with lava", "a short bonus level", "make a new level with 3 enemies",
+             "create an easy level for beginners", "add a level where everything is faster",
+             "new level, more walls and one exit", "a level with a maze"]
     return "insert", random_generator.choice(forms), {"top": "level", "min_entities": 2}
+
+
+# ---------- the user's asks of 2026-11-09 evening: control, buttons, rules ("up the score when touched") ----------
+
+def unit_control(game: Game, spot: Spot, random_generator: random.Random):
+    """/edit an Entity into something the player drags (Control), or /insert a joystick or dpad for one."""
+    if spot.kind == "entity":
+        movement = spot.node.child("movement")
+        if movement is not None and movement.child("control"):
+            return None
+        this = pointer(random_generator, noun_of(entity_id(spot.node)), shape_word(shape_of(spot.node)),
+                       entity_id(spot.node))
+        options = [([f"make {this} controllable", f"make it controllable by dragging", f"let me drag {this}",
+                     f"i want to control {this}", f"make {this} the player", "make it draggable",
+                     f"control {this} with my finger"], {"has": ["control"], "keep_id": True}),
+                   ([f"make {this} controllable left and right only", "drag it sideways only",
+                     f"let me move {this} left and right"], {"arg": ["movementcontrol", 0, 2], "keep_id": True}),
+                   ([f"make {this} controllable up and down", "drag it up and down only"],
+                    {"arg": ["movementcontrol", 0, 1], "keep_id": True})]
+        forms, expect = random_generator.choice(options)
+        return "edit", random_generator.choice(forms), expect
+    if spot.kind in ("top", "level") and not game.keys["joystick"] and not game.keys["dpad"]:
+        movers = sorted(game.ids - set(game.templates))
+        target = game.player if game.player and random_generator.random() < 0.7 else \
+            (random_generator.choice(movers) if movers else None)
+        if target is None:
+            return None
+        called = entity_called(game, target, random_generator)
+        options = [([f"add a joystick for {called}", f"control {called} with a joystick", "joystick pls",
+                     f"make {called} controllable with a joystick", f"add a joystick so i can move {called}"],
+                    {"top": "joystick", "arg": ["joystick", 0, target]}),
+                   ([f"add a dpad for {called}", f"arrow buttons to move {called}", f"control {called} with a dpad",
+                     f"add arrow pads for {called}"], {"top": "dpad", "arg": ["dpad", 0, target]})]
+        forms, expect = random_generator.choice(options)
+        return "insert", random_generator.choice(forms), expect
+    return None
+
+
+def unit_button(game: Game, spot: Spot, random_generator: random.Random):
+    word = random_generator.choice(("jump", "start", "go", "fire", "reset", "shop", "next", "play", "boost", "help"))
+    options = [(["create a button", "add a button", "button here", "a button pls", "make a button"], {}),
+               (["add a button that restarts the game", "a restart button", "restart button in the corner"],
+                {"has": ["restart"]}),
+               ([f'make a button that says "{word}"', f'a "{word}" button', f'add a button with the text "{word}"'],
+                {"literal": word}),
+               ([f"a big {colour} button in the corner" for colour in ("green", "red", "blue", "yellow")],
+                {"has_any": ["color"]})]
+    if game.bars:
+        bar = random_generator.choice(game.bars)
+        options.append(([f"a button that adds a point to {bar}", f"add a button, each tap +1 {bar}",
+                         f"button that increases #{bar}"], {"has": ["updatebar"], "arg_any": [bar]}))
+    if game.player:
+        called = the_player(game, random_generator)
+        options.append(([f"add a jump button for {called}", f"a button that makes {called} jump",
+                         f"button to push {called} up"], {"has_any": ["applyimpulse", "setvelocity"]}))
+    if game.templates:
+        template = random_generator.choice(game.templates)
+        options.append(([f"a button that spawns a {template}", f"add a button, tap it to spawn #{template}"],
+                        {"has_any": ["spawn", "spawnhere", "spawnatempty"], "arg_any": [template]}))
+    forms, extra = random_generator.choice(options)
+    expect = {"top": "entity", "has": ["ontapped"] + extra.pop("has", []), "new_id": True, **extra}
+    if random_generator.random() < 0.15:
+        name = random_generator.choice(("start", "go", "reset", "jumpButton", "fire", "menu"))
+        return "insert", random_generator.choice(forms) + f" named {name}", {**expect, "id": game.free_name(name)}
+    return "insert", random_generator.choice(forms), expect
+
+
+def unit_rules(game: Game, spot: Spot, random_generator: random.Random):
+    """Game rules said in passing: "up the score when touched", "lose a life when it touches me"."""
+    owner = spot.owner if spot.kind == "events" else spot.node
+    if owner is None or owner.key != "entity" or entity_id(owner) == game.player:
+        return None
+    bars = [bar for bar in game.bars if bar != "lives"]
+    options = []
+    called = the_player(game, random_generator) if game.player else "the player"
+    if bars:
+        options.append((["up the score when touched", "touching this gives a point", "+1 score when touched",
+                         f"add a point when {called} touches this", "give points for touching it",
+                         "score goes up when you touch it"], {"has": ["updatebar"]}))
+    if game.keys["lives"]:
+        options.append(([f"lose a life when {called} touches it", "touching this costs a life",
+                         "take a life away when touched"], {"has": ["updatebar"], "arg_any": ["lives"]}))
+    options.append((["end the game when touched", f"game over when {called} touches this",
+                     "touching this should kill you"], {"has": ["gameover"]}))
+    options.append((["it should disappear when touched", "remove it when touched", "make it vanish on touch"],
+                    {"has_any": ["deleteentity", "setvisible", "setenable"]}))
+    forms, specific = random_generator.choice(options)
+    if spot.kind == "events":
+        said = random_generator.choice(forms).replace(" this", " it")
+        return "insert", said, {"top_any": ["oncollision", "ontapped"], **specific}
+    return "edit", random_generator.choice(forms), {**specific, "touch_event": True, "keep_id": True}
 
 
 # the user's own ideas, said the way a person making the game would (hand-written 2026-11-09 for the first test; the
@@ -572,12 +676,16 @@ def unit_open(game: Game, spot: Spot, random_generator: random.Random):
 
 UNITS = {"colour_shape": unit_colour_shape, "character": unit_character, "naming": unit_naming,
          "construct": unit_construct, "sound": unit_sound, "edit": unit_edit, "text": unit_text, "level": unit_level,
-         "open": unit_open}
+         "open": unit_open, "control": unit_control, "button": unit_button, "rules": unit_rules}
 
 
 def unit_spots(unit: str, game: Game, inserts: List[Spot], edits: List[Spot]) -> List[Spot]:
-    if unit in ("colour_shape", "character", "naming", "text"):
+    if unit in ("colour_shape", "character", "naming", "text", "button"):
         return game.entity_spots(inserts)
+    if unit == "control":
+        return [spot for spot in edits if spot.kind == "entity"] + game.entity_spots(inserts)
+    if unit == "rules":
+        return [spot for spot in edits if spot.kind == "entity"] + [spot for spot in inserts if spot.kind == "events"]
     if unit == "construct":
         return [spot for spot in inserts if spot.kind in ("events", "actions", "bar", "top", "level")]
     if unit == "sound":
@@ -727,6 +835,10 @@ def failed_checks(ask: Dict, block: str, before: Optional[str], game: Game) -> L
         failed.append("literal")
     if expect.get("literal_changed") and set(strings_in(nodes)) == set(strings_in(old)):
         failed.append("literal_changed")
+    # "when touched": by the player (a collision) or by a finger (a tap), either is right; it must be a new one
+    if expect.get("touch_event") and keys["oncollision"] + keys["ontapped"] <= old_keys["oncollision"] \
+            + old_keys["ontapped"]:
+        failed.append("touch_event")
     if "min_entities" in expect and keys["entity"] + keys["hostilepatrol"] + keys["wave"] < expect["min_entities"]:
         failed.append("min_entities")
     return failed
@@ -741,15 +853,64 @@ def window_size(game: Game) -> Tuple[float, float]:
 
 # ---------- making the asks ----------
 
-def load_games(split: Optional[str] = None, originals_only: bool = False, ids: Optional[set] = None) -> List[Game]:
+ROUND2 = Path(__file__).resolve().parent / "games" / "round2"
+VERSIONS_ROUND2 = PROBLEMS / "versions_round2.jsonl"   # the round-2 games' versions (v1's versions.jsonl untouched)
+ROUND2_VERSIONS_PER_GAME = 20
+ROUND2_TEST_SHARE = 15     # percent of the round-2 games held out, by a stable hash of their key
+
+
+def load_games(split: Optional[str] = None, originals_only: bool = False, ids: Optional[set] = None,
+               rounds: Tuple[int, ...] = (1, 2)) -> List[Game]:
     games = []
-    with open(PROBLEMS / "versions.jsonl", encoding="utf-8") as file:
-        for line in file:
-            record = json.loads(line)
-            if (split and record["split"] != split) or (originals_only and not record["id"].endswith("|v0"))                     or (ids is not None and record["id"] not in ids):
-                continue
-            games.append(Game(record["id"], record["source"], record["split"]))
+    paths = [path for round_number, path in ((1, PROBLEMS / "versions.jsonl"), (2, VERSIONS_ROUND2))
+             if round_number in rounds and path.exists()]
+    for path in paths:
+        with open(path, encoding="utf-8") as file:
+            for line in file:
+                record = json.loads(line)
+                if split and record["split"] != split:
+                    continue
+                if originals_only and not record["id"].endswith("|v0"):
+                    continue
+                if ids is not None and record["id"] not in ids:
+                    continue
+                games.append(Game(record["id"], record["source"], record["split"]))
     return games
+
+
+def round2_versions():
+    """Seeded versions of the round-2 games (games/round2/<family>/, written by Claude agents 2026-11-09) ->
+    problems/versions_round2.jsonl; only games that pass every check, as in round 1."""
+    from .check import check_sources
+    from .versions import make_versions
+    if VERSIONS_ROUND2.exists():
+        print(f"{VERSIONS_ROUND2} exists: asks are keyed to its versions")
+        return
+    found = []
+    for index_path in sorted(ROUND2.glob("*/index.jsonl")):
+        family = index_path.parent.name
+        for line in index_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                item = json.loads(line)
+                path = index_path.parent / f"{item['slug']}.dsl"
+                if path.exists():
+                    found.append((family, item["slug"], path.read_text(encoding="utf-8")))
+    clean = check_sources({f"{family}/{slug}": source for family, slug, source in found})
+    rows, counts = [], Counter()
+    for game_index, (family, slug, source) in enumerate(found):
+        key = f"round2/{family}/{slug}"
+        if clean[f"{family}/{slug}"]:
+            counts["not clean"] += 1
+            continue
+        split = "test" if zlib.crc32(key.encode()) % 100 < ROUND2_TEST_SHARE else "train"
+        count = ROUND2_VERSIONS_PER_GAME if split == "train" else 5
+        versions = [source] + make_versions(source, count - 1, 5000 + game_index, check_sources)
+        rows += [{"id": f"{key}|v{index}", "game": key, "family": family, "split": split, "source": version}
+                 for index, version in enumerate(versions)]
+        counts[split] += 1
+        print(f"{key}: {len(versions)} versions ({split})", flush=True)
+    append_jsonl(VERSIONS_ROUND2, rows)
+    print(f"{dict(counts)} games, {len(rows):,} versions -> {VERSIONS_ROUND2}")
 
 
 def make_ask(game: Game, unit: str, random_generator: random.Random, typo_share: float = 0.25) -> Optional[Dict]:
@@ -763,7 +924,11 @@ def make_ask(game: Game, unit: str, random_generator: random.Random, typo_share:
         task, said, expect = made
         if (task == "edit") != (spot.kind in ("entity", "event")):
             continue
+        plain = said
         said = casual(said, random_generator, typo_share)
+        given = (expect.get("id") or "").rsplit("_", 1)[0]
+        if given and given in plain and given not in said:      # a typo must not change a name the user gave
+            said = casual(plain, random_generator, 0)
         ask = {"version": game.version_id, "split": game.split, "unit": unit, "task": task, "said": said,
                "offset": spot.offset, "indent": spot.indent, "spot": spot.kind, "expect": expect,
                "cursor_label": label(spot.node, game.source) if spot.node is not None else ""}
@@ -864,6 +1029,59 @@ def build_prompts(folder: Path = FULL_FOLDER):
     """Every ask (the rule asks + the subagents' open asks) -> asks.jsonl and prompts.jsonl (Gemma's card2 prompt;
     rebuilt each time, the ids stay)."""
     asks = read_jsonl(folder / "rule_asks.jsonl") + open_collect()
+    domain = GameDslDomain("card2")
+    for name in ("asks.jsonl", "prompts.jsonl"):
+        (folder / name).unlink(missing_ok=True)      # derived from rule_asks.jsonl and the answers
+    append_jsonl(folder / "asks.jsonl", asks)
+    append_jsonl(folder / "prompts.jsonl", [{"id": ask["id"], "command": command_line(ask["task"], ask["said"]),
+                                             "prompt": domain.teacher_prompt(ask["text"]), "budget": budget(ask)}
+                                            for ask in asks])
+    counts = Counter((ask["split"], ask["unit"]) for ask in asks)
+    print(f"{len(asks):,} asks -> {folder}: {dict(sorted(counts.items()))}")
+
+
+# ---------- round 2 (the user, 2026-11-09 evening: more games, more kinds of asks, up to ~$30 in all) ----------
+
+FULL2_FOLDER = OUTPUT / "full2"
+OPEN2_FOLDER = OUTPUT / "open2"
+# (split, game rounds, asks per unit): every unit on the round-2 games; the three new units also on round 1's
+ROUND2_PLAN = (
+    ("train", (2,), {"colour_shape": 1500, "character": 2000, "naming": 1000, "construct": 3500, "sound": 2000,
+                     "edit": 4500, "text": 1000, "level": 800, "open": 500, "control": 1500, "button": 1500,
+                     "rules": 2000}),
+    ("train", (1,), {"control": 2500, "button": 2500, "rules": 3000}),
+    ("test", (2,), {unit: 100 for unit in ("colour_shape", "character", "naming", "construct", "sound", "edit",
+                                           "text", "level", "open", "control", "button", "rules")}),
+    ("test", (1,), {"control": 100, "button": 100, "rules": 100}),
+)
+
+
+def build_rule_asks_round2(folder: Path = FULL2_FOLDER):
+    path = folder / "rule_asks.jsonl"
+    if path.exists():
+        print(f"{path} exists: Gemma's replies are keyed to its asks; use another folder")
+        return
+    random_generator = random.Random(2026_11_13)
+    asks, seen = [], set()
+    for split, rounds, counts in ROUND2_PLAN:
+        games = load_games(split, rounds=rounds)
+        for unit, count in counts.items():
+            made, tries = 0, 0
+            while made < count and tries < count * 20:
+                tries += 1
+                ask = make_ask(random_generator.choice(games), unit, random_generator)
+                if ask is None or ask["id"] in seen:
+                    continue
+                seen.add(ask["id"])
+                asks.append(ask)
+                made += 1
+            print(f"{split} round {rounds} {unit}: {made:,}", flush=True)
+    append_jsonl(path, asks)
+    print(f"{len(asks):,} rule asks -> {path}")
+
+
+def build_prompts_round2(folder: Path = FULL2_FOLDER):
+    asks = read_jsonl(folder / "rule_asks.jsonl") + open_collect(OPEN2_FOLDER)
     domain = GameDslDomain("card2")
     for name in ("asks.jsonl", "prompts.jsonl"):
         (folder / name).unlink(missing_ok=True)      # derived from rule_asks.jsonl and the answers
@@ -1016,14 +1234,15 @@ def place_spots(game: Game, kind: str) -> List[Spot]:
     return [spot for spot in game.edit_spots() if spot.kind == kind]
 
 
-def open_tasks(files: int = 14, test_files: int = 2, folder: Path = OPEN_FOLDER):
+def open_tasks(files: int = 14, test_files: int = 2, folder: Path = OPEN_FOLDER, rounds: Tuple[int, ...] = (1,),
+               seed: int = 2026_11_11):
     """Task files for the subagents: PLACES_PER_FILE places each, from random versions (train files from train
     games, the last test_files from the held-out games) -> tasks_NN.txt + places.jsonl."""
     if (folder / "places.jsonl").exists():
         print(f"{folder / 'places.jsonl'} exists: its answers may be on the way; use another folder")
         return
-    random_generator = random.Random(2026_11_11)
-    by_split = {"train": load_games("train"), "test": load_games("test")}
+    random_generator = random.Random(seed)
+    by_split = {"train": load_games("train", rounds=rounds), "test": load_games("test", rounds=rounds)}
     places = []
     for file_index in range(files + test_files):
         split = "train" if file_index < files else "test"
@@ -1182,6 +1401,14 @@ if __name__ == "__main__":
         build_rule_asks()
     elif action == "prompts":
         build_prompts()
+    elif action == "round2_versions":
+        round2_versions()
+    elif action == "build2":
+        build_rule_asks_round2()
+    elif action == "open_tasks2":
+        open_tasks(12, 2, OPEN2_FOLDER, rounds=(2,), seed=2026_11_14)
+    elif action == "prompts2":
+        build_prompts_round2()
     elif action == "open_tasks":
         open_tasks()
     elif action == "open_collect":

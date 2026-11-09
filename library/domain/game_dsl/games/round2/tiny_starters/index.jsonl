@@ -1,0 +1,16 @@
+{"slug": "square_to_goal", "title": "Square to the Star", "brief": "Steer the blue square with the joystick to the star while a red circle patrols the middle; touching the circle loses, reaching the star wins."}
+{"slug": "shrink_circle", "title": "Shrinking Dot", "brief": "Tap the pink dot before it shrinks and jumps away; 8 taps win, 3 misses or taps on the grey decoy lose."}
+{"slug": "falling_block", "title": "Falling Blocks", "brief": "Slide a paddle left and right to dodge falling blocks; 10 dodged blocks win, one hit loses."}
+{"slug": "coin_catch", "title": "Coin Catch", "brief": "Drag a basket to catch falling coins; 12 caught win, 3 dropped lose."}
+{"slug": "tap_counter", "title": "Tap Counter", "brief": "Tap the green button 20 times within 12 seconds to win."}
+{"slug": "bouncing_ball", "title": "Bouncing Ball", "brief": "Tap the ball as it bounces off walls and a bumper; 5 taps win, 25 seconds without them loses."}
+{"slug": "dodge_chaser", "title": "Wolf Chase", "brief": "Run with the joystick from a chasing wolf; surviving 20 seconds wins, being caught loses."}
+{"slug": "whack_square", "title": "Whack the Squares", "brief": "Tap the yellow squares that pop up before they vanish and avoid the bombs; 10 hits win, 3 mistakes lose."}
+{"slug": "balloon_pop", "title": "Balloon Pop", "brief": "Tap rising balloons before they reach the spikes; 15 popped win, one reaching the spikes loses."}
+{"slug": "star_grab", "title": "Star Grab", "brief": "Drag the square to the star as it keeps jumping to new spots, avoiding a bouncing rock; 8 stars win, a rock hit loses."}
+{"slug": "right_or_wrong", "title": "Right or Wrong", "brief": "Tap the green circle and never the red one; 6 right taps win, going 3 below zero loses."}
+{"slug": "paddle_ball", "title": "Paddle Ball", "brief": "Keep a ball bouncing on a draggable paddle; 10 paddle hits win, hitting the floor loses."}
+{"slug": "key_and_door", "title": "Key and Door", "brief": "Steer with the joystick, take the key to open the door, dodge a patrolling bat and reach the exit."}
+{"slug": "lava_crossing", "title": "Lava Crossing", "brief": "Cross the screen with the joystick through two sliding lava bars to the far bank; lava touch loses."}
+{"slug": "swipe_runner", "title": "Swipe Sailor", "brief": "Swipe to steer a sailor in steps to the treasure chest, avoiding a rock and the screen edge."}
+{"slug": "cannon_dodge", "title": "Cannon Dodge", "brief": "Slide up and down to dodge cannonballs and grab 6 coins; a cannonball hit loses."}

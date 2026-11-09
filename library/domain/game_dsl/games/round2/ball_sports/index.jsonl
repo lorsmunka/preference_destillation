@@ -1,0 +1,12 @@
+{"slug": "penalty_kick", "title": "Penalty Kick", "brief": "Swipe up, left or right to kick the ball at a goal guarded by a patrolling keeper. Score 3 goals to win; 3 misses (keeper, post or off target) lose."}
+{"slug": "mini_golf", "title": "Mini Golf", "brief": "Swipe to putt the ball around a bumper, a fence and a moving windmill into the hole. Reaching the hole wins; 7 strokes lose."}
+{"slug": "rally_pong", "title": "Rally Pong", "brief": "Drag the paddle to rally a ball against a patrolling rival paddle. Get the ball past the rival 5 times to win; missing it 3 times loses."}
+{"slug": "juggle_up", "title": "Juggle Up", "brief": "Tap the falling ball to pop it back up and swipe to nudge it sideways. 20 touches win; dropping it 3 times loses."}
+{"slug": "keeper_duty", "title": "Keeper Duty", "brief": "Drag the goalkeeper sideways to catch shots falling toward the goal. 12 saves win; 3 goals conceded loses."}
+{"slug": "bounce_climb", "title": "Bounce Climb", "brief": "Drag a ball sideways to land on springs of growing power and climb to the basket at the top. The basket wins; falling on the spikes 3 times loses."}
+{"slug": "ball_push", "title": "Ball Push", "brief": "Two sokoban-style levels: step a player with the pad and push the ball into the net past crates and rocks. Finishing level two wins."}
+{"slug": "target_practice", "title": "Target Practice", "brief": "Swipe to bounce a ball off moving targets, where gold counts double. 5 hits win; running out of 8 balls loses."}
+{"slug": "volley_wall", "title": "Volley Wall", "brief": "Move the racket under a ball falling in gravity and volley it back over the net. 15 volleys win; letting it touch the sand 3 times loses."}
+{"slug": "bowling_lane", "title": "Bowling Lane", "brief": "Swipe to roll the ball down a lane between gutters and knock down ten pins in three rolls. All ten win; pins left after the last roll lose."}
+{"slug": "can_knock", "title": "Can Knock", "brief": "Tap a low, medium or high launch pad to throw a ball in an arc at six cans on a shelf. Knock all six to win; 6 throws are all you get."}
+{"slug": "basket_shot", "title": "Basket Shot", "brief": "Swipe up, right or down to throw ball arcs at a hoop that slides up and down beside a backboard. 5 baskets win; 4 misses lose."}

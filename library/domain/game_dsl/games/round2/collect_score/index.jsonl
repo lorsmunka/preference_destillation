@@ -1,0 +1,11 @@
+{"slug": "coin_catcher", "title": "Coin Catcher", "brief": "Drag a cart sideways to catch falling coins in waves that speed up. Collect 25 to win; each missed coin costs one of three lives."}
+{"slug": "magnet_run", "title": "Magnet Run", "brief": "Move around a grid picking coins that respawn in empty cells; a magnet makes you big for six seconds, bombs cost a life. Reach 15 coins within 40 seconds."}
+{"slug": "gem_dash", "title": "Gem Dash", "brief": "Catch green gems and rubies worth three while a level ramps up, adding ruby makers and bombs. Reach 40 points before the three lives run out."}
+{"slug": "speed_boots", "title": "Speed Boots", "brief": "Steer a runner across a wide arena collecting 12 coins within 45 seconds; picking up the boots doubles your speed for five seconds, a patrolling sentry sends you back to the start."}
+{"slug": "whack_gold", "title": "Whack the Gold", "brief": "Tap gold nuggets that appear in empty grid cells before they crumble and avoid tapping rocks. Reach 20 gold; three mistakes end the run."}
+{"slug": "firefly_jar", "title": "Firefly Jar", "brief": "Move a jar to catch wandering fireflies; three catches in a row give a bonus, the streak decays over time, and a moth chases the jar. Catch 30 before losing three lives."}
+{"slug": "orchard_pick", "title": "Orchard Pick", "brief": "A tree drifts along the top dropping apples and wormy fruit; slide the basket to catch apples and dodge worms. Fill it with 18 apples before three worm hits."}
+{"slug": "treasure_cave", "title": "Treasure Cave", "brief": "Three cave levels: gather enough gems to open the gate, dodge patrolling bats and climb the ladder, then catch falling coins and avoid rocks on the last level to reach 20 treasure."}
+{"slug": "star_tower", "title": "Star Tower", "brief": "Catch falling stars with a cart; milestones unlock a bigger cart, golden stars worth three and then a comet rain. Reach 50 stars before the comets use up three lives."}
+{"slug": "grid_munch", "title": "Grid Munch", "brief": "Steer a muncher step by step with the d-pad to eat 12 pellets that respawn in empty cells while a ghost chases and gets faster. Two hits end the game."}
+{"slug": "balloon_pop", "title": "Balloon Pop", "brief": "Tap rising balloons for points; the gold ones are worth five but shrink quickly. Pop 30 before six balloons escape through the top."}

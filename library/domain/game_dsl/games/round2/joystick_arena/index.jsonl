@@ -1,0 +1,11 @@
+{"slug": "slime_hunt", "title": "Slime Hunt", "brief": "A knight whose sword swings on its own is steered by joystick through a meadow while slimes chase in; kill 12 to win, lose all 3 lives and you fall."}
+{"slug": "tag_grid", "title": "Grid Tag", "brief": "Step around a walled grid with a dpad collecting six flags while a hunter chases you and a sneaky tagger follows a decoy before retargeting you; three tags and you lose."}
+{"slug": "shepherd_rush", "title": "Shepherd Rush", "brief": "A sheepdog on a joystick leads six trailing sheep into the pen while wolves hunt the dog and the stragglers; pen five sheep to win, lose three sheep or three lives and you lose."}
+{"slug": "coin_pit", "title": "Coin Pit", "brief": "Drag a miner around a walled pit to grab eight coins while patrolling beetles cost lives."}
+{"slug": "spark_dodge", "title": "Spark Dodge", "brief": "Drag a drone around a landscape arena while three turrets fire sparks across it; survive 40 seconds with a life left to win."}
+{"slug": "wasp_nest", "title": "Wasp Nest", "brief": "A joystick bear collects honey pots in a clearing while a nest releases wasps that fly off in random directions; ten pots win, three stings lose."}
+{"slug": "blast_zone", "title": "Blast Zone", "brief": "Drag a courier to six crates while bombs flash and then explode in a cross at random spots; blasts cost lives."}
+{"slug": "beacon_run", "title": "Beacon Run", "brief": "Run a scout by joystick to light four beacons while a ghost chases you; each lit beacon sends the ghost after a wisp for a few seconds, and three catches lose."}
+{"slug": "crypt_step", "title": "Crypt Step", "brief": "Tap a dpad to step a thief through a crypt grid, taking five gems; every gem wakes another chasing bat and a mummy patrols the middle."}
+{"slug": "puck_arena", "title": "Puck Arena", "brief": "Drag a striker in air hockey against a robot that chases the puck; five goals in the top goal win, three goals conceded lose."}
+{"slug": "knight_arena", "title": "Knight Arena", "brief": "Two joystick arenas: sweep a trailing blade through ten goblins from two camps, then fight an ogre that is lured into a banner and stunned; the ogre takes eight hits."}

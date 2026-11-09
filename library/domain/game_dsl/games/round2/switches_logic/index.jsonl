@@ -1,0 +1,11 @@
+{"slug": "lever_hall", "title": "Lever Hall", "brief": "Walk a hall with laser beams and a guard, bump three levers to switch the beams off and open the shutter, then reach the exit."}
+{"slug": "combo_lock", "title": "Combination Lock", "brief": "Tap three dials to cycle their digits to the posted combination before the tap budget runs out; the vault door opens and shows the treasure."}
+{"slug": "relay_gates", "title": "Relay Gates", "brief": "Tap the generator fast enough to build charge against its drain; the power hops through three relays, opens the shutter and lights the beacon before the blackout."}
+{"slug": "toll_gates", "title": "Toll Gates", "brief": "Collect coins while dodging sweepers and pay a coin toll at each plate to open the next gate, then reach the exit."}
+{"slug": "rail_switches", "title": "Rail Switches", "brief": "Flip a track junction so each red or blue train reaches its own depot; deliver six trains and do not send three to the wrong place."}
+{"slug": "lamp_order", "title": "Lighthouse Lamps", "brief": "Watch four lamps glow in a secret order and tap them in that order; a mistake costs a life and replays the pattern, and four correct taps win."}
+{"slug": "airlock_run", "title": "Airlock Run", "brief": "Cross two airlocks by cycling their consoles (only one door of each is ever open) past patrolling sentries to the escape pod before the air runs out."}
+{"slug": "power_grid", "title": "Power Grid", "brief": "A 3x3 board of lights where tapping a cell flips it and its neighbours; switch every light off within twelve taps."}
+{"slug": "plate_rooms", "title": "Plate Rooms", "brief": "Step a hero one cell per tap through three rooms: pressure plates toggle the red and blue gates, a guard patrols the middle room, and moves are limited."}
+{"slug": "vault_keys", "title": "Vault Keys", "brief": "Steer through a grid vault, pick up two keys that open two doors while avoiding two guards, and reach the exit with both keys before too many wall bumps."}
+{"slug": "tower_floors", "title": "Tower Floors", "brief": "Two floors: first a key, a shutter, a lever and a laser beam; then a grid room where three pressure plates open the vault door to the exit."}

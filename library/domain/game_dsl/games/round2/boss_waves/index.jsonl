@@ -1,0 +1,11 @@
+{"slug": "core_breaker", "title": "Core Breaker", "brief": "Slide your auto-firing ship under a hexagon core that drops orbs and escalates at half health; empty its health bar to win, lose all lives to lose."}
+{"slug": "shield_siege", "title": "Shield Siege", "brief": "Shoot three waves of raiders while two damageable shields soak up their shots; clear 24 raiders to win, lose all lives to lose."}
+{"slug": "twin_guardians", "title": "Twin Guardians", "brief": "Collect crystals while two patrolling guardians hunt you; four crystals charge a zap that hurts the core, three zaps win, touching a guardian ends the run."}
+{"slug": "phase_tower", "title": "Phase Tower", "brief": "Shoot a tower boss whose attack pattern changes at 20 and 10 health; empty its bar to win, lose all lives to lose."}
+{"slug": "dodge_arena", "title": "Dodge Arena", "brief": "No weapons: dodge falling bolts, a sentry and a sweeping patrol for 40 seconds while the waves speed up; survive to win."}
+{"slug": "minion_swarm", "title": "Minion Swarm", "brief": "Tap the minions and tougher brutes a warlord keeps sending toward your keep; reach 30 points to win, lose all lives to lose."}
+{"slug": "shield_bearer", "title": "Shield Bearer", "brief": "Destroy two weak-point nodes to break the boss shield, then shoot the exposed boss eight times while dodging fireballs."}
+{"slug": "harbor_cannon", "title": "Harbor Cannon", "brief": "Move a cannon along the dock and tap FIRE to sink skiffs and a flagship in waves; sink 20 to win, lose all lives to lose."}
+{"slug": "boss_gauntlet", "title": "Boss Gauntlet", "brief": "Two levels, two bosses: beat a slime, then an enraging golem, with lives carried across; lose all lives to lose."}
+{"slug": "ricochet_boss", "title": "Ricochet Boss", "brief": "Bounce a ball off your paddle into a moving ring boss while blocking its darts; ten hits win, letting the ball or darts drain your lives loses."}
+{"slug": "hive_defender", "title": "Hive Defender", "brief": "Gather nectar and shoot the queen bee while patrol bees and homing stings hunt you; 25 honey wins, losing all lives loses."}

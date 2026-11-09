@@ -1,0 +1,11 @@
+{"slug": "simon_four", "title": "Simon Four", "brief": "Four coloured pads flash in a fixed order, then the player taps them in the same order. Three wrong taps lose; four correct taps win."}
+{"slug": "traffic_light", "title": "Traffic Light", "brief": "After a 3-2-1 countdown the light turns green for a moment at a time; tap GO only while it is green. Eight good taps win, three taps on red lose."}
+{"slug": "drum_pad", "title": "Drum Pad", "brief": "A metronome pulses faster in three steps; hit one of three drums right after each pulse. 24 on-beat hits win, four off-beat taps lose."}
+{"slug": "echo_levels", "title": "Echo Levels", "brief": "Three rounds of repeat-the-lights with four pads, each round longer and faster. Finish the last pattern to win, three wrong taps lose."}
+{"slug": "defuse_timer", "title": "Defuse Timer", "brief": "A nine-second countdown ticks on a bomb; cut the blue, green and red wires in that order. The wrong wire or zero on the clock blows it up."}
+{"slug": "falling_notes", "title": "Falling Notes", "brief": "Notes fall down three lanes to a rhythm that speeds up; tap each one before it reaches the floor. 20 caught notes win, five dropped ones lose."}
+{"slug": "swipe_dance", "title": "Swipe Dance", "brief": "A direction word appears on each beat and the beats get quicker; swipe that way in time. Nine hits win, three misses or wrong swipes lose."}
+{"slug": "firefly_jar", "title": "Firefly Jar", "brief": "Fireflies blink a few times and fly off; tap them while they glow but avoid the grey moths. 12 caught fireflies win, three mistakes lose."}
+{"slug": "lamp_relay", "title": "Lamp Relay", "brief": "A light runs along five lamps, a little quicker at each one; tap every lamp while it is lit. 15 taps win, three missed lamps lose."}
+{"slug": "safe_cracker", "title": "Safe Cracker", "brief": "In three safes a marker slides across a green zone; tap LOCK while it is inside. Crack all three to win, three bad taps set off the alarm."}
+{"slug": "music_box", "title": "Music Box", "brief": "Five glowing pads play notes when tapped, and a DEMO button plays a tune. Play 16 notes within 60 seconds to win, otherwise the box runs down."}
