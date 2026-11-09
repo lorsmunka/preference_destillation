@@ -71,7 +71,7 @@ for file_name, title, values, labels in FIGURES:
     axis.set_xlim(0, 1)
     axis.set_xticks([0, 0.25, 0.5, 0.75, 1])
     axis.set_xticklabels(["0%", "25%", "50%", "75%", "100%"])
-    axis.set_title(title + " (a legjobb fejnél)", color=TEXT_PRIMARY, fontsize=9, loc="left")
+    axis.set_title(title + " (a kereső fejnél)", color=TEXT_PRIMARY, fontsize=9, loc="left")
     for spine in ("top", "right", "left"):
         axis.spines[spine].set_visible(False)
     axis.spines["bottom"].set_color(GRID)
