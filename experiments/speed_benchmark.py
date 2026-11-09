@@ -133,7 +133,9 @@ def time_teacher(model_name, load_in_4bit, kinds, probes_by_kind):
 
     handler = ModelHandler(model_name, as_domain(DOMAINS[kinds[0]]), load_in_4bit=load_in_4bit)
     precision = "nf4" if load_in_4bit else "bf16"
-    parameters = sum(parameter.numel() for parameter in handler.model.parameters())
+    # NF4 keeps two 4-bit weights per byte (uint8 tensors): count them as weights, not bytes
+    parameters = sum(parameter.numel() * (2 if parameter.dtype == torch.uint8 else 1)
+                     for parameter in handler.model.parameters())
     end_ids = sorted(handler.end_token_ids)
     pad_id = handler.tokenizer.pad_token_id or handler.tokenizer.eos_token_id
     summaries = []
