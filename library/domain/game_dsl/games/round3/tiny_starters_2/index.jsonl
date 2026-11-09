@@ -1,0 +1,16 @@
+{"slug": "cat_mice", "title": "Cat and Mice", "brief": "Drag the cat to catch three bouncing mice while a dog chases the cat; catch all mice to win, get caught by the dog to lose."}
+{"slug": "rocket_dodge", "title": "Rocket Dodge", "brief": "Drag the rocket sideways to avoid falling asteroids; survive 25 seconds with a life left to win, lose all 3 lives to lose."}
+{"slug": "paint_square", "title": "Paint the Square", "brief": "Three buttons recolour a square; tap the gold button 5 times to win, red and blue buttons cost points, and a 30 second timer ends the game."}
+{"slug": "ball_hole", "title": "Ball in the Hole", "brief": "Drag a ball to the hole at the top past a sliding bunker that resets it and a snake that ends the game."}
+{"slug": "counter_race", "title": "Counter Race", "brief": "Tap a small button for +1 or a big button for +3 (it recharges for 2 seconds) and reach 20 before the rival counter does."}
+{"slug": "dog_fetch", "title": "Dog Fetch", "brief": "Steer a dog with the joystick to fetch 6 bones that a crow keeps disturbing, before 40 seconds run out."}
+{"slug": "flappy_swipe", "title": "Swipe Flap", "brief": "Swipe up to flap a bird through two scrolling pipes under gravity; pass 5 pipes to win, touching a pipe or the border loses."}
+{"slug": "swipe_slider", "title": "Swipe Slider", "brief": "Swipe to send a gem across a grid to the goal, avoiding a moving lava block and a still one."}
+{"slug": "mole_tap", "title": "Mole Tap", "brief": "Tap two moles that keep hopping to new spots for 8 points, avoid the stone that costs a point, and beat the 25 second clock."}
+{"slug": "lamp_lighter", "title": "Lamp Lighter", "brief": "Tap four lamps to light them while a bat flying over them puts lit lamps out; light all four before 40 seconds pass."}
+{"slug": "fish_feeder", "title": "Fish Feeder", "brief": "Slide a fish left and right to eat 8 falling food pellets and dodge jellyfish; three stings lose."}
+{"slug": "maze_mouse", "title": "Maze Mouse", "brief": "Steer a mouse with the joystick through a two-wall maze to the cheese while a cat chases; the cat catching the mouse loses."}
+{"slug": "balloon_pop", "title": "Balloon Pop", "brief": "Tap rising balloons to pop 10 of them; three balloons escaping off the top lose."}
+{"slug": "bee_flowers", "title": "Bee and Flowers", "brief": "Drag a bee onto two flowers that jump to new spots after each visit, collecting 6 nectar while avoiding a patrolling spider."}
+{"slug": "bomb_wires", "title": "Defuse the Bomb", "brief": "A 5 second countdown ticks down; tap the blue wire to defuse it, the red or green wire or running out of time loses."}
+{"slug": "duck_pond", "title": "Duck Pond", "brief": "Lead three ducklings that follow the mother duck into the pond past a patrolling fox; all three in wins, the fox touching one loses."}

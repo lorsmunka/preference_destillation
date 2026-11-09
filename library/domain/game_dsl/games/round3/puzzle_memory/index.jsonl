@@ -1,0 +1,10 @@
+{"slug": "memory_pairs", "title": "Find the Pairs", "brief": "Flip six cards two at a time; matching colours stay open, a mismatch costs one of six tries. Find all three pairs to win."}
+{"slug": "color_sort", "title": "Colour Sorter", "brief": "An orb of a random colour appears; tap the basket of the same colour within 4 seconds. Sort 10 orbs to win, 3 mistakes lose."}
+{"slug": "odd_one_out", "title": "Odd One Out", "brief": "Four tiles, one turns pink each round; tap it. 8 right answers win, 3 wrong taps lose."}
+{"slug": "light_pattern", "title": "Lamp Pattern", "brief": "Three lamps flash a 4-step pattern; repeat it by tapping. A wrong tap replays the whole game, the full pattern wins."}
+{"slug": "gridlock", "title": "Gridlock", "brief": "Tap blocks to push them out of the way and drive the red car to the green exit within 18 moves."}
+{"slug": "count_and_tap", "title": "Count and Tap", "brief": "Three levels: tap plus to make exactly the target number of dots, then press check. A wrong count restarts the level, a timer ends the run."}
+{"slug": "safe_code", "title": "Safe Code", "brief": "A 4-digit code shows for 3 seconds then hides; enter it on three keys from memory. A wrong key resets, the right code opens the safe."}
+{"slug": "tint_tiles", "title": "Tint Tiles", "brief": "Each tap cycles a tile red, green, blue; make all four tiles green within 10 taps."}
+{"slug": "switch_memory", "title": "Switch Memory", "brief": "Lamps show an on/off pattern for 3 seconds, then go dark; set three switches to match and press enter. A wrong setting restarts."}
+{"slug": "stop_at_fifteen", "title": "Stop at Fifteen", "brief": "Roll a die to add to a total and stop between 12 and 15 to win; going over 15 or rolling too many times loses."}

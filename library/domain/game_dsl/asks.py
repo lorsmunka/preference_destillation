@@ -853,17 +853,20 @@ def window_size(game: Game) -> Tuple[float, float]:
 
 # ---------- making the asks ----------
 
-ROUND2 = Path(__file__).resolve().parent / "games" / "round2"
+GAMES = Path(__file__).resolve().parent / "games"
 VERSIONS_ROUND2 = PROBLEMS / "versions_round2.jsonl"   # the round-2 games' versions (v1's versions.jsonl untouched)
 ROUND2_VERSIONS_PER_GAME = 20
-ROUND2_TEST_SHARE = 15     # percent of the round-2 games held out, by a stable hash of their key
+ROUND2_TEST_SHARE = 15     # percent of the round-2 (and round-3) games held out, by a stable hash of their key
+
+
+def versions_path(round_number: int) -> Path:
+    return PROBLEMS / ("versions.jsonl" if round_number == 1 else f"versions_round{round_number}.jsonl")
 
 
 def load_games(split: Optional[str] = None, originals_only: bool = False, ids: Optional[set] = None,
-               rounds: Tuple[int, ...] = (1, 2)) -> List[Game]:
+               rounds: Tuple[int, ...] = (1, 2, 3)) -> List[Game]:
     games = []
-    paths = [path for round_number, path in ((1, PROBLEMS / "versions.jsonl"), (2, VERSIONS_ROUND2))
-             if round_number in rounds and path.exists()]
+    paths = [versions_path(round_number) for round_number in rounds if versions_path(round_number).exists()]
     for path in paths:
         with open(path, encoding="utf-8") as file:
             for line in file:
@@ -878,16 +881,17 @@ def load_games(split: Optional[str] = None, originals_only: bool = False, ids: O
     return games
 
 
-def round2_versions():
-    """Seeded versions of the round-2 games (games/round2/<family>/, written by Claude agents 2026-11-09) ->
-    problems/versions_round2.jsonl; only games that pass every check, as in round 1."""
+def round_versions(round_number: int = 2):
+    """Seeded versions of the round-2 / round-3 games (games/round<n>/<family>/, written by Claude agents
+    2026-11-09) -> problems/versions_round<n>.jsonl; only games that pass every check, as in round 1."""
     from .check import check_sources
     from .versions import make_versions
-    if VERSIONS_ROUND2.exists():
-        print(f"{VERSIONS_ROUND2} exists: asks are keyed to its versions")
+    output = versions_path(round_number)
+    if output.exists():
+        print(f"{output} exists: asks are keyed to its versions")
         return
     found = []
-    for index_path in sorted(ROUND2.glob("*/index.jsonl")):
+    for index_path in sorted((GAMES / f"round{round_number}").glob("*/index.jsonl")):
         family = index_path.parent.name
         for line in index_path.read_text(encoding="utf-8").splitlines():
             if line.strip():
@@ -898,19 +902,20 @@ def round2_versions():
     clean = check_sources({f"{family}/{slug}": source for family, slug, source in found})
     rows, counts = [], Counter()
     for game_index, (family, slug, source) in enumerate(found):
-        key = f"round2/{family}/{slug}"
+        key = f"round{round_number}/{family}/{slug}"
         if clean[f"{family}/{slug}"]:
             counts["not clean"] += 1
             continue
         split = "test" if zlib.crc32(key.encode()) % 100 < ROUND2_TEST_SHARE else "train"
         count = ROUND2_VERSIONS_PER_GAME if split == "train" else 5
-        versions = [source] + make_versions(source, count - 1, 5000 + game_index, check_sources)
+        versions = [source] + make_versions(source, count - 1, 1000 + 2000 * round_number + game_index,
+                                            check_sources)
         rows += [{"id": f"{key}|v{index}", "game": key, "family": family, "split": split, "source": version}
                  for index, version in enumerate(versions)]
         counts[split] += 1
         print(f"{key}: {len(versions)} versions ({split})", flush=True)
-    append_jsonl(VERSIONS_ROUND2, rows)
-    print(f"{dict(counts)} games, {len(rows):,} versions -> {VERSIONS_ROUND2}")
+    append_jsonl(output, rows)
+    print(f"{dict(counts)} games, {len(rows):,} versions -> {output}")
 
 
 def make_ask(game: Game, unit: str, random_generator: random.Random, typo_share: float = 0.25) -> Optional[Dict]:
@@ -1091,6 +1096,164 @@ def build_prompts_round2(folder: Path = FULL2_FOLDER):
                                             for ask in asks])
     counts = Counter((ask["split"], ask["unit"]) for ask in asks)
     print(f"{len(asks):,} asks -> {folder}: {dict(sorted(counts.items()))}")
+
+
+# ---------- round 3 (the user, 2026-11-09 night: usage cap 50%): ~58 more games, rewordings, round-1 open asks ----------
+
+FULL3_FOLDER = OUTPUT / "full3"
+ROUND3_UNIT_COUNTS = {"colour_shape": 600, "character": 800, "naming": 500, "construct": 1200, "sound": 700,
+                      "edit": 1500, "text": 500, "level": 300, "open": 200, "control": 600, "button": 600, "rules": 800}
+ROUND3_PLAN = (("train", (3,), ROUND3_UNIT_COUNTS),
+               ("test", (3,), {unit: 60 for unit in ROUND3_UNIT_COUNTS}))
+
+
+def build_rule_asks_round3(folder: Path = FULL3_FOLDER):
+    path = folder / "rule_asks.jsonl"
+    if path.exists():
+        print(f"{path} exists: Gemma's replies are keyed to its asks; use another folder")
+        return
+    random_generator = random.Random(2026_11_17)
+    asks, seen = [], set()
+    for split, rounds, counts in ROUND3_PLAN:
+        games = load_games(split, rounds=rounds)
+        for unit, count in counts.items():
+            made, tries = 0, 0
+            while made < count and tries < count * 20:
+                tries += 1
+                ask = make_ask(random_generator.choice(games), unit, random_generator)
+                if ask is None or ask["id"] in seen:
+                    continue
+                seen.add(ask["id"])
+                asks.append(ask)
+                made += 1
+            print(f"{split} round {rounds} {unit}: {made:,}", flush=True)
+    append_jsonl(path, asks)
+    print(f"{len(asks):,} rule asks -> {path}")
+
+
+def build_prompts_round3(folder: Path = FULL3_FOLDER):
+    asks = read_jsonl(folder / "rule_asks.jsonl") + reword_collect() + open_collect(OUTPUT / "open3")
+    domain = GameDslDomain("card2")
+    for name in ("asks.jsonl", "prompts.jsonl"):
+        (folder / name).unlink(missing_ok=True)      # derived from rule_asks.jsonl and the answers
+    append_jsonl(folder / "asks.jsonl", asks)
+    append_jsonl(folder / "prompts.jsonl", [{"id": ask["id"], "command": command_line(ask["task"], ask["said"]),
+                                             "prompt": domain.teacher_prompt(ask["text"]), "budget": budget(ask)}
+                                            for ask in asks])
+    counts = Counter((ask["split"], ask["unit"], ask.get("writer", "rule")) for ask in asks)
+    print(f"{len(asks):,} asks -> {folder}: {dict(sorted(counts.items()))}")
+
+
+# ---------- rule asks reworded by Claude subagents (round 3, 2026-11-09: the templates' wording is narrow) ----------
+
+REWORD_FOLDER = OUTPUT / "reword"
+REWORDS_PER_FILE = 600
+REWORD_UNITS = ("colour_shape", "character", "naming", "construct", "sound", "edit", "text", "level", "control",
+                "button", "rules")
+KEYWORD_WORDS = re.compile(r"\b(On[A-Z]\w*|when[A-Z]\w*|random[A-Z]\w*|Wave|Sequence|Phase|Bar|wallBox|HostilePatrol|"
+                           r"loopCount|nextLevel|gameOver|updateBar|winAt)\b")
+
+REWORD_INSTRUCTIONS = """You are writing training data for a code assistant inside the editor of QR Game Studio, an app \
+with a small game language. A user types an ask at their cursor (/insert: new code at the cursor; /edit: change the \
+block under the cursor). Below are asks a script made from templates; their wording is too uniform.
+
+Rewrite each ask the way a different real person would type the same request: change the sentence structure, the \
+verb (or drop it), the word order, the tone (terse, chatty, a question, a little command), sometimes add a short \
+reason or filler ("for the boss fight", "pls", "ok so"), sometimes a typo. Keep the meaning exactly, and keep \
+every word listed after "keep:" exactly as written (names, colours, shapes, sizes, numbers, quoted texts, #names, \
+construct names). Do not add new requirements. No code, no hex colours. One line per ask.
+
+Answers: append to {answers}, one line per ask: <number><TAB><your rewrite> (no quotes, no /insert or /edit). \
+Append after each part you read, all its asks in one go (Bash: cat >> file <<'EOF' ... EOF; never `cat >>` \
+without the heredoc); never rewrite the file.
+"""
+
+
+def keep_words(ask: Dict) -> List[str]:
+    """What a rewrite must keep so the ask's rule check still holds."""
+    said, expect = ask["said"], ask.get("expect") or {}
+    keep = re.findall(r'"[^"]*"', said) + re.findall(r"#\w+", said) + re.findall(r"\b\d+(?:\.\d+)?\b", said)
+    keep += KEYWORD_WORDS.findall(said)
+    words = said.lower()
+    given = (expect.get("id") or "").rsplit("_", 1)[0]
+    if given and (re.search(rf"\b{re.escape(given)}\b", words) or ask["unit"] == "naming"):
+        keep.append(given)
+    values = [expect["arg"][2]] if "arg" in expect else []
+    values += list(expect.get("arg_any", [])) + ([expect["literal"]] if "literal" in expect else [])
+    keep += [str(value) for value in values if isinstance(value, str) and str(value).lower() in words]
+    if expect.get("colour"):
+        keep += [word for word in re.split(r"[\s,]+", expect["colour"]["words"]) if word]
+    if expect.get("shape") and expect["shape"] in words:
+        keep.append(expect["shape"])
+    for size in SIZE_WORDS:
+        if re.search(rf"\b{size}\b", words):
+            keep.append(size)
+    return list(dict.fromkeys(keep))
+
+
+def reword_tasks(files: int = 12, folder: Path = REWORD_FOLDER):
+    if (folder / "sources.jsonl").exists():
+        print(f"{folder / 'sources.jsonl'} exists: its answers may be on the way")
+        return
+    random_generator = random.Random(2026_11_15)
+    pool = [ask for path in (FULL_FOLDER / "rule_asks.jsonl", FULL2_FOLDER / "rule_asks.jsonl")
+            for ask in read_jsonl(path) if ask["split"] == "train" and ask["unit"] in REWORD_UNITS]
+    by_unit = {unit: [ask for ask in pool if ask["unit"] == unit] for unit in REWORD_UNITS}
+    per_unit = files * REWORDS_PER_FILE // len(REWORD_UNITS) + 1
+    chosen = [ask for unit in REWORD_UNITS for ask in random_generator.sample(by_unit[unit],
+                                                                             min(per_unit, len(by_unit[unit])))]
+    random_generator.shuffle(chosen)
+    chosen = chosen[:files * REWORDS_PER_FILE]
+    sources = []
+    for file_index in range(files):
+        answers = (folder / f"tasks_{file_index:02d}_answers.tsv").resolve().as_posix()
+        lines = [REWORD_INSTRUCTIONS.format(answers=answers)]
+        for ask in chosen[file_index * REWORDS_PER_FILE:(file_index + 1) * REWORDS_PER_FILE]:
+            number = len(sources) + 1
+            keep = keep_words(ask)
+            lines.append(f"{number}\t/{ask['task']}\t{ask['said']}" + (f"\tkeep: {' | '.join(keep)}" if keep else ""))
+            sources.append({"number": number, "id": ask["id"], "keep": keep})
+        folder.mkdir(parents=True, exist_ok=True)
+        with open(folder / f"tasks_{file_index:02d}.txt", "x", encoding="utf-8") as file:
+            file.write("\n".join(lines) + "\n")
+    append_jsonl(folder / "sources.jsonl", sources)
+    print(f"{len(sources):,} asks to reword in {files} files -> {folder}")
+
+
+def reword_collect(folder: Path = REWORD_FOLDER) -> List[Dict]:
+    """The rewrites -> new asks (unit unchanged, the original's expect kept), only when every keep word is there."""
+    sources = {source["number"]: source for source in read_jsonl(folder / "sources.jsonl")}
+    originals = {ask["id"]: ask for path in (FULL_FOLDER / "rule_asks.jsonl", FULL2_FOLDER / "rule_asks.jsonl")
+                 for ask in read_jsonl(path)}
+    games = {game.version_id: game for game in load_games(ids={originals[source["id"]]["version"]
+                                                               for source in sources.values()})}
+    asks, dropped, seen = [], Counter(), set()
+    for path in sorted(folder.glob("tasks_*_answers.tsv")):
+        for line in open(path, encoding="utf-8"):
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) < 2 or not parts[0].strip().isdigit() or int(parts[0]) not in sources:
+                dropped["format"] += 1
+                continue
+            source = sources[int(parts[0])]
+            said = re.sub(r"^/(insert|edit)\s*", "", " ".join(parts[1:]).strip().strip('"')).strip()
+            if not said or len(said) > 300 or re.search(r"[{}]|\w\(|\b[0-9a-fA-F]{6}\b", said):
+                dropped["code or empty"] += 1
+                continue
+            if any(word.lower() not in said.lower() for word in source["keep"]):
+                dropped["lost a keep word"] += 1
+                continue
+            original = originals[source["id"]]
+            ask = {**original, "said": said, "writer": "claude-reword", "reworded_from": original["id"]}
+            text, start, end, indent = student_text(games[original["version"]], ask)
+            ask.update({"text": text, "start": start, "end": end, "indent": indent,
+                        "id": f"{original['version']}|{original['unit']}|r"
+                              f"{zlib.crc32((said + str(original['offset'])).encode()) % 10**8}"})
+            if ask["id"] in seen:
+                continue
+            seen.add(ask["id"])
+            asks.append(ask)
+    print(f"{len(asks):,} reworded asks; dropped {dict(dropped)}")
+    return asks
 
 
 # ---------- Gemma as the writer of the open asks (tried in the first test: it is already on the card) ----------
@@ -1291,7 +1454,7 @@ def open_collect(folder: Path = OPEN_FOLDER) -> List[Dict]:
             if not said or len(said) > 300 or re.search(r"[{}]|\w\(|\b[0-9a-fA-F]{6}\b", said):
                 dropped["code or empty"] += 1
                 continue
-            if re.search(r"\.\.\.\s*no\b|\bi mean\b|\bno wait\b", said):     # an agent's self-correction mid-ask
+            if re.search(r"\.\.\.\s*no\b|\bi mean\b|\bno wait\b|\?\s*no\b|,\s*no,", said):   # an agent's self-correction
                 dropped["self-correction"] += 1
                 continue
             game = games[place["version"]]
@@ -1402,13 +1565,23 @@ if __name__ == "__main__":
     elif action == "prompts":
         build_prompts()
     elif action == "round2_versions":
-        round2_versions()
+        round_versions(2)
+    elif action == "round3_versions":
+        round_versions(3)
     elif action == "build2":
         build_rule_asks_round2()
     elif action == "open_tasks2":
         open_tasks(12, 2, OPEN2_FOLDER, rounds=(2,), seed=2026_11_14)
     elif action == "prompts2":
         build_prompts_round2()
+    elif action == "build3":
+        build_rule_asks_round3()
+    elif action == "prompts3":
+        build_prompts_round3()
+    elif action == "reword_tasks":
+        reword_tasks()
+    elif action == "open_tasks3":
+        open_tasks(8, 0, OUTPUT / "open3", rounds=(1,), seed=2026_11_16)
     elif action == "open_tasks":
         open_tasks()
     elif action == "open_collect":
