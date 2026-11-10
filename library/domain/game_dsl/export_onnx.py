@@ -14,6 +14,12 @@ tokenizer, the license, a manifest, and reference cases the app's Dart port is c
   qr_flutter/test/assistant/reference_cases.json the live inputs, ids, greedy outputs from the exported graph
 
     python -m library.domain.game_dsl.export_onnx [run name]      (default: game-agent-kd-m-s1)
+
+v2 (2026-11-10, the user's QR-Flower models, thesis table 9.9): the same package per model under its own id, with
+its display name and parameter count in the manifest, its reference cases in reference_cases_<id>.json; the
+manifest's "latest" stays as it was (the app's model picker chooses):
+
+    python -m library.domain.game_dsl.export_onnx qr-flower-mini-1 | qr-flower-1 | qr-flower-larger-1
 """
 
 import hashlib
@@ -27,17 +33,21 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from . import GameDslDomain
+from . import GameDslDomain, GameDslV2Domain
 
 QR_FLUTTER = Path(r"C:\Users\Ors\qrcode_dev\qr_flutter")
 PACKAGE_DIR = QR_FLUTTER / "web" / "game_agent"
 REFERENCE_CASES = QR_FLUTTER / "test" / "assistant" / "reference_cases.json"
 VERSION = "v1"
+# the v2 models in the app (the user, 2026-11-10): package id -> (run, display name)
+V2_MODELS = {"qr-flower-mini-1": ("game-agent-v2-s5-s1", "QR-Flower-Mini-1"),
+             "qr-flower-1": ("game-agent-v2-s15-s1", "QR-Flower-1"),
+             "qr-flower-larger-1": ("game-agent-v2-s30-s1", "QR-Flower-Larger-1")}
 TOKENIZER = Path(__file__).resolve().parents[3] / "models" / "gemma-4-12B-it" / "tokenizer.json"
 OPSET = 17
 NOTICE_TEXT = """QR Game Studio game agent ({version})
 
-A small model (9.85M parameters) distilled from Google's Gemma 4 12B (google/gemma-4-12B-it): it was trained on
+A small model ({parameters} parameters) distilled from Google's Gemma 4 12B (google/gemma-4-12B-it): it was trained on
 Gemma's own answers and probabilities for game-language commands. Gemma 4 is provided under the Apache License 2.0
 (https://ai.google.dev/gemma/docs/gemma_4_license); a copy of the license is in LICENSE. tokenizer.json is Gemma 4's
 tokenizer, unchanged.
@@ -206,15 +216,25 @@ EDGE_CASES = [   # digits, runs of spaces, tabs, newlines, accents, emoji, an un
 ]
 
 
-def main(run_name="game-agent-kd-m-s1"):
+def main(argument="game-agent-kd-m-s1"):
+    """A v2 package id (V2_MODELS) or a v1 run name."""
+    if argument in V2_MODELS:
+        run_name, display_name = V2_MODELS[argument]
+        package(run_name, GameDslV2Domain(), argument, display_name,
+                QR_FLUTTER / "test" / "assistant" / f"reference_cases_{argument}.json", set_latest=False)
+    else:
+        package(argument, GameDslDomain("card"), VERSION, None, REFERENCE_CASES, set_latest=True)
+
+
+def package(run_name, domain, version, display_name, reference_cases_path, set_latest):
     from library import RunStore
     from library.model.student import StudentModel
     from .live import edit_input, insert_input
-    domain = GameDslDomain("card")
     store = RunStore()
     _, checkpoint_path = store.resolve_checkpoint(run_name, "latest")
     student = StudentModel.from_run(store.get(run_name), checkpoint_path, domain=domain, device="cpu")
-    version_dir = PACKAGE_DIR / VERSION
+    parameter_count = sum(parameter.numel() for parameter in student.model.parameters())
+    version_dir = PACKAGE_DIR / version
     model_path = version_dir / "model.onnx"
     export(student, model_path)
     generator = OnnxGenerator(model_path, student, domain)
@@ -239,7 +259,7 @@ def main(run_name="game-agent-kd-m-s1"):
 
     transformer = student.model
     attention = transformer.transformer_layers[0].attention
-    config = {"version": VERSION, "run": run_name, "prompt_delimiter": domain.student_prompt(""), "stop": "```",
+    config = {"version": version, "run": run_name, "prompt_delimiter": domain.student_prompt(""), "stop": "```",
               "stop_count": 2, "max_new_tokens": domain.max_steps, "attempts": 3, "temperature": 0.7,
               "input_vocabulary": {str(gemma_id): compact for gemma_id, compact in
                                    transformer.input_token_mapping.items()},
@@ -252,7 +272,8 @@ def main(run_name="game-agent-kd-m-s1"):
     license_text = Path(__file__).resolve().parents[3] / "LICENSE-APACHE-2.0.txt"
     if license_text.exists():
         shutil.copyfile(license_text, version_dir / "LICENSE")
-    (version_dir / "NOTICE").write_text(NOTICE_TEXT.format(version=VERSION), encoding="utf-8")
+    (version_dir / "NOTICE").write_text(NOTICE_TEXT.format(version=display_name or version,
+                                                           parameters=f"{parameter_count / 1e6:.2f}M"), encoding="utf-8")
 
     files = []
     for path in sorted(version_dir.iterdir()):
@@ -260,14 +281,19 @@ def main(run_name="game-agent-kd-m-s1"):
                       "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
     manifest_path = PACKAGE_DIR / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {"versions": {}}
-    manifest["latest"] = VERSION
-    manifest["versions"][VERSION] = {"files": files}
+    if set_latest:
+        manifest["latest"] = version
+    entry = {"files": files}
+    if display_name:
+        entry.update({"name": display_name, "parameters": parameter_count})
+    manifest["versions"][version] = entry
     manifest_path.write_text(json.dumps(manifest, indent=1), encoding="utf-8")
-    REFERENCE_CASES.parent.mkdir(parents=True, exist_ok=True)
-    REFERENCE_CASES.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
+    reference_cases_path.parent.mkdir(parents=True, exist_ok=True)
+    reference_cases_path.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
     print(f"{len(files)} files in {version_dir} ({sum(file['size'] for file in files) / 1e6:.1f} MB); "
-          f"{len(cases)} reference cases -> {REFERENCE_CASES}")
+          f"{len(cases)} reference cases -> {reference_cases_path}")
 
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "game-agent-kd-m-s1")
+
