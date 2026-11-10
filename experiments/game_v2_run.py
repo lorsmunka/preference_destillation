@@ -2,7 +2,7 @@
 
   score [max] [group]   Gemma scores the corpus's targets teacher-forced (the card2 prompt) -> batches/game_dsl_v2/
                         max = how many records (default all), group = records per forward pass (default 8, A40 48 GB)
-  student <size>        one student on the scored batches (sizes below), KL 0.9 -> 0.1, PASSES passes
+  student <size>        one student on the scored batches (sizes below), pure KL, PASSES passes
 
     python experiments/game_v2_run.py score 600 8        (the speed test)
     python experiments/game_v2_run.py student s10
@@ -51,8 +51,8 @@ def student(size):
         run_name=f"game-agent-v2-{size}-{TAG}", domain=domain, teacher_model=TEACHER, experiment="game-agent-v2",
         hidden_dim=hidden_dim, num_layers=num_layers, num_heads=num_heads, learning_rate=learning_rate,
         dropout=0.1, epoch_count=PASSES, batch_size=32, lr_warmup_ratio=0.1, max_training_examples=None,
-        shuffle_seed=SEED, kl_ratio_start=0.9, kl_ratio_end=0.1,
-        description=f"game-language agent v2: Gemma's checked blocks (user-point-of-view asks), KL 0.9 -> 0.1, "
+        shuffle_seed=SEED, kl_ratio_start=1.0, kl_ratio_end=1.0,     # pure KL (the user, 2026-11-10)
+        description=f"game-language agent v2: Gemma's checked blocks (user-point-of-view asks), pure KL, "
                     f"size {size}, seed {SEED}")
     sys.exit(0 if seeded_run_training([(SEED, run)]) else 1)
 
