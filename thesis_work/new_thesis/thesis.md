@@ -5,24 +5,23 @@ Angol cím: Domain-Specific Distillation of Large Language Models into Small Mod
 
 A nagy nyelvi modellek megjelenésével az intelligencia, a problémamegoldás és a döntéshozatal soha nem látott egyszerűséggel vált beépíthetővé a különböző szoftveres megoldásokba. Ezzel egyidejűleg az ilyen alkalmazások számításigénye és így futtatásának költsége is jelentősen megnőtt. Sok esetben fontos az ilyen modelleket lokálisan futtatni, akár szenzitív adatok, offline elérhetőség vagy megbízhatóság miatt. Ezeknél a feladatoknál viszont általában nincs szükség a modell teljes tudására, hiszen a modell csak egy bizonyos feladatot lát el.
 A dolgozat a domain-specifikus tudás desztillálását vizsgálja alapoktól tanított, jelentősen csökkentett paraméterszámú modellekbe és ügynökökbe. A vizsgált modellek elkészítéséhez és kiértékeléséhez használt saját keretrendszer jelentősen leegyszerűsíti a desztillálás folyamatát: a domain definiálását követően mindössze konfigurálással beállítható a tanítóadatok előállítása, maga a tanítás és a tanulómodell architektúrája. A tanítóadatok újrahasználhatóak több modell betanítására is.
-A dolgozat több domaint is vizsgál: alapfeladatokat (szöveghangulat-elemzés, matematikai szöveges feladatok, posztgenerálás), illetve ügynökfeladatokat is (matematikai feladatok megoldása és magyarázata, kódbázisban végrehajtott keresés és magyarázás), és ezek mentén igyekszik megválaszolni olyan kérdéseket, mint például: kis méretű tanulómodellek mennyire képesek elsajátítani a tanármodell viselkedését? Különböző entrópiájú domaineknél hogyan érdemes a különböző veszteségeket használni vagy vegyíteni? Milyen módszerrel érdemes ügynököket desztillálni? Hogyan javul a teljesítmény a modell méretének függvényében? Milyen következtetések vonhatóak le nagyobb büdzséjű desztillálásokra?
-A dolgozat két tanármodellt (Gemma 3 4B, Gemma 4 12B) használ, öt domaint vizsgál részletesen, és ezek közül kettőnél saját modellhám (harness) segítségével önálló ügynököket hoz létre.
+A dolgozat több domaint is vizsgál: egyszerű választ igénylő feladatok (szöveghangulat-elemzés, matematikai szöveges feladatok, posztgenerálás), illetve ügynökfeladatokat is (matematikai feladatok megoldása és magyarázata, kódbázisban végrehajtott keresés és magyarázás), és ezek mentén igyekszik megválaszolni olyan kérdéseket, mint például: kis méretű tanulómodellek mennyire képesek elsajátítani a tanármodell viselkedését? Különböző entrópiájú domaineknél hogyan érdemes a különböző veszteségeket használni vagy vegyíteni? Milyen módszerrel érdemes ügynököket desztillálni? Hogyan javul a teljesítmény a modell méretének függvényében? Milyen következtetések vonhatóak le nagyobb büdzséjű desztillálásokra?
+A dolgozat két tanármodellt (Gemma 3 4B, Gemma 4 12B) használ, öt domaint vizsgál részletesen illetve egy konrkét hazsnáati estete is bemutat.
 
 1. Bevezetés
 
 1.1 A megoldandó probléma, motiváció
 Az utóbbi években a mesterséges intelligencia és ezen belül a természetes nyelv feldolgozására képes modellek iránti igény jelentősen megnőtt egyéni és vállalati körökben is [1]. Ilyen modelleknek gyakori felhasználási területe lehet a kódírás, döntések programatikus meghozatala vagy a tanulás támogatása. Az ilyen feladatok ellátásához jelenleg a legegyszerűbb és sok esetben az egyetlen elérhető mód, ha a különböző felhőszolgáltatóktól vásárlunk hozzáférést, legyen egy előfizetés vagy API-hívás alapú számlázás. Ez viszont sok problémát felvet, például szenzitív adatoknál vagy kritikus infrastruktúra kódjánál nem feltétlenül használhatóak az ilyen megoldások, hiszen az adatok egy külső szolgáltató szerverein kerülnek feldolgozásra, tehát kikerülnek a vállalat ellenőrzése alól. Egy másik probléma lehet a megbízhatóság, hiszen ha a modellre infrastruktúraként tekintünk, sebezhetőséget jelenthet, ha a modell válaszminősége a kontrollunkon kívül változik, például mert a szolgáltató eltérő architektúrájú hardverről szolgálja ki a modellt [2], vagy mert új védőkorlátokat vezet be [3]. Újabb probléma lehet az ilyen modellek költsége vagy elérhetősége [3]. Ahogy a legmodernebb és legjobb modellek egyre drágább áron vagy csak előfizetések mögé rejtve lesznek elérhetőek, nem feltétlenül lesz az intelligencia mindenki számára elérhető.
-Nyílt súlyú modellek is elérhetőek, igaz, a legtöbb benchmarkon és valós tapasztalatok alapján a zászlóshajó zárt súlyú modellektől jelentősen elmaradnak, legalábbis ez tapasztalható 2026 októberéig [4]. Ha felhőszolgáltató infrastruktúrájáról szolgáljuk ki ezeket, a fent említett problémák csak részben mérsékelhetőek, lokális hardveren a hihetetlen memória- és grafikus számításigény miatt pedig sokszor nem lehetséges a megfelelő minőségben kiszolgálni ezeket a modelleket. A 2026 júliusában megjelent Kimi K3, az egyik legjobb benchmarkeredményt elérő nyílt súlyú modell [5], 2,8 billió paraméterből áll, amelyből tokenenként 104 milliárd aktív, és a súlyai még a kiadott, 4 bites (MXFP4) formátumban is nagyjából 1,56 TB-ot foglalnak [6]. Pusztán a súlyok betöltéséhez tehát 80 GB-os A100 adatközponti minőségű GPU-kból is legalább húszra lenne szükség.
-Erre kínál megoldást a desztillálás, amikor is egy nagyobb modell viselkedését próbáljuk meg közelíteni egy jelentősen kisebb számítási kapacitást igénylő modellel (tanulómodell). Ez a folyamat veszteségesen tömöríti a nagyobb modell (tanármodell) tudását, tehát általában elmondható, hogy a kisebb tanulómodell válaszminősége (a tömörítés mértékétől függően) rosszabb lesz.
+Nyílt súlyú modellek is elérhetőek, viszont ha felhőszolgáltató infrastruktúrájáról szolgáljuk ki ezeket, a fent említett problémák csak részben mérsékelhetőek, lokális hardveren a hihetetlen memória- és grafikus számításigény miatt pedig sokszor nem lehetséges a megfelelő minőségben kiszolgálni ezeket a modelleket. A 2026 júliusában megjelent Kimi K3, az egyik legjobb benchmarkeredményt elérő nyílt súlyú modell [5], 2,8 billió paraméterből áll, amelyből tokenenként 104 milliárd aktív, és a súlyai még a kiadott, 4 bites (MXFP4) formátumban is nagyjából 1,56 TB-ot foglalnak [6]. Pusztán a súlyok betöltéséhez tehát 80 GB-os A100 adatközponti minőségű GPU-kból is legalább húszra lenne szükség.
+Erre kínál megoldást a desztillálás, amikor is egy nagyobb modell (tanármodell) viselkedését próbáljuk meg közelíteni egy jelentősen kisebb számítási kapacitást igénylő modellel (tanulómodell). Ez a folyamat veszteségesen tömöríti a tanármodell tudását, tehát általában elmondható, hogy a kisebb tanulómodell válaszminősége (a tömörítés mértékétől függően) rosszabb lesz.
 A modern LLM-ek egyik legértékesebb tulajdonsága, hogy egy modell szinte bármire használható. Ha erről hajlandóak vagyunk részben lemondani, és csak egy specifikus képességét szeretnénk megtartani, a tömörítés során sokkal nagyobb hatékonysággal tudjuk megőrizni az adott domainen az eredeti modell válaszminőségét.
-A dolgozat ezért egy olyan általános megoldást mutat be, amely lehetővé teszi a domain-specifikus desztillálást. Mindezt olyan példákon keresztül, melyek bemutatják a módszer hatékonyságát és előnyeit. Bemutatásra kerül például egy olyan matematikai feladatmegoldó ügynök, amely a mérete alapján akár egy középkategóriás okostelefonon is offline futtatható lehet, vagy egy akár középkategóriás laptopon is lokálisan futtatható kódügynök.
+A dolgozat egy olyan általános megoldást mutat be, amely lehetővé teszi a domain-specifikus desztillálást. Mindezt olyan példákon keresztül, melyek bemutatják a módszer hatékonyságát és előnyeit. Bemutatásra kerül például egy olyan matematikai feladatmegoldó ügynök, amely a mérete alapján akár egy középkategóriás okostelefonon is offline futtatható lehet, vagy egy akár középkategóriás laptopon is lokálisan futtatható kódügynök.
 
 1.2 A dolgozat célja
-A dolgozat célja egy olyan keretrendszer megtervezése és implementálása, amellyel egy nagy nyelvi modell adott szakterületre vonatkozó tudása kis méretű, alapoktól tanított nyelvi modellekbe vagy ágensekbe desztillálható. A dolgozat vizsgálja a tudásdesztilláció és a kis méretű nagy nyelvi modellek tanításának módszereit, a nyelvi modellekre épülő ágensek felépítését, valamint a rendelkezésre álló eszközöket. A keretrendszer funkcionalitása lefedi a tanítóadatok előállítását a tanármodellel, a tanulómodell tanítását és a tanítás kiértékelését. A keretrendszer lehetővé teszi a kis modell architektúrájának és a tanítási folyamat finom szabályozását, és a desztilláció lefolyásáról részletes elemzést ad. A rendszer moduláris szemlélettel lett megtervezve, új szakterületek és ágensek külön modulként hozzáadhatóak.
+A dolgozat célja egy olyan keretrendszer megtervezése és implementálása, amellyel egy nagy nyelvi modell adott szakterületre vonatkozó tudása kis méretű, alapoktól tanított nyelvi modellekbe vagy ágensekbe desztillálható. A dolgozat vizsgálja a tudásdesztilláció és a kis nyelvi modellek (SLM) tanításának módszereit, a nyelvi modellekre épülő ágensek felépítését, valamint a rendelkezésre álló eszközöket. A keretrendszer funkcionalitása lefedi a tanítóadatok előállítását a tanármodellel, a tanulómodell tanítását és a tanítás kiértékelését. A keretrendszer lehetővé teszi a kis modell architektúrájának és tanításának finom szabályozását, és a desztilláció lefolyásáról részletes elemzést ad. A rendszer moduláris szemlélettel lett megtervezve, új szakterületek és ágensek külön modulként hozzáadhatóak.
 
 1.3 A dolgozat felépítése
-Ebben az alfejezetben a dolgozat további részének felépítése kerül ismertetésre.
-A 2. fejezetben az alapfogalmakról, az öt vizsgált domainről, a probléma felosztásáról, vagyis a desztillálás különböző lépéseiről, a nyílt súlyú modellek fontosságáról, a lehetséges buktatókról és a követelményekről lesz szó. A 3. fejezetben a feldolgozott szakirodalomról, a különböző LLM-tömörítő és -optimalizáló módszerekről, más megvalósításokról, azok összehasonlításáról és az ezekből levont konklúzióról lehet olvasni. Az ezt követő 4. fejezet a kiválasztott módszert, az ügynököket és a modellhámot, a kiválasztott tanármodelleket, domaineket és technológiákat mutatja be. Az 5. fejezet a keretrendszert, annak struktúráját és részeit mutatja be. A 6. fejezet a munkafázisokat és a levont következtetések egy részét mutatja be. A 7. fejezet a megvalósítást fejti ki. A 8. fejezet a keretrendszer és a modellek tesztelését tárgyalja. A 9. fejezet az eredményeket és további konklúziókat mutatja be. A 10. fejezetben a keretrendszer elemzéséről, felhasználásáról és továbbfejlesztési ötleteiről lehet olvasni. A 11. és a 12. fejezet magyarul, illetve angolul összegzi a munkát.
+A 2. fejezetben az alapfogalmakról, az öt vizsgált domainről, a probléma felosztásáról, vagyis a desztillálás különböző lépéseiről, a nyílt súlyú modellek fontosságáról, a lehetséges buktatókról és a követelményekről lesz szó. A 3. fejezetben a feldolgozott szakirodalomról, a különböző LLM-tömörítő és -optimalizáló módszerekről, más megvalósításokról, azok összehasonlításáról és az ezekből levont konklúzióról lehet olvasni. Az ezt követő 4. fejezet a kiválasztott módszert, az ügynököket és a modellhámot, a kiválasztott tanármodelleket, domaineket és technológiákat mutatja be. Az 5. fejezet a keretrendszert, annak struktúráját és részeit mutatja be. A 6. fejezet a munkafázisokat és a levont következtetések egy részét mutatja be. A 7. fejezet a megvalósítást fejti ki. A 8. fejezet a keretrendszer és a modellek tesztelését tárgyalja. A 9. fejezet az eredményeket és további konklúziókat mutatja be, illetve egy konrkét használati példa is bemutatásra kerül. A 10. fejezetben a keretrendszer elemzéséről, felhasználásáról és továbbfejlesztési ötleteiről lehet olvasni. A 11. és a 12. fejezet magyarul, illetve angolul összegzi a munkát.
 
 2. Háttér, a probléma elemzése és a specifikáció
 
@@ -700,11 +699,95 @@ A matematikai feladatmegoldó ügynöknél, ahol a desztilláció sikeres volt, 
 ![9.9. ábra](../grafikonok/19b_math_attention_snippet.png)
 9.9. ábra. A figyelem egy tesztbeszélgetésben a "35" második számjegyének írásakor, a kereső figyelemfejnél, közös színskálán (a keretezett token a most írt token, a beszélgetés eleje levágva)
 
-9.6 Sebesség és erőforrásigény - PENDING
-Actual GPU speedup emasures
+9.6 Sebesség és erőforrásigény
+
+A tanulómodellek és a tanármodellek sebessége három domainen, négy gépen került mérésre. Egy mérés egy válasz elkészítése volt a bemeneti szöveg átadásától a kimeneti szöveg végéig (tokenizálás, a modell futása, dekódolás és a leállási szabály együtt), egyesével, mohó dekódolással. A bemenetek rögzített példák, rendre a következők voltak: 80 matematikai, 24 kódügynök- és 48 szöveghangulat-példa. Modellenként egy nem mért bemelegítő kör után minden bemenet háromszor futott, a 9.7. táblázat a válaszidők mediánját mutatja. A tanulómodell a saját válaszát a domain leállási szabályáig írta, a tanármodell legfeljebb az előre ismert válasza hosszáig. A gépek egy otthoni számítógép (RTX 4070 12 GB, Intel Core i7-13700K) és két bérelt gép (NVIDIA A100 80 GB, illetve egy 4 vCPU-s, GPU nélküli AMD EPYC 9655 szerver) voltak. A Gemma 4 12B az RTX 4070-re csak 4 bites (NF4) kvantálással fér el, a CPU-kon a tanármodellek nem lettek mérve.
+
+9.7. táblázat. Egy válasz ideje (medián) és a csúcs GPU-memória, a tanármodell és a tanulómodell ugyanazon a gépen
+
+|                                                    | Matematikai feladatmegoldó ügynök | Kódügynök           | Szöveghangulat-elemzés |
+| -------------------------------------------------- | --------------------------------- | ------------------- | ---------------------- |
+| Tanármodell / tanulómodell                         | Gemma 4 12B / 16,5M               | Gemma 4 12B / 12,0M | Gemma 3 4B / 3,4M      |
+| RTX 4070, tanármodell                              | 3746 ms (NF4)                     | 6295 ms (NF4)       | 1737 ms                |
+| RTX 4070, tanulómodell                             | 158 ms                            | 93 ms               | 78 ms                  |
+| RTX 4070, gyorsulás                                | 24×                               | 68×                 | 22×                    |
+| A100 80 GB, tanármodell                            | 3245 ms                           | 2630 ms             | 1883 ms                |
+| A100 80 GB, tanulómodell                           | 233 ms                            | 126 ms              | 112 ms                 |
+| A100 80 GB, gyorsulás                              | 14×                               | 21×                 | 17×                    |
+| i7-13700K (CPU), tanulómodell                      | 120 ms                            | 929 ms              | 36 ms                  |
+| 4 vCPU-s szerver (CPU), tanulómodell               | 221 ms                            | 1363 ms             | 21 ms                  |
+| GPU-memória az A100-on, tanármodell / tanulómodell | 22,66 GB / 0,10 GB                | 25,65 GB / 0,52 GB  | 8,04 GB / 0,02 GB      |
+
+Azonos GPU-n a tanulómodellek 14–68-szor gyorsabban válaszoltak a tanármodellnél, és kb. 50–400-szor kevesebb GPU-memóriát használtak. A kis modelleknél a GPU-n a válaszidőt elsősorban a rétegek száma határozza meg, nem a paraméterek száma (9.10. ábra), mert egy-egy lépés túl kevés számítás ahhoz, hogy a GPU-t kihasználja. A 2,7M paraméteres modell ezért csak kb. 3-szor gyorsabb az 53,7M paraméteresnél, a legkisebb modellek (a 6,1M paraméteresig) pedig CPU-n gyorsabbak, mint GPU-n, a szöveghangulat-elemzés tanulómodellje például a 4 vCPU-s szerveren 21 ms alatt válaszolt. Valószínűleg ugyanez az oka annak is, hogy a bérelt A100-on a kis modellek lassabbak voltak, mint az otthoni RTX 4070-en. A tanulómodellek futtatásához tehát nem kell GPU, a kódügynök hosszú, 5300–7200 tokenes bemeneteinél viszont a GPU továbbra is gyorsabb (93 ms a 929 ms helyett).
+Összeségében tehát lényeges gyorsuálst lehet elérni a dolgozatban vizsgált domain specifikus desztillációval. Az eredményekből azonban az is látszik, hogy a kis modellek elsősorban a gyengébb hardwernek kedvez, mintsem a professzionális szerver GPU-knak. A módszer felskálázásával, nagyobb desztillált modellekkel lehet, hogy nagyobb, "szerver modeleket" is megérné használni, viszont ezt a dolgozat erőforrás hiányában nem vizsgálja. Az viszont biiztosan kijelethető, hogy a módszerrel kapott modellek meglehetősen gyors választ adnak, akár egy pár éves CPU-n is, grafikus gyorsítás nélkül.
+
+![9.10. ábra](../grafikonok/20_speed_curve.png)
+9.10. ábra. A matematikai feladatmegoldó ügynök négy méretű tanulómodelljének (2, 4, 6 és 8 réteg) és a Gemma 4 12B-nek a válaszideje (medián, 80 tesztpélda, 3 ismétlés), mindkét tengely logaritmikus
 
 9.7 Összevetés hasonló rendszerekkel
-Méret, előtanítás és szótár a hasonló rendszerekhez képest
+
+A szakirodalomban áttekintettek között viszonylag nehéz hasonló megoldást találni. 1,5B paramétertől, legalább százezres nagyságrendű tanítóadattal (ez a valóságban több tokennyi információt jelent, mint amin a dolgozatban bemutatott modellek tanultak) és előtanított tanulómodellel általában végeredményben a nagyobb modell eredményének 86–98%-át sikerül elérni, benchmarkokon például a Gemma 3 [12] modelljeinél a GSM8K-eredményben a 27B-ről 12B-re, 4B-re, illetve 1B-re való méretcsökkenés rendre 1,5, 6,7, illetve 33,1 százalékpontos teljesítménycsökkenéssel jár. Ezek alapján az itt bemutatott módszer, bár erőforráshiány miatt arányaiban kevesebb példán tanítva, de jó, közeli eredményt tudott elérni, például a matematikai ügynöknél, amely a saját tesztfeladatain kb. 730-szor kisebb méretben a tanár eredményének 75%-át érte el.
+
+Más hasonló megvalósításokat a 9.8. táblázat foglal össze, amelyből kiolvasható, hogy a SVAMP-on Fu és társai [33] 250M és 11B paraméteres tanulómodellje közötti teljesítményt sikerült elérni, bár ezek a GSM8K többlépéses feladataira készültek, tehát nem direkt összehasonlítás, illetve előtanított modellekből indultak. Az is látszik, hogy a kétlépéses feladatokon jelentősen romlott a modell teljesítménye (a SVAMP kétlépéses feladatain csak 10,5% az egylépésesek 42,0%-ához képest), viszont ez valószínűleg részben a tanítóminta hiányából adódik (a dolgozatban szereplő domain tanítóadatainak csak 17,5%-a kétlépéses). Illetve az is fontos kitétel, hogy a dolgozatban vizsgált módszernél nem a helyes megoldás, hanem Gemma követése volt fontos.
+
+9.8. táblázat. A tanulómodell eredménye a tanármodell eredményének arányában, a közölt értékek alapján (a tanármodell a [33] soraiban a code-davinci-002, a [29] sorában a DeepSeek-R1, a dolgozat soraiban a Gemma 4 12B; a méretarány a tanár és a tanuló paraméterszámának hányadosa; a dolgozat soraiban az első kérdésre adott helyes végeredmények aránya 300 feladaton, 3 véletlenmag átlagaként, a SVAMP-nál a domain számtartományába eső, 735 feladatos részhalmazból)
+
+| Tanulómodell                       | Előtanított | Méretarány           | Tanítópéldák | Teszt                | A tanár eredményének aránya |
+| ---------------------------------- | ----------- | -------------------- | ------------ | -------------------- | --------------------------- |
+| FlanT5-XXL, 11B [33]               | igen        | legalább 16×         | kb. 130 ezer | SVAMP                | 47%                         |
+| FlanT5-Base, 250M [33]             | igen        | legalább 700×        | kb. 130 ezer | SVAMP                | 19%                         |
+| DeepSeek-R1-Distill-Qwen-1.5B [29] | igen        | kb. 450× (25× aktív) | kb. 800 ezer | MATH-500             | 86%                         |
+| A dolgozat, 16,5M                  | nem         | kb. 730×             | 195 980      | saját tesztfeladatok | 75%                         |
+| A dolgozat, 16,5M                  | nem         | kb. 730×             | 195 980      | SVAMP                | 36%                         |
+
+9.8 Valós használat - saját programozási nyelven tanított AI-asszisztens
+Magyar Virág "QR Code Alapú játékfejlesztés" című dolgozata egy olyan rendszert mutat be, ahol egy saját programozási nyelvben lehet apró játékokat fejleszteni, amelyek egy tömörítést követően elférnek egy QR Code-ban. A rendszer része egy kódszerkesztő, amely egy Flutterben megírt felület kifejezetten az ilyen kódok szerkesztéséhez. Közös együttműködés során lefejlesztésre és integrációra került egy saját AI-asszisztens, amely a szerkesztőben egy "// " kezdetű sorral hívható elő. Az asszisztens célja, hogy egy rövid angol leírást képes legyen erre a nyelvre fordítani. Ezenfelül egy meglévő kódblokkot is képes átalakítani, szintén egy rövid angol leírást használva. Egy példa:
+
+````
+WINDOW size(8, 12)  background("bef264")  music("bg_4")
+NAMES
+#lives bar
+#curl bar
+#pine bar
+#flame group  circle, AutoMove; OnCollision #kale
+#kale entity rectangle
+#latchBlaze entity circle; OnElapsedTime
+#drift entity rectangle; OnTapped #drift
+#crane9 entity rectangle; OnTapped #crane9
+#drill entity text
+#kite entity text
+#drop entity text
+CURSOR top level, after #kite, before #drop
+COMMAND /insert insert a sky blue circle with the name blinky that disappears when tapped
+
+```
+    Entity {
+        id("blinky")
+        startPosition(400, 600)
+        color("87CEEB")
+        Type { circle(20) }
+        Events {
+            OnTapped { Actions { setVisible(false) } }
+        }
+    }
+```
+````
+
+Egy rövid tesztkör után kiépítésre került egy 80 218 példás feladatbázis, amelyet mesterséges intelligencia (Claude) ügynökök állítottak össze. Ez olyan elv szerint lett felépítve, hogy a modellnek az egyszerű színváltó utasításokat és komplexebb szereplő beszúrásokat is kell tudnia kezelni, ez alapján lett rengeteg példa felépítve. Ezeket a kéréseket Gemma 4 12B válaszolta meg (a programozási nyelvről egy rövid összefoglalót kapott), majd a tanulómodellek Gemma eloszlásain KL-veszteséggel lettek betanítva. Összesen 5 méret betanítása történt, melyek a 9.9. táblázatba foglalva tekinthetőek meg.
+
+9.9. táblázat. A játéknyelvi asszisztens tanulómodelljei (KL, 5 epoch, 1 véletlenmag) 600 tesztkérésen, egy próbálkozással, azokon a kéréseken, ahol a Gemma blokkja használható volt (a Gemma az összes, 4940 tesztkérés 70,0%-ánál írt használható blokkot), a használhatóság a 431 szabállyal ellenőrizhető kérésen mérve, a válaszidő 80 kérésen, 3 ismétléssel
+
+| Modell             | Paraméterek | Lefordul és átmegy az ellenőrzéseken | Használható (a kérést is teljesíti) | A Gemma blokkjával azonos szerkezet | Válaszidő (i7-13700K, medián) |
+| ------------------ | ----------- | ------------------------------------ | ----------------------------------- | ----------------------------------- | ----------------------------- |
+| QR-Flower-Mini-1   | 7,0M        | 94,3%                                | 90,3%                               | 65,2%                               | 197 ms                        |
+| –                  | 10,8M       | 95,3%                                | 91,0%                               | 60,8%                               | 180 ms                        |
+| QR-Flower-1        | 17,2M       | 94,5%                                | 91,0%                               | 65,5%                               | 285 ms                        |
+| –                  | 25,7M       | 95,0%                                | 91,0%                               | 67,3%                               | 292 ms                        |
+| QR-Flower-Larger-1 | 40,1M       | 95,0%                                | 91,2%                               | 65,2%                               | 619 ms                        |
+
+Ezekből 3 modell lett kiválasztva, és elérhetőek az alkalmazásban. A modellcsalád a QR-Flower nevet kapta, a legkisebb tagja a QR-Flower-Mini-1 (7,0M paraméter), középső tagja a QR-Flower-1, és legnagyobb a QR-Flower-Larger-1. Az első használat előtt választhatunk, hogy melyik modellt szeretnénk használni. A modellek offline, CPU-n futnak, előfizetés nélkül. Az integráció kezeli a tokenizálást és dekódolást.
+
+A tapasztalat az, hogy a modellek a jó desztillációs eredmények mellett jelentősen gyorsítják a kódszerkesztőben a kód írását, ha nem is mindig tökéletesen találják el a megvalósítást, sokszor kiváló kezdőpontot adnak.
 
 10. A keretrendszer értékelése, alkalmazása és továbbfejlesztése
 
@@ -713,6 +796,8 @@ A keretrendszer elsősorban kutatási eszköz új domainek, veszteségek, tanít
 További ötletek például a tanulómodell Muon optimalizálóval való tanítása az AdamW helyett, a háromértékű (ternáris, csak −1, 0 és +1 súlyú) tanulómodellek desztillálása, illetve a domainhez szabott architektúrák, amelyekhez a tanulómodell-interfész már adott. A tanár eloszlása mellett a figyelemmintázatai is átadhatók lennének (attention distillation). Erősebb tanármodellel a tanulómodell felső korlátja is emelhető, ráadásul érdemes lenne azt is megvizsgálni, hogy egy nagyobb tanármodell is desztillálható-e ilyen kis modellekbe. A kódügynök pedig a keresés és a magyarázat mellett a kód módosítására, törlésére és írására is kiterjeszthető.
 
 11. Összefoglalás
+
+A dolgozat eredményei alapján tehát megállapíhtató, hogy a módszer kissebb adatmennysigéek mellet is megleheőtősen bíztató eredményeket mutatnak, és az adattublázás skálázási görbélye alapján pedig josolható az eredmény javulása több adattal. A dolgozat összesen 5 domaint és egy esettaulmányt vizsgált, a domainek között volt éles és puha elpszlású, struktúrált és szabadszöveges, rövid illetve hosszú kontextust igénylő feladatok is. A dolgozat rámutat a módszer lehetséges buktatóira, mint pldául a sablonosan előállítot felaatok túltanulásásra, ugyanakor azt is megmutata, hogy egy korábban dedikált graifkus meghajtót igénylő feladat haosnló pontossággal elvégezhető akár egy pár éves CPU-n is. A dolgozat ötletei tovább vihetőek, és alkalmazahtaók valós példákban (lásd esettanulmány). Az így elkészült keretrendszer további számos kísérlet elvégzésére is alaklamas, akár domian specifikus architektúrák kirpóbáláására is.
 
 12. Summary
 
