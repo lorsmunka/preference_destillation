@@ -107,7 +107,10 @@ for card in $(awk '{ print $1 }' /workspace/cards.txt); do
     fi
     step "copying $card's batches"
     mkdir -p "/workspace/shards/$card"
-    if on_card "$card" "tar -C $BATCHES -cf - ." | tar -C "/workspace/shards/$card" -xf -; then
+    # a trainer that has merged already keeps its own batches in shards/<its name> (symlinks to every share in
+    # their place); the 2026-11-10 run fixed this on the cards with an ssh forced command instead
+    if on_card "$card" "if [ -d /workspace/shards/$card ]; then tar -C /workspace/shards/$card -cf - .; else tar -C $BATCHES -cf - .; fi" \
+            | tar -C "/workspace/shards/$card" -xf -; then
         on_card "$card" "touch /workspace/PULLED_$NAME"
     else
         step "copying $card's batches failed: left out"

@@ -316,7 +316,21 @@ class ModelHandler:
         target position. No generation, so the targets stay correct; the teacher supplies the
         soft labels. Rows are left-padded with explicit positions, and only the last positions'
         logits are computed (logits_to_keep), so the full vocabulary is never materialised for
-        the prompt."""
+        the prompt. A group too big for the card's memory is scored in halves (2026-11-10: the
+        game v2 corpus's longest groups, ~6,800 tokens with ~1,800 kept positions, came after
+        the tested ones)."""
+        try:
+            return self.score_group(texts, targets)
+        except torch.cuda.OutOfMemoryError:
+            if len(texts) == 1:
+                raise
+        torch.cuda.empty_cache()
+        half = len(texts) // 2
+        print(f"\tOut of GPU memory for {len(texts)} gold targets together: scoring them in halves")
+        return (self.score_training_examples(texts[:half], targets[:half])
+                + self.score_training_examples(texts[half:], targets[half:]))
+
+    def score_group(self, texts: List[str], targets: List[str]) -> List[Tuple[Optional[Dict], Optional[str]]]:
         start_time = time()
         prompt_ids = [self.prompt_token_ids(self.build_prompt(text)) for text in texts]
         target_ids = [self.tokenizer(target, add_special_tokens=False)["input_ids"] for target in targets]
@@ -332,7 +346,7 @@ class ModelHandler:
         reduced_ids = torch.tensor([self.vocabulary["token_to_id"][token] for token in token_list], device=device)
         with torch.no_grad():
             logits = self.model(input_ids=input_ids, attention_mask=attention_mask, position_ids=position_ids,
-                                logits_to_keep=keep).logits
+                                logits_to_keep=keep, use_cache=False).logits   # one pass: no cache to keep
             reduced = logits[:, :, reduced_ids].float()
             # the top token per position on the card (2026-11-09: the Python max over every row cost ~25% of a
             # scoring pass); the same index as before, ties to the first
